@@ -1,10 +1,23 @@
 /*
- * jQuery treetable Plugin 3.2.0
- * http://ludo.cubicphuse.nl/jquery-treetable
+ * ADL2-core
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
  *
- * Copyright 2013, Ludo van den Boom
- * Dual licensed under the MIT or GPL Version 2 licenses.
+ * This file is part of ADL2-core.
+ *
+ * ADL2-core is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 (function($) {
   var Node, Tree, methods;
 

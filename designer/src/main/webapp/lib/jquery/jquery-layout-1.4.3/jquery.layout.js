@@ -1,22 +1,21 @@
-/**
- * @preserve
- * jquery.layout 1.4.3
- * $Date: 2014-08-30 08:00:00 (Sat, 30 Aug 2014) $
- * $Rev: 1.0403 $
+/*
+ * ADL2-core
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
  *
- * Copyright (c) 2014 Kevin Dalman (http://jquery-dev.com)
- * Based on work by Fabrizio Balliano (http://www.fabrizioballiano.net)
+ * This file is part of ADL2-core.
  *
- * Dual licensed under the GPL (http://www.gnu.org/licenses/gpl.html)
- * and MIT (http://www.opensource.org/licenses/mit-license.php) licenses.
+ * ADL2-core is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * SEE: http://layout.jquery-dev.com/LICENSE.txt
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * Changelog: http://layout.jquery-dev.com/changelog.cfm
- *
- * Docs: http://layout.jquery-dev.com/documentation.html
- * Tips: http://layout.jquery-dev.com/tips.html
- * Help: http://groups.google.com/group/jquery-ui-layout
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* JavaDoc Info: http://code.google.com/closure/compiler/docs/js-for-compiler.html
