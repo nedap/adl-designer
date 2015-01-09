@@ -1,0 +1,231 @@
+template (adl_version=1.5)
+    openEHR-EHR-COMPOSITION.encounter_8958.v1.0.0
+
+specialize
+    openEHR-EHR-COMPOSITION.encounter.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    translations = <
+        ["ko"] = <
+            accreditation = <"Medical Doctor">
+            author = <
+                ["name"] = <"Seung-Jong Yu">
+                ["organisation"] = <"Yonsei FM Clinic">
+                ["email"] = <"seungjong.yu@gmail.com">
+            >
+            language = <[ISO_639-1::ko]>
+        >
+        ["ar-sy"] = <
+            author = <
+                ["name"] = <"Mona Saleh">
+            >
+            language = <[ISO_639-1::ar-sy]>
+        >
+        ["es-ar"] = <
+            accreditation = <"Medical Doctor">
+            author = <
+                ["name"] = <"Edgardo Vazquez">
+                ["organisation"] = <"VinculoMedico">
+            >
+            language = <[ISO_639-1::es-ar]>
+        >
+    >
+    
+definition
+    COMPOSITION[id1.1] occurrences matches {1} matches {    -- Encounter
+        /content matches {
+            use_archetype OBSERVATION[openEHR-EHR-OBSERVATION.body_weight_a577.v1.0.0]
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                ["text"] = <"Encounter">
+                ["description"] = <"Generic encounter or progress note composition.">
+            >
+        >
+        ["ko"] = <
+            ["id1.1"] = <
+                ["text"] = <"환자대면">
+                ["description"] = <"외래기록, 경과기록, 간호기록와 일반노트와 같은 환자를 대면한 후 작성하는 기록 composition">
+            >
+        >
+        ["ar-sy"] = <
+            ["id1.1"] = <
+                ["text"] = <"المقابلة">
+                ["description"] = <"مقابلة جنيسة (غير محدودة الملكية) أو بِنْية ملاحظة تقدم حالة المريض">
+            >
+        >
+        ["es-ar"] = <
+            ["id1.1"] = <
+                ["text"] = <"Consulta">
+                ["description"] = <"Composition de consulta generica o notas de evolucion ">
+            >
+        >
+    >
+
+---------------------------------------------------------------------------------
+template_overlay (adl_version=1.5)
+    openEHR-EHR-OBSERVATION.body_weight_a577.v1.0.0
+
+specialize
+    openEHR-EHR-OBSERVATION.body_weight.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    translations = <
+        ["de"] = <
+            author = <
+                ["name"] = <"Sebastian Garde, Jasmin Buck">
+                ["organisation"] = <"Ocean Informatics, University of Heidelberg">
+            >
+            language = <[ISO_639-1::de]>
+        >
+        ["ar-sy"] = <
+            author = <
+                ["name"] = <"Mona Saleh">
+                ["email"] = <"monasaleh01@live.com">
+            >
+            language = <[ISO_639-1::ar-sy]>
+        >
+        ["fa"] = <
+            author = <
+                ["name"] = <"Shahla Foozonkhah">
+                ["organisation"] = <"Ocean Informatics">
+                ["email"] = <"Shahla.foozonkhah@oceaninformatics.com">
+            >
+            language = <[ISO_639-1::fa]>
+        >
+        ["ru"] = <
+            author = <
+                ["name"] = <"Igor Lizunov">
+                ["email"] = <"i.lizunov@infinnity.ru">
+            >
+            language = <[ISO_639-1::ru]>
+        >
+        ["es"] = <
+            accreditation = <"Responsible IOP Estrategy">
+            author = <
+                ["name"] = <"Jose Fernandez-Engo">
+                ["organisation"] = <"Andalusian Healthcare Ministry - IT Division">
+                ["email"] = <"joser.fernandez.exts@juntadeandalucia.es">
+            >
+            language = <[ISO_639-1::es]>
+        >
+        ["nl"] = <
+            accreditation = <"Nurse informatics">
+            author = <
+                ["name"] = <"Marja Buur">
+                ["organisation"] = <"Medisch Centrum Alkmaar, Nederland">
+                ["email"] = <"m.buur-krom@mca.nl">
+            >
+            language = <[ISO_639-1::nl]>
+        >
+        ["pt-br"] = <
+            accreditation = <"P2D Health Advisor Council">
+            author = <
+                ["name"] = <"Marco Borges">
+                ["organisation"] = <"P2D">
+                ["email"] = <"marco.borges@p2d.com.br">
+            >
+            language = <[ISO_639-1::pt-br]>
+        >
+    >
+    
+definition
+    OBSERVATION[id1.1] occurrences matches {1} matches {    -- Body weight
+        /data[id3]/events[id4]/data[id2]/items matches {
+            ELEMENT[id5.1] matches {    -- Weight 2
+                value matches {
+                    DV_QUANTITY[id27.1] matches {*}
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                ["text"] = <"Body weight">
+                ["description"] = <"Measurement of the body weight of an individual.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Weight 2">
+                ["description"] = <"The weight of the individual.">
+            >
+        >
+        ["de"] = <
+            ["id1.1"] = <
+                ["text"] = <"Körpergewicht">
+                ["description"] = <"Messung des Körpergewichts eines Individuums.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Gewicht">
+                ["description"] = <"Das Gewicht eines Individuums.">
+            >
+        >
+        ["ar-sy"] = <
+            ["id1.1"] = <
+                ["text"] = <"وزن الجسم">
+                ["description"] = <"قياس وزن الجسم للشخص">
+            >
+            ["id5.1"] = <
+                ["text"] = <"الوزن">
+                ["description"] = <"وزن الشخص">
+            >
+        >
+        ["fa"] = <
+            ["id1.1"] = <
+                ["text"] = <"وزن بدن">
+                ["description"] = <"اندازه گیری وزن بدن فرد">
+            >
+            ["id5.1"] = <
+                ["text"] = <"وزن">
+                ["description"] = <"وزن فرد">
+            >
+        >
+        ["ru"] = <
+            ["id1.1"] = <
+                ["text"] = <"Масса тела">
+                ["description"] = <"Измерение актуальной массы тела человека.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Вес">
+                ["description"] = <"Актуальный вес человека.">
+            >
+        >
+        ["es"] = <
+            ["id1.1"] = <
+                ["text"] = <"Peso corporal">
+                ["description"] = <"Medición del peso corporal de un individuo.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Peso">
+                ["description"] = <"Peso del individuo.">
+            >
+        >
+        ["nl"] = <
+            ["id1.1"] = <
+                ["text"] = <"Lichaamsgewicht">
+                ["description"] = <"Meting van het lichaamsgewicht van een individu.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Gewicht">
+                ["description"] = <"Het gewicht van het individu.">
+            >
+        >
+        ["pt-br"] = <
+            ["id1.1"] = <
+                ["text"] = <"Peso corporal">
+                ["description"] = <"A medição do peso corporal de um indivíduo.">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Peso">
+                ["description"] = <"O peso do indivíduo.">
+            >
+        >
+    >

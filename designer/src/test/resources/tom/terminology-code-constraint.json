@@ -1,0 +1,261 @@
+{
+    "type": "template",
+    "rmType": "COMPOSITION",
+    "parentArchetypeId": "openEHR-EHR-COMPOSITION.encounter.v1.0.0",
+    "archetypeId": "openEHR-EHR-COMPOSITION.encounter_e92f.v1.0.0",
+    "terms": {
+        "en": {
+            "text": "Encounter",
+            "description": "Generic encounter or progress note composition."
+        },
+        "ko": {
+            "text": "환자대면",
+            "description": "외래기록, 경과기록, 간호기록와 일반노트와 같은 환자를 대면한 후 작성하는 기록 composition"
+        },
+        "ar-sy": {
+            "text": "المقابلة",
+            "description": "مقابلة جنيسة (غير محدودة الملكية) أو بِنْية ملاحظة تقدم حالة المريض"
+        },
+        "es-ar": {
+            "text": "Consulta",
+            "description": "Composition de consulta generica o notas de evolucion "
+        }
+    },
+    "nodeId": "id1",
+    "items": [{
+        "type": "archetype",
+        "parentArchetypeId": "openEHR-EHR-OBSERVATION.blood_pressure.v1.0.0",
+        "archetypeId": "openEHR-EHR-OBSERVATION.blood_pressure_a9c2.v1.0.0",
+        "rmType": "OBSERVATION",
+        "terms": {
+            "en": {
+                "text": "Blood Pressure",
+                "description": "The local measurement of arterial blood pressure which is a surrogate for arterial. pressure in the systemic circulation.  Most commonly, use of the term 'blood pressure' refers to measurement of brachial artery pressure in the upper arm."
+            },
+            "de": {
+                "text": "Blutdruck",
+                "description": "Die lokale Messung des arteriellen Blutdrucks als Surrogat für den arteriellen Druck in der systemischen Zirkulation. Häufig wird der Ausdruck 'Blutdruck' zur Bezeichung der Messung des brachialen Ateriendrucks im Oberarm verwendet."
+            },
+            "zh-cn": {
+                "text": "*Blood Pressure(en)",
+                "description": "*The local measurement of arterial blood pressure which is a surrogate for arterial pressure in the systemic circulation.  Most commonly, use of the term 'blood pressure' refers to measurement of brachial artery pressure in the upper arm.(en)"
+            },
+            "ar-sy": {
+                "text": "ضغط الدم",
+                "description": "قياس موضعي لضغط الدم الشرياني و الذي يحل محل الضغط الشرياني في الدورة الدموية الجهازية. \r\nو عادة ما يستخدم مصطلح \"ضغط الدم\" لللإشارة إلى قياس ضغط دم الشريان العضُدي في أعلى الذراع."
+            },
+            "es-ar": {
+                "text": "Presión Arterial",
+                "description": "La medición local de la tensión arterial que deriva de la medida de la presión arterial en la circulación sistémica. Comúnmente el uso de 'presión arterial' se refiere a la medida de la presión de la arteria braquial por encima del pliegue del codo."
+            },
+            "fa": {
+                "text": "فشار خون",
+                "description": "اندازه گیری موضعی فشار خون وریدی، که جایگزینی برای فشار وریدی در گردش خون کلی است.\r\nمعمولا واژه \"فشار خون\" به اندازه گیری فشار ورید بازویی در روی بازو گفته می شود"
+            },
+            "ru": {
+                "text": "АД",
+                "description": "Локальное измерение артериального давления, которое является суррогатом артериального давления в системном кровотоке. Как правило, термин относится к давления плечевой артерии на предплечье.\r\n"
+            },
+            "ja": {
+                "text": "血圧",
+                "description": "全身の循環での動脈圧の代用として，局所で測定される血圧。一般的には「血圧」とは上腕で上腕動脈を測定したものをさすことが多い。"
+            },
+            "nl": {
+                "text": "Bloeddruk",
+                "description": "De lokale meting van de arteriële bloeddruk, welke surrogaat is voor de arteriële druk in de systemische circulatie. Meest gebruikelijk is dat de term 'bloeddruk'  refereert aan de meting van de bloeddruk van de arterie brachialis in de bovenarm."
+            },
+            "pt-br": {
+                "text": "Pressão Arterial",
+                "description": "A medida local da pressão sanguínea arterial, a qual é uma substituta da pressão arterial na circulação arterial sistêmica. Mais comumente o uso do termo pressão arterial se refere à medida da pressão da artéria braquial no antebraço."
+            }
+        },
+        "nodeId": "id1",
+        "items": [{
+            "type": "item",
+            "terms": {
+                "en": {
+                    "text": "any event 2",
+                    "description": "Default event"
+                },
+                "de": {
+                    "text": "any event",
+                    "description": "Default event"
+                },
+                "zh-cn": {
+                    "text": "*any event(en)",
+                    "description": "*Default event(en)"
+                },
+                "ar-sy": {
+                    "text": "إحدى الوقائع",
+                    "description": "الواقعة التلقائية"
+                },
+                "es-ar": {
+                    "text": "cualquier evento",
+                    "description": "Evento por defecto"
+                },
+                "fa": {
+                    "text": "هر رویداد",
+                    "description": "رویداد پیش فرض"
+                },
+                "ru": {
+                    "text": "Любое событие",
+                    "description": "*Default event(en)"
+                },
+                "ja": {
+                    "text": "血圧",
+                    "description": "*Default event(en)"
+                },
+                "nl": {
+                    "text": "any event",
+                    "description": "Default gebeurtenis"
+                },
+                "pt-br": {
+                    "text": "qualquer evento",
+                    "description": "evento Default, padrão predeterminado"
+                }
+            },
+            "nodeId": "id7",
+            "path": "/data[id2]/events",
+            "rmType": "EVENT",
+            "items": [
+                {
+                    "type": "item",
+                    "terms": {
+                        "en": {
+                            "text": "Systolic 2",
+                            "description": "Peak systemic arterial blood pressure  - measured in systolic or contraction phase of the heart cycle."
+                        },
+                        "de": {
+                            "text": "Systolisch",
+                            "description": "Der höchste arterielle Blutdruck eines Zyklus - gemessen in der systolischen oder Kontraktionsphase des Herzens."
+                        },
+                        "zh-cn": {
+                            "text": "收缩压",
+                            "description": "一个血液循环周期中，系统性动脉血压高峰值。 收缩期血压"
+                        },
+                        "ar-sy": {
+                            "text": "الانقباضي",
+                            "description": "ذروة ضغط الدم الشرياني الجهازي - يتم قياسه في طور الانقباض من دورة القلب"
+                        },
+                        "es-ar": {
+                            "text": "Sistólica",
+                            "description": "Presión arterial sistólica pico - medido en sístole o la fase de contracción del ciclo cardíaco"
+                        },
+                        "fa": {
+                            "text": "سیستولیک",
+                            "description": "اوج فشار خون وریدی کلی که در سیستولیک یا فاز انقباضی چرخه گردش خون اندازه گیری می شود"
+                        },
+                        "ru": {
+                            "text": "Систолическое",
+                            "description": "Пик системного артериального давления - измеряется в систолиу или в фазу сокращения сердца"
+                        },
+                        "ja": {
+                            "text": "収縮期",
+                            "description": "1つ以上の脈の間で最高値を示す全身の動脈圧 - 心機図の収縮期で測定される"
+                        },
+                        "nl": {
+                            "text": "Systole",
+                            "description": "De maximale (piek) systemische arteriele bloeddruk - gemeten in de systolische of samentrekkingsfase van de hartslag"
+                        },
+                        "pt-br": {
+                            "text": "Sistólica",
+                            "description": "Pressão arterial sistêmica máxima - medida na fase sistólica ou de contração do ciclo cardíaco."
+                        }
+                    },
+                    "nodeId": "id5",
+                    "constraints": {
+                        "type": "C_COMPLEX_OBJECT",
+                        "children": [
+                            {
+                                "type": "C_TERMINOLOGY_CODE",
+                                "rmType": "C_TERMINOLOGY_CODE",
+                                "code_list": ["at1055"],
+                                "attribute": "property"
+                            },
+                            {
+                                "type": "C_REAL",
+                                "rmType": "C_REAL",
+                                "attribute": "magnitude"
+                            },
+                            {
+                                "type": "C_INTEGER",
+                                "rmType": "C_INTEGER",
+                                "attribute": "precision"
+                            },
+                            {
+                                "type": "C_STRING",
+                                "rmType": "C_STRING",
+                                "list": ["mm[Hg]"],
+                                "attribute": "units"
+                            }
+                        ],
+                        "rmType": "DV_QUANTITY"
+                    },
+                    "path": "/data[id4]/items",
+                    "rmType": "ELEMENT",
+                    "dataAttribute": "value"
+                },
+                {
+                    "type": "item",
+                    "terms": {
+                        "en": {
+                            "text": "Position",
+                            "description": "The position of the subject at the time of measurement."
+                        },
+                        "de": {
+                            "text": "Position",
+                            "description": "Die Position der untersuchten Person während der Messung."
+                        },
+                        "zh-cn": {
+                            "text": "*Position(en)",
+                            "description": "*The position of the subject at the time of measurement(en)"
+                        },
+                        "ar-sy": {
+                            "text": "الموضع",
+                            "description": "موضع الشخص في وقت القياس"
+                        },
+                        "es-ar": {
+                            "text": "Posición",
+                            "description": "La posición del individuo en el momento del registro."
+                        },
+                        "fa": {
+                            "text": "موقعیت",
+                            "description": "موقعیت فرد در زمان اندازه گیری "
+                        },
+                        "ru": {
+                            "text": "Поза",
+                            "description": "Поза пациента во время измерения давления."
+                        },
+                        "ja": {
+                            "text": "体位",
+                            "description": "計測のときの対象者の体位"
+                        },
+                        "nl": {
+                            "text": "Houding",
+                            "description": "De houding van het individu op het moment van de meting"
+                        },
+                        "pt-br": {
+                            "text": "Posição",
+                            "description": "A posição do sujeito na hora da medida."
+                        }
+                    },
+                    "nodeId": "id9",
+                    "constraints": {
+                        "type": "C_COMPLEX_OBJECT",
+                        "children": [{
+                            "type": "C_TERMINOLOGY_CODE",
+                            "rmType": "C_TERMINOLOGY_CODE",
+                            "code_list": [ "at1001", "at1002", "at1003"],
+                            "attribute": "defining_code"
+                        }],
+                        "rmType": "DV_CODED_TEXT"
+                    },
+                    "path": "/state[id8]/items",
+                    "rmType": "ELEMENT",
+                    "dataAttribute": "value"
+                }
+            ]
+        }],
+        "path": "/content"
+    }]
+}

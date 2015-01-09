@@ -1,0 +1,102 @@
+#main-container {
+    width: 100%;
+    height: 100%;
+}
+
+
+#propertiesPanelContainer table {
+    font-size: 12px;
+    /*border-collapse: collapse;*/
+    width: 100%
+}
+
+#propertiesPanelContainer table td {
+    /*border: 1px solid #AAA;*/
+}
+
+.context-menu-template-node {
+}
+
+/* override treetable span */
+.context-menu-template-value {
+    padding: 0 !important;
+}
+.context-menu-template-value span {
+    padding: 0 !important;
+}
+
+.header {
+    font-weight: bold;
+}
+
+.name {
+
+}
+
+.context-menu-template-value .name.modified {
+    font-weight: bold;
+}
+
+.context-menu-template-value .name.deleted {
+    color: dimgray;
+    text-decoration: line-through;
+}
+
+.context-menu-template-value .delta {
+    padding-left: 10px !important;
+    color: #515151;
+}
+
+
+
+tr.selected {
+    background-color: #3875d7;
+    color: #fff;
+}
+
+.tupleSeparator {
+    border-top: 1px solid black;
+    border-bottom: 1px solid #DDD;
+}
+
+
+.dialog-content {
+    padding-bottom: 10px;
+}
+
+.dialog-button-panel {
+    padding-top: 10px;
+}
+
+.open-details-panel {
+    float: right;
+    padding: 0;
+    position: relative
+}
+
+.open-details {
+    font-size: 10px;
+    /*top: -5px;*/
+}
+
+.error {
+    font-size: 12px;
+    color: red;
+}
+
+.rename-dialog-table {
+    width: 100%;
+}
+
+.rename-dialog-input {
+    width: 100%;
+}
+
+.dialog-content {
+    font-size: 12px;
+}
+
+.node-id {
+    font-size: 11px;
+    color: #444444;
+}

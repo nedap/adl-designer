@@ -1,0 +1,87 @@
+<html>
+<head>
+    <script src="lib/jquery/jquery-1.11.1.js"></script>
+
+    <!-- jquery ui -->
+    <link href="lib/jquery/jquery-ui-1.11.1/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/jquery/jquery-ui-1.11.1/jquery-ui.js"></script>
+    <link href="lib/jquery/jquery-ui-1.11.1/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
+
+    <!-- jquery treetable -->
+    <link href="lib/jquery/treetable/jquery.treetable.theme.default.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/jquery/treetable/jquery.treetable.js"></script>
+
+    <script src="js/util.js"></script>
+    <script src="js/am-model.js"></script>
+    <script src="js/am-view.js"></script>
+    <script src="models.js"></script>
+
+</head>
+<body>
+
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-definition">Definition</a></li>
+        <li><a href="#tabs-terminology">Terminology</a></li>
+    </ul>
+    <div id="tabs-definition">
+        <table id="definitionTable">
+        <thead>
+        <tr>
+            <th>RM name</th>
+            <th>Meaning</th>
+            <th>Occ/Card</th>
+            <th>Constraint</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+    <div id="tabs-terminology">
+        Term definitions
+        <table id="termDefinitionsTable">
+        <thead>
+        <tr>
+            <th>code</th>
+            <th>text</th>
+            <th>description</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+        Constraint definitions
+        <table id="constraintDefinitionsTable">
+        <thead>
+        <tr>
+            <th>code</th>
+            <th>text</th>
+            <th>description</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+
+    </div>
+</div>
+
+<script>
+    var definitionTable = $('#definitionTable');
+    var model = new ArchetypeModel(archetypeModels.source["openEHR-EHR-EVALUATION.alert.v1"]);
+
+    AmView.addDefinitionTableRows(model, definitionTable.find('tbody'));
+
+    definitionTable.treetable();
+
+    AmView.addTermDefinitionTableRows(model, model.termDefinitions, $("#termDefinitionsTable").find('tbody'));
+    AmView.addTermDefinitionTableRows(model, model.constraintDefinitions, $("#constraintDefinitionsTable").find('tbody'));
+
+    $("#termDefinitionsTable").treetable();
+    $("#constraintDefinitionsTable").treetable();
+
+    $(function () {
+        $("#tabs").tabs();
+    });
+
+</script>
+</body>
+</html>
