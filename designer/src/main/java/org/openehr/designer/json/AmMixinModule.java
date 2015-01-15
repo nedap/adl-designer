@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.openehr.am.AmObject;
 import org.openehr.jaxb.am.ArchetypeOntology;
 import org.openehr.jaxb.rm.AuthoredResource;
+import org.openehr.jaxb.rm.ResourceAnnotations;
 import org.openehr.rm.RmObject;
 
 /**
@@ -36,7 +37,7 @@ public class AmMixinModule extends SimpleModule {
         context.setMixInAnnotations(AmObject.class, AmObjectMixin.class);
         context.setMixInAnnotations(RmObject.class, AmObjectMixin.class);
         context.setMixInAnnotations(ArchetypeOntology.class, ArchetypeOntologyMixin.class);
-        context.setMixInAnnotations(AuthoredResource.class, AuthoredResourceMixin.class);
+        context.setMixInAnnotations(ResourceAnnotations.class, ResourceAnnotationsMixin.class);
         super.setupModule(context);
     }
 }

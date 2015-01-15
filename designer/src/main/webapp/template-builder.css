@@ -120,3 +120,11 @@ tr.selected {
     font-size: 11px;
     color: #444444;
 }
+
+.annotations-edit-table {
+    width: 100%;
+}
+
+.annotations-edit-table input {
+    width: 100%;
+}

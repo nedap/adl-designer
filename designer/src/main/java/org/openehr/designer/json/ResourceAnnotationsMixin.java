@@ -22,19 +22,19 @@ package org.openehr.designer.json;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.openehr.jaxb.rm.AnnotationSet;
-import org.openehr.jaxb.rm.AuthoredResource;
+import org.openehr.jaxb.rm.ResourceAnnotationNodes;
+import org.openehr.jaxb.rm.ResourceAnnotations;
 
 import java.util.List;
 
 /**
  * @author Marko Pipan
  */
-public class AuthoredResourceMixin extends AuthoredResource{
-    @JsonDeserialize(converter = AnnotationSetMapToListConverter.class)
-    @JsonSerialize(converter = AnnotationSetListToMapConverter.class)
+public class ResourceAnnotationsMixin extends ResourceAnnotations {
+    @JsonDeserialize(converter = ResourceAnnotationNodesMapToListConverter.class)
+    @JsonSerialize(converter = ResourceAnnotationNodesListToMapConverter.class)
     @Override
-    public List<AnnotationSet> getAnnotations() {
-        return super.getAnnotations();
+    public List<ResourceAnnotationNodes> getItems() {
+        return super.getItems();
     }
 }

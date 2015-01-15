@@ -889,7 +889,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                                       children: []
                                   };
                                   newTupleConstraint.children.push(buildNewTupleObjectConstraint(newTupleConstraint, rmType));
-                                  if (!cons.children) cons.children=[];
+                                  if (!cons.children) cons.children = [];
                                   cons.children.push(newTupleConstraint);
 
                                   modelNode.modified = true;
@@ -1330,18 +1330,121 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             }
         }
         function appendAnnotationsElement() {
-            var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath);
-            if (parentAnnotations) {
-                appendHeader("Annotations", function () {
 
-                });
-                for (var key in parentAnnotations) {
-                    appendRowString(key, parentAnnotations[key]);
+            // lang, key, value
+            function buildJoinedAnnotations() {
+                var result = AmUtils.clone(modelNode.annotations) || {};
+                var languages = modelNode.archetypeModel.allLanguages();
+                for (var i in languages) {
+                    var lang = languages[i];
+                    if (!result[lang]) {
+                        result[lang] = {};
+                    }
+                    var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath, lang) || {};
+                    for (var key in parentAnnotations) {
+                        if (!result[lang][key]) {
+                            result[lang][key] = parentAnnotations[key];
+                        }
+                    }
                 }
+                return result;
+            }
+
+            function addAnnotationRow(targetTable, lang, key, value, editable) {
+                var tr = $("<tr>");
+                var td = $("<td>");
+                input = $("<input>").data("lang", lang).data("key", key).data("field", "key").attr("name", lang + "-" + key).attr("value",
+                                                                                                                                  key);
+                if (!editable) {
+                    input.prop("disabled", true);
+                }
+                td.append(input);
+                tr.append(td);
+                td = $("<td>");
+                input = $("<input>").data("lang", lang).data("key", key).data("field", "value").attr("name", lang + "-" + key).attr("value",
+                                                                                                                                    value);
+                td.append(input);
+
+                tr.append(td);
+                targetTable.append(tr);
+            }
+
+
+            var joinedAnnotations = buildJoinedAnnotations();
+
+
+            appendHeader("Annotations", function () {
+                var body = $("<div>");
+                var languages = modelNode.archetypeModel.allLanguages();
+                for (var i in languages) {
+                    var lang = languages[i];
+
+                    var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath, lang) || {};
+
+                    var langDiv = $("<div>");
+                    var langHeader = $("<div>").append($("<span>").text(lang));
+                    langHeader.append($("<div>").attr("class", "open-details-panel").append(
+                      $("<button>").attr("class", "open-details").text("+").data("lang", lang).click(function (addAnnotationClickEvent) {
+                          var lang = $(this).data("lang");
+                          var langTable = body.find("table[data-lang='" + lang + "']");
+                          addAnnotationRow(langTable, lang, "", "", true);
+                      })
+                    ));
+
+                    langDiv.append(langHeader);
+
+                    var langBody = $("<div>");
+                    var langTable = $("<table>").attr("class", "annotations-edit-table").attr("data-lang", lang);
+
+                    for (var key in joinedAnnotations[lang] || {}) {
+                        addAnnotationRow(langTable, lang, key, joinedAnnotations[lang][key], parentAnnotations[key] === undefined);
+                    }
+                    langBody.append(langTable);
+                    langDiv.append(langBody);
+                    body.append(langDiv);
+                }
+
+                TemplateBuilder.openSimpleDialog({
+                                                     title: "Annotations",
+                                                     content: body,
+                                                     width: 800,
+                                                     callback: function (eContent) {
+                                                         var tables = eContent.find("table");
+                                                         var newAnnotations = {};
+                                                         for (var i = 0; i < tables.length; i++) {
+                                                             var table = $(tables[i]);
+                                                             var lang = table.data("lang");
+                                                             var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath, lang) || {};
+
+                                                             newAnnotations[lang] = {};
+                                                             table.find('tr').each(function () {
+                                                                 var tr = $(this);
+                                                                 var inputs = tr.find('input');
+                                                                 var key = $(inputs[0]).val().trim();
+                                                                 var value = $(inputs[1]).val().trim();
+
+                                                                 if (key!=="" && parentAnnotations[key]!==value) {
+                                                                     newAnnotations[lang][key] = value;
+                                                                 }
+                                                             });
+                                                         }
+
+                                                         modelNode.annotations=newAnnotations;
+                                                         modelNode.modified = true;
+                                                         TemplateBuilder.redrawNode(modelNode);
+                                                     }
+                                                 })
+
+
+            });
+            for (var key in joinedAnnotations[modelNode.archetypeModel.defaultLanguage]) {
+                appendRowString(key, joinedAnnotations[modelNode.archetypeModel.defaultLanguage][key]);
             }
         }
 
-        appendAnnotationsElement();
+        if (modelNode.type!=="attribute") {
+            appendAnnotationsElement();
+        }
 
         appendHeader("Technical");
         appendRowString("Type", modelNode.rmType);
@@ -1414,6 +1517,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             function fillCommonItemFields(result, model) {
                 result.terms = extractNameTerms(model);
                 result.nodeId = model.data.node_id;
+                result.annotations=model.annotations;
                 if (!AmInterval.equals(AmInterval.occurrences(model.current.occurrences),
                                        AmInterval.occurrences(model.original.occurrences)))
                 {
@@ -1582,7 +1686,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                     dialogElement.find(".error").html("&nbsp;");
                 }
             } catch (e) {
-                if (typeof e==="string") {
+                if (typeof e === "string") {
                     dialogElement.find(".error").html(e);
                 } else {
                     throw e;
@@ -1800,6 +1904,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                       }
                       modelNode.terms = tom.terms;
                       modelNode.current.name = modelNode.terms[modelNode.archetypeModel.defaultLanguage].text;
+                      if (tom.annotations) modelNode.annotations=tom.annotations;
 
                       for (var i in tom.items || []) {
                           var itemTom = tom.items[i];

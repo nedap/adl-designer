@@ -95,7 +95,8 @@ var ArchetypeModel = function (data) {
     self.getAnnotation = function(path, language) {
         if (!language) language=self.defaultLanguage;
         if (!data.annotations) return undefined;
-        var langAnnotations = data.annotations[language];
+        if (!data.annotations.items) return undefined;
+        var langAnnotations = data.annotations.items[language];
         if (!langAnnotations) return undefined;
 
         path = AmUtils.getPathSegments(path);
@@ -103,6 +104,15 @@ var ArchetypeModel = function (data) {
             if (AmUtils.pathMatches(aPath, path)) return langAnnotations[aPath];
         }
         return undefined;
+    };
+
+    self.allLanguages = function() {
+        var result = [];
+        result.push(defaultLanguage);
+        for(var i in self.translations) {
+            result.push(self.translations[i]);
+        }
+        return result;
     };
 
 

@@ -21,17 +21,16 @@
 package org.openehr.designer.tom.aom.parser;
 
 import com.google.common.collect.Lists;
-import org.openehr.designer.ArchetypeRepository;
-import org.openehr.designer.ArchetypeRepositoryOverlay;
-import org.openehr.designer.tom.*;
-import org.openehr.designer.tom.constraint.*;
 import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.util.ArchetypeWrapper;
+import org.openehr.designer.ArchetypeRepository;
+import org.openehr.designer.ArchetypeRepositoryOverlay;
+import org.openehr.designer.tom.*;
+import org.openehr.designer.tom.constraint.*;
 import org.openehr.jaxb.am.*;
-import org.openehr.jaxb.rm.MultiplicityInterval;
-import org.openehr.jaxb.rm.TranslationDetails;
+import org.openehr.jaxb.rm.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -96,7 +95,7 @@ public class AomToTomParser {
                 AomToTomContext.Node childNode = new AomToTomContext.Node(context.node());
                 childNode.setPath(path);
                 childNode.setPathFromArchetypeRoot(
-                        firstNonNull(childNode.getPathFromArchetypeRoot(), "") + makeParentPath(path, cObject.getNodeId()));
+                        firstNonNull(childNode.getPathFromArchetypeRoot(), "") + makeNodePath(path, parentNodeId(cObject.getNodeId())));
                 context.push(childNode);
                 target.getItems().add(parseItem(cObject, context));
                 context.pop();
@@ -122,6 +121,7 @@ public class AomToTomParser {
         result.setRmType(cobj.getRmTypeName());
         result.setPath(node.getPath());
         result.setTerms(buildTerms(node.getOverlayArchetype(), cobj.getNodeId()));
+        result.setAnnotations(buildAnnotations(node.getOverlayArchetype(), makeNodePath(node.getPath(), cobj.getNodeId())));
 
         RmType rmType = rmModel.getRmType(cobj.getRmTypeName());
         if (rmType.isFinalType()) {
@@ -150,6 +150,25 @@ public class AomToTomParser {
     }
 
     @Nullable
+    private Map<String, Map<String, String>> buildAnnotations(ArchetypeWrapper archetype, String rmPath) {
+        ResourceAnnotations annotations = archetype.getArchetype().getAnnotations();
+        if (annotations == null || annotations.getItems().isEmpty()) return null;
+
+        Map<String, Map<String, String>> result = new HashMap<>();
+        for (ResourceAnnotationNodes nodes : annotations.getItems()) {
+            nodes.getItems().stream()
+                    .filter(items -> items.getPath().equals(rmPath))
+                    .forEach(items -> {
+                        Map<String, String> itemsMap = items.getItems().stream()
+                                .collect(Collectors.toMap(StringDictionaryItem::getId, StringDictionaryItem::getValue));
+                        result.put(nodes.getLanguage(), itemsMap);
+                    });
+        }
+        if (result.isEmpty()) return null;
+        return result;
+    }
+
+    @Nullable
     private OccurrencesTom parseOccurrencesTom(@Nullable MultiplicityInterval occurrences) {
         if (occurrences == null) return null;
         return new OccurrencesTom(occurrences.getLower(), occurrences.getUpper());
@@ -162,11 +181,17 @@ public class AomToTomParser {
         return nodeId.substring(0, cp);
     }
 
-    private String makeParentPath(String basePath, String nodeId) {
+//    private String makeParentPath(String basePath, String nodeId) {
+//        if (nodeId == null) {
+//            return basePath;
+//        }
+//        return basePath + "[" + parentNodeId(nodeId) + "]";
+//    }
+    private String makeNodePath(String basePath, String nodeId) {
         if (nodeId == null) {
             return basePath;
         }
-        return basePath + "[" + parentNodeId(nodeId) + "]";
+        return basePath + "[" + nodeId + "]";
     }
 
     private ConstraintTom parseConstraint(AomToTomContext context, CObject cobj, CObject parentCObj, CObject flatOverlayCObj) {
@@ -206,7 +231,7 @@ public class AomToTomParser {
     }
 
     private CBooleanTom parseBooleanConstraint(AomToTomContext context, CBoolean cobj, CBoolean parentCObj) {
-        if (cobj==null) return null;
+        if (cobj == null) return null;
         CBooleanTom result = new CBooleanTom();
         result.setRmType(cobj.getRmTypeName());
         result.setFalseValid(cobj.isFalseValid());
@@ -216,7 +241,7 @@ public class AomToTomParser {
     }
 
     private CDurationTom parseDurationConstraint(AomToTomContext context, CDuration cobj, CDuration parentCObj) {
-        if (cobj==null) return null;
+        if (cobj == null) return null;
         CDurationTom result = new CDurationTom();
         result.setRmType(cobj.getRmTypeName());
         result.setRange(cobj.getRange());
@@ -339,9 +364,9 @@ public class AomToTomParser {
             attributes.add(attribute.getRmAttributeName());
             for (CObject cObject : attribute.getChildren()) {
                 final CObject childParentConstraint = AmQuery.find(parentCObj,
-                        makeParentPath(attribute.getRmAttributeName(), cObject.getNodeId()));
+                        makeNodePath(attribute.getRmAttributeName(), parentNodeId(cObject.getNodeId())));
                 final CObject flatOverlayConstraint = AmQuery.get(flatOverlayCObj,
-                        makeParentPath(attribute.getRmAttributeName(), cObject.getNodeId()));
+                        makeNodePath(attribute.getRmAttributeName(), parentNodeId(cObject.getNodeId())));
                 ConstraintTom constraint = parseConstraint(context, cObject, childParentConstraint, flatOverlayConstraint);
                 constraint.setAttribute(attribute.getRmAttributeName());
                 result.getChildren().add(constraint);
@@ -358,7 +383,7 @@ public class AomToTomParser {
 //            CAttributeTuple parentAttributeTuple = getAttributeTuple(parentCObj, cAttributeTuple.getMembers());
 
             TupleConstraintTom tupleConstraintTom = new TupleConstraintTom();
-            tupleConstraintTom.setHasParent(parentCObj!=null);
+            tupleConstraintTom.setHasParent(parentCObj != null);
             tupleConstraintTom.setMembers(
                     parentAttributeTuple.getMembers().stream().map(CAttribute::getRmAttributeName).collect(Collectors.toList()));
             tupleConstraintTom.setChildren(new ArrayList<>());

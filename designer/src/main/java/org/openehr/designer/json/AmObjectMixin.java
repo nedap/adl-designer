@@ -31,4 +31,5 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
               property = "@type")
 @JsonTypeIdResolver(AmTypeIdResolver.class)
 public class AmObjectMixin {
+
 }

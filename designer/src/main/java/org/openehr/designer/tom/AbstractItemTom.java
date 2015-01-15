@@ -45,6 +45,7 @@ abstract public class AbstractItemTom extends AbstractTom {
     private OccurrencesTom occurrences;
     private List<AbstractItemTom> items;
     private String rmType;
+    // language, key, value
     private Map<String, Map<String, String>> annotations;
 
     public OccurrencesTom getOccurrences() {

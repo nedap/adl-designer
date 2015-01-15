@@ -21,8 +21,8 @@
 package org.openehr.designer.json;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.openehr.jaxb.rm.Annotation;
-import org.openehr.jaxb.rm.AnnotationSet;
+import org.openehr.jaxb.rm.ResourceAnnotationNodeItems;
+import org.openehr.jaxb.rm.ResourceAnnotationNodes;
 import org.openehr.jaxb.rm.StringDictionaryItem;
 
 import java.util.ArrayList;
@@ -32,14 +32,14 @@ import java.util.Map;
 /**
  * @author Marko Pipan
  */
-public class AnnotationSetMapToListConverter extends StdConverter<Map, List> {
+public class ResourceAnnotationNodesMapToListConverter extends StdConverter<Map, List> {
     @Override
     public List convert(Map value) {
         Map<String, Map<String, Map<String, String>>> from = value;
-        List<AnnotationSet> result = new ArrayList<>();
+        List<ResourceAnnotationNodes> result = new ArrayList<>();
 
         for (Map.Entry<String, Map<String, Map<String, String>>> cdsEntry : from.entrySet()) {
-            AnnotationSet cds = new AnnotationSet();
+            ResourceAnnotationNodes cds = new ResourceAnnotationNodes();
             cds.setLanguage(cdsEntry.getKey());
             addAnnotations(cds.getItems(), cdsEntry.getValue());
             result.add(cds);
@@ -48,9 +48,9 @@ public class AnnotationSetMapToListConverter extends StdConverter<Map, List> {
         return result;
     }
 
-    private void addAnnotations(List<Annotation> target, Map<String, Map<String, String>> from) {
+    private void addAnnotations(List<ResourceAnnotationNodeItems> target, Map<String, Map<String, String>> from) {
         for (Map.Entry<String, Map<String, String>> atEntry : from.entrySet()) {
-            Annotation at = new Annotation();
+            ResourceAnnotationNodeItems at = new ResourceAnnotationNodeItems();
             at.setPath(atEntry.getKey());
             addStringDictionaryItems(at.getItems(), atEntry.getValue());
             target.add(at);

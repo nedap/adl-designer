@@ -21,19 +21,22 @@
 package org.openehr.designer.tom.aom.builder;
 
 import com.google.common.base.Joiner;
+import org.openehr.adl.am.AmQuery;
+import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.tom.*;
 import org.openehr.designer.tom.constraint.CComplexObjectTom;
-import org.openehr.adl.am.AmQuery;
-import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.jaxb.am.*;
 import org.openehr.jaxb.rm.MultiplicityInterval;
+import org.openehr.jaxb.rm.ResourceAnnotationNodeItems;
+import org.openehr.jaxb.rm.ResourceAnnotationNodes;
+import org.openehr.jaxb.rm.ResourceAnnotations;
 
 import java.util.*;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.openehr.designer.WtUtils.overrideNodeId;
 import static org.openehr.adl.rm.RmObjectFactory.*;
+import static org.openehr.designer.WtUtils.overrideNodeId;
 
 /**
  * @author Marko Pipan
@@ -45,6 +48,7 @@ class TomArchetypesBuilder {
     private DifferentialArchetype archetype;
     private TomConstraintsBuilder constraintsBuilder;
     private final List<String> parentPathSegments = new ArrayList<>();
+    private final List<String> newPathSegments = new ArrayList<>();
 
     public TomArchetypesBuilder(ArchetypeRepository archetypeRepository,
             List<DifferentialArchetype> targetArchetypes) {
@@ -94,14 +98,17 @@ class TomArchetypesBuilder {
         Map<String, CAttribute> existingAttributes = new HashMap<>();
 
         for (AbstractItemTom childTom : firstNonNull(tom.getItems(), Collections.<AbstractItemTom>emptyList())) {
-            String path = childTom.getPath();
+            String parentPath = childTom.getPath();
+            String newPath = childTom.getPath();
             if (childTom.getNodeId() != null) {
-                path += "[" + childTom.getNodeId() + "]";
+                parentPath += "[" + childTom.getNodeId() + "]";
+                newPath += "[" + overrideNodeId(childTom.getNodeId()) + "]";
             }
-            parentPathSegments.add(path);
+            parentPathSegments.add(parentPath);
+            newPathSegments.add(newPath);
 
             CAttribute attribute = existingAttributes.get(childTom.getPath());
-            if (attribute==null) {
+            if (attribute == null) {
                 attribute = new CAttribute();
                 attribute.setDifferentialPath(childTom.getPath());
                 result.getAttributes().add(attribute);
@@ -110,6 +117,7 @@ class TomArchetypesBuilder {
             attribute.getChildren().add(parseItem(childTom));
 
             parentPathSegments.remove(parentPathSegments.size() - 1);
+            newPathSegments.remove(newPathSegments.size() - 1);
         }
     }
 
@@ -140,12 +148,56 @@ class TomArchetypesBuilder {
 
 
     private CObject parseItem(AbstractItemTom tom) {
+        final CObject result;
         if (tom instanceof ArchetypeRootTom) {
-            return parseArchetypeTom((ArchetypeRootTom) tom);
+            result = parseArchetypeTom((ArchetypeRootTom) tom);
         } else if (tom instanceof ItemTom) {
-            return parseItemTom((ItemTom) tom);
+            result = parseItemTom((ItemTom) tom);
+        } else {
+            throw new IllegalStateException("Unknown tom item class: " + tom.getClass().getName());
         }
-        throw new IllegalStateException("Unknown tom item class: " + tom.getClass().getName());
+
+        addAnnotations(result, tom);
+        return result;
+
+    }
+
+    private void addAnnotations(CObject result, AbstractItemTom tom) {
+        if (tom.getAnnotations() == null) return;
+
+        String rmPath = Joiner.on("").join(newPathSegments);
+        for (Map.Entry<String, Map<String, String>> languageEntry : tom.getAnnotations().entrySet()) {
+            String lang = languageEntry.getKey();
+            ResourceAnnotationNodes annotationsSet = getOrCreateAnnotationsSet(lang);
+            annotationsSet.setLanguage(lang);
+            Map<String, String> annotations = languageEntry.getValue();
+            if (!annotations.isEmpty()) {
+                ResourceAnnotationNodeItems annotation = new ResourceAnnotationNodeItems();
+                annotation.setPath(rmPath);
+                for (Map.Entry<String, String> entry : annotations.entrySet()) {
+                    annotation.getItems().add(newStringDictionaryItem(entry.getKey(), entry.getValue()));
+                }
+                annotationsSet.getItems().add(annotation);
+            }
+        }
+    }
+
+    private ResourceAnnotationNodes getOrCreateAnnotationsSet(String lang) {
+        if (archetype.getAnnotations()==null) {
+            archetype.setAnnotations(new ResourceAnnotations());
+        }
+        Optional<ResourceAnnotationNodes> opt = archetype.getAnnotations().getItems().stream()
+                .filter(a -> a.getLanguage().equals(lang))
+                .findFirst();
+
+        if (opt.isPresent()) {
+            return opt.get();
+        } else {
+            ResourceAnnotationNodes result = new ResourceAnnotationNodes();
+            result.setLanguage(lang);
+            archetype.getAnnotations().getItems().add(result);
+            return result;
+        }
     }
 
     private CComplexObject parseItemTom(ItemTom tom) {

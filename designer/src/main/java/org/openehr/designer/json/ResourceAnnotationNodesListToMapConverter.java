@@ -21,8 +21,8 @@
 package org.openehr.designer.json;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.openehr.jaxb.rm.Annotation;
-import org.openehr.jaxb.rm.AnnotationSet;
+import org.openehr.jaxb.rm.ResourceAnnotationNodeItems;
+import org.openehr.jaxb.rm.ResourceAnnotationNodes;
 import org.openehr.jaxb.rm.StringDictionaryItem;
 
 import java.util.LinkedHashMap;
@@ -32,20 +32,20 @@ import java.util.Map;
 /**
  * @author Marko Pipan
  */
-public class AnnotationSetListToMapConverter extends StdConverter<List, Map> {
+public class ResourceAnnotationNodesListToMapConverter extends StdConverter<List, Map> {
 
     @Override
     public Map convert(List value) {
         Map<String, Map<String, Map<String, String>>> result = new LinkedHashMap<>();
-        for (AnnotationSet cds : (List<AnnotationSet>)value) {
+        for (ResourceAnnotationNodes cds : (List<ResourceAnnotationNodes>)value) {
             result.put(cds.getLanguage(), annotationListToMap(cds.getItems()));
         }
         return result;
     }
 
-    private Map<String, Map<String, String>> annotationListToMap(List<Annotation> terms) {
+    private Map<String, Map<String, String>> annotationListToMap(List<ResourceAnnotationNodeItems> terms) {
         Map<String, Map<String, String>> result = new LinkedHashMap<>();
-        for (Annotation term : terms) {
+        for (ResourceAnnotationNodeItems term : terms) {
             result.put(term.getPath(), stringDictionaryItemListToMap(term.getItems()));
         }
         return result;
