@@ -1,0 +1,39 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<div class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{title}}</h4>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <div class="hidden alert alert-danger"></div>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        {{#each buttons}}
+          <button type="button" name="{{name}}" class="{{class}}">{{label}}</button>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</div>

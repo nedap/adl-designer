@@ -18,8 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer;
+package org.openehr.designer.web;
 
+import com.google.common.base.Charsets;
+import org.openehr.adl.util.ArchetypeWrapper;
+import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.ArchetypeRepository;
+import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
@@ -94,6 +100,9 @@ public class WtResourceImpl implements WtResource {
             t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
             t.setFinalType(type.isFinalType());
             t.setDataAttribute(type.getDataAttribute());
+            if (type.getDisplay()!=null) {
+                t.setDisplay(type.getDisplay().toString());
+            }
             if (!type.getAttributes().isEmpty()) {
                 t.setAttributes(new LinkedHashMap<>());
                 for (RmTypeAttribute attribute : type.getAttributes().values()) {
@@ -112,9 +121,10 @@ public class WtResourceImpl implements WtResource {
     @RequestMapping(value = "/tom", method = RequestMethod.POST)
     @Override
     public void saveTom(@RequestBody TemplateTom templateTom) {
-        LOG.info("TOM: {}", templateTom);
         List<DifferentialArchetype> templateArchetypes = new TomTemplateBuilder(archetypeRepository).build(templateTom);
         templateRepository.saveTemplate(templateArchetypes);
+        // try to reload template to see if it's stored ok
+        templateRepository.loadTemplate(templateTom.getArchetypeId());
     }
 
     @RequestMapping(value = "/tom/{templateId}", method = RequestMethod.GET)
@@ -143,5 +153,23 @@ public class WtResourceImpl implements WtResource {
         headers.add("Content-Disposition", "attachment; filename=\"" + opt.getTemplateId() + ".opt\"");
         headers.add("Content-Length", Integer.toString(opt.getContent().length));
         return new ResponseEntity<>(opt.getContent(), headers, HttpStatus.OK);
+    }
+
+
+    @RequestMapping(value = "/export/adlt/{templateId}", method = RequestMethod.GET)
+    @Override
+    public ResponseEntity<byte[]> exportAdlt(@PathVariable String templateId) {
+        List<DifferentialArchetype> archetypes = templateRepository.loadTemplate(templateId);
+        DifferentialArchetype archetype = archetypes.get(0);
+        ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(archetype);
+        String archetypeName = archetypeWrapper.getTermText(archetype.getDefinition().getNodeId());
+
+        byte[] adltContent = TemplateSerializer.serialize(archetypes).getBytes(Charsets.UTF_8);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "text/plain; charset=utf-8");
+        headers.add("Content-Disposition", "attachment; filename=\"" + archetypeName + ".adlt\"");
+        headers.add("Content-Length", Integer.toString(adltContent.length));
+        return new ResponseEntity<>(adltContent, headers, HttpStatus.OK);
     }
 }

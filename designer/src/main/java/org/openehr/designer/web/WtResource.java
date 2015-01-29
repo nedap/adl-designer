@@ -18,8 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer;
+package org.openehr.designer.web;
 
+import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.tom.TemplateTom;
 import org.openehr.jaxb.am.DifferentialArchetype;
@@ -48,4 +50,5 @@ public interface WtResource {
 
     ResponseEntity<byte[]> exportOpt14(String templateId);
 
+    ResponseEntity<byte[]> exportAdlt(String templateId);
 }

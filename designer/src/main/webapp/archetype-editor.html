@@ -1,0 +1,107 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<html>
+<head>
+    <title>Archetype Editor</title>
+
+
+    <!-- jquery -->
+    <script src="lib/jquery/jquery-1.11.1.js"></script>
+    <!-- jquery ui -->
+    <!--<link href="lib/jquery/jquery-ui-1.11.1/jquery-ui.css" rel="stylesheet" type="text/css"/>-->
+    <!--<script src="lib/jquery/jquery-ui-1.11.1/jquery-ui.js"></script>-->
+    <!--<link href="lib/jquery/jquery-ui-1.11.1/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>-->
+
+    <!-- streamjs -->
+    <script src="lib/streamjs-1.3.0/stream.js"></script>
+
+    <!-- jquery jstree -->
+    <link href="lib/jquery/jstree-3.0.9/themes/default/style.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/jquery/jstree-3.0.9/jstree.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/bootstrap-3.3.2/js/bootstrap.js"></script>
+
+    <!-- Handlebars -->
+    <script src="lib/handlebars-v2.0.0.js"></script>
+
+    <!-- Archetype editor -->
+    <script src="js/util.js"></script>
+    <script src="js/util-gui.js"></script>
+    <script src="js/am-model.js"></script>
+    <script src="js/archetype-editor.js"></script>
+    <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
+
+
+    <script>
+        $().ready(function () {
+
+            var mytab = $('#archetype-editor-archetype-tabs');
+            var ul = mytab.find('ul');
+
+            var el = ul.find('a[href="#archetype-editor-main-tabs-header"]');
+            el.tab('show');
+            ul.find('a').click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            ArchetypeEditor.initialize();
+
+        });
+    </script>
+</head>
+<body>
+<div id="archetype-editor-main">
+    <div>
+        <!-- main toolbar -->
+        <button class="btn" onclick="ArchetypeEditor.loadArchetype()">Load</button>
+    </div>
+    <div id="archetype-editor-archetype-id-main"></div>
+    <div id="archetype-editor-archetype-tabs">
+        <ul id="mytab" class="nav nav-tabs">
+            <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-header">Header</a></li>
+            <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="archetype-editor-main-tabs-header">
+                <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua, retro synth master
+                    cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro keffiyeh dreamcatcher
+                    synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan
+                    aliquip quis cardigan american apparel, butcher voluptate nisi qui.</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
+                <div class="table-layout">
+                    <div class="table-cell">
+                        <div id="archetype-editor-definition-tree"></div>
+                    </div>
+                    <div id="archetype-editor-definition-node-properties" class="table-cell"></div>
+                    <!--<div class="ui-layout-west">West</div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>

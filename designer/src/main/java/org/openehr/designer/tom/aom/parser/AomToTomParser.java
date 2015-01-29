@@ -25,6 +25,10 @@ import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.util.ArchetypeWrapper;
+import org.openehr.adl.util.walker.AbstractAmVisitor;
+import org.openehr.adl.util.walker.AmConstraintContext;
+import org.openehr.adl.util.walker.ArchetypeWalker;
+import org.openehr.am.AmObject;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ArchetypeRepositoryOverlay;
 import org.openehr.designer.tom.*;
@@ -34,6 +38,7 @@ import org.openehr.jaxb.rm.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -65,11 +70,14 @@ public class AomToTomParser {
         FlatArchetype parentArchetype = archetypeRepository.getFlatArchetype(overlayArchetype.getParentArchetypeId().getValue());
         FlatArchetype flatOverlayArchetype = archetypeRepository.getFlatArchetype(overlayArchetype.getArchetypeId().getValue());
 
+
         AomToTomContext.Node node = new AomToTomContext.Node();
         node.setPath("");
         node.setOverlayArchetype(new ArchetypeWrapper(overlayArchetype));
         node.setParentArchetype(new ArchetypeWrapper(parentArchetype));
         node.setFlatOverlayArchetype(new ArchetypeWrapper(flatOverlayArchetype));
+
+
 
         ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(overlayArchetype);
 
@@ -127,20 +135,20 @@ public class AomToTomParser {
         if (rmType.isFinalType()) {
             final CObject dataCObj, parentDataCObj, flatOverlayDataCObj;
             CObject parentCObj = AmQuery.get(node.getParentArchetype().getArchetype(), node.getPathFromArchetypeRoot());
-            CObject flatOverlayCObj = AmQuery.get(node.getFlatOverlayArchetype().getArchetype(), node.getPathFromArchetypeRoot());
+//            CObject flatOverlayCObj = AmQuery.get(node.getFlatOverlayArchetype().getArchetype(), node.getPathFromArchetypeRoot());
 
             if (rmType.getDataAttribute() != null) {
                 dataCObj = AmQuery.get(cobj, rmType.getDataAttribute());
                 parentDataCObj = AmQuery.get(parentCObj, rmType.getDataAttribute());
-                flatOverlayDataCObj = AmQuery.get(flatOverlayCObj, rmType.getDataAttribute());
+//                flatOverlayDataCObj = AmQuery.get(flatOverlayCObj, rmType.getDataAttribute());
                 result.setDataAttribute(rmType.getDataAttribute());
             } else {
                 dataCObj = cobj;
                 parentDataCObj = parentCObj;
-                flatOverlayDataCObj = flatOverlayCObj;
+//                flatOverlayDataCObj = flatOverlayCObj;
             }
 
-            result.setConstraints(parseConstraint(context, dataCObj, parentDataCObj, flatOverlayDataCObj));
+            result.setConstraints(parseConstraint(context, dataCObj, parentDataCObj));
             result.getConstraints().setAttribute(rmType.getDataAttribute());
         } else if (cobj instanceof CComplexObject) {
             addCComplexObjectChildren(result, context, (CComplexObject) cobj);
@@ -194,10 +202,10 @@ public class AomToTomParser {
         return basePath + "[" + nodeId + "]";
     }
 
-    private ConstraintTom parseConstraint(AomToTomContext context, CObject cobj, CObject parentCObj, CObject flatOverlayCObj) {
+    private ConstraintTom parseConstraint(AomToTomContext context, CObject cobj, CObject parentCObj/*, CObject flatOverlayCObj*/) {
         if (cobj instanceof CComplexObject) {
-            return pareComplexObjectConstraint(context, (CComplexObject) cobj, (CComplexObject) parentCObj,
-                    (CComplexObject) flatOverlayCObj);
+            return pareComplexObjectConstraint(context, (CComplexObject) cobj, (CComplexObject) parentCObj/*,
+                    (CComplexObject) flatOverlayCObj*/);
         }
         if (cobj instanceof CTerminologyCode) {
             return parseTerminologyCodeConstraint(context, (CTerminologyCode) cobj, (CTerminologyCode) parentCObj);
@@ -354,8 +362,8 @@ public class AomToTomParser {
         return result;
     }
 
-    private CComplexObjectTom pareComplexObjectConstraint(AomToTomContext context, CComplexObject cobj, CComplexObject parentCObj,
-            CComplexObject flatOverlayCObj) {
+    private CComplexObjectTom pareComplexObjectConstraint(AomToTomContext context, CComplexObject cobj, CComplexObject parentCObj/*,
+            CComplexObject flatOverlayCObj*/) {
         CComplexObjectTom result = new CComplexObjectTom();
         result.setRmType(cobj.getRmTypeName());
         result.setChildren(new ArrayList<>());
@@ -365,9 +373,9 @@ public class AomToTomParser {
             for (CObject cObject : attribute.getChildren()) {
                 final CObject childParentConstraint = AmQuery.find(parentCObj,
                         makeNodePath(attribute.getRmAttributeName(), parentNodeId(cObject.getNodeId())));
-                final CObject flatOverlayConstraint = AmQuery.get(flatOverlayCObj,
-                        makeNodePath(attribute.getRmAttributeName(), parentNodeId(cObject.getNodeId())));
-                ConstraintTom constraint = parseConstraint(context, cObject, childParentConstraint, flatOverlayConstraint);
+//                final CObject flatOverlayConstraint = AmQuery.get(flatOverlayCObj,
+//                        makeNodePath(attribute.getRmAttributeName(), parentNodeId(cObject.getNodeId())));
+                ConstraintTom constraint = parseConstraint(context, cObject, childParentConstraint/*, flatOverlayConstraint*/);
                 constraint.setAttribute(attribute.getRmAttributeName());
                 result.getChildren().add(constraint);
             }
@@ -403,9 +411,9 @@ public class AomToTomParser {
 
                     final ConstraintTom childConstraint;
                     if (cSpecializedPrimitiveObject != null) {
-                        childConstraint = parseConstraint(context, cSpecializedPrimitiveObject, cParentPrimitiveObject, null);
+                        childConstraint = parseConstraint(context, cSpecializedPrimitiveObject, cParentPrimitiveObject);
                     } else {
-                        childConstraint = parseConstraint(context, cParentPrimitiveObject, cParentPrimitiveObject, null);
+                        childConstraint = parseConstraint(context, cParentPrimitiveObject, cParentPrimitiveObject);
                     }
                     childConstraint.setAttribute(attributeName);
                     objectTupleConstraintTom.getMembers().add(childConstraint);
@@ -503,6 +511,4 @@ public class AomToTomParser {
         }
         return result;
     }
-
-
 }

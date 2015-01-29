@@ -63,6 +63,7 @@ public class ReferenceModelData {
         private Map<String, Attribute> attributes;
         private boolean finalType;
         private String dataAttribute;
+        private String display;
 
         public String getName() {
             return name;
@@ -103,6 +104,14 @@ public class ReferenceModelData {
 
         public void setDataAttribute(String dataAttribute) {
             this.dataAttribute = dataAttribute;
+        }
+
+        public String getDisplay() {
+            return display;
+        }
+
+        public void setDisplay(String display) {
+            this.display = display;
         }
     }
 

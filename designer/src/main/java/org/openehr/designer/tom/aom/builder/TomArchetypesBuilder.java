@@ -32,6 +32,7 @@ import org.openehr.jaxb.rm.ResourceAnnotationNodeItems;
 import org.openehr.jaxb.rm.ResourceAnnotationNodes;
 import org.openehr.jaxb.rm.ResourceAnnotations;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -50,6 +51,9 @@ class TomArchetypesBuilder {
     private final List<String> parentPathSegments = new ArrayList<>();
     private final List<String> newPathSegments = new ArrayList<>();
 
+    private int specializationDepth;
+    private int nextNodeId = 1;
+
     public TomArchetypesBuilder(ArchetypeRepository archetypeRepository,
             List<DifferentialArchetype> targetArchetypes) {
         this.archetypeRepository = archetypeRepository;
@@ -58,6 +62,7 @@ class TomArchetypesBuilder {
 
     DifferentialArchetype build(ArchetypeRootTom archetypeTom) {
         boolean isTemplate = archetypeTom instanceof TemplateTom;
+        specializationDepth = archetypeTom.getNodeId().split("\\.").length;
 
         archetypeParent = archetypeRepository.getFlatArchetype(archetypeTom.getParentArchetypeId());
 
@@ -183,7 +188,7 @@ class TomArchetypesBuilder {
     }
 
     private ResourceAnnotationNodes getOrCreateAnnotationsSet(String lang) {
-        if (archetype.getAnnotations()==null) {
+        if (archetype.getAnnotations() == null) {
             archetype.setAnnotations(new ResourceAnnotations());
         }
         Optional<ResourceAnnotationNodes> opt = archetype.getAnnotations().getItems().stream()
@@ -261,6 +266,24 @@ class TomArchetypesBuilder {
 
         result.setArchetypeRef(overlayArchetype.getArchetypeId().getValue());
         result.setRmTypeName(tom.getRmType());
+        result.setNodeId(overlayArchetype.getDefinition().getNodeId());
         return result;
+    }
+
+    private String newSpecializedNodeId(@Nullable String parentNode) {
+        StringBuilder result;
+        int specialization;
+        if (parentNode == null) {
+            result = new StringBuilder("id");
+            specialization = 0;
+        } else {
+            result = new StringBuilder(parentNode);
+            specialization = parentNode.split("\\.").length - 1;
+        }
+        for (; specialization < specializationDepth; specialization++) {
+            result.append("0.");
+        }
+        result.append(nextNodeId++);
+        return result.toString();
     }
 }

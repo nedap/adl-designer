@@ -154,16 +154,17 @@ AmUtils = {
     pathMatches: function (path, candidate) {
 
         function segmentMatches(path, candidate) {
-            if (path.attribute!==candidate.attribute) return false;
-            if (path.nodeId!==undefined) {
-                if (path.nodeId!==candidate.nodeId) return false;
+            if (path.attribute !== candidate.attribute) return false;
+            if (path.nodeId !== undefined) {
+                if (path.nodeId !== candidate.nodeId) return false;
             }
             return true;
         }
+
         path = AmUtils.getPathSegments(path);
         candidate = AmUtils.getPathSegments(candidate);
 
-        if (path.length!=candidate.length) return false;
+        if (path.length != candidate.length) return false;
         for (var i in path) {
             if (!segmentMatches(path[i], candidate[i])) return false;
         }
@@ -191,8 +192,11 @@ AmUtils = {
         return Math.floor((1 + Math.random()) * 0x10000)
           .toString(16)
           .substring(1);
-    }
+    },
 
+    random8: function () {
+        return AmUtils.random4() + AmUtils.random4();
+    }
 };
 
 
@@ -276,6 +280,17 @@ var AmInterval = {
                (self.upper != undefined ? String(self.upper) : "*");
     },
 
+    toContainedString: function (self) {
+        var result = "";
+        result += self.lower_included ? "[" : "(";
+        result += self.lower_unbounded ? "*" : self.lower;
+        result +="..";
+        result += self.upper_unbounded ? "*" : self.upper;
+        result += self.upper_included ? "]" : ")";
+        return result;
+    },
+
+
     parseNumberInterval: function (text) {
         var occ = {
             "lower_included": true,
@@ -356,7 +371,9 @@ var CountdownLatch = function (count) {
 
 
     this.execute = function (callback) {
-        callbacks.push(callback);
+        if (callback) {
+            callbacks.push(callback);
+        }
         if (currentCount > count) {
             executeCallbacks();
         }
