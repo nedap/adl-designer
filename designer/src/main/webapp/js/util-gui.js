@@ -23,6 +23,12 @@ var GuiUtils = (function () {
 
     var compiledHandlebarTemplates = {};
 
+    var nextGeneratedId = 0;
+
+    my.generateId = function () {
+        return "gid_" + (nextGeneratedId++).toString(36);
+    };
+
     my.applyTemplate = function (path, context, callback) {
         function applyTemplateAndCallback(template) {
             var html = template(context);
@@ -50,13 +56,13 @@ var GuiUtils = (function () {
                     path: path
                 }
             }
-            my.loadTemplates(pathobj.path, pipePos>=0, function() {
+            my.loadTemplates(pathobj.path, pipePos >= 0, function () {
                 applyTemplateAndCallback(compiledHandlebarTemplates[path])
             })
         }
     };
 
-    my.loadTemplates = function(path, multi, callback) {
+    my.loadTemplates = function (path, multi, callback) {
         function splitTemplateStringById(string) {
             var hbs_id_re = /^{>.+}\s*$/;
 
@@ -83,7 +89,7 @@ var GuiUtils = (function () {
         }
 
         $.ajax({
-                   url: "templates/"+path+".hbs",
+                   url: "templates/" + path + ".hbs",
                    success: function (data) {
                        if (multi) {
                            var templatesById = splitTemplateStringById(data);
@@ -127,7 +133,7 @@ var GuiUtils = (function () {
             content = $(content);
         }
 
-        GuiUtils.applyTemplate("dialog-frame", frameContext, function (html) {
+        GuiUtils.applyTemplate("dialog-common|frame", frameContext, function (html) {
             var dialogElement = $(html);
             var modalBody = dialogElement.find(".modal-body");
             modalBody.append(content);
@@ -137,16 +143,12 @@ var GuiUtils = (function () {
                 var buttonName = $(this).attr('name');
 
                 if (options.callback) {
-                    try {
-                        options.callback(content, buttonName)
-                    } catch (e) {
-                        if (typeof e === "string") {
+                        var result = options.callback(content, buttonName)
+                        if (typeof result === "string") {
                             var alertDiv = modalFooter.find(".alert");
-                            alertDiv.text(e).removeClass("hidden");
+                            alertDiv.text(result).removeClass("hidden");
                             return;
                         }
-                        throw e;
-                    }
                 }
                 dialogElement.modal('hide');
             });
@@ -155,6 +157,19 @@ var GuiUtils = (function () {
                 dialogElement.remove();
             });
             dialogElement.modal();
+        });
+    };
+
+    my.openSingleTextInputDialog = function (options) {
+
+        var context = {
+            id: my.generateId(),
+            label: options.inputLabel || options.title,
+            value: options.inputValue
+        };
+        my.applyTemplate("dialog-common|singleTextInput", context, function (content) {
+            options.content = content;
+            my.openSimpleDialog(options);
         });
     };
 

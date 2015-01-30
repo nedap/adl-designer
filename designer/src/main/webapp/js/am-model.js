@@ -48,6 +48,71 @@ var AOM = (function () {
         }
     };
 
+    my.RmPath = function(path) {
+        var self=this;
+
+        function parsePathSegments(path) {
+            if (Array.isArray(path)) {
+                return path;
+            }
+
+            if (path.length > 0 && path.charAt(0) === "/") {
+                path = path.substring(1);
+            }
+            var result = [];
+            var strSegments = path.split("/");
+            for (var pathPartIndex in strSegments) {
+                var pathPart = strSegments[pathPartIndex];
+                var spos = pathPart.indexOf("[");
+                if (spos >= 0) {
+                    var epos = pathPart.lastIndexOf("]");
+                    var segment = {};
+                    segment.attribute = pathPart.substring(0, spos);
+                    segment.node_id = pathPart.substring(spos + 1, epos).trim();
+                    result.push(segment);
+                } else {
+                    result.push({attribute: pathPart});
+                }
+            }
+            return result;
+        }
+
+
+        self.getParentPath = function() {
+            if (self.segments.length<1) return undefined;
+
+            var newSegments = AmUtils.clone(self.segments);
+            newSegments.splice(newSegments.length-1,1);
+
+            return new my.RmPath(newSegments);
+        };
+
+        self.getChildPath = function() {
+            if (self.segments.length<1) return undefined;
+            var newSegments = AmUtils.clone(self.segments);
+            newSegments.splice(0,1);
+
+            return new my.RmPath(newSegments);
+        };
+
+        self.toString = function() {
+            function segmentToString(segment) {
+                var result="/"+segment.attribute;
+                if (segment.node_id) {
+                    result += "["+segment.node_id+"]";
+                }
+                return result;
+            }
+            var result = "";
+            for (var i in self.segments) {
+                result += segmentToString(self.segments[i]);
+            }
+            return result;
+        };
+
+        self.segments = parsePathSegments(path);
+    };
+
     my.ArchetypeModel = function (data) {
 
         var defaultLanguage = data.original_language.code_string;
@@ -247,6 +312,32 @@ var AOM = (function () {
                 result.push(commonAttributes); // just use common attributes, if no tuples are defined
             }
             return result;
+        };
+
+        self.removeAttribute = function (cons, attributeName) {
+            for (var i in cons.attributes || []) {
+                var attribute = cons.attributes[i];
+                if (attribute.rm_attribute_name === attributeName) {
+                    cons.attributes.splice(i, 1);
+                    break;
+                }
+            }
+
+            for (var i in cons.attribute_tuples || []) {
+                var attribute_tuple = cons.attribute_tuples[i];
+                for (var j in attribute_tuple.members) {
+                    if (attribute_tuple.members[j].rm_attribute_name === attributeName) {
+                        attribute_tuple.members.splice(j, 1);
+                        for (var k in attribute_tuple.children) {
+                            attribute_tuple.children[k].members.splice(j, 1);
+                        }
+                        break;
+                    }
+                }
+                if (attribute_tuple.members.length==0) {
+                    cons.attribute_tuples.splice(i, 1);
+                }
+            }
         };
 
         enrichArchetypeData();

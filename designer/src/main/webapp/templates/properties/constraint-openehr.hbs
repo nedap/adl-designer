@@ -31,16 +31,21 @@
             </select>
         </div>
         <div class="table-cell right">
-            <button class="btn btn-default">-</button>
-            <button class="btn btn-default">+</button>
+            <button id="{{units_id}}_remove" class="btn btn-default">-</button>
+            <button id="{{units_id}}_add" class="btn btn-default">+</button>
         </div>
     </div>
     {{#each unit_panels}}
     <div class="unit_panel" id="{{panel_id}}">
-        <fieldset>
-            <legend>magnitude</legend>
-            <div id="{{magnitude.panel_id}}"></div>
-        </fieldset>
+        <div id="{{magnitude.panel_id}}"></div>
+        <label for="{{precision.id}}_value">Limit decimal places</label>
+
+        <div class="input-group">
+              <span class="input-group-addon">
+                  <input id="{{precision.id}}_enabled" type="checkbox">
+              </span>
+            <input id="{{precision.id}}_value" type="number" class="form-control input-sm" value="{{precision.value}}">
+        </div>
     </div>
     {{/each}}
 </div>

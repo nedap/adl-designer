@@ -60,6 +60,7 @@ var ArchetypeEditor = (function () {
           };
 
           self.showConstraintProperties = function (cons) {
+
               self.clear();
               if (!cons) return;
               var isEditable = archetypeModel.isNodeSpecialized(cons);
@@ -69,10 +70,25 @@ var ArchetypeEditor = (function () {
                   occurrences: AmInterval.toString(cons.occurrences)
               };
               GuiUtils.applyTemplate("properties/constraint-common", commonContext, targetElement);
+
               var handler = getRmTypeHandler(cons.rm_type_name);
               if (!handler) return;
+
+              var customDiv = $("<div>");
+              targetElement.append(customDiv);
+
               var context = handler.createContext(archetypeModel, cons);
-              handler.show(context, targetElement);
+
+              var guiContext = {
+                  redraw: function () {
+                      handler.updateContext(context, customDiv);
+                      customDiv.empty();
+                      handler.show(context, customDiv, guiContext);
+                  },
+                  archetypeModel: archetypeModel
+              };
+
+              handler.show(context, customDiv, guiContext);
 
               targetElement.find("input").prop("disabled", !isEditable);
               targetElement.find("select").prop("disabled", !isEditable);
@@ -250,58 +266,165 @@ var ArchetypeEditor = (function () {
           self.name = "openEHR";
 
           self.handlers = {};
-          self.handlers["DV_QUANTITY"] = {
-              createContext: function (archetypeModel, cons) {
+          self.handlers["DV_QUANTITY"] = new function () {
+              var handler = this;
+
+              handler.createContext = function (archetypeModel, cons) {
                   var tupleConstraints = archetypeModel.getAttributesTuple(cons, ["units", "magnitude", "precision"]);
 
                   var context = {
-                      panel_id: AmUtils.random8(),
+                      panel_id: GuiUtils.generateId(),
                       type: "DV_QUANTITY",
-                      units_id: AmUtils.random8(),
+                      units_id: GuiUtils.generateId(),
                       unit_panels: []
                   };
                   for (var i in tupleConstraints) {
                       var tupleConstraint = tupleConstraints[i];
+                      var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
+                                                tupleConstraint.precision.list.length > 0);
+                      var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
+                      if (units === undefined) continue;
+
                       var panel = {
-                          panel_id: AmUtils.random8(),
-                          units: (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : "",
-                          magnitude: getRmTypeHandler("C_REAL").createContext(archetypeModel, tupleConstraint.magnitude)
+                          panel_id: GuiUtils.generateId(),
+                          magnitude: getRmTypeHandler("C_REAL").createContext(archetypeModel, tupleConstraint.magnitude),
+                          units: units,
+                          precision: {
+                              id: GuiUtils.generateId(),
+                              enabled: precisionEnabled,
+                              value: precisionEnabled ? tupleConstraint.precision.list[0] : 0
+                          }
+
                       };
                       context.unit_panels.push(panel);
                   }
                   return context;
-              },
+              };
 
-              show: function (context, targetElement) {
-                  GuiUtils.applyTemplate("properties/constraint-openehr|DV_QUANTITY", context, function(generatedDom) {
+              handler.show = function (context, targetElement, guiContext) {
+                  GuiUtils.applyTemplate("properties/constraint-openehr|DV_QUANTITY", context, function (generatedDom) {
+
+                      function enablePrecisionInput(enable, precision_id) {
+                          targetElement.find("#" + precision_id + "_enabled").prop('checked', enable);
+                          targetElement.find("#" + precision_id + "_value").prop('disabled', !enable);
+                      }
 
                       function showUnitPanel(panel_id) {
-                          for (var i in context.unit_panels) {
-                              var panel = context.unit_panels[i];
-                              var panelElement = targetElement.find("#"+panel.panel_id);
-                              if (panel.panel_id===panel_id) {
+                          Stream(context.unit_panels).forEach(function (panel) {
+                              var panelElement = targetElement.find("#" + panel.panel_id);
+                              if (panel.panel_id === panel_id) {
                                   panelElement.show();
                               } else {
                                   panelElement.hide();
                               }
+                          });
+                      }
+
+                      function removeUnitPanel(panel_id) {
+                          for (var i in context.unit_panels) {
+                              var panel = context.unit_panels[i];
+                              if (panel.panel_id === panel_id) {
+                                  context.unit_panels.splice(i, 1);
+                                  break;
+                              }
                           }
                       }
+
                       generatedDom = $(generatedDom);
+                      generatedDom.find("#" + context.units_id + "_remove").click(function () {
+                          if (context.unit_panels.length === 0) return;
+                          var panel_id = targetElement.find("#" + context.units_id).val();
+                          removeUnitPanel(panel_id);
+                          guiContext.redraw();
+                      });
+                      generatedDom.find("#" + context.units_id + "_add").click(function () {
+                          GuiUtils.openSingleTextInputDialog(
+                            {
+                                title: "Add unit constraint",
+                                inputLabel: "Enter unit",
+                                callback: function (content) {
+                                    var newUnit = content.find("input").val().trim();
+                                    if (newUnit.length === 0) return;
+                                    var existingUnitPanel = Stream(context.unit_panels)
+                                      .filter({units: newUnit})
+                                      .findFirst().orElse();
+                                    if (existingUnitPanel) {
+                                        return "Unit " + newUnit + " already exists";
+                                    }
+                                    var panel = {
+                                        panel_id: GuiUtils.generateId(),
+                                        magnitude: getRmTypeHandler("C_REAL").createContext(guiContext.archetypeModel),
+                                        units: newUnit,
+                                        precision: {
+                                            id: GuiUtils.generateId(),
+                                            enabled: false,
+                                            value: 0
+                                        }
+                                    };
+                                    context.unit_panels.push(panel);
+                                    guiContext.redraw();
+
+                                }
+                            })
+                      });
+
+
                       applySubModules(generatedDom, context);
                       targetElement.append(generatedDom);
 
-                      var unitsSelect = generatedDom.find("#"+context.units_id);
-                      unitsSelect.change(function() {
+                      var unitsSelect = generatedDom.find("#" + context.units_id);
+                      unitsSelect.change(function () {
                           showUnitPanel(unitsSelect.find("option:selected").val());
                       });
 
-                      if (context.unit_panels.length>0) {
-                          showUnitPanel(context.unit_panels[0].panel_id);
+                      setTimeout(function () { // should work directly, but only does for the first time !?
+                          Stream(context.unit_panels).forEach(function (u) {
+                              var checkbox = targetElement.find("#" + u.precision.id + "_enabled");
+                              enablePrecisionInput(u.precision.enabled, u.precision.id);
+                              checkbox.change(function (e) {
+                                  enablePrecisionInput($(this).prop('checked'), u.precision.id)
+                              })
+                          });
+                      }, 10);
+
+
+                      Stream(context.unit_panels).findFirst().ifPresent(function (u) {
+                          showUnitPanel(u.panel_id);
+                      });
+                  });
+              };
+
+              handler.updateContext = function (context, targetElement) {
+                  Stream(context.unit_panels).forEach(function (up) {
+                      var targetPanel = targetElement.find('#' + up.panel_id);
+                      if (targetPanel.length > 0) {
+                          getRmTypeHandler("C_REAL").updateContext(up.magnitude, targetPanel);
+                          up.precision.enabled = targetPanel.find('#' + up.precision.id + '_enabled').prop('checked');
+                          up.precision.value = targetPanel.find('#' + up.precision.id + '_value').val();
                       }
                   });
-              }
+              };
 
-          }
+              handler.updateConstraint = function (archetypeModel, context, cons) {
+                  cons = cons || {
+                      "@type": "C_COMPLEX_OBJECT",
+                      rm_type_name: "DV_QUANTITY"
+                  };
+
+                  archetypeModel.removeAttribute(cons, "units");
+                  archetypeModel.removeAttribute(cons, "magnitude");
+                  archetypeModel.removeAttribute(cons, "precision");
+
+                  // todo create tuple of units, magnitude, precision
+
+
+                return cons;
+              };
+
+
+              return handler;
+
+          }();
 
       };
 
@@ -310,35 +433,61 @@ var ArchetypeEditor = (function () {
           self.name = "primitives";
 
           self.handlers = {};
-          self.handlers["C_REAL"] = {
-              createContext: function (archetypeModel, cons) {
+          self.handlers["C_REAL"] = new function () {
+              var handler = this;
+              handler.createContext = function (archetypeModel, cons) {
                   cons = cons || {};
                   var context = {
-                      "panel_id": AmUtils.random8(),
+                      "panel_id": GuiUtils.generateId(),
                       "type": "C_REAL"
                   };
-                  context.range_id = AmUtils.random8();
+                  context.range_id = GuiUtils.generateId();
                   context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
-                  context.assumed_value_id = AmUtils.random8();
+                  context.assumed_value_id = GuiUtils.generateId();
                   context.assumed_value = cons.assumed_value != undefined ? String(cons.assumed_value) : "";
 
                   return context;
-              },
+              };
 
-
-              show: function (context, targetElement) {
+              handler.show = function (context, targetElement) {
                   GuiUtils.applyTemplate("properties/constraint-primitive|C_REAL", context, targetElement);
-              }
-          }
+              };
+
+              handler.updateContext = function (context, targetElement) {
+                  context.range = targetElement.find('#' + context.range_id).val();
+                  context.assumed_value = targetElement.find('#' + context.assumed_value_id).val().trim();
+                  if (context.assumed_value.length > 0) {
+                      context.assumed_value = Number(context.assumed_value);
+                  } else {
+                      context.assumed_value = undefined;
+                  }
+              };
+
+              handler.updateConstraint = function (archetypeModel, context, cons) {
+                  cons = cons || {
+                      "@type": "C_REAL",
+                      "rm_type_name": "C_REAL"
+                  };
+
+                  cons.assumed_value = context.assumed_value;
+                  cons.range = AmInterval.parseContainedString(context.range);
+                  if (cons.range) {
+                      cons.range["@type"] = "INTERVAL_OF_REAL";
+                  }
+                  if (cons.range.upper === undefined && cons.range.lower === undefined) cons.range = undefined;
+                  return cons;
+              };
+
+              return handler;
+          }();
       };
 
 
       my.initialize = function (callback) {
-          var latch = new CountdownLatch(3);
+          var latch = new CountdownLatch(2);
           latch.execute(callback);
           my.referenceModel = new AOM.ReferenceModel(latch.countDown);
           my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
-          GuiUtils.loadTemplates("properties/constraint-primitive", true, latch.countDown);
 
           // add rm module handlers
           my.addRmModule(new my.OpenEhrModule());
@@ -346,7 +495,6 @@ var ArchetypeEditor = (function () {
       };
 
       return my;
-  }
-  ()
+  }()
   )
   ;

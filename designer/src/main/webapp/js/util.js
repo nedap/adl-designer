@@ -126,6 +126,7 @@ AmUtils = {
         return occ;
     },
 
+    // @deprecated, replaced by AOM.RmPath
     getPathSegments: function (path) {
         if (Array.isArray(path)) {
             return path;
@@ -284,10 +285,19 @@ var AmInterval = {
         var result = "";
         result += self.lower_included ? "[" : "(";
         result += self.lower_unbounded ? "*" : self.lower;
-        result +="..";
+        result += "..";
         result += self.upper_unbounded ? "*" : self.upper;
         result += self.upper_included ? "]" : ")";
         return result;
+    },
+
+    parseContainedString: function (str) {
+        if (str === undefined) return undefined;
+        str = str.trim();
+        var interval = AmInterval.parseNumberInterval(str.substring(1, str.length - 1));
+        interval.lower_included = str[0] === '[' && interval.lower !== undefined;
+        interval.upper_included = str[str.length - 1] === ']' && interval.upper !== undefined;
+        return interval;
     },
 
 
@@ -304,14 +314,14 @@ var AmInterval = {
             occ.lower_unbounded = true;
             occ.lower_included = true;
         } else {
-            occ.lower = parseInt(splits[0]);
+            occ.lower = Number(splits[0]);
             if (occ.lower === undefined) return undefined;
         }
         if (splits[1] === "*") {
             occ.upper_unbounded = true;
             occ.upper_included = false;
         } else {
-            occ.upper = parseInt(splits[1]);
+            occ.upper = Number(splits[1]);
             if (occ.upper === undefined) return undefined;
         }
 
