@@ -113,6 +113,91 @@ var AOM = (function () {
         self.segments = parsePathSegments(path);
     };
 
+    my.RmPath.of=function(from) {
+        if (from instanceof my.RmPath) return from;
+        return new my.RmPath(from);
+    };
+
+    my.AmQuery = function() {
+        var self=this;
+
+        // id1.1,id1 -> true, id1,id1.1=false, id1,id2=false
+        function isNodeIdSameOrSpecialization(candidate, match) {
+            if (match===undefined) return true;
+            if (candidate===undefined) return false;
+            if (candidate===match) return true;
+            if (candidate.length>match.length && candidate.substring(0, match.length+1)===candidate+".") return true;
+            return false;
+        }
+        function attributeMatches(attribute, segment) {
+            return attribute.rm_attribute_name===segment.attribute;
+        }
+        function constraintMatches(cons, segment) {
+            return isNodeIdSameOrSpecialization(cons.node_id, segment.node_id);
+        }
+
+        function findChildConstrains(cons, segment) {
+            var result=[];
+
+            for (var i in cons.attributes || []) {
+                var attribute = cons.attributes[i];
+                if (attributeMatches(attribute, segment)) {
+                    for (var j in attribute.children || []) {
+                        var childCons = attribute.children[j];
+                        if (constraintMatches(childCons, segment)) {
+                            result.push(childCons);
+                        }
+                    }
+                }
+            }
+
+            for (var i in cons.attribute_tuples || []) {
+                var attribute_tuple = cons.attribute_tuples[i];
+                for (var j in attribute_tuple.members) {
+                    var attribute = cons.attributes[j];
+                    if (attributeMatches(attribute, segment)) {
+                        for (var k in attribute_tuple.children) {
+                            var object_tuple=attribute_tuple.children[k];
+                            var childCons = object_tuple.members[j];
+                            if (constraintMatches(childCons, segment)) {
+                                result.push(childCons);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         *
+         * @param cons constraints archetype node that is the root for search
+         * @param rmPath {RmPath} path relative to the constraint
+         * @returns {*[]} [] list of all nodes that match the path, empty list if none
+         */
+        self.findAll = function (cons, rmPath) {
+            rmPath = my.RmPath.of(rmPath);
+            var matches=[cons];
+            for (var segment_index in rmPath.segments) {
+                var segment = rmPath.segments[segment_index];
+                var roots = matches;
+                matches = [];
+                for (var i in roots) {
+                    matches.push.apply(matches, findChildConstrains(roots[i], segment));
+                }
+            }
+            return matches;
+        };
+
+        self.get = function(cons, rmPath) {
+            var matches = self.findAll(cons, rmPath);
+            if (matches.length===0) return undefined;
+            return matches[0];
+        };
+
+        return self;
+    }();
+
     my.ArchetypeModel = function (data) {
 
         var defaultLanguage = data.original_language.code_string;

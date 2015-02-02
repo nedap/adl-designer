@@ -76,3 +76,21 @@ describe("RmPath", function() {
 
 });
 
+describe("AmQuery", function() {
+    it("queries on simple path", function() {
+        var matches = AOM.AmQuery.findAll(res.bodyWeight.definition, "/data/events/data/items");
+        expect(matches).not.toBeUndefined();
+        expect(matches.length).toEqual(2);
+        expect(matches[0].node_id).toEqual("id5");
+        expect(matches[1].node_id).toEqual("id25");
+    });
+
+    it("queries with node ids", function() {
+        var matches = AOM.AmQuery.findAll(res.bodyWeight.definition, "/data[id3]/events[id4]/data[id2]/items[id5]");
+        expect(matches).not.toBeUndefined();
+        expect(matches.length).toEqual(1);
+        expect(matches[0].node_id).toEqual("id5");
+    });
+
+});
+
