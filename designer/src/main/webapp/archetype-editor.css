@@ -36,6 +36,9 @@
     font-style: italic;
 }
 
+/* marks the field that represent actual model data (used in constraint properties, to enable save button) */
+.data {}
+
 /* For column layout using tables */
 .table-layout {
     display:table;
@@ -76,4 +79,14 @@ form .table-layout .table-cell {
 #archetype-editor-definition-node-properties {
     width: 300px;
     font-size: 12px;
+}
+
+#archetype-editor-definition-node-properties .footer {
+    padding-top: 20px;
+    text-align: right
+}
+
+#archetype-editor-definition-node-properties .errors {
+    color: #8b0000;
+
 }

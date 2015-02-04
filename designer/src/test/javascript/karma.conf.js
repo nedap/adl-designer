@@ -37,7 +37,8 @@ module.exports = function(config) {
 	  'main/webapp/lib/streamjs-1.3.0/stream.js',
 	  //src
 	  'main/webapp/js/util.js',
-	  'main/webapp/js/am-model.js',
+	  'main/webapp/js/am/am-model.js',
+	  'main/webapp/js/am/am-factory.js',
 
 	  // tests
 	  'test/javascript/**/*.js'

@@ -48,25 +48,21 @@
             handler.updateContext = function (context, targetElement) {
                 context.range = targetElement.find('#' + context.range_id).val();
                 context.assumed_value = targetElement.find('#' + context.assumed_value_id).val().trim();
-                if (context.assumed_value.length > 0) {
-                    context.assumed_value = Number(context.assumed_value);
-                } else {
-                    context.assumed_value = undefined;
-                }
             };
 
-            handler.updateConstraint = function (archetypeModel, context, cons) {
-                cons = cons || {
-                    "@type": "C_REAL",
-                    "rm_type_name": "C_REAL"
-                };
-
-                cons.assumed_value = context.assumed_value;
-                cons.range = AmInterval.parseContainedString(context.range);
-                if (cons.range) {
-                    cons.range["@type"] = "INTERVAL_OF_REAL";
+            handler.updateConstraint = function (archetypeModel, context, cons, errors) {
+                if (typeof context.assumed_value==="string" && context.assumed_value.length>0) {
+                    cons.assumed_value = parseFloat(context.assumed_value);
+                    errors.validate(!isNaN(cons.assumed_value), "Invalid number", "assumed_value" );
                 }
-                if (cons.range.upper === undefined && cons.range.lower === undefined) cons.range = undefined;
+
+                if (context.range === "" || context.range === "(*..*)") {
+                    context.range = undefined;
+                } else {
+                    cons.range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_REAL");
+                    errors.validate(cons.range, "Invalid interval", "range");
+                    if (cons.range && cons.range.upper === undefined && cons.range.lower === undefined) cons.range = undefined;
+                }
                 return cons;
             };
 

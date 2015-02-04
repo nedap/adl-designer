@@ -17,18 +17,28 @@
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
-
+{>top}
 <form>
-<div class="table-layout">
-    <div class="table-row">
-        <div class="table-cell"><label>Node Id</label></div>
-        <div class="table-cell">{{node_id}}</div>
-    </div>
-    <div class="table-row">
-        <div class="table-cell"><label for="occurrences">Occurrences</label></div>
-        <div class="table-cell">
-            <input id="occurrences" type="text" class="form-control input-sm" value="{{occurrences}}"/>
+    <div class="table-layout">
+        <div class="table-row">
+            <div class="table-cell"><label>Node Id</label></div>
+            <div class="table-cell data">{{node_id}}</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell"><label for="occurrences">Occurrences</label></div>
+            <div class="table-cell">
+                <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data" value="{{occurrences}}"/>
+            </div>
         </div>
     </div>
-</div>
 </form>
+
+{>footer}
+<button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+
+{>errors}
+<ul>
+    {{#each errors}}
+        <li>{{location}}: {{error}}</li>
+    {{/each}}
+</ul>

@@ -21,7 +21,6 @@
 var ArchetypeEditor = (function () {
       var my = {};
 
-      var primitiveModule;
       var rmModules = {};
 
 
@@ -51,48 +50,111 @@ var ArchetypeEditor = (function () {
           });
       };
 
-
+      /**
+       *
+       * @param {AOM.EditableArchetypeModel} archetypeModel
+       * @param  targetElement
+       * @constructor
+       */
       var DefinitionPropertiesPanel = function (archetypeModel, targetElement) {
           var self = this;
 
-
-          self.clear = function () {
-              targetElement.html("");
-          };
-
-          self.showConstraintProperties = function (cons) {
-
-              self.clear();
-              if (!cons) return;
-              var isEditable = archetypeModel.isNodeSpecialized(cons);
-
-              var commonContext = {
-                  node_id: cons.node_id,
-                  occurrences: AmInterval.toString(cons.occurrences)
-              };
-              GuiUtils.applyTemplate("properties/constraint-common", commonContext, targetElement);
-
-              var handler = my.getRmTypeHandler(cons.rm_type_name);
-              if (!handler) return;
-
-              var customDiv = $("<div>");
-              targetElement.append(customDiv);
-
-              var context = handler.createContext(archetypeModel, cons);
-
+          function callHandlerShow(context, handler, targetElement) {
               var guiContext = {
                   redraw: function () {
-                      handler.updateContext(context, customDiv);
-                      customDiv.empty();
-                      handler.show(context, customDiv, guiContext);
+                      handler.updateContext(context, targetElement);
+
+                      targetElement.empty();
+                      handler.show(context, targetElement, guiContext);
                   },
                   archetypeModel: archetypeModel
               };
+              handler.show(context, targetElement, guiContext);
+          }
 
-              handler.show(context, customDiv, guiContext);
+          self.clear = function () {
+              targetElement.empty();
+          };
 
-              targetElement.find("input").prop("disabled", !isEditable);
-              targetElement.find("select").prop("disabled", !isEditable);
+
+          self.showConstraintProperties = function (cons) {
+              self.clear();
+              if (!cons) return;
+              var isEditable = archetypeModel.isNodeTopLevel(cons);
+
+              var topDiv = $("<div>");
+              targetElement.append(topDiv);
+
+              var topHandler = my.getRmTypeHandler("top", "@common");
+              var topContext = topHandler.createContext(archetypeModel, cons);
+              callHandlerShow(topContext, topHandler, topDiv);
+
+
+              var handler = my.getRmTypeHandler(cons.rm_type_name);
+
+              var context;
+              if (handler) {
+                  var customDiv = $("<div>");
+                  targetElement.append(customDiv);
+
+                  context = handler.createContext(archetypeModel, cons);
+                  callHandlerShow(context, handler, customDiv);
+              }
+
+              var errorsDiv = $('<div class="errors">');
+              targetElement.append(errorsDiv);
+
+
+              var footerDiv = $('<div class="footer">');
+              targetElement.append(footerDiv);
+
+              var footerContext = {
+                  footer_id: GuiUtils.generateId()
+              };
+
+              GuiUtils.applyTemplate("properties/constraint-common|footer", footerContext, footerDiv);
+
+              // add global handlers
+              var dataElements = targetElement.find(".data");
+              var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
+
+              if (!isEditable) {
+                  dataElements.prop("disabled", true);
+                  dataElements.prop("disabled", true);
+                  saveButton.prop('disabled', false);
+              }
+
+              saveButton.click(function () {
+                  var errors = new AmUtils.Errors();
+
+                  var consClone = AOM.makeEmptyConstrainsClone(cons);
+
+                  topHandler.updateContext(topContext, topDiv);
+                  topHandler.updateConstraint(archetypeModel, topContext, consClone, errors);
+
+                  if (handler) {
+                      handler.updateContext(context, customDiv);
+                      handler.updateConstraint(archetypeModel, context, consClone, errors);
+                  }
+                  errorsDiv.empty();
+                  if (errors.getErrors().length > 0) {
+                      var errorsContext = {errors: errors.getErrors()};
+                      GuiUtils.applyTemplate("properties/constraint-common|errors", errorsContext, errorsDiv);
+                      console.error("There were validation errors:", errors.getErrors());
+                      return;
+                  }
+
+                  // validate required if it has a parent
+                  // todo archetypeModel.validateReplacementConstraint(cons, consClone);
+
+                  console.debug("save changes:\nfrom: ", cons, "\n  to: ", consClone);
+
+                  topHandler.updateConstraint(archetypeModel, topContext, cons, errors);
+                  if (handler) {
+                      handler.updateConstraint(archetypeModel, context, cons, errors);
+                  }
+              });
+
           }
       };
 
@@ -169,7 +231,7 @@ var ArchetypeEditor = (function () {
                       cons: cons
                   };
                   consJson.text = archetypeModel.getTermDefinitionText(cons.node_id);
-                  if (archetypeModel.isNodeSpecialized(cons)) {
+                  if (archetypeModel.isNodeTopLevel(cons)) {
                       consJson.a_attr = consJson.a_attr || {};
                       consJson.a_attr.class = "specialized";
                   }
@@ -219,8 +281,9 @@ var ArchetypeEditor = (function () {
       };
 
 
-      my.getRmTypeHandler = function (rm_type) {
-          var rmModule = rmModules[my.referenceModel.name()];
+      my.getRmTypeHandler = function (rm_type, referenceModel) {
+          referenceModel = referenceModel || my.referenceModel.name();
+          var rmModule = rmModules[referenceModel];
           if (rmModule && rmModule.handlers[rm_type]) {
               return rmModule.handlers[rm_type];
           }
@@ -261,12 +324,13 @@ var ArchetypeEditor = (function () {
           rmModules[module.name] = module;
       };
 
-
       my.initialize = function (callback) {
-          var latch = new CountdownLatch(2);
+          var latch = new CountdownLatch(3);
           latch.execute(callback);
           my.referenceModel = new AOM.ReferenceModel(latch.countDown);
           my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+          // these templates must be loaded at initialization, to avoid asynchronous callback
+          GuiUtils.loadTemplates("properties/constraint-common", true, latch.countDown);
       };
 
       return my;

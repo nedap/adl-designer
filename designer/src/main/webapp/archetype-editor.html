@@ -47,8 +47,10 @@
     <!-- Archetype editor -->
     <script src="js/util.js"></script>
     <script src="js/util-gui.js"></script>
-    <script src="js/am-model.js"></script>
+    <script src="js/am/am-model.js"></script>
+    <script src="js/am/am-factory.js"></script>
     <script src="js/archetype-editor/core.js"></script>
+    <script src="js/archetype-editor/module-common.js"></script>
     <script src="js/archetype-editor/module-primitive.js"></script>
     <script src="js/archetype-editor/module-openehr.js"></script>
     <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
@@ -67,7 +69,17 @@
                 $(this).tab('show');
             });
 
-            ArchetypeEditor.initialize();
+            ArchetypeEditor.initialize(function() {
+
+                // TODO: remove for production
+                // preloads a give archetype into the interface. Just for testing
+                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
+                $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
+                  function (data) {
+                      var archetypeModel = new AOM.EditableArchetypeModel(data);
+                      ArchetypeEditor.useArchetype(archetypeModel);
+                  });
+            });
 
         });
     </script>

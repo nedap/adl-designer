@@ -92,13 +92,15 @@ function HtmlStringBuilder() {
 }
 
 
-AmUtils = {
-    buildIntervalString: function (interval) {
+var AmUtils = function () {
+    var my = this;
+
+    my.buildIntervalString = function (interval) {
         if (!interval) return "";
         return (interval.lower ? String(interval.lower) : "0") + ".." + (interval.upper != undefined ? String(interval.upper) : "*");
-    },
+    };
 
-    parseIntervalString: function (text) {
+    my.parseIntervalString = function (text) {
         var occ = {
             "lower_included": true,
             "upper_included": true,
@@ -124,10 +126,10 @@ AmUtils = {
 
         if (occ.lower != undefined && occ.upper != undefined && occ.lower > occ.upper) return undefined;
         return occ;
-    },
+    };
 
     // @deprecated, replaced by AOM.RmPath
-    getPathSegments: function (path) {
+    my.getPathSegments = function (path) {
         if (Array.isArray(path)) {
             return path;
         }
@@ -150,9 +152,9 @@ AmUtils = {
         }
         return result;
 
-    },
+    };
 
-    pathMatches: function (path, candidate) {
+    my.pathMatches = function (path, candidate) {
 
         function segmentMatches(path, candidate) {
             if (path.attribute !== candidate.attribute) return false;
@@ -170,9 +172,9 @@ AmUtils = {
             if (!segmentMatches(path[i], candidate[i])) return false;
         }
         return true;
-    },
+    };
 
-    clone: function (what) {
+    my.clone = function (what) {
         if (what === undefined || what === null) return what;
         if (typeof what === "object") {
             if (Array.isArray(what)) {
@@ -186,31 +188,134 @@ AmUtils = {
             }
         }
         return what;
-    },
+    };
 
     // string of 4 random characters
-    random4: function () {
+    my.random4 = function () {
         return Math.floor((1 + Math.random()) * 0x10000)
           .toString(16)
           .substring(1);
-    },
+    };
 
-    random8: function () {
-        return AmUtils.random4() + AmUtils.random4();
-    }
-};
+    my.random8 = function () {
+        return my.random4() + my.random4();
+    };
+
+    my.Errors = function (context, errors) {
+        var self = this;
+        context = (context && context.length > 0) ? context + "." : "";
+        errors = errors || [];
+
+        self.getErrors = function () {
+            return errors;
+        };
+
+        self.add = function (error, location) {
+            location = context + (location || "");
+            var errorItem = {
+                error: error
+            };
+            if (location.length > 0) {
+                errorItem.location = location;
+            }
+
+            errors.push(errorItem);
+        };
+
+        self.validate = function (condition, error, location) {
+            if (!condition) {
+                self.add(error, location);
+            }
+            return condition;
+        };
+
+        self.sub = function (ctx) {
+            ctx = context + (ctx || "");
+            return new my.Errors(ctx, errors);
+        }
+    };
+
+    /**
+     * Cleans object properties according to a given criteria. Cleanup wil be performed in place.
+     *
+     * @param obj object to clean
+     * @param {Number|function?} level what properties to remove: <ul>
+     *     <li>0 (or undefined) = remove undefined
+     *     <li>1=remove undefined/false
+     *     <li>2=remove falsy
+     *     <li>3=remove falsy/empty list/empty obj
+     *     <li>function(v) = remove property if function returns false
+     *     </ul>
+     * @return {Object} obj
+     */
+    my.cleanObjectProperties = function (obj, level) {
+        function isNotUndefined(v) {
+            return v !== undefined;
+        }
+
+        function isNotUndefinedOrFalse(v) {
+            return !(v === undefined || v === false);
+        }
+
+        function isFalsy(v) {
+            return v;
+        }
+
+        function isNotFalsyOrEmpty(v) {
+            return v && v !== [] && !(typeof v==="object" && $.isEmptyObject(v));
+        }
+
+        if (level === 0 || level === undefined) level = isNotUndefined;
+        else if (level === 1) level = isNotUndefinedOrFalse;
+        else if (level === 2) level = isFalsy;
+        else if (level === 3) level = isNotFalsyOrEmpty;
+
+        if (typeof level !== "function" || typeof obj !== "object") {
+            return obj;
+        }
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                if (!level(obj[key])) {
+                    delete obj[key];
+                }
+            }
+        }
+
+        return obj;
+    };
+
+    /**
+     * Modifies a list to a set. Example: ['a','b', 'c'] to {'a':true, 'b':true, 'c':true}. This makes checks for presence simpler
+     * @param {array} list list to be converted to set
+     * @returns {{}} an object with obj[item]=true for each item in the list
+     */
+    my.listToSet = function(list) {
+        var result={};
+        for (var i in list) {
+            result[list[i]]=true;
+        }
+        return result;
+    };
+
+    return my;
+}();
 
 
 // usage: new AmInterval(intervalObject) or new AmInterval(loNumber, hiNumber)
 
 var AmInterval = {
-    of: function (lo, hi) {
+    of: function (lo, hi, type) {
         var result = {
             lower: lo,
             upper: hi
         };
         result.lower_included = typeof a != "undefined";
-        result.lower_included = typeof b != "undefined";
+        result.upper_included = typeof b != "undefined";
+        result.lower_unbounded = !result.lower_included;
+        result.upper_unbounded = !result.upper_included;
+        if (type) {
+            result["@type"] = "MULTIPLICITY_INTERVAL";
+        }
         return result;
     },
 
@@ -291,12 +396,16 @@ var AmInterval = {
         return result;
     },
 
-    parseContainedString: function (str) {
+    parseContainedString: function (str, type) {
         if (str === undefined) return undefined;
         str = str.trim();
         var interval = AmInterval.parseNumberInterval(str.substring(1, str.length - 1));
+        if (!interval) return undefined;
         interval.lower_included = str[0] === '[' && interval.lower !== undefined;
         interval.upper_included = str[str.length - 1] === ']' && interval.upper !== undefined;
+        if (type) {
+            interval["@type"] = type;
+        }
         return interval;
     },
 
@@ -315,14 +424,14 @@ var AmInterval = {
             occ.lower_included = true;
         } else {
             occ.lower = Number(splits[0]);
-            if (occ.lower === undefined) return undefined;
+            if (occ.lower === undefined || isNaN(occ.lower)) return undefined;
         }
         if (splits[1] === "*") {
             occ.upper_unbounded = true;
             occ.upper_included = false;
         } else {
             occ.upper = Number(splits[1]);
-            if (occ.upper === undefined) return undefined;
+            if (occ.upper === undefined || isNaN(occ.upper)) return undefined;
         }
 
         if (occ.lower != undefined && occ.upper != undefined && occ.lower > occ.upper) return undefined;

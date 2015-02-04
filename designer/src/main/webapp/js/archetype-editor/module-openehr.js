@@ -48,13 +48,9 @@
                         panel_id: GuiUtils.generateId(),
                         magnitude: ArchetypeEditor.getRmTypeHandler("C_REAL").createContext(archetypeModel, tupleConstraint.magnitude),
                         units: units,
-                        precision: {
-                            id: GuiUtils.generateId(),
-                            enabled: precisionEnabled,
-                            value: precisionEnabled ? tupleConstraint.precision.list[0] : 0
-                        }
-
+                        precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
                     };
+
                     context.unit_panels.push(panel);
                 }
                 return context;
@@ -62,11 +58,6 @@
 
             handler.show = function (context, targetElement, guiContext) {
                 GuiUtils.applyTemplate("properties/constraint-openehr|DV_QUANTITY", context, function (generatedDom) {
-
-                    function enablePrecisionInput(enable, precision_id) {
-                        targetElement.find("#" + precision_id + "_enabled").prop('checked', enable);
-                        targetElement.find("#" + precision_id + "_value").prop('disabled', !enable);
-                    }
 
                     function showUnitPanel(panel_id) {
                         Stream(context.unit_panels).forEach(function (panel) {
@@ -114,11 +105,7 @@
                                       panel_id: GuiUtils.generateId(),
                                       magnitude: ArchetypeEditor.getRmTypeHandler("C_REAL").createContext(guiContext.archetypeModel),
                                       units: newUnit,
-                                      precision: {
-                                          id: GuiUtils.generateId(),
-                                          enabled: false,
-                                          value: 0
-                                      }
+                                      precision: ""
                                   };
                                   context.unit_panels.push(panel);
                                   guiContext.redraw();
@@ -136,15 +123,15 @@
                         showUnitPanel(unitsSelect.find("option:selected").val());
                     });
 
-                    setTimeout(function () { // should work directly, but only does for the first time !?
-                        Stream(context.unit_panels).forEach(function (u) {
-                            var checkbox = targetElement.find("#" + u.precision.id + "_enabled");
-                            enablePrecisionInput(u.precision.enabled, u.precision.id);
-                            checkbox.change(function (e) {
-                                enablePrecisionInput($(this).prop('checked'), u.precision.id)
-                            })
-                        });
-                    }, 10);
+                    //setTimeout(function () { // should work directly, but only does for the first time !?
+                    //    Stream(context.unit_panels).forEach(function (u) {
+                    //        var checkbox = targetElement.find("#" + u.precision.id + "_enabled");
+                    //        enablePrecisionInput(u.precision.enabled, u.precision.id);
+                    //        checkbox.change(function (e) {
+                    //            enablePrecisionInput($(this).prop('checked'), u.precision.id)
+                    //        })
+                    //    });
+                    //}, 10);
 
 
                     Stream(context.unit_panels).findFirst().ifPresent(function (u) {
@@ -158,26 +145,43 @@
                     var targetPanel = targetElement.find('#' + up.panel_id);
                     if (targetPanel.length > 0) {
                         ArchetypeEditor.getRmTypeHandler("C_REAL").updateContext(up.magnitude, targetPanel);
-                        up.precision.enabled = targetPanel.find('#' + up.precision.id + '_enabled').prop('checked');
-                        up.precision.value = targetPanel.find('#' + up.precision.id + '_value').val();
+                        up.precision = targetPanel.find('#' + up.panel_id + '_precision').val();
                     }
                 });
             };
 
-            handler.updateConstraint = function (archetypeModel, context, cons) {
-                cons = cons || {
-                    "@type": "C_COMPLEX_OBJECT",
-                    rm_type_name: "DV_QUANTITY"
-                };
+            handler.updateConstraint = function (archetypeModel, context, cons, errors) {
+                archetypeModel.removeAttribute("units");
+                archetypeModel.removeAttribute("magnitude");
+                archetypeModel.removeAttribute("precision");
 
-                archetypeModel.removeAttribute(cons, "units");
-                archetypeModel.removeAttribute(cons, "magnitude");
-                archetypeModel.removeAttribute(cons, "precision");
+                cons.attribute_tuples = [];
+                if (context.unit_panels.length > 0) {
+                    var attributeTuple = AOM.newCAttributeTuple(["units", "magnitude", "precision"]);
 
-                // todo create tuple of units, magnitude, precision
+                    for (var panelIndex in context.unit_panels) {
+                        var panel = context.unit_panels[panelIndex];
+                        var unitErrors = errors.sub("[" + panel.units + "]");
+
+                        var unitCons = AOM.newCString();
+                        unitCons.list = [panel.units];
+                        unitCons.default_value = panel.units;
 
 
-                return cons;
+                        var magnitudeCons = AOM.makeEmptyConstrainsClone("C_REAL");
+                        var magnitudeHandler = ArchetypeEditor.getRmTypeHandler("C_REAL");
+                        magnitudeHandler.updateConstraint(archetypeModel, panel.magnitude, magnitudeCons, unitErrors.sub("magnitude"));
+
+                        var precisionCons = AOM.makeEmptyConstrainsClone("C_INTEGER");
+                        if (panel.precision !== "") {
+                            var val = parseInt(panel.precision);
+                            unitErrors.validate(!isNaN(val), "Not a valid integer", "precision");
+                            precisionCons.list = [val];
+                        }
+                        attributeTuple.children.push(AOM.newCObjectTuple([unitCons, magnitudeCons, precisionCons]));
+                    }
+                    cons.attribute_tuples.push(attributeTuple);
+                }
             };
 
 
