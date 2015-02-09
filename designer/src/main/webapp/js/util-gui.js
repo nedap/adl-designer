@@ -143,12 +143,12 @@ var GuiUtils = (function () {
                 var buttonName = $(this).attr('name');
 
                 if (options.callback) {
-                        var result = options.callback(content, buttonName)
-                        if (typeof result === "string") {
-                            var alertDiv = modalFooter.find(".alert");
-                            alertDiv.text(result).removeClass("hidden");
-                            return;
-                        }
+                    var result = options.callback(content, buttonName)
+                    if (typeof result === "string") {
+                        var alertDiv = modalFooter.find(".alert");
+                        alertDiv.text(result).removeClass("hidden");
+                        return;
+                    }
                 }
                 dialogElement.modal('hide');
             });
@@ -171,6 +171,19 @@ var GuiUtils = (function () {
             options.content = content;
             my.openSimpleDialog(options);
         });
+    };
+
+    /**
+     * adds or removes .hidden class
+     * @param {jQuery} element
+     * @param {boolean} visible
+     */
+    my.setVisible = function (element, visible) {
+        if (visible) {
+            element.removeClass('hidden')
+        } else {
+            element.addClass('hidden')
+        }
     };
 
 

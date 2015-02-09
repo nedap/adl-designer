@@ -47,6 +47,12 @@ var AOM = (function () {
               return self.ids.length;
           }
       };
+      my.NodeId.of = function (node_id) {
+          if (node_id instanceof my.NodeId) {
+              return node_id;
+          }
+          return new my.NodeId(node_id)
+      };
 
       my.RmPath = function (path) {
           var self = this;
@@ -198,6 +204,7 @@ var AOM = (function () {
               return matches[0];
           };
 
+
           return self;
       }();
 
@@ -244,6 +251,7 @@ var AOM = (function () {
               var td = getTermDefinition(node_id, language || defaultLanguage);
               return td && td.text;
           };
+
 
           self.explodeValueSets = function (code, language) {
               var result = {};
@@ -315,6 +323,22 @@ var AOM = (function () {
           var self = this;
           my.ArchetypeModel.call(self, flatArchetypeData);
 
+
+          var maxTermIdsByPrefix = {};
+
+          function acknowledgeTermId(termId) {
+              if (!termId) return;
+              termId = my.NodeId.of(termId);
+              if (termId.getSpecializationDepth() === self.specializationDepth) {
+                  var lastTermIdSegment = termId.ids[termId.ids.length - 1];
+                  var maxTermId = maxTermIdsByPrefix[termId.prefix];
+                  if (maxTermId === undefined || maxTermId < lastTermIdSegment) {
+                      maxTermIdsByPrefix[termId.prefix] = lastTermIdSegment;
+                  }
+              }
+          }
+
+
           function enrichAttributeData(data, parent) {
               data[".parent"] = parent;
               for (var i in data.children || []) {
@@ -324,6 +348,8 @@ var AOM = (function () {
 
           function enrichConstraintData(data, parent) {
               data[".parent"] = parent;
+
+              acknowledgeTermId(data.node_id);
               for (var i in data.attributes || []) {
                   enrichAttributeData(data.attributes[i], data);
               }
@@ -341,6 +367,31 @@ var AOM = (function () {
                   }
               }
           }
+
+          function processOntology(ontology) {
+              if (!ontology) return;
+              for (var lang in ontology.term_definitions || {}) {
+                  var langDefinitions = ontology.term_definitions[lang];
+                  for (var termId in langDefinitions || {}) {
+                      acknowledgeTermId(termId);
+                  }
+              }
+              for (var codeSystem in ontology.term_bindings || {}) {
+                  var codeSystemBindings = ontology.term_bindings[codeSystem];
+                  for (var termId in codeSystemBindings || {}) {
+                      acknowledgeTermId(termId);
+                  }
+              }
+
+              for (var valueSetId in ontology.value_sets || {}) {
+                  acknowledgeTermId(valueSetId);
+                  var valueSet = ontology.value_sets[valueSetId];
+                  for (var i in valueSet.members || []) {
+                      acknowledgeTermId(valueSet.members[i]);
+                  }
+              }
+          }
+
 
           /**
            * Makes a clone of constrains, but removes all enriched properties (those that start with .);
@@ -382,6 +433,38 @@ var AOM = (function () {
 
 
           /**
+           * Generates a new term id for a given prefix or parent term id with the same specialization level as the archetype
+           * @param {string} parentTermOrPrefix prefix or parent term. Examples: 'id', 'id2', 'at2.2', 'ac'
+           * @returns {string} a new, unique term id
+           */
+          self.generateSpecializedTermId = function (parentTermOrPrefix) {
+              if (parentTermOrPrefix.match(/^\w+$/)) {
+                  var prefix = parentTermOrPrefix;
+                  var maxTermId = maxTermIdsByPrefix[prefix] || 0;
+                  var term;
+                  if (self.specializationDepth === 1) {
+                      term = my.NodeId.of(prefix + String(++maxTermId));
+                  } else {
+                      term = my.NodeId.of(prefix + "0");
+                      while (term.ids.length < self.specializationDepth - 1) {
+                          term.ids.push(0);
+                      }
+                      term.ids.push(++maxTermId);
+                  }
+                  maxTermIdsByPrefix[prefix] = maxTermId;
+                  return term.toString();
+              } else {
+                  // todo do not assume 1 for nodes parents
+                  var term = my.NodeId.of(parentTermOrPrefix);
+                  while (term.ids < self.specializationDepth - 1) {
+                      term.ids.push(0);
+                  }
+                  term.ids.push(1);
+                  return term.toString();
+              }
+          };
+
+          /**
            * Gets a rm path to a constraint, optionally from a given origin
            * @param {Object} cons - constraint for which to get rm path. Must be part of the archetype model
            * @param {Object?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
@@ -415,7 +498,6 @@ var AOM = (function () {
               fillSegments(segments, cons);
               return my.RmPath.of(segments);
           };
-
 
 
           /**
@@ -579,37 +661,66 @@ var AOM = (function () {
               return true;
           };
 
-          //self.replaceConstraint = function (cons, replacementCons) {
-          //    if (!self.validateReplacementConstraint(cons, replacementCons)) return false;
-          //
-          //
-          //    var consParent = cons[".parent"];
-          //    enrichConstraintData(replacementCons, consParent);
-          //    if (consParent["@type"]==="C_ATTRIBUTE") {
-          //        for (var i in consParent.children || []) {
-          //            if (consParent.children[i] === cons) {
-          //                consParent.children[i] = replacementCons;
-          //                return true;
-          //            }
-          //        }
-          //    } else if (consParent["@type"]==="C_ATTRIBUTE_TUPLE") {
-          //        for (var i in consParent.children || []) {
-          //            var object_tuple=consParent.children[i];
-          //            for (var j in object_tuple.members) {
-          //                if (object_tuple.members[i] === cons) {
-          //                    object_tuple.members[i] = replacementCons;
-          //                    return true;
-          //                }
-          //            }
-          //        }
-          //    }
-          //
-          //    console.error("Could not find child to replace");
-          //    return false;
-          //};
+          /**
+           * Adds a new term definition to ontology. Text and description are given to the original language, while other languages
+           * have suffix " (original_language)"
+           * @param {string}prefixOrParentCode prefix (or parent code) under which to generate new termId.
+           * @param {string} text text of the terminology definition
+           * @param {string?}description description of the terminology definition
+           * @returns {string} code of the generated terminology definition
+           */
+          self.addNewTermDefinition = function (prefixOrParentCode, text, description) {
+
+              function addToLanguage(term_definitions, language, code, text, description) {
+                  if (!term_definitions[language]) {
+                      term_definitions[language] = {};
+                  }
+                  term_definitions[language][code] = {
+                      text: text,
+                      description: description
+                  };
+                  AmUtils.cleanObjectProperties(term_definitions[language][code]);
+              }
+
+              function quickTranslate(value, sourceLanguage, targetLanguage) {
+                  if (!value) return undefined;
+                  value = value + " (" + sourceLanguage + ")";
+                  return value;
+              }
+
+              var newCode = self.generateSpecializedTermId(prefixOrParentCode);
+              var term = {};
+              if (!self.data.ontology.term_definitions) {
+                  self.data.ontology.term_definitions = {};
+              }
+              var td = self.data.ontology.term_definitions;
+
+              addToLanguage(td, self.defaultLanguage, newCode, text, description);
+              for (var i in self.translations) {
+                  var lang = self.translations[i];
+                  addToLanguage(td, lang, newCode,
+                                quickTranslate(text, self.defaultLanguage, lang),
+                                quickTranslate(description, self.defaultLanguage, lang));
+              }
+
+
+              return newCode;
+          };
+
+          /**
+           * Enriches constraint with additional attributes form the EditableArchetypeModel. Intended to allow adding attributes on a
+           * C_COMPLEX_OBJECT
+           *
+           * @param {object} cons Constraint to enrich. If parent===undefined, must already have [".parent"] attribute
+           * @param {object?} parent parent of this constraint
+Ł           */
+          self.enrichReplacementConstraint = function(cons, parent) {
+              enrichConstraintData(cons, parent || cons[".parent"]);
+          };
 
 
           enrichConstraintData(flatArchetypeData.definition, undefined);
+          processOntology(flatArchetypeData.ontology);
 
       }; // EditableArchetypeModel
       my.EditableArchetypeModel.prototype = Object.create(my.ArchetypeModel.prototype);

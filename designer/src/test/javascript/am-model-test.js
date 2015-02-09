@@ -1162,6 +1162,14 @@ describe("EditableArchetypeModel.getRmPath", function () {
     });
 
 });
+describe("EditableArchetypeModel.generateSpecializedTermId", function () {
+    var am = new AOM.EditableArchetypeModel(AmUtils.clone(res.bodyWeight));
+    it("generates new specialized node by prefix", function () {
+        expect(am.generateSpecializedTermId("id")).toEqual("id38");
+        expect(am.generateSpecializedTermId("at")).toEqual("at20");
+    });
+
+});
 
 describe("EditableArchetypeModel.addUnconstrainedAttributes", function () {
     var am = new AOM.EditableArchetypeModel(AmUtils.clone(res.bodyWeight));

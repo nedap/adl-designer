@@ -59,17 +59,22 @@ var ArchetypeEditor = (function () {
       var DefinitionPropertiesPanel = function (archetypeModel, targetElement) {
           var self = this;
 
-          function callHandlerShow(context, handler, targetElement) {
-              var guiContext = {
+          function addPropertiesPanelToStage(stage, context, handler, targetElement) {
+              stage.propertiesPanel = {
                   redraw: function () {
-                      handler.updateContext(context, targetElement);
-
+                      handler.updateContext(stage, context, targetElement);
                       targetElement.empty();
-                      handler.show(context, targetElement, guiContext);
-                  },
-                  archetypeModel: archetypeModel
+                      handler.show(stage, context, targetElement);
+                  }
               };
-              handler.show(context, targetElement, guiContext);
+              return stage;
+          }
+
+          function createEmptyStage() {
+              var stage = {};
+              stage.archetypeModel = archetypeModel;
+              stage.archetypeEditor = my;
+              return stage;
           }
 
           self.clear = function () {
@@ -86,19 +91,23 @@ var ArchetypeEditor = (function () {
               targetElement.append(topDiv);
 
               var topHandler = my.getRmTypeHandler("top", "@common");
-              var topContext = topHandler.createContext(archetypeModel, cons);
-              callHandlerShow(topContext, topHandler, topDiv);
+              var topStage = createEmptyStage();
+              var topContext = topHandler.createContext(topStage, archetypeModel, cons);
+              addPropertiesPanelToStage(topStage, topContext, topHandler, topDiv);
+              topHandler.show(topStage, topContext, topDiv);
 
 
               var handler = my.getRmTypeHandler(cons.rm_type_name);
 
-              var context;
+              var stage, context;
               if (handler) {
                   var customDiv = $("<div>");
                   targetElement.append(customDiv);
 
-                  context = handler.createContext(archetypeModel, cons);
-                  callHandlerShow(context, handler, customDiv);
+                  stage = createEmptyStage();
+                  context = handler.createContext(stage, cons);
+                  addPropertiesPanelToStage(stage, context, handler, customDiv);
+                  handler.show(stage, context, customDiv);
               }
 
               var errorsDiv = $('<div class="errors">');
@@ -129,12 +138,13 @@ var ArchetypeEditor = (function () {
 
                   var consClone = AOM.makeEmptyConstrainsClone(cons);
 
-                  topHandler.updateContext(topContext, topDiv);
-                  topHandler.updateConstraint(archetypeModel, topContext, consClone, errors);
+                  stage.realConstraint=false;
+                  topHandler.updateContext(topStage, topContext, topDiv);
+                  topHandler.updateConstraint(topStage, topContext, consClone, errors);
 
                   if (handler) {
-                      handler.updateContext(context, customDiv);
-                      handler.updateConstraint(archetypeModel, context, consClone, errors);
+                      handler.updateContext(stage, context, customDiv);
+                      handler.updateConstraint(stage, context, consClone, errors);
                   }
                   errorsDiv.empty();
                   if (errors.getErrors().length > 0) {
@@ -149,10 +159,12 @@ var ArchetypeEditor = (function () {
 
                   console.debug("save changes:\nfrom: ", cons, "\n  to: ", consClone);
 
-                  topHandler.updateConstraint(archetypeModel, topContext, cons, errors);
+                  stage.realConstraint=true;
+                  topHandler.updateConstraint(topStage, topContext, cons, errors);
                   if (handler) {
-                      handler.updateConstraint(archetypeModel, context, cons, errors);
+                      handler.updateConstraint(stage, context, cons, errors);
                   }
+                  archetypeModel.enrichReplacementConstraint(cons);
               });
 
           }
@@ -290,7 +302,7 @@ var ArchetypeEditor = (function () {
           return rmModules[""].handlers[rm_type];
       };
 
-      my.applySubModules = function (generatedDom, context) {
+      my.applySubModules = function (stage, generatedDom, context) {
           for (var key in context) {
               var prop = context[key];
               if (typeof prop === "object") {
@@ -299,11 +311,11 @@ var ArchetypeEditor = (function () {
                       if (handler) {
                           var targetElement = generatedDom.find("#" + prop.panel_id);
                           if (targetElement.length > 0) {
-                              handler.show(prop, targetElement);
+                              handler.show(stage, prop, targetElement);
                           }
                       }
                   }
-                  my.applySubModules(generatedDom, prop);
+                  my.applySubModules(stage, generatedDom, prop);
               }
           }
       };
@@ -322,6 +334,42 @@ var ArchetypeEditor = (function () {
 
       my.addRmModule = function (module) {
           rmModules[module.name] = module;
+      };
+
+      /**
+       * Opens a dialog that enables creation of new terms
+       * @param {EditableArchetypeModel} archetypeModel
+       * @param {function?} callback calback to call once the term is created. First callback parameter is the generated term_id
+       */
+      my.openAddNewTermDefinitionDialog = function (archetypeModel, callback) {
+          var addNewTermContext= {
+              id: GuiUtils.generateId()
+          };
+
+          GuiUtils.applyTemplate("dialog-terms|addNew", addNewTermContext, function (htmlString) {
+              var content = $(htmlString);
+
+              GuiUtils.openSimpleDialog(
+                {
+                    title: "Load archetype",
+                    buttons: {"add": "Add term"},
+                    content: content,
+                    callback: function (content) {
+                        var text = content.find('#'+addNewTermContext.id+"_text").val().trim();
+                        var description = content.find('#'+addNewTermContext.id+"_description").val().trim();
+
+                        if (text.length==0) {
+                            return; // do nothing
+                        }
+
+                        var newTerminologyCode = archetypeModel.addNewTermDefinition("at", text, description);
+                        if (callback) {
+                            callback(newTerminologyCode);
+                        }
+                    }
+                });
+          });
+
       };
 
       my.initialize = function (callback) {

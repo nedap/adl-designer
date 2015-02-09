@@ -26,7 +26,7 @@
         <div class="table-cell">
             <select id="{{units_id}}" class="form-control input-sm">
                 {{#each unit_panels}}
-                <option value="{{panel_id}}">{{units}}</option>
+                    <option value="{{panel_id}}">{{units}}</option>
                 {{/each}}
             </select>
         </div>
@@ -36,10 +36,20 @@
         </div>
     </div>
     {{#each unit_panels}}
-    <div class="unit_panel" id="{{panel_id}}">
-        <div id="{{magnitude.panel_id}}"></div>
-        <label for="{{panel_id}}_precision">Limit decimal places</label>
-        <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data" value="{{precision}}">
-    </div>
+        <div class="unit_panel" id="{{panel_id}}">
+            <div id="{{magnitude.panel_id}}"></div>
+            <label for="{{panel_id}}_precision">Limit decimal places</label>
+            <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data" value="{{precision}}">
+        </div>
     {{/each}}
+</div>
+
+{>DV_CODED_TEXT}
+<div>
+    <div class="checkbox">
+        <label>
+            <input id="{{panel_id}}_coded_text" type="checkbox">Coded text
+        </label>
+    </div>
+    <div id="{{defining_code.panel_id}}"></div>
 </div>

@@ -27,7 +27,7 @@
         self.handlers = {};
         self.handlers["top"] = new function () {
             var handler = this;
-            handler.createContext = function (archetypeModel, cons) {
+            handler.createContext = function (stage, cons) {
                 cons = cons || {};
                 var context = {
                     "panel_id": GuiUtils.generateId(),
@@ -39,16 +39,16 @@
                 return context;
             };
 
-            handler.show = function (context, targetElement) {
+            handler.show = function (stage, context, targetElement) {
                 GuiUtils.applyTemplate("properties/constraint-common|top", context, targetElement);
             };
 
-            handler.updateContext = function (context, targetElement) {
+            handler.updateContext = function (stage, context, targetElement) {
                 var occStr = targetElement.find('#' + context.panel_id + "_occurrences").val();
                 context.occurrences = occStr;
             };
 
-            handler.updateConstraint = function (archetypeModel, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons, errors) {
                 cons.occurrences = errors.validate(
                   AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL"),
                   "Invalid occurrences format", "occurrences");

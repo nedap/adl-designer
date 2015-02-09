@@ -39,6 +39,10 @@
 /* marks the field that represent actual model data (used in constraint properties, to enable save button) */
 .data {}
 
+.vertical-button-column {
+    vertical-align: top
+}
+
 /* For column layout using tables */
 .table-layout {
     display:table;
@@ -88,5 +92,9 @@ form .table-layout .table-cell {
 
 #archetype-editor-definition-node-properties .errors {
     color: #8b0000;
+}
+
+.terminology-type-choice {
+    padding-bottom: 20px;
 
 }
