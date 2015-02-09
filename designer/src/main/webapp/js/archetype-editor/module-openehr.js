@@ -46,7 +46,7 @@
 
                     var panel = {
                         panel_id: GuiUtils.generateId(),
-                        magnitude: ArchetypeEditor.getRmTypeHandler("C_REAL").createContext(stage, tupleConstraint.magnitude),
+                        magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage, tupleConstraint.magnitude),
                         units: units,
                         precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
                     };
@@ -57,87 +57,94 @@
             };
 
             handler.show = function (stage, context, targetElement) {
-                GuiUtils.applyTemplate("properties/constraint-openehr|DV_QUANTITY", context, function (generatedDom) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_QUANTITY", context, function (generatedDom) {
 
-                    function showUnitPanel(panel_id) {
-                        Stream(context.unit_panels).forEach(function (panel) {
-                            var panelElement = targetElement.find("#" + panel.panel_id);
-                            if (panel.panel_id === panel_id) {
-                                panelElement.show();
-                            } else {
-                                panelElement.hide();
-                            }
-                        });
-                    }
+                        function showUnitPanel(panel_id) {
+                            Stream(context.unit_panels).forEach(
+                                function (panel) {
+                                    var panelElement = targetElement.find("#" + panel.panel_id);
+                                    if (panel.panel_id === panel_id) {
+                                        panelElement.show();
+                                    } else {
+                                        panelElement.hide();
+                                    }
+                                });
+                        }
 
-                    function removeUnitPanel(panel_id) {
-                        for (var i in context.unit_panels) {
-                            var panel = context.unit_panels[i];
-                            if (panel.panel_id === panel_id) {
-                                context.unit_panels.splice(i, 1);
-                                break;
+                        function removeUnitPanel(panel_id) {
+                            for (var i in context.unit_panels) {
+                                var panel = context.unit_panels[i];
+                                if (panel.panel_id === panel_id) {
+                                    context.unit_panels.splice(i, 1);
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    generatedDom = $(generatedDom);
-                    generatedDom.find("#" + context.units_id + "_remove").click(function () {
-                        if (context.unit_panels.length === 0) return;
-                        var panel_id = targetElement.find("#" + context.units_id).val();
-                        removeUnitPanel(panel_id);
-                        stage.propertiesPanel.redraw();
+                        generatedDom = $(generatedDom);
+                        generatedDom.find("#" + context.units_id + "_remove").click(
+                            function () {
+                                if (context.unit_panels.length === 0) return;
+                                var panel_id = targetElement.find("#" + context.units_id).val();
+                                removeUnitPanel(panel_id);
+                                stage.propertiesPanel.redraw();
+                            });
+
+                        generatedDom.find("#" + context.units_id + "_add").click(
+                            function () {
+                                GuiUtils.openSingleTextInputDialog(
+                                    {
+                                        title: "Add unit constraint",
+                                        inputLabel: "Enter unit",
+                                        callback: function (content) {
+                                            var newUnit = content.find("input").val().trim();
+                                            if (newUnit.length === 0) return;
+                                            var existingUnitPanel = Stream(context.unit_panels)
+                                                .filter({units: newUnit})
+                                                .findFirst().orElse();
+                                            if (existingUnitPanel) {
+                                                return "Unit " + newUnit + " already exists";
+                                            }
+                                            var panel = {
+                                                panel_id: GuiUtils.generateId(),
+                                                magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage),
+                                                units: newUnit,
+                                                precision: ""
+                                            };
+                                            context.unit_panels.push(panel);
+                                            stage.propertiesPanel.redraw();
+
+                                        }
+                                    })
+                            });
+
+
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+
+                        var unitsSelect = generatedDom.find("#" + context.units_id);
+                        unitsSelect.change(
+                            function () {
+                                showUnitPanel(unitsSelect.find("option:selected").val());
+                            });
+
+                        Stream(context.unit_panels).findFirst().ifPresent(
+                            function (u) {
+                                showUnitPanel(u.panel_id);
+                            });
                     });
-
-                    generatedDom.find("#" + context.units_id + "_add").click(function () {
-                        GuiUtils.openSingleTextInputDialog(
-                          {
-                              title: "Add unit constraint",
-                              inputLabel: "Enter unit",
-                              callback: function (content) {
-                                  var newUnit = content.find("input").val().trim();
-                                  if (newUnit.length === 0) return;
-                                  var existingUnitPanel = Stream(context.unit_panels)
-                                    .filter({units: newUnit})
-                                    .findFirst().orElse();
-                                  if (existingUnitPanel) {
-                                      return "Unit " + newUnit + " already exists";
-                                  }
-                                  var panel = {
-                                      panel_id: GuiUtils.generateId(),
-                                      magnitude: ArchetypeEditor.getRmTypeHandler("C_REAL").createContext(stage),
-                                      units: newUnit,
-                                      precision: ""
-                                  };
-                                  context.unit_panels.push(panel);
-                                  stage.propertiesPanel.redraw();
-
-                              }
-                          })
-                    });
-
-
-                    stage.archetypeEditor.applySubModules(stage, generatedDom, context);
-                    targetElement.append(generatedDom);
-
-                    var unitsSelect = generatedDom.find("#" + context.units_id);
-                    unitsSelect.change(function () {
-                        showUnitPanel(unitsSelect.find("option:selected").val());
-                    });
-
-                    Stream(context.unit_panels).findFirst().ifPresent(function (u) {
-                        showUnitPanel(u.panel_id);
-                    });
-                });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                Stream(context.unit_panels).forEach(function (up) {
-                    var targetPanel = targetElement.find('#' + up.panel_id);
-                    if (targetPanel.length > 0) {
-                        stage.archetypeEditor.getRmTypeHandler("C_REAL").updateContext(stage, up.magnitude, targetPanel);
-                        up.precision = targetPanel.find('#' + up.panel_id + '_precision').val();
-                    }
-                });
+                Stream(context.unit_panels).forEach(
+                    function (up) {
+                        var targetPanel = targetElement.find('#' + up.panel_id);
+                        if (targetPanel.length > 0) {
+                            stage.archetypeEditor.getRmTypeHandler("C_REAL").updateContext(stage, up.magnitude, targetPanel);
+                            up.precision = targetPanel.find('#' + up.panel_id + '_precision').val();
+                        }
+                    });
             };
 
             handler.updateConstraint = function (stage, context, cons, errors) {
@@ -187,46 +194,67 @@
                     panel_id: GuiUtils.generateId(),
                     type: cons && cons.rm_type_name ? cons.rm_type_name : "DV_TEXT",
                     defining_code: stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
-                      .createContext(stage, AOM.AmQuery.get(cons, "defining_code"))
+                        .createContext(stage, AOM.AmQuery.get(cons, "defining_code"))
                 };
-                context.isCoded=context.type==="DV_CODED_TEXT";
+                context.isCoded = context.type === "DV_CODED_TEXT";
 
                 return context;
             };
 
             handler.show = function (stage, context, targetElement) {
-                GuiUtils.applyTemplate("properties/constraint-openehr|DV_CODED_TEXT", context, function (generatedDom) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_CODED_TEXT", context, function (generatedDom) {
 
-                    generatedDom = $(generatedDom);
-                    var codedTextCheckbox = generatedDom.find("#" + context.panel_id + "_coded_text");
-                    var definingCodeDiv = generatedDom.find("#" + context.defining_code.panel_id);
+                        generatedDom = $(generatedDom);
+                        var codedTextCheckbox = generatedDom.find("#" + context.panel_id + "_coded_text");
+                        var definingCodeDiv = generatedDom.find("#" + context.defining_code.panel_id);
 
-                    codedTextCheckbox.prop('checked', context.isCoded);
-                    GuiUtils.setVisible(definingCodeDiv, codedTextCheckbox.prop('checked'));
-                    codedTextCheckbox.click(function () {
-                        context.isCoded=codedTextCheckbox.prop('checked');
-                        GuiUtils.setVisible(definingCodeDiv, context.isCoded);
+                        codedTextCheckbox.prop('checked', context.isCoded);
+                        GuiUtils.setVisible(definingCodeDiv, codedTextCheckbox.prop('checked'));
+                        codedTextCheckbox.click(
+                            function () {
+                                context.isCoded = codedTextCheckbox.prop('checked');
+                                GuiUtils.setVisible(definingCodeDiv, context.isCoded);
+                            });
+
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
                     });
-
-                    stage.archetypeEditor.applySubModules(stage, generatedDom, context);
-                    targetElement.append(generatedDom);
-                });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
                 stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
-                  .updateContext(stage, context.defining_code, targetElement.find('#' + context.defining_code.panel_id));
+                    .updateContext(stage, context.defining_code, targetElement.find('#' + context.defining_code.panel_id));
 
             };
 
             handler.updateConstraint = function (stage, context, cons, errors) {
-                // todo update constraints, using any combination of DV_TEXT/DV__CODED_TEXT
+                var type = context.isCoded ? "DV_CODED_TEXT" : "DV_TEXT";
+
+                cons["@type"] = type;
+                cons.rm_type_name = type;
+
+                if (context.isCoded) { // context is DV_CODED_TEXT
+                    var cDefiningCode = AOM.AmQuery.get(cons, "defining_code");
+                    if (!cDefiningCode) {
+                        var aDefiningCode = AOM.newCAttribute("defining_code");
+                        cDefiningCode = AOM.newCTerminologyCode();
+                        aDefiningCode.children = [cDefiningCode];
+                        cons.attributes=cons.attributes||[];
+                        cons.attributes.push(aDefiningCode);
+                    }
+                    stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE").updateConstraint(
+                        stage, context.defining_code, cDefiningCode, errors.sub("defining_code"));
+
+                } else { // context is DV_TEXT
+                    stage.archetypeModel.removeAttribute(cons, ["defining_code"]);
+                }
             };
 
 
             return handler;
         }();
-        self.handlers["DV_TEXT"]=self.handlers["DV_CODED_TEXT"];
+        self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
 
 
     };

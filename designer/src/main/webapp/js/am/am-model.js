@@ -562,8 +562,19 @@ var AOM = (function () {
               return result;
           };
 
+          /**
+           * Remove attribute from constraint
+           * @param {object} cons constraint object
+           * @param {string|string[]} attributeName name of the attribute to remove, or list of attribute names to remove
+           */
           self.removeAttribute = function (cons, attributeName) {
-              for (var i in cons.attributes || []) {
+              if (Array.isArray(attributeName)) {
+                  for (var i in attributeName) {
+                      self.removeAttribute(cons, attributeName[i]);
+                  }
+
+              }
+              for (var i in cons.attributes || [])  {
                   var attribute = cons.attributes[i];
                   if (attribute.rm_attribute_name === attributeName) {
                       cons.attributes.splice(i, 1);
@@ -587,6 +598,8 @@ var AOM = (function () {
                   }
               }
           };
+
+
 
           /**
            * Copies properties that are defined on cons but not on targetCons to targetCons. Not recursive
@@ -713,8 +726,8 @@ var AOM = (function () {
            *
            * @param {object} cons Constraint to enrich. If parent===undefined, must already have [".parent"] attribute
            * @param {object?} parent parent of this constraint
-Ł           */
-          self.enrichReplacementConstraint = function(cons, parent) {
+           Ł           */
+          self.enrichReplacementConstraint = function (cons, parent) {
               enrichConstraintData(cons, parent || cons[".parent"]);
           };
 
@@ -809,7 +822,5 @@ var AOM = (function () {
       };
 
       return my;
-  }
-  ()
-  )
+  }() )
   ;

@@ -160,8 +160,7 @@
                     context.internal_defined_codes = presentTerminologyCodes;
                     //context.internal_available_codes = availableTerminologyCodes;
                 } else {
-                    context.internal_defined_codes = allTerminologyCodes;
-                    //context.internal_available_codes = {};
+                    context.internal_defined_codes = {};
                 }
 
 
@@ -312,7 +311,7 @@
                 function findNearestTerm(language) {
                     var c = cons;
                     while (c) {
-                        var text = stage.archetypeEditor.getTermDefinition(c.node_id, language);
+                        var text = stage.archetypeModel.getTermDefinition(c.node_id, language);
                         if (text) {
                             return text;
                         }
@@ -362,6 +361,7 @@
                                 stage.archetypeModel.data.ontology.value_sets = {};
                             }
                             stage.archetypeModel.data.ontology.value_sets[valueSetCode] = valueSet;
+                            cons.code_list=[valueSetCode];
 
                         }
 
@@ -387,6 +387,41 @@
 
             return handler;
         }(); // handler C_TERMINOLOGY_CODE
+
+        //self.handlers["C_BOOLEAN"] = new function () {
+        //    var handler = this;
+        //
+        //
+        //
+        //    handler.createContext = function (stage, cons) {
+        //
+        //
+        //        cons = cons || {};
+        //        var context = {
+        //            "panel_id": GuiUtils.generateId(),
+        //            "type": "C_BOOLEAN",
+        //            assumed_value: cons.assumed_value
+        //        };
+        //
+        //        return context;
+        //    };
+        //
+        //    handler.show = function (stage, context, targetElement) {
+        //
+        //        GuiUtils.applyTemplate("properties/constraint-primitive|C_BOOLEAN", context, function (html) {
+        //            targetElement.append(html);
+        //        });
+        //
+        //    };
+        //
+        //    handler.updateContext = function (stage, context, targetElement) {
+        //    };
+        //
+        //    handler.updateConstraint = function (stage, context, cons, errors) {
+        //    };
+        //
+        //    return handler;
+        //}(); // handler C_BOOLEAN
 
     };
 

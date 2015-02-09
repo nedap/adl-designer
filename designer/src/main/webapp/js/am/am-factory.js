@@ -89,6 +89,19 @@ AOM = (function (AOM) {
         return result;
     };
 
+    /**
+     * Creates new C_TERMINOLOGY_CODE constraint
+     * @returns {object} C_TERMINOLOGY_CODE constraint
+     */
+    my.newCTerminologyCode = function() {
+        var result = {
+            "@type": "C_TERMINOLOGY_CODE",
+            rm_type_name: "C_TERMINOLOGY_CODE",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
 
     return my;
 }(AOM));
