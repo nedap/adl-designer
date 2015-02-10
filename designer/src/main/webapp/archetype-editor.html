@@ -72,10 +72,11 @@
             ArchetypeEditor.initialize(function() {
 
                 // TODO: remove for production
-                // preloads a give archetype into the interface. Just for testing
+                // preloads a given archetype into the interface. Just for testing
 //                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
 //                var archetypeId = "openEHR-EHR-CLUSTER.coordination.v1.0.0";  // DV_ORDINAL, DV_TEXT, DV_CODED_TEXT
-                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
+//                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
+                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
                 $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
                   function (data) {
                       var archetypeModel = new AOM.EditableArchetypeModel(data);
@@ -105,14 +106,17 @@
                     synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan
                     aliquip quis cardigan american apparel, butcher voluptate nisi qui.</p>
             </div>
-            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
-                <div class="table-layout">
-                    <div class="table-cell">
-                        <div id="archetype-editor-definition-tree"></div>
-                    </div>
-                    <div id="archetype-editor-definition-node-properties" class="table-cell"></div>
-                    <!--<div class="ui-layout-west">West</div>-->
-                </div>
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition" style="width:100%">
+                <table>
+                    <tr>
+                        <td style="width:100%;">
+                            <div id="archetype-editor-definition-tree" style="height:600px"></div>
+                        </td>
+                        <td style="width:300px; vertical-align: top">
+                            <div id="archetype-editor-definition-node-properties" class="col-sm-4"></div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>

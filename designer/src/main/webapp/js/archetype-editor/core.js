@@ -92,7 +92,7 @@ var ArchetypeEditor = (function () {
 
                 var topHandler = my.getRmTypeHandler("top", "@common");
                 var topStage = createEmptyStage();
-                var topContext = topHandler.createContext(topStage, archetypeModel, cons);
+                var topContext = topHandler.createContext(topStage, cons);
                 addPropertiesPanelToStage(topStage, topContext, topHandler, topDiv);
                 topHandler.show(topStage, topContext, topDiv);
 

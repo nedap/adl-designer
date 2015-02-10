@@ -120,9 +120,59 @@
             return handler;
         }(); // handler C_REAL
 
-        self.handlers["C_TERMINOLOGY_CODE"] = new function () {
+        self.handlers["C_INTEGER"] = new function () {
             var handler = this;
 
+            handler.createContext = function (stage, cons) {
+                cons = cons || {};
+                var context = {
+                    "panel_id": GuiUtils.generateId(),
+                    "type": "C_INTEGER"
+                };
+                context.range_id = GuiUtils.generateId();
+                context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
+                context.assumed_value_id = GuiUtils.generateId();
+                context.assumed_value = cons.assumed_value != undefined ? String(cons.assumed_value) : "";
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_INTEGER", context, targetElement);
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                context.range = targetElement.find('#' + context.range_id).val();
+                context.assumed_value = targetElement.find('#' + context.assumed_value_id).val().trim();
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                if (typeof context.assumed_value === "string" && context.assumed_value.length > 0) {
+                    cons.assumed_value = parseInt(context.assumed_value);
+                    errors.validate(AmUtils.isInt(cons.assumed_value), "Invalid integer", "assumed_value");
+                }
+
+                if (context.range === "" || context.range === "(*..*)") {
+                    context.range = undefined;
+                } else {
+                    cons.range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
+                    errors.validate(cons.range, "Invalid interval", "range");
+                    errors.validate(cons.range.lower === undefined || AmUtils.isInt(cons.range.lower),
+                        "Invalid integer", "range.lower");
+                    errors.validate(cons.range.upper === undefined || AmUtils.isInt(cons.range.upper),
+                        "Invalid integer", "range.upper");
+                    if (cons.range && cons.range.upper === undefined && cons.range.lower === undefined) {
+                        cons.range = undefined;
+                    }
+                }
+                return cons;
+            };
+
+            return handler;
+        }(); // handler C_INTEGER
+
+        self.handlers["C_TERMINOLOGY_CODE"] = new function () {
+            var handler = this;
 
 
             handler.createContext = function (stage, cons) {
@@ -269,7 +319,7 @@
                                 };
                                 if ($.isEmptyObject(dialogContext.terms)) return;
 
-                                stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function(selectedTerms) {
+                                stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
                                     for (var i in selectedTerms) {
                                         var nodeId = selectedTerms[i];
                                         addDefinedTerm(nodeId);
@@ -380,7 +430,7 @@
                 var context = {
                     "panel_id": GuiUtils.generateId(),
                     "type": "C_BOOLEAN",
-                    true_valid:  cons.true_valid !== false, // undefined defaults to true
+                    true_valid: cons.true_valid !== false, // undefined defaults to true
                     false_valid: cons.false_valid !== false, // undefined defaults to true
                     assumed_value: cons.assumed_value === undefined ? "" : (cons.assumed_value ? "true" : "false")
                 };
@@ -425,8 +475,8 @@
                             populateAssumedValueSelect(trueValid, falseValid, assumedValue);
                         });
 
-                        assumedValue.change(function() {
-                           context.assumed_value=assumedValue.val();
+                        assumedValue.change(function () {
+                            context.assumed_value = assumedValue.val();
                         });
                     });
             };

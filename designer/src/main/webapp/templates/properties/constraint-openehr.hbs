@@ -55,9 +55,14 @@
 </div>
 
 {>DV_BOOLEAN}
-{{!-- C_BOOLEAN panel msut not be on root ($.find deos not find it), so use an empty div container --}}
 <div>
     <div id="{{value.panel_id}}">
+    </div>
+</div>
+
+{>DV_COUNT}
+<div>
+    <div id="{{magnitude.panel_id}}">
     </div>
 </div>
 

@@ -1224,8 +1224,8 @@ describe("RmPath", function () {
     it("parses simple path", function () {
         var rmPath = new AOM.RmPath("/name/value");
         expect(rmPath.segments.length).toEqual(2);
-        expect(rmPath.segments[0]).toEqual(jasmine.objectContaining({attribute: "name", node_id: undefined}));
-        expect(rmPath.segments[1]).toEqual(jasmine.objectContaining({attribute: "value", node_id: undefined}));
+        expect(rmPath.segments[0]).toEqual(jasmine.objectContaining({attribute: "name"}));
+        expect(rmPath.segments[1]).toEqual(jasmine.objectContaining({attribute: "value"}));
     });
 
     it("parses path with node ids", function () {
@@ -1234,9 +1234,9 @@ describe("RmPath", function () {
         expect(rmPath.segments.length).toEqual(5);
         expect(rmPath.segments[0]).toEqual(jasmine.objectContaining({attribute: "content", node_id: "id1"}));
         expect(rmPath.segments[1]).toEqual(jasmine.objectContaining({attribute: "data", node_id: "id2.3"}));
-        expect(rmPath.segments[2]).toEqual(jasmine.objectContaining({attribute: "events", node_id: undefined}));
+        expect(rmPath.segments[2]).toEqual(jasmine.objectContaining({attribute: "events"}));
         expect(rmPath.segments[3]).toEqual(jasmine.objectContaining({attribute: "items", node_id: "id0.3"}));
-        expect(rmPath.segments[4]).toEqual(jasmine.objectContaining({attribute: "value", node_id: undefined}));
+        expect(rmPath.segments[4]).toEqual(jasmine.objectContaining({attribute: "value"}));
     });
 
     it("builds rm path string", function () {

@@ -193,8 +193,8 @@ var AmUtils = function () {
     // string of 4 random characters
     my.random4 = function () {
         return Math.floor((1 + Math.random()) * 0x10000)
-          .toString(16)
-          .substring(1);
+            .toString(16)
+            .substring(1);
     };
 
     my.random8 = function () {
@@ -262,7 +262,7 @@ var AmUtils = function () {
         }
 
         function isNotFalsyOrEmpty(v) {
-            return v && v !== [] && !(typeof v==="object" && $.isEmptyObject(v));
+            return v && v !== [] && !(typeof v === "object" && $.isEmptyObject(v));
         }
 
         if (level === 0 || level === undefined) level = isNotUndefined;
@@ -286,16 +286,29 @@ var AmUtils = function () {
 
     /**
      * Modifies a list to a set. Example: ['a','b', 'c'] to {'a':true, 'b':true, 'c':true}. This makes checks for presence simpler
-     * @param {array} list list to be converted to set
+     * @param {string[]} list list to be converted to set
      * @returns {{}} an object with obj[item]=true for each item in the list
      */
-    my.listToSet = function(list) {
-        var result={};
+    my.listToSet = function (list) {
+        var result = {};
         for (var i in list) {
-            result[list[i]]=true;
+            result[list[i]] = true;
         }
         return result;
     };
+
+    /**
+     * Checks if a parameter is an integer
+     * @param num number to check.
+     * @returns {boolean} true if a parameter is an integer, false if float or not a number
+     */
+    my.isInt = function (num) {
+        if (typeof num !== "number") return false;
+        if (isNaN(num)) return false;
+        if (String(num).indexOf('.') >= 0) return false;
+        return true;
+    };
+
 
     return my;
 }();
@@ -383,7 +396,7 @@ var AmInterval = {
         if (!self) return "";
         if (self.lower === undefined && self.upper === undefined) return "";
         return (self.lower ? String(self.lower) : "*") + ".." +
-               (self.upper != undefined ? String(self.upper) : "*");
+            (self.upper != undefined ? String(self.upper) : "*");
     },
 
     toContainedString: function (self) {

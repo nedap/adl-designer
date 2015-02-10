@@ -53,7 +53,7 @@ describe(
           expect(interval).toEqual(jasmine.objectContaining(
             {
                 lower: 0, lower_included: true, lower_unbounded: false,
-                upper: undefined, upper_included: false, upper_unbounded: true
+                upper_included: false, upper_unbounded: true
             }));
       });
 
@@ -61,7 +61,7 @@ describe(
           var interval = AmInterval.parseContainedString("(*..10)");
           expect(interval).toEqual(jasmine.objectContaining(
             {
-                lower: undefined, lower_included: false, lower_unbounded: true,
+                lower_included: false, lower_unbounded: true,
                 upper: 10, upper_included: false, upper_unbounded: false
             }));
       });
@@ -70,8 +70,8 @@ describe(
           var interval = AmInterval.parseContainedString("(*..*)");
           expect(interval).toEqual(jasmine.objectContaining(
             {
-                lower: undefined, lower_included: false, lower_unbounded: true,
-                upper: undefined, upper_included: false, upper_unbounded: true
+                lower_included: false, lower_unbounded: true,
+                upper_included: false, upper_unbounded: true
             }));
       });
 
@@ -137,3 +137,22 @@ describe(
       });
 
   });
+
+describe(
+    "AmUtils.isInt", function () {
+        it("string is not integer", function () {
+            expect(AmUtils.isInt('abc')).toEqual(false);
+            expect(AmUtils.isInt('10')).toEqual(false);
+        });
+
+        it("nan is not integer", function () {
+            expect(AmUtils.isInt(NaN)).toEqual(false);
+        });
+        it("float is not integer", function () {
+            expect(AmUtils.isInt(1.3)).toEqual(false);
+        });
+        it("integer is integer", function () {
+            expect(AmUtils.isInt(1)).toEqual(true);
+            expect(AmUtils.isInt(13.0)).toEqual(true);
+        });
+    });

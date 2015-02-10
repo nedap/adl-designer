@@ -299,6 +299,50 @@
             return handler;
         }(); // DV_BOOLEAN
 
+        self.handlers["DV_COUNT"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_COUNT",
+                    magnitude: stage.archetypeEditor.getRmTypeHandler("C_INTEGER").createContext(stage, AOM.AmQuery.get(cons, "magnitude"))
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_COUNT", context, function (generatedDom) {
+
+                        generatedDom = $(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.getRmTypeHandler("C_INTEGER")
+                    .updateContext(stage, context.magnitude, targetElement.find('#' + context.magnitude.panel_id));
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                stage.archetypeModel.removeAttribute(cons, "magnitude");
+                var aValue = AOM.newCAttribute("magnitude");
+                var cValue = AOM.newCInteger();
+                aValue.children = [cValue];
+                cons.attributes = cons.attributes || [];
+                cons.attributes.push(aValue);
+
+                stage.archetypeEditor.getRmTypeHandler("C_INTEGER").updateConstraint(
+                    stage, context.magnitude, cValue, errors.sub("magnitude"));
+            };
+
+            return handler;
+        }(); // DV_COUNT
+
         self.handlers["DV_ORDINAL"] = new function () {
             var handler = this;
 
@@ -461,9 +505,7 @@
                                 });
 
                         });
-
-
-                    });
+               });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
