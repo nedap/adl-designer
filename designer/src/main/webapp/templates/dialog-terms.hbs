@@ -28,3 +28,12 @@
     <input id="{{id}}_description" class="form-control" value="">
 </div>
 
+{>addExistingTermsDialog}
+<div class="form-group">
+    <label for="selectExistingTerms">Select terms to add</label>
+    <select id="selectExistingTerms" class="form-control" size="10" multiple>
+        {{#each terms}}
+            <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
+        {{/each}}
+    </select>
+</div>

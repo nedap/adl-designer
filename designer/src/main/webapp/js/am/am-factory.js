@@ -90,6 +90,21 @@ AOM = (function (AOM) {
     };
 
     /**
+     * Creates new C_INTEGER constraint
+     * @param {number[]?} list valid values list
+     * @returns {object} C_INTEGER constraint
+     */
+    my.newCInteger = function(list) {
+        var result = {
+            "@type": "C_INTEGER",
+            rm_type_name: "C_INTEGER",
+            list: list||[],
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
+    /**
      * Creates new C_TERMINOLOGY_CODE constraint
      * @returns {object} C_TERMINOLOGY_CODE constraint
      */
@@ -97,6 +112,18 @@ AOM = (function (AOM) {
         var result = {
             "@type": "C_TERMINOLOGY_CODE",
             rm_type_name: "C_TERMINOLOGY_CODE",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+    /**
+     * Creates new C_BOOLEAN constraint
+     * @returns {object} C_BOOLEAN constraint
+     */
+    my.newCBoolean = function() {
+        var result = {
+            "@type": "C_BOOLEAN",
+            rm_type_name: "C_BOOLEAN",
             occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
         };
         return result;

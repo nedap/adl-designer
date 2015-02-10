@@ -57,7 +57,12 @@ var GuiUtils = (function () {
                 }
             }
             my.loadTemplates(pathobj.path, pipePos >= 0, function () {
-                applyTemplateAndCallback(compiledHandlebarTemplates[path])
+                var template = compiledHandlebarTemplates[path];
+                if (!template) {
+                    console.error("No handlebars template for path " + path);
+                    return;
+                }
+                applyTemplateAndCallback(template)
             })
         }
     };
@@ -143,7 +148,7 @@ var GuiUtils = (function () {
                 var buttonName = $(this).attr('name');
 
                 if (options.callback) {
-                    var result = options.callback(content, buttonName)
+                    var result = options.callback(content, buttonName);
                     if (typeof result === "string") {
                         var alertDiv = modalFooter.find(".alert");
                         alertDiv.text(result).removeClass("hidden");

@@ -73,7 +73,9 @@
 
                 // TODO: remove for production
                 // preloads a give archetype into the interface. Just for testing
-                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
+//                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
+//                var archetypeId = "openEHR-EHR-CLUSTER.coordination.v1.0.0";  // DV_ORDINAL, DV_TEXT, DV_CODED_TEXT
+                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
                 $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
                   function (data) {
                       var archetypeModel = new AOM.EditableArchetypeModel(data);

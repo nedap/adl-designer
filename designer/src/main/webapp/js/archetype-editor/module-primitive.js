@@ -124,16 +124,6 @@
             var handler = this;
 
 
-            function getAllAvailableTerminologyCodes(archetypeModel) {
-                var result = {};
-                var defaultTermDefinitions = archetypeModel.data.ontology.term_definitions[archetypeModel.defaultLanguage];
-                for (var code in defaultTermDefinitions) {
-                    if (AOM.NodeId.of(code).prefix === "at") {
-                        result[code] = defaultTermDefinitions[code]
-                    }
-                }
-                return result;
-            }
 
             handler.createContext = function (stage, cons) {
 
@@ -146,7 +136,7 @@
                 };
                 context.type_internal = cons.code_list && cons.code_list.length > 0;
 
-                var allTerminologyCodes = getAllAvailableTerminologyCodes(stage.archetypeModel);
+                var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at")
 
                 // todo external data
                 if (context.type_internal) {
@@ -184,7 +174,7 @@
                 }
 
                 function getAvailableInternalTerms(present_codes) {
-                    var allTerminologyCodes = getAllAvailableTerminologyCodes(stage.archetypeModel);
+                    var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
                     var result = {};
                     for (var code in allTerminologyCodes) {
                         if (!present_codes[code]) {
@@ -214,89 +204,82 @@
                 }
 
 
-                GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
-                    targetElement.append(html);
+                GuiUtils.applyTemplate(
+                    "properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
+                        targetElement.append(html);
 
 
-                    var panelInternal = targetElement.find("#" + context.panel_id + "_internal_panel");
-                    var panelExternal = targetElement.find("#" + context.panel_id + "_external_panel");
+                        var panelInternal = targetElement.find("#" + context.panel_id + "_internal_panel");
+                        var panelExternal = targetElement.find("#" + context.panel_id + "_external_panel");
 
-                    var radioInternal = targetElement.find("#" + context.panel_id + "_internal");
-                    var radioExternal = targetElement.find("#" + context.panel_id + "_external");
-                    var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
+                        var radioInternal = targetElement.find("#" + context.panel_id + "_internal");
+                        var radioExternal = targetElement.find("#" + context.panel_id + "_external");
+                        var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
 
-                    updateInternalAssumedValue(assumedValueSelect);
+                        updateInternalAssumedValue(assumedValueSelect);
 
-                    assumedValueSelect.change(function () {
-                        context.assumed_value = assumedValueSelect.val();
-                    });
+                        assumedValueSelect.change(
+                            function () {
+                                context.assumed_value = assumedValueSelect.val();
+                            });
 
-                    radioInternal.change(function () {
+                        radioInternal.change(
+                            function () {
+                                updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                                context.type_internal = radioInternal.prop('checked');
+                            });
+                        radioExternal.change(
+                            function () {
+                                updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                                context.type_internal = !radioExternal.prop('checked');
+                            });
+
+                        radioInternal.prop("checked", context.type_internal);
+                        radioExternal.prop("checked", !context.type_internal);
+
                         updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                        context.type_internal = radioInternal.prop('checked');
-                    });
-                    radioExternal.change(function () {
-                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                        context.type_internal = !radioExternal.prop('checked');
-                    });
 
-                    radioInternal.prop("checked", context.type_internal);
-                    radioExternal.prop("checked", !context.type_internal);
+                        targetElement.find('#' + context.panel_id + "_add_new_term").click(
+                            function () {
+                                stage.archetypeEditor.openAddNewTermDefinitionDialog(
+                                    stage.archetypeModel, function (nodeId) {
+                                        addDefinedTerm(nodeId);
+                                        updateInternalAssumedValue(assumedValueSelect);
+                                    })
+                            });
 
-                    updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                        targetElement.find('#' + context.panel_id + "_remove_term").click(
+                            function () {
+                                var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
+                                var option = select.find(":selected");
+                                if (option.length > 0) {
+                                    var nodeId = option.val();
+                                    delete context.internal_defined_codes[nodeId];
+                                    option.remove();
+                                    if (context.assumed_value === nodeId) {
+                                        updateInternalAssumedValue(assumedValueSelect);
+                                    }
+                                }
+                            });
 
-                    targetElement.find('#' + context.panel_id + "_add_new_term").click(function () {
-                        stage.archetypeEditor.openAddNewTermDefinitionDialog(stage.archetypeModel, function (nodeId) {
-                            var term = stage.archetypeModel.getTermDefinition(nodeId);
-                            addDefinedTerm(nodeId);
-                            updateInternalAssumedValue(assumedValueSelect);
-                        })
-                    });
+                        targetElement.find('#' + context.panel_id + "_add_existing_term").click(
+                            function () {
+                                var dialogContext = {
+                                    terms: getAvailableInternalTerms(context.internal_defined_codes)
+                                };
+                                if ($.isEmptyObject(dialogContext.terms)) return;
 
-                    targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
-                        var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
-                        var option = select.find(":selected");
-                        if (option.length > 0) {
-                            var nodeId = option.val();
-                            delete context.internal_defined_codes[nodeId];
-                            option.remove();
-                            if (context.assumed_value === nodeId) {
-                                updateInternalAssumedValue(assumedValueSelect);
-                            }
-                        }
-                    });
-
-                    targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
-                        var dialogContext = {
-                            terms: getAvailableInternalTerms(context.internal_defined_codes)
-                        };
-                        if ($.isEmptyObject(dialogContext.terms)) return;
-
-                        GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE/addExistingTermsDialog",
-                                               dialogContext, function (content) {
-                              content = $(content);
-                              GuiUtils.openSimpleDialog(
-                                {
-                                    title: "Add existing terms from archetype",
-                                    buttons: {"add": "Add"},
-                                    content: content,
-                                    callback: function () {
-                                        var select = content.find('#selectExistingTerms');
-                                        var options = select.find(':selected');
-                                        if (options.length === 0) return;
-                                        for (var i = 0; i < options.length; i++) {
-                                            var nodeId = $(options[i]).val();
-                                            addDefinedTerm(nodeId);
-                                            updateInternalAssumedValue(assumedValueSelect);
-                                        }
+                                stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function(selectedTerms) {
+                                    for (var i in selectedTerms) {
+                                        var nodeId = selectedTerms[i];
+                                        addDefinedTerm(nodeId);
+                                        updateInternalAssumedValue(assumedValueSelect);
                                     }
                                 });
+                            });
 
-                          });
+
                     });
-
-
-                });
 
             };
 
@@ -361,7 +344,7 @@
                                 stage.archetypeModel.data.ontology.value_sets = {};
                             }
                             stage.archetypeModel.data.ontology.value_sets[valueSetCode] = valueSet;
-                            cons.code_list=[valueSetCode];
+                            cons.code_list = [valueSetCode];
 
                         }
 
@@ -388,40 +371,86 @@
             return handler;
         }(); // handler C_TERMINOLOGY_CODE
 
-        //self.handlers["C_BOOLEAN"] = new function () {
-        //    var handler = this;
-        //
-        //
-        //
-        //    handler.createContext = function (stage, cons) {
-        //
-        //
-        //        cons = cons || {};
-        //        var context = {
-        //            "panel_id": GuiUtils.generateId(),
-        //            "type": "C_BOOLEAN",
-        //            assumed_value: cons.assumed_value
-        //        };
-        //
-        //        return context;
-        //    };
-        //
-        //    handler.show = function (stage, context, targetElement) {
-        //
-        //        GuiUtils.applyTemplate("properties/constraint-primitive|C_BOOLEAN", context, function (html) {
-        //            targetElement.append(html);
-        //        });
-        //
-        //    };
-        //
-        //    handler.updateContext = function (stage, context, targetElement) {
-        //    };
-        //
-        //    handler.updateConstraint = function (stage, context, cons, errors) {
-        //    };
-        //
-        //    return handler;
-        //}(); // handler C_BOOLEAN
+        self.handlers["C_BOOLEAN"] = new function () {
+            var handler = this;
+
+
+            handler.createContext = function (stage, cons) {
+                cons = cons || {};
+                var context = {
+                    "panel_id": GuiUtils.generateId(),
+                    "type": "C_BOOLEAN",
+                    true_valid:  cons.true_valid !== false, // undefined defaults to true
+                    false_valid: cons.false_valid !== false, // undefined defaults to true
+                    assumed_value: cons.assumed_value === undefined ? "" : (cons.assumed_value ? "true" : "false")
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                function populateAssumedValueSelect(trueValid, falseValid, assumedValue) {
+                    assumedValue.empty();
+                    var noAssumedValue = $("<option>").attr("value", "").text("");
+                    assumedValue.append(noAssumedValue);
+                    assumedValue.val('');
+                    if (trueValid.prop("checked")) {
+                        assumedValue.append($("<option>").attr("value", "true").text("True"));
+                        if (context.assumed_value === 'true') assumedValue.val('true');
+                    }
+                    if (falseValid.prop("checked")) {
+                        assumedValue.append($("<option>").attr("value", "false").text("False"));
+                        if (context.assumed_value === 'false') assumedValue.val('false');
+                    }
+                    context.assumed_value = assumedValue.val();
+                }
+
+
+                GuiUtils.applyTemplate(
+                    "properties/constraint-primitive|C_BOOLEAN", context, function (html) {
+                        targetElement.append(html);
+
+                        var trueValid = targetElement.find("#" + context.panel_id + "_true_valid");
+                        var falseValid = targetElement.find("#" + context.panel_id + "_false_valid");
+                        var assumedValue = targetElement.find("#" + context.panel_id + "_assumed_value");
+
+                        trueValid.prop('checked', context.true_valid);
+                        falseValid.prop('checked', context.false_valid);
+                        populateAssumedValueSelect(trueValid, falseValid, assumedValue);
+
+                        trueValid.change(function () {
+                            populateAssumedValueSelect(trueValid, falseValid, assumedValue);
+                        });
+                        falseValid.change(function () {
+                            populateAssumedValueSelect(trueValid, falseValid, assumedValue);
+                        });
+
+                        assumedValue.change(function() {
+                           context.assumed_value=assumedValue.val();
+                        });
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                var trueValid = targetElement.find("#" + context.panel_id + "_true_valid");
+                var falseValid = targetElement.find("#" + context.panel_id + "_false_valid");
+                var assumedValue = targetElement.find("#" + context.panel_id + "_assumed_value");
+
+                context.true_valid = trueValid.prop('checked');
+                context.false_valid = falseValid.prop('checked');
+                context.assumed_value = assumedValue.val();
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                cons.true_valid = context.true_valid;
+                cons.false_valid = context.false_valid;
+                cons.assumed_value = context.assumed_value === 'true' ? true :
+                    (context.assumed_value === 'false' ? false : undefined);
+            };
+
+            return handler;
+        }(); // handler C_BOOLEAN
 
     };
 

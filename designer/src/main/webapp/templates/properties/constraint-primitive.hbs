@@ -60,10 +60,10 @@
     </div>
     <div>
         <div class="form-group">
-           <label for="{{panel_id}}_assumed_value">Assumed Value</label>
+            <label for="{{panel_id}}_assumed_value">Assumed Value</label>
             <select id="{{panel_id}}_assumed_value" class="form-control">
             </select>
-         </div>
+        </div>
     </div>
 </div>
 <div id="{{panel_id}}_external_panel">
@@ -71,12 +71,25 @@
 </div>
 
 
-{>C_TERMINOLOGY_CODE/addExistingTermsDialog}
-<div class="form-group">
-   <label for="selectExistingTerms">Select terms to add</label>
-    <select id="selectExistingTerms" class="form-control" size="10" multiple>
-        {{#each terms}}
-            <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
-        {{/each}}
-    </select>
- </div>
+
+{>C_BOOLEAN}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-6 control-label">Allowed values</label>
+
+        <div class="col-sm-3">
+            <input type="checkbox" id="{{panel_id}}_true_valid">True
+        </div>
+        <div class="col-sm-3">
+            <input type="checkbox" id="{{panel_id}}_false_valid">False
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_assumed_value" class="col-sm-6 control-label">Assumed value</label>
+
+        <div class="col-sm-6">
+            <select id="{{panel_id}}_assumed_value" class="form-control">
+            </select>
+        </div>
+    </div>
+</div>

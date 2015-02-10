@@ -32,6 +32,9 @@
     display: none
 }
 
+.definition-tree-node {
+}
+
 .specialized {
     font-style: italic;
 }
@@ -96,5 +99,4 @@ form .table-layout .table-cell {
 
 .terminology-type-choice {
     padding-bottom: 20px;
-
 }

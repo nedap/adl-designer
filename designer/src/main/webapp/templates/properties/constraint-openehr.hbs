@@ -53,3 +53,57 @@
     </div>
     <div id="{{defining_code.panel_id}}"></div>
 </div>
+
+{>DV_BOOLEAN}
+{{!-- C_BOOLEAN panel msut not be on root ($.find deos not find it), so use an empty div container --}}
+<div>
+    <div id="{{value.panel_id}}">
+    </div>
+</div>
+
+{>DV_ORDINAL}
+<div>
+    <div class="table-layout">
+        <div class="table-cell vertical-button-column">
+            <div class="btn-group-vertical" role="group">
+                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default" title="add new value">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+                <button id="{{panel_id}}_remove_value" type="button" class="btn btn-default" title="remove">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>
+
+                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default" title="add existing value">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button id="{{panel_id}}_edit_value" type="button" class="btn btn-default" title="edit">
+                    <span class="glyphicon glyphicon-wrench"></span>
+                </button>
+            </div>
+        </div>
+        <div class="table-cell">
+            <select id="{{panel_id}}_values" class="form-control" size="10">
+            </select>
+        </div>
+    </div>
+</div>
+
+{>DV_ORDINAL/editValue}
+<div class="form-group">
+    <div class="col-sm-6">
+        <label for="{{id}}_value">Ordinal value</label>
+    </div>
+    <div class="col-sm-6">
+        <input id="{{id}}_value" class="form-control" type="number" value="{{value.value}}">
+    </div>
+</div>
+<div class="form-group">
+    <label for="{{id}}_text">Text</label>
+
+    <p id="{{id}}_text" class="form-control-static">{{value.term.text}}</p>
+</div>
+<div class="form-group">
+    <label for="{{id}}_description">Description</label>
+
+    <p id="{{id}}_description" class="form-control-static">{{value.term.description}}</p>
+</div>

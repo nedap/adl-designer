@@ -148,11 +148,9 @@
             };
 
             handler.updateConstraint = function (stage, context, cons, errors) {
-                stage.archetypeModel.removeAttribute("units");
-                stage.archetypeModel.removeAttribute("magnitude");
-                stage.archetypeModel.removeAttribute("precision");
+                stage.archetypeModel.removeAttribute(["units", "magnitude", "precision"]);
 
-                cons.attribute_tuples = [];
+                cons.attribute_tuples = cons.attribute_tuples ||[];
                 if (context.unit_panels.length > 0) {
                     var attributeTuple = AOM.newCAttributeTuple(["units", "magnitude", "precision"]);
 
@@ -190,6 +188,7 @@
             var handler = this;
 
             handler.createContext = function (stage, cons) {
+                cons = cons || {};
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: cons && cons.rm_type_name ? cons.rm_type_name : "DV_TEXT",
@@ -240,7 +239,7 @@
                         var aDefiningCode = AOM.newCAttribute("defining_code");
                         cDefiningCode = AOM.newCTerminologyCode();
                         aDefiningCode.children = [cDefiningCode];
-                        cons.attributes=cons.attributes||[];
+                        cons.attributes = cons.attributes || [];
                         cons.attributes.push(aDefiningCode);
                     }
                     stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE").updateConstraint(
@@ -253,9 +252,247 @@
 
 
             return handler;
-        }();
+        }(); // DV_CODED_TEXT
         self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
 
+        self.handlers["DV_BOOLEAN"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_BOOLEAN",
+                    value: stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").createContext(stage, AOM.AmQuery.get(cons, "value"))
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_BOOLEAN", context, function (generatedDom) {
+
+                        generatedDom = $(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN")
+                    .updateContext(stage, context.value, targetElement.find('#' + context.value.panel_id));
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                stage.archetypeModel.removeAttribute(cons, "value");
+                var aValue = AOM.newCAttribute("value");
+                var cValue = AOM.newCBoolean();
+                aValue.children = [cValue];
+                cons.attributes = cons.attributes || [];
+                cons.attributes.push(aValue);
+
+                stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").updateConstraint(
+                    stage, context.value, cValue, errors.sub("value"));
+            };
+
+            return handler;
+        }(); // DV_BOOLEAN
+
+        self.handlers["DV_ORDINAL"] = new function () {
+            var handler = this;
+
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_ORDINAL",
+                    values: [],
+                    assumed_value: cons.assumed_value
+                };
+
+                var tuples = stage.archetypeModel.getAttributesTuple(cons, ["value", "symbol"]);
+                for (var i in tuples) {
+                    var tuple = tuples[i];
+                    var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                    var value = {
+                        value: tuple["value"].list[0],
+                        term_id: tuple["symbol"].code_list[0],
+                        term: term
+                    };
+                    context.values.push(value);
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                function getAvailableInternalTerms() {
+                    var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
+                    var result = {};
+                    var presentCodes = AmUtils.listToSet(Stream(context.values).map("term_id").toArray());
+
+                    for (var code in allTerminologyCodes) {
+                        if (!presentCodes[code]) {
+                            result[code] = allTerminologyCodes[code];
+                        }
+                    }
+                    return result;
+                }
+
+
+                function populateValuesSelect(valuesSelect, hasEmptyOption) {
+                    context.values = Stream(context.values).sorted("value").toArray();
+
+                    var oldval = valuesSelect.val();
+                    valuesSelect.empty();
+                    if (hasEmptyOption) {
+                        valuesSelect.append($("<option>").attr("value", ""));
+                    }
+                    for (var i in context.values) {
+                        var value = context.values[i];
+                        var option = $("<option>")
+                            .attr("value", value.term_id)
+                            .attr("title", value.term_id + ": " + value.term.description)
+                            .text(value.value + ": " + value.term.text);
+                        valuesSelect.append(option);
+                    }
+                    valuesSelect.val(oldval);
+                }
+
+
+
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_ORDINAL", context, function (html) {
+                        targetElement.append(html);
+
+                        var valuesSelect = targetElement.find("#" + context.panel_id + "_values");
+                        populateValuesSelect(valuesSelect);
+
+                        targetElement.find('#' + context.panel_id + "_add_new_value").click(function () {
+                            stage.archetypeEditor.openAddNewTermDefinitionDialog(
+                                stage.archetypeModel, function (nodeId) {
+                                    var term = stage.archetypeModel.getTermDefinition(nodeId);
+                                    var nextValue = Stream(context.values).map("value").max().orElse(0) + 1;
+                                    context.values.push(
+                                        {
+                                            value: nextValue,
+                                            term_id: nodeId,
+                                            term: term
+                                        });
+                                    populateValuesSelect(valuesSelect);
+                                })
+
+                        });
+
+                        targetElement.find('#' + context.panel_id + "_remove_value").click(function () {
+                            var option = valuesSelect.find(":selected");
+                            if (option.length > 0) {
+                                var nodeId = option.val();
+                                option.remove();
+                                context.values = Stream(context.values).filter(function (value) {
+                                    return value.term_id !== nodeId
+                                }).toArray(); // remove value with deleted nodeId
+                                populateValuesSelect(valuesSelect);
+                            }
+                        });
+                        targetElement.find('#' + context.panel_id + "_add_existing_value").click(function () {
+                            var dialogContext = {
+                                terms: getAvailableInternalTerms()
+                            };
+                            if ($.isEmptyObject(dialogContext.terms)) return;
+
+                            stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
+                                var nextValue = Stream(context.values).map("value").max().orElse(0) + 1;
+
+                                for (var i in selectedTerms) {
+                                    var nodeId = selectedTerms[i];
+                                    var term = stage.archetypeModel.getTermDefinition(nodeId);
+                                    context.values.push(
+                                        {
+                                            value: nextValue++,
+                                            term_id: nodeId,
+                                            term: term
+                                        }
+                                    );
+                                }
+                                populateValuesSelect(valuesSelect);
+                            });
+                        });
+
+                        targetElement.find('#' + context.panel_id + "_edit_value").click(function () {
+                            var option = valuesSelect.find(":selected");
+                            if (option.length === 0) return;
+
+                            var dialogContext = {
+                                id: GuiUtils.generateId()
+                            };
+                            dialogContext.value = Stream(context.values).filter(function (value) {
+                                return value.term_id === valuesSelect.val();
+                            }).findFirst().orElse(undefined);
+
+                            GuiUtils.applyTemplate(
+                                "properties/constraint-openehr|DV_ORDINAL/editValue",
+                                dialogContext, function (content) {
+                                    content = $(content);
+                                    GuiUtils.openSimpleDialog(
+                                        {
+                                            title: "Edit ordinal value",
+                                            buttons: {"update": "Update"},
+                                            content: content,
+                                            callback: function () {
+                                                var valueInput = content.find('#' + dialogContext.id + "_value");
+                                                var newValue = parseInt(valueInput.val());
+                                                if (isNaN(newValue) || valueInput.val().indexOf(".") >= 0) {
+                                                    return "ordinal value must be an integer";
+                                                }
+                                                var existingValue = Stream(context.values).filter(function (value) {
+                                                    return value.value === newValue;
+                                                }).findFirst().orElse(undefined);
+
+                                                if (existingValue && dialogContext.value.term_id !== existingValue.term_id) {
+                                                    return "value is already used by another term '" + existingValue.term.text + "'";
+                                                }
+
+                                                dialogContext.value.value = newValue;
+                                                populateValuesSelect(valuesSelect);
+                                            }
+                                        });
+                                });
+
+                        });
+
+
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                // context is updated on the fly in show
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                stage.archetypeModel.removeAttribute(cons, ["value", "symbol"]);
+
+                cons.attribute_tuples = cons.attribute_tuples || [];
+                if (context.values.length > 0) {
+                    var attributeTuple = AOM.newCAttributeTuple(["value", "symbol"]);
+
+                    for (var i in context.values) {
+                        var contextValue = context.values[i];
+
+                        var valueCons = AOM.newCInteger([contextValue.value]);
+
+                        var symbolCons = AOM.newCTerminologyCode();
+                        symbolCons.code_list=[contextValue.term_id];
+
+                        attributeTuple.children.push(AOM.newCObjectTuple([valueCons, symbolCons]));
+                    }
+                    cons.attribute_tuples.push(attributeTuple);
+                }
+
+            };
+            return handler;
+        }(); // DV_ORDINAL
 
     };
 
