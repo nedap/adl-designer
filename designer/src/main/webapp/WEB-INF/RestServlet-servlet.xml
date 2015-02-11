@@ -41,7 +41,7 @@
     <context:annotation-config/>
 
 
-    <bean id="wtResource" class="org.openehr.designer.WtResourceImpl"/>
+    <bean id="wtResource" class="org.openehr.designer.web.WtResourceImpl"/>
 
 
 </beans>

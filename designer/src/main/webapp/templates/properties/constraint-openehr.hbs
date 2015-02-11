@@ -1,0 +1,120 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+{>DV_QUANTITY}
+<div>
+    <label for="{{units_id}}">Units</label>
+
+    <div class="table-layout">
+        <div class="table-cell">
+            <select id="{{units_id}}" class="form-control input-sm">
+                {{#each unit_panels}}
+                    <option value="{{panel_id}}">{{units}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="table-cell right">
+            <button id="{{units_id}}_remove" class="btn btn-default">-</button>
+            <button id="{{units_id}}_add" class="btn btn-default">+</button>
+        </div>
+    </div>
+    {{#each unit_panels}}
+        <div class="unit_panel" id="{{panel_id}}">
+            <div id="{{magnitude.panel_id}}"></div>
+            <label for="{{panel_id}}_precision">Limit decimal places</label>
+            <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data" value="{{precision}}">
+        </div>
+    {{/each}}
+</div>
+
+{>DV_CODED_TEXT}
+<div>
+    <div class="checkbox">
+        <label>
+            <input id="{{panel_id}}_coded_text" type="checkbox">Coded text
+        </label>
+    </div>
+    <div id="{{defining_code.panel_id}}"></div>
+</div>
+
+{>DV_BOOLEAN}
+<div>
+    <div id="{{value.panel_id}}">
+    </div>
+</div>
+
+{>DV_COUNT}
+<div>
+    <div id="{{magnitude.panel_id}}">
+    </div>
+</div>
+
+{>DV_ORDINAL}
+<div>
+    <div class="table-layout">
+        <div class="table-cell vertical-button-column">
+            <div class="btn-group-vertical" role="group">
+                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default" title="add new value">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+                <button id="{{panel_id}}_remove_value" type="button" class="btn btn-default" title="remove">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>
+
+                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default" title="add existing value">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button id="{{panel_id}}_edit_value" type="button" class="btn btn-default" title="edit">
+                    <span class="glyphicon glyphicon-wrench"></span>
+                </button>
+            </div>
+        </div>
+        <div class="table-cell">
+            <select id="{{panel_id}}_values" class="form-control" size="10">
+            </select>
+        </div>
+    </div>
+</div>
+
+{>DV_ORDINAL/editValue}
+<div class="form-group">
+    <div class="col-sm-6">
+        <label for="{{id}}_value">Ordinal value</label>
+    </div>
+    <div class="col-sm-6">
+        <input id="{{id}}_value" class="form-control" type="number" value="{{value.value}}">
+    </div>
+</div>
+<div class="form-group">
+    <label for="{{id}}_text">Text</label>
+
+    <p id="{{id}}_text" class="form-control-static">{{value.term.text}}</p>
+</div>
+<div class="form-group">
+    <label for="{{id}}_description">Description</label>
+
+    <p id="{{id}}_description" class="form-control-static">{{value.term.description}}</p>
+</div>
+
+{>DV_DURATION}
+<div>
+    <div id="{{value.panel_id}}">
+    </div>
+</div>

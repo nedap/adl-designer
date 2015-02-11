@@ -91,7 +91,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             if (rmType && rmType.attributes) {
                 for (var attributeName in rmType.attributes) {
                     var attribute = rmType.attributes[attributeName];
-                    if (!existing[attributeName] && TemplateBuilder.archetypeRepository.rmTypeHoldsArchetype(attribute.type)) {
+                    if (!existing[attributeName] && TemplateBuilder.rmTypeHoldsArchetype(attribute.type)) {
                         existing[attributeName] = true;
                         var attr = {
                             type: "attribute",
@@ -1414,7 +1414,8 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                                                          for (var i = 0; i < tables.length; i++) {
                                                              var table = $(tables[i]);
                                                              var lang = table.data("lang");
-                                                             var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath, lang) || {};
+                                                             var parentAnnotations = modelNode.archetypeModel.getAnnotation(modelNode.rmPath,
+                                                                                                                            lang) || {};
 
                                                              newAnnotations[lang] = {};
                                                              table.find('tr').each(function () {
@@ -1423,13 +1424,13 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                                                                  var key = $(inputs[0]).val().trim();
                                                                  var value = $(inputs[1]).val().trim();
 
-                                                                 if (key!=="" && parentAnnotations[key]!==value) {
+                                                                 if (key !== "" && parentAnnotations[key] !== value) {
                                                                      newAnnotations[lang][key] = value;
                                                                  }
                                                              });
                                                          }
 
-                                                         modelNode.annotations=newAnnotations;
+                                                         modelNode.annotations = newAnnotations;
                                                          modelNode.modified = true;
                                                          TemplateBuilder.redrawNode(modelNode);
                                                      }
@@ -1442,7 +1443,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             }
         }
 
-        if (modelNode.type!=="attribute") {
+        if (modelNode.type !== "attribute") {
             appendAnnotationsElement();
         }
 
@@ -1453,7 +1454,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
     };
 
 
-    self.saveTom = function (successCallback) {
+    self.buildTom = function () {
         function buildTemplateOverrideModel() {
 
             function pushChild(parent, child) {
@@ -1517,7 +1518,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             function fillCommonItemFields(result, model) {
                 result.terms = extractNameTerms(model);
                 result.nodeId = model.data.node_id;
-                result.annotations=model.annotations;
+                result.annotations = model.annotations;
                 if (!AmInterval.equals(AmInterval.occurrences(model.current.occurrences),
                                        AmInterval.occurrences(model.original.occurrences)))
                 {
@@ -1563,8 +1564,13 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             return buildTemplateTom(self.model);
         }
 
-        var tom = buildTemplateOverrideModel();
+        return buildTemplateOverrideModel();
 
+
+    }; // buildTom
+
+    self.saveTom = function (successCallback) {
+        var tom = self.buildTom();
         jQuery.ajax({
                         'type': 'POST',
                         headers: {
@@ -1577,8 +1583,8 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
              'dataType': 'text'*/
                     })
           .success(successCallback);
+    };
 
-    }; // saveTom
 
 
     if (rootArchetypeModel) {
@@ -1591,67 +1597,29 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
 (function () {
 
 
-    var ArchetypeRepository = function (callback) {
-        var self = this;
-        self.state = undefined;
-        var archetypeAncestors;
+    var archetypeAncestors;
 
-
-        $.getJSON("rest/repo/list").success(function (data) {
-            self.state = "ok";
-            self.infoList = data;
-            callback(self);
-        }).error(function () {
-            self.state = "error";
-        });
-
-
-        self.rmTypeHoldsArchetype = function (rmType) {
-            function buildArchetypeAncestors() {
-                archetypeAncestors = {};
-                for (var i in self.infoList) {
-                    var info = self.infoList[i];
-                    if (!archetypeAncestors[info.rmType]) {
-                        var rmTypeModel = TemplateBuilder.referenceModel.model.types[info.rmType];
-                        while (rmTypeModel) {
-                            archetypeAncestors[rmTypeModel.name] = true;
-                            rmTypeModel = rmTypeModel.parent ? TemplateBuilder.referenceModel.model.types[rmTypeModel.parent] : undefined;
-                        }
+    TemplateBuilder.rmTypeHoldsArchetype = function (rmType) {
+        function buildArchetypeAncestors() {
+            archetypeAncestors = {};
+            for (var i in TemplateBuilder.archetypeRepository.infoList) {
+                var info = TemplateBuilder.archetypeRepository.infoList[i];
+                if (!archetypeAncestors[info.rmType]) {
+                    var rmTypeModel = TemplateBuilder.referenceModel.model.types[info.rmType];
+                    while (rmTypeModel) {
+                        archetypeAncestors[rmTypeModel.name] = true;
+                        rmTypeModel = rmTypeModel.parent ? TemplateBuilder.referenceModel.model.types[rmTypeModel.parent] : undefined;
                     }
                 }
             }
-
-            if (!archetypeAncestors) {
-                buildArchetypeAncestors();
-            }
-            return archetypeAncestors[rmType];
         }
+
+        if (!archetypeAncestors) {
+            buildArchetypeAncestors();
+        }
+        return archetypeAncestors[rmType];
     };
 
-    var ReferenceModel = function (callback) {
-        var self = this;
-        self.state = undefined;
-
-
-        $.getJSON("rest/repo/rm/openEHR/1.0.2").success(function (data) {
-            self.state = "ok";
-            self.model = data;
-            callback(self);
-        }).error(function () {
-            self.state = "error";
-        });
-
-
-        self.isDescendantOf = function (rmType, parentRmType) {
-            while (true) {
-                if (rmType === parentRmType) return true;
-
-                var type = self.model.types[rmType];
-                if (!type || !type.parent) return false;
-                rmType = type.parent;
-            }
-        }
-    };
 
     TemplateBuilder.openSimpleDialog = function (options) {
         options.okLabel = options.okLabel || "Ok";
@@ -1816,6 +1784,18 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
         })
     };
 
+    TemplateBuilder.exportAdltSource = function () {
+        if (!TemplateBuilder.templateModel) return;
+
+        TemplateBuilder.templateModel.saveTom(function () {
+            var templateId = TemplateBuilder.templateModel.model.archetypeId;
+            var url = "rest/repo/export/adlt/" + encodeURIComponent(templateId);
+
+            document.location = url;
+        })
+    };
+
+
     TemplateBuilder.loadTemplate = function (templateId) {
 
         $.getJSON("rest/repo/tom/" + encodeURIComponent(templateId)).success(
@@ -1837,7 +1817,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
               var parentArchetypes = {};
               for (var parentArchetypeId in presentParentArchetypes) {
                   $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat").success(function (data) {
-                      parentArchetypes[data.archetype_id.value] = new ArchetypeModel(data);
+                      parentArchetypes[data.archetype_id.value] = new AOM.ArchetypeModel(data);
                       latch.countDown();
                   });
               }
@@ -1904,7 +1884,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                       }
                       modelNode.terms = tom.terms;
                       modelNode.current.name = modelNode.terms[modelNode.archetypeModel.defaultLanguage].text;
-                      if (tom.annotations) modelNode.annotations=tom.annotations;
+                      if (tom.annotations) modelNode.annotations = tom.annotations;
 
                       for (var i in tom.items || []) {
                           var itemTom = tom.items[i];
@@ -1990,7 +1970,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
 
                         var parentArchetypeId = $('#newTemplateDialogSpecializesArchetype').val();
                         $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat").success(function (data) {
-                            var parentArchetypeModel = new ArchetypeModel(data);
+                            var parentArchetypeModel = new AOM.ArchetypeModel(data);
                             var templateModel = new TemplateBuilder.TemplateModel(parentArchetypeModel);
                             TemplateBuilder.displayTemplate(templateModel);
                         });
@@ -2019,7 +1999,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                         var addedArchetypeId = $('#includeArchetypeId').val();
 
                         $.getJSON("rest/repo/archetype/" + encodeURIComponent(addedArchetypeId) + "/flat").success(function (data) {
-                            var archetypeModel = new ArchetypeModel(data);
+                            var archetypeModel = new AOM.ArchetypeModel(data);
                             var childModel = TemplateBuilder.templateModel.buildModelDefinition(archetypeModel);
                             TemplateBuilder.templateModel.addChild(modelNode, childModel);
                             var rowsStr = TemplateBuilder.templateModel.buildTableRows(childModel);
@@ -2130,8 +2110,8 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
         };
 
 
-        TemplateBuilder.referenceModel = new ReferenceModel(callback);
-        TemplateBuilder.archetypeRepository = new ArchetypeRepository(callback);
+        TemplateBuilder.referenceModel = new AOM.ReferenceModel(callback);
+        TemplateBuilder.archetypeRepository = new AOM.ArchetypeRepository(callback);
     };
 
 })();

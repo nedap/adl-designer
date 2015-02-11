@@ -92,13 +92,15 @@ function HtmlStringBuilder() {
 }
 
 
-AmUtils = {
-    buildIntervalString: function (interval) {
+var AmUtils = function () {
+    var my = this;
+
+    my.buildIntervalString = function (interval) {
         if (!interval) return "";
         return (interval.lower ? String(interval.lower) : "0") + ".." + (interval.upper != undefined ? String(interval.upper) : "*");
-    },
+    };
 
-    parseIntervalString: function (text) {
+    my.parseIntervalString = function (text) {
         var occ = {
             "lower_included": true,
             "upper_included": true,
@@ -124,9 +126,10 @@ AmUtils = {
 
         if (occ.lower != undefined && occ.upper != undefined && occ.lower > occ.upper) return undefined;
         return occ;
-    },
+    };
 
-    getPathSegments: function (path) {
+    // @deprecated, replaced by AOM.RmPath
+    my.getPathSegments = function (path) {
         if (Array.isArray(path)) {
             return path;
         }
@@ -149,28 +152,29 @@ AmUtils = {
         }
         return result;
 
-    },
+    };
 
-    pathMatches: function (path, candidate) {
+    my.pathMatches = function (path, candidate) {
 
         function segmentMatches(path, candidate) {
-            if (path.attribute!==candidate.attribute) return false;
-            if (path.nodeId!==undefined) {
-                if (path.nodeId!==candidate.nodeId) return false;
+            if (path.attribute !== candidate.attribute) return false;
+            if (path.nodeId !== undefined) {
+                if (path.nodeId !== candidate.nodeId) return false;
             }
             return true;
         }
+
         path = AmUtils.getPathSegments(path);
         candidate = AmUtils.getPathSegments(candidate);
 
-        if (path.length!=candidate.length) return false;
+        if (path.length != candidate.length) return false;
         for (var i in path) {
             if (!segmentMatches(path[i], candidate[i])) return false;
         }
         return true;
-    },
+    };
 
-    clone: function (what) {
+    my.clone = function (what) {
         if (what === undefined || what === null) return what;
         if (typeof what === "object") {
             if (Array.isArray(what)) {
@@ -184,28 +188,147 @@ AmUtils = {
             }
         }
         return what;
-    },
+    };
 
     // string of 4 random characters
-    random4: function () {
+    my.random4 = function () {
         return Math.floor((1 + Math.random()) * 0x10000)
-          .toString(16)
-          .substring(1);
-    }
+            .toString(16)
+            .substring(1);
+    };
 
-};
+    my.random8 = function () {
+        return my.random4() + my.random4();
+    };
+
+    my.Errors = function (context, errors) {
+        var self = this;
+        context = (context && context.length > 0) ? context + "." : "";
+        errors = errors || [];
+
+        self.getErrors = function () {
+            return errors;
+        };
+
+        self.add = function (error, location) {
+            location = context + (location || "");
+            var errorItem = {
+                error: error
+            };
+            if (location.length > 0) {
+                errorItem.location = location;
+            }
+
+            errors.push(errorItem);
+        };
+
+        self.validate = function (condition, error, location) {
+            if (!condition) {
+                self.add(error, location);
+            }
+            return condition;
+        };
+
+        self.sub = function (ctx) {
+            ctx = context + (ctx || "");
+            return new my.Errors(ctx, errors);
+        }
+    };
+
+    /**
+     * Cleans object properties according to a given criteria. Cleanup wil be performed in place.
+     *
+     * @param obj object to clean
+     * @param {Number|function?} level what properties to remove: <ul>
+     *     <li>0 (or undefined) = remove undefined
+     *     <li>1=remove undefined/false
+     *     <li>2=remove falsy
+     *     <li>3=remove falsy/empty list/empty obj
+     *     <li>function(v) = remove property if function returns false
+     *     </ul>
+     * @return {Object} obj
+     */
+    my.cleanObjectProperties = function (obj, level) {
+        function isNotUndefined(v) {
+            return v !== undefined;
+        }
+
+        function isNotUndefinedOrFalse(v) {
+            return !(v === undefined || v === false);
+        }
+
+        function isFalsy(v) {
+            return v;
+        }
+
+        function isNotFalsyOrEmpty(v) {
+            return v && v !== [] && !(typeof v === "object" && $.isEmptyObject(v));
+        }
+
+        if (level === 0 || level === undefined) level = isNotUndefined;
+        else if (level === 1) level = isNotUndefinedOrFalse;
+        else if (level === 2) level = isFalsy;
+        else if (level === 3) level = isNotFalsyOrEmpty;
+
+        if (typeof level !== "function" || typeof obj !== "object") {
+            return obj;
+        }
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                if (!level(obj[key])) {
+                    delete obj[key];
+                }
+            }
+        }
+
+        return obj;
+    };
+
+    /**
+     * Modifies a list to a set. Example: ['a','b', 'c'] to {'a':true, 'b':true, 'c':true}. This makes checks for presence simpler
+     * @param {string[]} list list to be converted to set
+     * @returns {{}} an object with obj[item]=true for each item in the list
+     */
+    my.listToSet = function (list) {
+        var result = {};
+        for (var i in list) {
+            result[list[i]] = true;
+        }
+        return result;
+    };
+
+    /**
+     * Checks if a parameter is an integer
+     * @param num number to check.
+     * @returns {boolean} true if a parameter is an integer, false if float or not a number
+     */
+    my.isInt = function (num) {
+        if (typeof num !== "number") return false;
+        if (isNaN(num)) return false;
+        if (String(num).indexOf('.') >= 0) return false;
+        return true;
+    };
+
+
+    return my;
+}();
 
 
 // usage: new AmInterval(intervalObject) or new AmInterval(loNumber, hiNumber)
 
 var AmInterval = {
-    of: function (lo, hi) {
+    of: function (lo, hi, type) {
         var result = {
             lower: lo,
             upper: hi
         };
         result.lower_included = typeof a != "undefined";
-        result.lower_included = typeof b != "undefined";
+        result.upper_included = typeof b != "undefined";
+        result.lower_unbounded = !result.lower_included;
+        result.upper_unbounded = !result.upper_included;
+        if (type) {
+            result["@type"] = "MULTIPLICITY_INTERVAL";
+        }
         return result;
     },
 
@@ -273,8 +396,32 @@ var AmInterval = {
         if (!self) return "";
         if (self.lower === undefined && self.upper === undefined) return "";
         return (self.lower ? String(self.lower) : "*") + ".." +
-               (self.upper != undefined ? String(self.upper) : "*");
+            (self.upper != undefined ? String(self.upper) : "*");
     },
+
+    toContainedString: function (self) {
+        var result = "";
+        result += self.lower_included ? "[" : "(";
+        result += self.lower_unbounded ? "*" : self.lower;
+        result += "..";
+        result += self.upper_unbounded ? "*" : self.upper;
+        result += self.upper_included ? "]" : ")";
+        return result;
+    },
+
+    parseContainedString: function (str, type) {
+        if (str === undefined) return undefined;
+        str = str.trim();
+        var interval = AmInterval.parseNumberInterval(str.substring(1, str.length - 1));
+        if (!interval) return undefined;
+        interval.lower_included = str[0] === '[' && interval.lower !== undefined;
+        interval.upper_included = str[str.length - 1] === ']' && interval.upper !== undefined;
+        if (type) {
+            interval["@type"] = type;
+        }
+        return interval;
+    },
+
 
     parseNumberInterval: function (text) {
         var occ = {
@@ -289,15 +436,15 @@ var AmInterval = {
             occ.lower_unbounded = true;
             occ.lower_included = true;
         } else {
-            occ.lower = parseInt(splits[0]);
-            if (occ.lower === undefined) return undefined;
+            occ.lower = Number(splits[0]);
+            if (occ.lower === undefined || isNaN(occ.lower)) return undefined;
         }
         if (splits[1] === "*") {
             occ.upper_unbounded = true;
             occ.upper_included = false;
         } else {
-            occ.upper = parseInt(splits[1]);
-            if (occ.upper === undefined) return undefined;
+            occ.upper = Number(splits[1]);
+            if (occ.upper === undefined || isNaN(occ.upper)) return undefined;
         }
 
         if (occ.lower != undefined && occ.upper != undefined && occ.lower > occ.upper) return undefined;
@@ -335,6 +482,115 @@ var AmInterval = {
 
 };
 
+var Iso8601Period = function (period) {
+    var self = this;
+
+    function parse(str) {
+        str = str.toUpperCase();
+        if (str.charAt(0) !== 'P') throw "Bad period: " + str;
+        var i = 1;
+        var result = {};
+        var timePart = false;
+        while (i < str.length) {
+            var numStr = '';
+            var c = str.charAt(i++);
+            if (c == 'T') {
+                timePart = true;
+                c = str.charAt(i++);
+            }
+
+            while (c >= '0' && c <= '9') {
+                numStr += c;
+                c = str.charAt(i++);
+            }
+            var num = parseInt(numStr);
+            if (isNaN(num)) throw "Bad period: " + str;
+
+            switch (c) {
+                case 'Y':
+                    result.years = num;
+                    break;
+                case 'M':
+                    if (timePart) result.minutes = num; else result.months = num;
+                    break;
+                case 'W':
+                    result.weeks = num;
+                    break;
+                case 'D':
+                    result.days = num;
+                    break;
+                case 'H':
+                    result.hours = num;
+                    break;
+                case 'S':
+                    result.seconds = num;
+                    break;
+                default:
+                    throw "Bad period: " + str;
+            }
+        }
+        return result;
+    }
+
+    self.toString = function () {
+        var result = 'P';
+        var p = self.period;
+        if (p.years) {
+            result += String(p.years) + 'Y';
+        }
+        if (p.months) {
+            result += String(p.months) + 'M';
+        }
+        if (p.weeks) {
+            result += String(p.weeks) + 'W';
+        }
+        if (p.days) {
+            result += String(p.days) + 'D';
+        }
+        var time = '';
+        if (p.hours) {
+            time += String(p.hours) + 'H';
+        }
+        if (p.minutes) {
+            time += String(p.minutes) + 'M';
+        }
+        if (p.seconds) {
+            time += String(p.seconds) + 'S';
+        }
+        if (time.length > 0) {
+            result += 'T' + time;
+        }
+        return result;
+    };
+
+
+    if (typeof period === "string") {
+        self.period = parse(period);
+    } else if (typeof period === "object") {
+        self.period = period;
+    }
+};
+
+Iso8601Period.of = function (param) {
+    if (param instanceof Iso8601Period) {
+        return param;
+    }
+    return new Iso8601Period(param);
+};
+
+/**
+ *  Creates a new period from a given amount
+ *
+ * @param {string} units years,months,weeks,days,hours,minutes,seconds
+ * @param amount amount in the given units
+ * @returns {Iso8601Period}
+ */
+Iso8601Period.ofUnits = function (units, amount) {
+    var period = {};
+    period[units] = amount;
+    return new Iso8601Period(period);
+};
+
 
 var CountdownLatch = function (count) {
     var currentCount = 0;
@@ -356,7 +612,9 @@ var CountdownLatch = function (count) {
 
 
     this.execute = function (callback) {
-        callbacks.push(callback);
+        if (callback) {
+            callbacks.push(callback);
+        }
         if (currentCount > count) {
             executeCallbacks();
         }
