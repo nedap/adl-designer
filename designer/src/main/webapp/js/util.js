@@ -482,6 +482,115 @@ var AmInterval = {
 
 };
 
+var Iso8601Period = function (period) {
+    var self = this;
+
+    function parse(str) {
+        str = str.toUpperCase();
+        if (str.charAt(0) !== 'P') throw "Bad period: " + str;
+        var i = 1;
+        var result = {};
+        var timePart = false;
+        while (i < str.length) {
+            var numStr = '';
+            var c = str.charAt(i++);
+            if (c == 'T') {
+                timePart = true;
+                c = str.charAt(i++);
+            }
+
+            while (c >= '0' && c <= '9') {
+                numStr += c;
+                c = str.charAt(i++);
+            }
+            var num = parseInt(numStr);
+            if (isNaN(num)) throw "Bad period: " + str;
+
+            switch (c) {
+                case 'Y':
+                    result.years = num;
+                    break;
+                case 'M':
+                    if (timePart) result.minutes = num; else result.months = num;
+                    break;
+                case 'W':
+                    result.weeks = num;
+                    break;
+                case 'D':
+                    result.days = num;
+                    break;
+                case 'H':
+                    result.hours = num;
+                    break;
+                case 'S':
+                    result.seconds = num;
+                    break;
+                default:
+                    throw "Bad period: " + str;
+            }
+        }
+        return result;
+    }
+
+    self.toString = function () {
+        var result = 'P';
+        var p = self.period;
+        if (p.years) {
+            result += String(p.years) + 'Y';
+        }
+        if (p.months) {
+            result += String(p.months) + 'M';
+        }
+        if (p.weeks) {
+            result += String(p.weeks) + 'W';
+        }
+        if (p.days) {
+            result += String(p.days) + 'D';
+        }
+        var time = '';
+        if (p.hours) {
+            time += String(p.hours) + 'H';
+        }
+        if (p.minutes) {
+            time += String(p.minutes) + 'M';
+        }
+        if (p.seconds) {
+            time += String(p.seconds) + 'S';
+        }
+        if (time.length > 0) {
+            result += 'T' + time;
+        }
+        return result;
+    };
+
+
+    if (typeof period === "string") {
+        self.period = parse(period);
+    } else if (typeof period === "object") {
+        self.period = period;
+    }
+};
+
+Iso8601Period.of = function (param) {
+    if (param instanceof Iso8601Period) {
+        return param;
+    }
+    return new Iso8601Period(param);
+};
+
+/**
+ *  Creates a new period from a given amount
+ *
+ * @param {string} units years,months,weeks,days,hours,minutes,seconds
+ * @param amount amount in the given units
+ * @returns {Iso8601Period}
+ */
+Iso8601Period.ofUnits = function (units, amount) {
+    var period = {};
+    period[units] = amount;
+    return new Iso8601Period(period);
+};
+
 
 var CountdownLatch = function (count) {
     var currentCount = 0;

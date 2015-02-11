@@ -77,7 +77,6 @@
 </div>
 
 
-
 {>C_BOOLEAN}
 <div class="form-horizontal">
     <div class="form-group">
@@ -96,6 +95,90 @@
         <div class="col-sm-6">
             <select id="{{panel_id}}_assumed_value" class="form-control">
             </select>
+        </div>
+    </div>
+</div>
+
+{>C_DURATION}
+<div class="form-horizontal">
+    <div class="form-group duration_pattern_panel">
+        <div class="col-sm-12">
+            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}}>Allow all time units
+        </div>
+        <div id="{{panel_id}}_pattern_custom" class="custom">
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_years" {{#if pattern.years}}checked{{/if}}>Years
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_hours" {{#if pattern.hours}}checked{{/if}}>Hours
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}}>Months
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}}>Minutes
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_weeks" {{#if pattern.weeks}}checked{{/if}}>Weeks
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}}>Seconds
+            </div>
+            <div class="col-sm-6">
+                <input type="checkbox" id="{{panel_id}}_pattern_days" {{#if pattern.days}}checked{{/if}}>Days
+            </div>
+            <div class="col-sm-6"></div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-6 control-label">Units</label>
+
+        <div class="col-sm-6">
+            <select id="{{panel_id}}_units" class="form-control input-sm data">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+                <option value="hours">Hours</option>
+                <option value="minutes">Minutes</option>
+                <option value="seconds">Seconds</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_lower" class="col-sm-4 control-label">Min value</label>
+
+        <div class="col-sm-4">
+            <select id="{{panel_id}}_lower_included" class="form-control input-sm data">
+                <option value="true">&gt;=</option>
+                <option value="false">&gt;</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <input id="{{panel_id}}_lower" type="number" class="form-control input-sm data" value="{{range.lower}}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_upper" class="col-sm-4 control-label">Max value</label>
+
+        <div class="col-sm-4">
+            <select id="{{panel_id}}_upper_included" class="form-control  input-sm data">
+                <option value="true">=&lt;</option>
+                <option value="false">&lt;</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <input id="{{panel_id}}_upper" type="number" class="form-control input-sm data" value="{{range.upper}}"/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="{{panel_id}}_assumed_value" class="col-sm-4 control-label">Assumed value</label>
+
+        <div class="col-sm-8">
+            <input id="{{panel_id}}_assumed_value" type="number" class="form-control input-sm data"
+                   value="{{assumed_value}}"/>
         </div>
     </div>
 </div>

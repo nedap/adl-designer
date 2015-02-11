@@ -81,8 +81,7 @@
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
                 var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "type": "C_REAL"
+                    "panel_id": GuiUtils.generateId(), "type": "C_REAL"
                 };
                 context.range_id = GuiUtils.generateId();
                 context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
@@ -126,8 +125,7 @@
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
                 var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "type": "C_INTEGER"
+                    "panel_id": GuiUtils.generateId(), "type": "C_INTEGER"
                 };
                 context.range_id = GuiUtils.generateId();
                 context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
@@ -157,10 +155,8 @@
                 } else {
                     cons.range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
                     errors.validate(cons.range, "Invalid interval", "range");
-                    errors.validate(cons.range.lower === undefined || AmUtils.isInt(cons.range.lower),
-                        "Invalid integer", "range.lower");
-                    errors.validate(cons.range.upper === undefined || AmUtils.isInt(cons.range.upper),
-                        "Invalid integer", "range.upper");
+                    errors.validate(cons.range.lower === undefined || AmUtils.isInt(cons.range.lower), "Invalid integer", "range.lower");
+                    errors.validate(cons.range.upper === undefined || AmUtils.isInt(cons.range.upper), "Invalid integer", "range.upper");
                     if (cons.range && cons.range.upper === undefined && cons.range.lower === undefined) {
                         cons.range = undefined;
                     }
@@ -180,9 +176,7 @@
 
                 cons = cons || {};
                 var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "type": "C_TERMINOLOGY_CODE",
-                    assumed_value: cons.assumed_value
+                    "panel_id": GuiUtils.generateId(), "type": "C_TERMINOLOGY_CODE", assumed_value: cons.assumed_value
                 };
                 context.type_internal = cons.code_list && cons.code_list.length > 0;
 
@@ -254,82 +248,74 @@
                 }
 
 
-                GuiUtils.applyTemplate(
-                    "properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
-                        targetElement.append(html);
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
+                    targetElement.append(html);
 
 
-                        var panelInternal = targetElement.find("#" + context.panel_id + "_internal_panel");
-                        var panelExternal = targetElement.find("#" + context.panel_id + "_external_panel");
+                    var panelInternal = targetElement.find("#" + context.panel_id + "_internal_panel");
+                    var panelExternal = targetElement.find("#" + context.panel_id + "_external_panel");
 
-                        var radioInternal = targetElement.find("#" + context.panel_id + "_internal");
-                        var radioExternal = targetElement.find("#" + context.panel_id + "_external");
-                        var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
+                    var radioInternal = targetElement.find("#" + context.panel_id + "_internal");
+                    var radioExternal = targetElement.find("#" + context.panel_id + "_external");
+                    var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
 
-                        updateInternalAssumedValue(assumedValueSelect);
+                    updateInternalAssumedValue(assumedValueSelect);
 
-                        assumedValueSelect.change(
-                            function () {
-                                context.assumed_value = assumedValueSelect.val();
-                            });
-
-                        radioInternal.change(
-                            function () {
-                                updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                                context.type_internal = radioInternal.prop('checked');
-                            });
-                        radioExternal.change(
-                            function () {
-                                updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                                context.type_internal = !radioExternal.prop('checked');
-                            });
-
-                        radioInternal.prop("checked", context.type_internal);
-                        radioExternal.prop("checked", !context.type_internal);
-
-                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-
-                        targetElement.find('#' + context.panel_id + "_add_new_term").click(
-                            function () {
-                                stage.archetypeEditor.openAddNewTermDefinitionDialog(
-                                    stage.archetypeModel, function (nodeId) {
-                                        addDefinedTerm(nodeId);
-                                        updateInternalAssumedValue(assumedValueSelect);
-                                    })
-                            });
-
-                        targetElement.find('#' + context.panel_id + "_remove_term").click(
-                            function () {
-                                var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
-                                var option = select.find(":selected");
-                                if (option.length > 0) {
-                                    var nodeId = option.val();
-                                    delete context.internal_defined_codes[nodeId];
-                                    option.remove();
-                                    if (context.assumed_value === nodeId) {
-                                        updateInternalAssumedValue(assumedValueSelect);
-                                    }
-                                }
-                            });
-
-                        targetElement.find('#' + context.panel_id + "_add_existing_term").click(
-                            function () {
-                                var dialogContext = {
-                                    terms: getAvailableInternalTerms(context.internal_defined_codes)
-                                };
-                                if ($.isEmptyObject(dialogContext.terms)) return;
-
-                                stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
-                                    for (var i in selectedTerms) {
-                                        var nodeId = selectedTerms[i];
-                                        addDefinedTerm(nodeId);
-                                        updateInternalAssumedValue(assumedValueSelect);
-                                    }
-                                });
-                            });
-
-
+                    assumedValueSelect.change(function () {
+                        context.assumed_value = assumedValueSelect.val();
                     });
+
+                    radioInternal.change(function () {
+                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                        context.type_internal = radioInternal.prop('checked');
+                    });
+                    radioExternal.change(function () {
+                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                        context.type_internal = !radioExternal.prop('checked');
+                    });
+
+                    radioInternal.prop("checked", context.type_internal);
+                    radioExternal.prop("checked", !context.type_internal);
+
+                    updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+
+                    targetElement.find('#' + context.panel_id + "_add_new_term").click(function () {
+                        stage.archetypeEditor.openAddNewTermDefinitionDialog(stage.archetypeModel, function (nodeId) {
+                            addDefinedTerm(nodeId);
+                            updateInternalAssumedValue(assumedValueSelect);
+                        })
+                    });
+
+                    targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
+                        var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
+                        var option = select.find(":selected");
+                        if (option.length > 0) {
+                            var nodeId = option.val();
+                            delete context.internal_defined_codes[nodeId];
+                            option.remove();
+                            if (context.assumed_value === nodeId) {
+                                updateInternalAssumedValue(assumedValueSelect);
+                            }
+                        }
+                    });
+
+                    targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
+                        var dialogContext = {
+                            terms: getAvailableInternalTerms(context.internal_defined_codes)
+                        };
+                        if ($.isEmptyObject(dialogContext.terms)) return;
+
+                        stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
+                            for (var i in selectedTerms) {
+                                var nodeId = selectedTerms[i];
+                                addDefinedTerm(nodeId);
+                                updateInternalAssumedValue(assumedValueSelect);
+                            }
+                        });
+                    });
+
+
+                });
 
             };
 
@@ -373,8 +359,7 @@
                             // create new value set
                             valueSetCode = stage.archetypeModel.generateSpecializedTermId("ac");
                             valueSet = {
-                                "id": valueSetCode,
-                                members: []
+                                "id": valueSetCode, members: []
                             };
                             // give term_definition to the new value set, for each language
                             var term_definitions = stage.archetypeModel.data.ontology.term_definitions;
@@ -428,9 +413,7 @@
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
                 var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "type": "C_BOOLEAN",
-                    true_valid: cons.true_valid !== false, // undefined defaults to true
+                    "panel_id": GuiUtils.generateId(), "type": "C_BOOLEAN", true_valid: cons.true_valid !== false, // undefined defaults to true
                     false_valid: cons.false_valid !== false, // undefined defaults to true
                     assumed_value: cons.assumed_value === undefined ? "" : (cons.assumed_value ? "true" : "false")
                 };
@@ -456,29 +439,28 @@
                 }
 
 
-                GuiUtils.applyTemplate(
-                    "properties/constraint-primitive|C_BOOLEAN", context, function (html) {
-                        targetElement.append(html);
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_BOOLEAN", context, function (html) {
+                    targetElement.append(html);
 
-                        var trueValid = targetElement.find("#" + context.panel_id + "_true_valid");
-                        var falseValid = targetElement.find("#" + context.panel_id + "_false_valid");
-                        var assumedValue = targetElement.find("#" + context.panel_id + "_assumed_value");
+                    var trueValid = targetElement.find("#" + context.panel_id + "_true_valid");
+                    var falseValid = targetElement.find("#" + context.panel_id + "_false_valid");
+                    var assumedValue = targetElement.find("#" + context.panel_id + "_assumed_value");
 
-                        trueValid.prop('checked', context.true_valid);
-                        falseValid.prop('checked', context.false_valid);
+                    trueValid.prop('checked', context.true_valid);
+                    falseValid.prop('checked', context.false_valid);
+                    populateAssumedValueSelect(trueValid, falseValid, assumedValue);
+
+                    trueValid.change(function () {
                         populateAssumedValueSelect(trueValid, falseValid, assumedValue);
-
-                        trueValid.change(function () {
-                            populateAssumedValueSelect(trueValid, falseValid, assumedValue);
-                        });
-                        falseValid.change(function () {
-                            populateAssumedValueSelect(trueValid, falseValid, assumedValue);
-                        });
-
-                        assumedValue.change(function () {
-                            context.assumed_value = assumedValue.val();
-                        });
                     });
+                    falseValid.change(function () {
+                        populateAssumedValueSelect(trueValid, falseValid, assumedValue);
+                    });
+
+                    assumedValue.change(function () {
+                        context.assumed_value = assumedValue.val();
+                    });
+                });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
@@ -495,12 +477,200 @@
             handler.updateConstraint = function (stage, context, cons, errors) {
                 cons.true_valid = context.true_valid;
                 cons.false_valid = context.false_valid;
-                cons.assumed_value = context.assumed_value === 'true' ? true :
-                    (context.assumed_value === 'false' ? false : undefined);
+                cons.assumed_value = context.assumed_value === 'true' ? true : (context.assumed_value === 'false' ? false : undefined);
             };
 
             return handler;
         }(); // handler C_BOOLEAN
+
+
+        self.handlers["C_DURATION"] = new function () {
+            var handler = this;
+
+            function maxPeriodUnit(period) {
+                return period.years ? "years" : period.months ? "months" : period.weeks ? "weeks" : period.days ? "days" : period.minutes ? "minutes" : period.seconds ? "seconds" : "years";
+            }
+
+            function getInt(str) {
+                if (str === undefined) return undefined;
+                var num = parseInt(str);
+                if (isNaN(num)) return undefined;
+                return num;
+            }
+
+            function parsePattern(str) {
+                var result = {};
+                if (str === undefined || str.length === 0) {
+                    result.all = true;
+                    return result;
+                }
+                var i = 1; // skip first 'P'
+                var timePart = false;
+                while (i < str.length) {
+                    var c = str.charAt(i++);
+                    switch (c) {
+                        case 'Y':
+                            result.years = true;
+                            break;
+                        case 'M':
+                            if (timePart) result.months = true; else result.minutes = true;
+                            break;
+                        case 'W':
+                            result.weeks = true;
+                            break;
+                        case 'D':
+                            res.days = true;
+                            break;
+                        case 'T':
+                            timePart = true;
+                            break;
+                        case 'H':
+                            result.hours = true;
+                            break;
+                        case 'S':
+                            result.seconds = true;
+                            break;
+                    }
+                }
+                return result;
+            }
+
+            function patternToString(pattern) {
+                if (pattern.all) return undefined;
+                var result = 'P';
+                if (pattern.years) result += 'Y';
+                if (pattern.months) result += 'M';
+                if (pattern.weeks) result += 'W';
+                if (pattern.days) result += 'D';
+                var time = '';
+                if (pattern.hours) time += 'H';
+                if (pattern.minutes) time += 'M';
+                if (pattern.seconds) time += 'S';
+                if (time.length > 0) {
+                    result += 'T' + time;
+                }
+                return result;
+            }
+
+            handler.createContext = function (stage, cons) {
+                cons = cons || {};
+
+                var context = {
+                    "panel_id": GuiUtils.generateId(), "type": "C_DURATION"
+                };
+                if (cons.range) {
+                    var anyPeriod = cons.range.lower || cons.range.upper;
+                    if (anyPeriod) {
+                        context.range = {
+                            lower_included: cons.range.lower_included, upper_included: cons.range.upper_included
+                        };
+
+                        anyPeriod = Iso8601Period.of(anyPeriod);
+                        context.units = maxPeriodUnit(anyPeriod.period);
+
+                        context.range.lower = cons.range.lower ? Iso8601Period.of(cons.range.lower).period[context.units] : undefined;
+                        context.range.upper = cons.range.upper ? Iso8601Period.of(cons.range.upper).period[context.units] : undefined;
+                    }
+                }
+                if (cons.assumed_value) {
+                    if (!context.units) {
+                        context.units = maxPeriodUnit(Iso8601Period.of(cons.assumed_value));
+                    }
+                    context.assumed_value = Iso8601Period.of(cons.assumed_value).period[context.units];
+                }
+                context.units = context.units || "years";
+                if (!context.range) {
+                    context.range = {
+                        lower_included: true, lower: '', upper_included: true, upper: ''
+                    };
+                }
+                context.pattern = parsePattern(cons.pattern);
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+
+
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_DURATION", context, function (html) {
+                    targetElement.append(html);
+
+                    var units = targetElement.find('#' + context.panel_id + '_units');
+
+                    var lowerIncluded = targetElement.find('#' + context.panel_id + '_lower_included');
+                    var upperIncluded = targetElement.find('#' + context.panel_id + '_upper_included');
+
+                    var patternAll = targetElement.find('#' + context.panel_id + '_pattern_all');
+
+                    var patternCustomPanel = targetElement.find('#' + context.panel_id + '_pattern_custom');
+
+                    GuiUtils.setVisible(patternCustomPanel, !patternAll.prop('checked'));
+
+                    patternAll.change(function() {
+                        GuiUtils.setVisible(patternCustomPanel, !patternAll.prop('checked'));
+                    });
+
+
+                    units.val(context.units);
+
+                    lowerIncluded.val(String(context.range.lower_included));
+                    upperIncluded.val(String(context.range.upper_included));
+                });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                var units = targetElement.find('#' + context.panel_id + '_units');
+
+                var lowerIncluded = targetElement.find('#' + context.panel_id + '_lower_included');
+                var upperIncluded = targetElement.find('#' + context.panel_id + '_upper_included');
+
+                var lower = targetElement.find('#' + context.panel_id + '_lower');
+                var upper = targetElement.find('#' + context.panel_id + '_upper');
+                var assumedValue = targetElement.find('#' + context.panel_id + '_assumed_value');
+
+                context.units = units.val();
+                context.range.lower_included = Boolean(lowerIncluded.val());
+                context.range.upper_included = Boolean(upperIncluded.val());
+                context.range.lower = getInt(lower.val());
+                context.range.upper = getInt(upper.val());
+                context.assumed_value = getInt(assumedValue.val());
+
+                context.pattern={};
+                var unitStrings = ['all', 'years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
+                for (var i in unitStrings) {
+                    var unit=unitStrings[i];
+                    var element = targetElement.find('#' + context.panel_id + '_pattern_'+unit);
+                    context.pattern[unit]=element.prop('checked');
+                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                if (context.range && (context.range.lower !== undefined || context.range.upper != undefined)) {
+                    if (context.range.lower !== undefined && context.range.upper !== undefined && context.range.lower > context.range.upper) {
+                        errors.add("lower bound is greater than upper bound", "range")
+                    }
+                    var upper, lower;
+                    if (context.range.lower !== undefined) {
+                        lower = Iso8601Period.ofUnits(context.units, context.range.lower).toString();
+                    }
+                    if (context.range.upper !== undefined) {
+                        upper = Iso8601Period.ofUnits(context.units, context.range.upper).toString();
+                    }
+                    cons.range = AmInterval.of(lower, upper, "INTERVAL_OF_DURATION");
+                    cons.range.lower_included = Boolean(context.range.lower_included);
+                    cons.range.upper_included = Boolean(context.range.upper_included);
+                } else {
+                    cons.range = undefined;
+                }
+                if (context.assumed_value !== undefined) {
+                    cons.assumed_value = Iso8601Period.ofUnits(context.units, context.assumed_value).toString();
+                } else {
+                    cons.assumed_value = undefined;
+                }
+                cons.pattern = patternToString(context.pattern);
+            };
+
+            return handler;
+        }(); // C_DURATION
 
     };
 

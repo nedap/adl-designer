@@ -100,3 +100,11 @@ form .table-layout .table-cell {
 .terminology-type-choice {
     padding-bottom: 20px;
 }
+
+.duration_pattern_panel {
+    padding-bottom: 5px;
+}
+
+.duration_pattern_panel .custom {
+    padding-left: 20px;
+}

@@ -125,6 +125,7 @@ var AOM = (function () {
             return new my.RmPath(from);
         };
 
+
         my.AmQuery = function () {
             var self = this;
 
@@ -411,37 +412,6 @@ var AOM = (function () {
             }
 
 
-            /**
-             * Makes a clone of constrains, but removes all enriched properties (those that start with .);
-             * @param cons constraint
-             * @returns {*} clone of cons, but without enriched properties
-             */
-            function impoverishedClone(cons) {
-                var result;
-                if (typeof cons === "object") {
-                    if (Array.isArray(cons)) {
-                        result = [];
-                        for (var i in cons) {
-                            result.push(impoverishedClone(cons[i]));
-                        }
-                        return result;
-                    } else {
-                        result = {};
-                        for (var key in cons) {
-                            if (cons.hasOwnProperty(key)) {
-                                if (key.substring(0, 1) !== ".") {
-                                    result[key] = impoverishedClone(cons[key]);
-                                }
-                            }
-                        }
-                        return result;
-                    }
-                } else {
-                    return cons;
-                }
-            }
-
-
             //function isTuplePart(cons) {
             //    var parentAttr = cons[".parent"];
             //    if (!parentAttr) return false;
@@ -654,7 +624,7 @@ var AOM = (function () {
                             continue; // tuples completely different, check next target tuple
                         } else if (matches < attributeNames) {
                             console.warn("Partial tuple match, attributes will not be added:\ttuple:", attributeNames,
-                                         "\ttargetTuple:", targetAttributeNames);
+                                "\ttargetTuple:", targetAttributeNames);
                             return; // partial match, merging is not possible. (should throw an error?)
                         } else {
                             return; // full match, skip this source tuple
@@ -665,13 +635,13 @@ var AOM = (function () {
                         var targetChildCons = my.AmQuery.get(targetCons, "/" + attributeNames[j]);
                         if (targetChildCons) {
                             console.warn("Cannot merge tuple with existing attribute constraint:\ntuple:", attributeNames,
-                                         "\ntargetAttribute:", attributeNames[j]);
+                                "\ntargetAttribute:", attributeNames[j]);
                             return; // attribute part of tuple in source, but standalone in target (should throw an error?)
                         }
                     }
                     // all checks passed add tuple to targetCons
                     targetCons.attribute_tuples = targetCons.attribute_tuples || [];
-                    targetCons.attribute_tuples.push(impoverishedClone(attribute_tuple));
+                    targetCons.attribute_tuples.push(my.impoverishedClone(attribute_tuple));
                 }
 
                 // add regular attributes
@@ -679,7 +649,7 @@ var AOM = (function () {
                     var attribute = cons.attributes[i];
                     var targetAttribute = my.AmQuery.get(targetCons, "/" + attribute.rm_attribute_name);
                     if (!targetAttribute) {
-                        targetAttribute = impoverishedClone(attribute);
+                        targetAttribute = my.impoverishedClone(attribute);
 
                         targetCons.attributes = targetCons.attributes || [];
                         targetCons.attributes.push(targetAttribute);
@@ -735,8 +705,8 @@ var AOM = (function () {
                 for (var i in self.translations) {
                     var lang = self.translations[i];
                     addToLanguage(td, lang, newCode,
-                                  quickTranslate(text, self.defaultLanguage, lang),
-                                  quickTranslate(description, self.defaultLanguage, lang));
+                        quickTranslate(text, self.defaultLanguage, lang),
+                        quickTranslate(description, self.defaultLanguage, lang));
                 }
 
 
@@ -843,6 +813,37 @@ var AOM = (function () {
             AmUtils.cleanObjectProperties(result);
             return result;
         };
+
+        /**
+         * Makes a clone of constrains, but removes all enriched properties (those that start with .);
+         * @param cons constraint
+         * @returns {*} clone of cons, but without enriched properties
+         */
+        my.impoverishedClone = function (cons) {
+            var result;
+            if (typeof cons === "object") {
+                if (Array.isArray(cons)) {
+                    result = [];
+                    for (var i in cons) {
+                        result.push(my.impoverishedClone(cons[i]));
+                    }
+                    return result;
+                } else {
+                    result = {};
+                    for (var key in cons) {
+                        if (cons.hasOwnProperty(key)) {
+                            if (key.substring(0, 1) !== ".") {
+                                result[key] = my.impoverishedClone(cons[key]);
+                            }
+                        }
+                    }
+                    return result;
+                }
+            } else {
+                return cons;
+            }
+        }
+
 
         return my;
     }() )

@@ -40,7 +40,7 @@
                 for (var i in tupleConstraints) {
                     var tupleConstraint = tupleConstraints[i];
                     var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
-                                              tupleConstraint.precision.list.length > 0);
+                    tupleConstraint.precision.list.length > 0);
                     var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
                     if (units === undefined) continue;
 
@@ -150,7 +150,7 @@
             handler.updateConstraint = function (stage, context, cons, errors) {
                 stage.archetypeModel.removeAttribute(["units", "magnitude", "precision"]);
 
-                cons.attribute_tuples = cons.attribute_tuples ||[];
+                cons.attribute_tuples = cons.attribute_tuples || [];
                 if (context.unit_panels.length > 0) {
                     var attributeTuple = AOM.newCAttributeTuple(["units", "magnitude", "precision"]);
 
@@ -405,7 +405,6 @@
                 }
 
 
-
                 GuiUtils.applyTemplate(
                     "properties/constraint-openehr|DV_ORDINAL", context, function (html) {
                         targetElement.append(html);
@@ -505,7 +504,7 @@
                                 });
 
                         });
-               });
+                    });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
@@ -525,7 +524,7 @@
                         var valueCons = AOM.newCInteger([contextValue.value]);
 
                         var symbolCons = AOM.newCTerminologyCode();
-                        symbolCons.code_list=[contextValue.term_id];
+                        symbolCons.code_list = [contextValue.term_id];
 
                         attributeTuple.children.push(AOM.newCObjectTuple([valueCons, symbolCons]));
                     }
@@ -536,7 +535,56 @@
             return handler;
         }(); // DV_ORDINAL
 
+        self.handlers["DV_DURATION"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_DURATION",
+                    value: stage.archetypeEditor.getRmTypeHandler("C_DURATION").createContext(stage, AOM.AmQuery.get(cons, "value"))
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_DURATION", context, function (generatedDom) {
+
+                        generatedDom = $(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.getRmTypeHandler("C_DURATION")
+                    .updateContext(stage, context.value, targetElement.find('#' + context.value.panel_id));
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                var cValue = AOM.AmQuery.get(cons, "value");
+                if (!cValue) {
+                    cValue = AOM.newCBoolean();
+
+                    var aValue = AOM.newCAttribute("value");
+                    aValue.children = [cValue];
+                    cons.attributes = cons.attributes || [];
+                    cons.attributes.push(aValue);
+                }
+
+                stage.archetypeEditor.getRmTypeHandler("C_DURATION").updateConstraint(
+                    stage, context.value, cValue, errors.sub("value"));
+            };
+
+            return handler;
+        }();
+
     };
+
+ // DV_DURATION
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
 }());

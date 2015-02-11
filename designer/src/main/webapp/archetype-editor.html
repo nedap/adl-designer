@@ -37,10 +37,6 @@
     <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-3.3.2/js/bootstrap.js"></script>
 
-    <!-- Bootstrap - duallistbox -->
-    <link href="lib/bootstrap-duallistbox-3.0.2/bootstrap-duallistbox.min.css" rel="stylesheet" type="text/css"/>
-    <script src="lib/bootstrap-duallistbox-3.0.2/jquery.bootstrap-duallistbox.min.js"></script>
-
     <!-- Handlebars -->
     <script src="lib/handlebars-v2.0.0.js"></script>
 
@@ -76,7 +72,8 @@
 //                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
 //                var archetypeId = "openEHR-EHR-CLUSTER.coordination.v1.0.0";  // DV_ORDINAL, DV_TEXT, DV_CODED_TEXT
 //                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
-                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
+//                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
+                var archetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
                 $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
                   function (data) {
                       var archetypeModel = new AOM.EditableArchetypeModel(data);
@@ -113,7 +110,7 @@
                             <div id="archetype-editor-definition-tree" style="height:600px"></div>
                         </td>
                         <td style="width:300px; vertical-align: top">
-                            <div id="archetype-editor-definition-node-properties" class="col-sm-4"></div>
+                            <div id="archetype-editor-definition-node-properties"></div>
                         </td>
                     </tr>
                 </table>
