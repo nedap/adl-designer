@@ -330,6 +330,42 @@ var ArchetypeEditor = (function () {
             }
         };
 
+        my.applySubModulesHide = function (stage, generatedDom, context) {
+            for (var key in context) {
+                var prop = context[key];
+                if (typeof prop === "object") {
+                    if (prop.type && prop.panel_id) {
+                        var handler = my.getRmTypeHandler(prop.type);
+                        if (handler && handler.hide) {
+                            var targetElement = generatedDom.find("#" + prop.panel_id);
+                            if (targetElement.length > 0) {
+                                handler.hide(stage, prop, targetElement);
+                            }
+                        }
+                    }
+                    my.applySubModules(stage, generatedDom, prop);
+                }
+            }
+        };
+
+        my.applySubModulesUpdateContext = function (stage, generatedDom, context) {
+            for (var key in context) {
+                var prop = context[key];
+                if (typeof prop === "object") {
+                    if (prop.type && prop.panel_id) {
+                        var handler = my.getRmTypeHandler(prop.type);
+                        if (handler) {
+                            var targetElement = generatedDom.find("#" + prop.panel_id);
+                            if (targetElement.length > 0) {
+                                handler.updateContext(stage, prop, targetElement);
+                            }
+                        }
+                    }
+                    my.applySubModules(stage, generatedDom, prop);
+                }
+            }
+        };
+
 
         my.useArchetype = function (archetypeModel) {
             my.archetypeModel = archetypeModel;

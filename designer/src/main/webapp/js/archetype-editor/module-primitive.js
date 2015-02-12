@@ -638,8 +638,8 @@
                 var assumedValue = targetElement.find('#' + context.panel_id + '_assumed_value');
 
                 context.units = units.val();
-                context.range.lower_included = Boolean(lowerIncluded.val());
-                context.range.upper_included = Boolean(upperIncluded.val());
+                context.range.lower_included = lowerIncluded.val()==='true';
+                context.range.upper_included = upperIncluded.val()==='true';
                 context.range.lower = getInt(lower.val());
                 context.range.upper = getInt(upper.val());
                 context.assumed_value = getInt(assumedValue.val());
@@ -666,8 +666,8 @@
                         upper = Iso8601Period.ofUnits(context.units, context.range.upper).toString();
                     }
                     cons.range = AmInterval.of(lower, upper, "INTERVAL_OF_DURATION");
-                    cons.range.lower_included = Boolean(context.range.lower_included);
-                    cons.range.upper_included = Boolean(context.range.upper_included);
+                    cons.range.lower_included = context.range.lower_included==='true';
+                    cons.range.upper_included = context.range.upper_included==='true';
                 } else {
                     cons.range = undefined;
                 }

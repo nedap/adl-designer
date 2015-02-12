@@ -106,6 +106,20 @@ AOM = (function (AOM) {
         };
         return result;
     };
+    /**
+     * Creates new C_REAL constraint
+     * @param {number[]?} list valid values list
+     * @returns {object} C_REAL constraint
+     */
+    my.newCReal = function(list) {
+        var result = {
+            "@type": "C_REAL",
+            rm_type_name: "C_REAL",
+            list: list||[],
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
 
     /**
      * Creates new C_TERMINOLOGY_CODE constraint
