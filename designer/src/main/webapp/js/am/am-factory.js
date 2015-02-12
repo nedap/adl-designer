@@ -131,6 +131,31 @@ AOM = (function (AOM) {
         };
         return result;
     };
+    /**
+     * Creates new C_DURATION constraint
+     * @returns {object} C_DURATION constraint
+     */
+    my.newCDuration = function() {
+        var result = {
+            "@type": "C_DURATION",
+            rm_type_name: "C_DURATION",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
+    /**
+     * Creates new C_DATE_TIME constraint
+     * @returns {object} C_DATE_TIME constraint
+     */
+    my.newCDateTime = function() {
+        var result = {
+            "@type": "C_DATE_TIME",
+            rm_type_name: "C_DATE_TIME",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
 
 
     return my;

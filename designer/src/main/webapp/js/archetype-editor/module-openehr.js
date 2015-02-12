@@ -567,7 +567,7 @@
             handler.updateConstraint = function (stage, context, cons, errors) {
                 var cValue = AOM.AmQuery.get(cons, "value");
                 if (!cValue) {
-                    cValue = AOM.newCBoolean();
+                    cValue = AOM.newCDuration();
 
                     var aValue = AOM.newCAttribute("value");
                     aValue.children = [cValue];
@@ -640,9 +640,61 @@
             };
 
             return handler;
+        }(); // DV_IDENTIFIER
+
+        self.handlers["DV_DATE_TIME"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var type = cons ? cons.rm_type_name : 'DV_DATE_TIME';
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: type,
+                    value: stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, AOM.AmQuery.get(cons, "value"))
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_DATE_TIME", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.hide = function (stage, context, targetElement) {
+                var dateTimeHandler = stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME');
+                if (dateTimeHandler.hide) {
+                    dateTimeHandler.hide(stage, context.value, targetElement.find('#'+context.value.panel_id));
+                }
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME")
+                    .updateContext(stage, context.value, targetElement.find('#' + context.value.panel_id));
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                var cValue = AOM.AmQuery.get(cons, "value");
+                if (!cValue) {
+                    cValue = AOM.newCDateTime();
+                    var aValue = AOM.newCAttribute("value");
+                    aValue.children = [cValue];
+                    cons.attributes = cons.attributes || [];
+                    cons.attributes.push(aValue);
+                }
+
+                stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME").updateConstraint(
+                    stage, context.value, cValue, errors.sub("value"));
+            };
+
+            return handler;
         }(); // DV_DURATION
-
-
     };
 
 
