@@ -580,11 +580,71 @@
             };
 
             return handler;
-        }();
+        }(); // DV_DURATION
+
+        self.handlers["DV_IDENTIFIER"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_IDENTIFIER"
+                };
+                var issuerCons = AOM.AmQuery.get(cons, "issuer");
+                var typeCons = AOM.AmQuery.get(cons, "type");
+                var assignerCons = AOM.AmQuery.get(cons, "assigner");
+                if (issuerCons) {
+                    context.issuerPattern = issuerCons.pattern;
+                }
+                if (typeCons) {
+                    context.typePattern = typeCons.pattern;
+                }
+                if (assignerCons) {
+                    context.assignerPattern = assignerCons.pattern;
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_IDENTIFIER", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                context.issuerPattern = targetElement.find('#' + context.panel_id + '_issuer').val();
+                context.typePattern = targetElement.find('#' + context.panel_id + '_type').val();
+                context.assignerPattern = targetElement.find('#' + context.panel_id + '_assigner').val();
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                function addAttribute(pattern, attributeName) {
+                    if (pattern && pattern.length > 0) {
+                        var attr = AOM.newCAttribute(attributeName);
+                        var cstr = AOM.newCString(undefined, pattern);
+                        attr.children = [cstr];
+                        cons.attributes = cons.attributes || [];
+                        cons.attributes.push(attr);
+                    }
+                }
+
+                stage.archetypeModel.removeAttribute(["issuer", "type", "assigner"]);
+
+                addAttribute(context.issuerPattern, "issuer");
+                addAttribute(context.typePattern, "type");
+                addAttribute(context.assignerPattern, "assigner");
+            };
+
+            return handler;
+        }(); // DV_DURATION
+
 
     };
 
- // DV_DURATION
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
 }());

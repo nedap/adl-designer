@@ -78,7 +78,8 @@
                     <span class="glyphicon glyphicon-minus"></span>
                 </button>
 
-                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default" title="add existing value">
+                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default"
+                        title="add existing value">
                     <span class="glyphicon glyphicon-edit"></span>
                 </button>
                 <button id="{{panel_id}}_edit_value" type="button" class="btn btn-default" title="edit">
@@ -116,5 +117,21 @@
 {>DV_DURATION}
 <div>
     <div id="{{value.panel_id}}">
+    </div>
+</div>
+
+{>DV_IDENTIFIER}
+<div>
+    <div class="form-group">
+        <label for="{{panel_id}}_issuer">Issuer</label>
+        <input id="{{panel_id}}_issuer" type="text" class="form-control input-sm data" value="{{issuerPattern}}"/>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_type">Type</label>
+        <input id="{{panel_id}}_type" type="text" class="form-control input-sm data" value="{{typePattern}}"/>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_assigner">Assigner</label>
+        <input id="{{panel_id}}_assigner" type="text" class="form-control input-sm data" value="{{assignerPattern}}"/>
     </div>
 </div>

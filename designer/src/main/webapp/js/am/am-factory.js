@@ -77,15 +77,18 @@ AOM = (function (AOM) {
     /**
      * Creates new C_STRING constraint
      * @param {string[]?} list valid values list
+     * @param {string?} pattern regex pattern
      * @returns {object} C_STRING constraint
      */
-    my.newCString = function(list) {
+    my.newCString = function(list, pattern) {
         var result = {
             "@type": "C_STRING",
             rm_type_name: "C_STRING",
             list: list||[],
+            pattern: pattern,
             occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
         };
+        AmUtils.cleanObjectProperties(result);
         return result;
     };
 
