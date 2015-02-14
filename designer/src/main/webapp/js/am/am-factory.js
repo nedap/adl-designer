@@ -77,15 +77,18 @@ AOM = (function (AOM) {
     /**
      * Creates new C_STRING constraint
      * @param {string[]?} list valid values list
+     * @param {string?} pattern regex pattern
      * @returns {object} C_STRING constraint
      */
-    my.newCString = function(list) {
+    my.newCString = function(list, pattern) {
         var result = {
             "@type": "C_STRING",
             rm_type_name: "C_STRING",
             list: list||[],
+            pattern: pattern,
             occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
         };
+        AmUtils.cleanObjectProperties(result);
         return result;
     };
 
@@ -98,6 +101,20 @@ AOM = (function (AOM) {
         var result = {
             "@type": "C_INTEGER",
             rm_type_name: "C_INTEGER",
+            list: list||[],
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+    /**
+     * Creates new C_REAL constraint
+     * @param {number[]?} list valid values list
+     * @returns {object} C_REAL constraint
+     */
+    my.newCReal = function(list) {
+        var result = {
+            "@type": "C_REAL",
+            rm_type_name: "C_REAL",
             list: list||[],
             occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
         };
@@ -124,6 +141,31 @@ AOM = (function (AOM) {
         var result = {
             "@type": "C_BOOLEAN",
             rm_type_name: "C_BOOLEAN",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+    /**
+     * Creates new C_DURATION constraint
+     * @returns {object} C_DURATION constraint
+     */
+    my.newCDuration = function() {
+        var result = {
+            "@type": "C_DURATION",
+            rm_type_name: "C_DURATION",
+            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
+    /**
+     * Creates new C_DATE_TIME constraint
+     * @returns {object} C_DATE_TIME constraint
+     */
+    my.newCDateTime = function() {
+        var result = {
+            "@type": "C_DATE_TIME",
+            rm_type_name: "C_DATE_TIME",
             occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
         };
         return result;

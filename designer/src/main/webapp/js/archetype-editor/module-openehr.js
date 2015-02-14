@@ -24,6 +24,22 @@
 
         self.name = "openEHR";
 
+        /**
+         * Adds an attribute with a single constraint to a constraint
+         * @param cons target constrain
+         * @param attributeName attribute name
+         * @param childConstraint single constraint under the attribute
+         * @return childConstraint
+         */
+        function addAttributeConstraint(cons, attributeName, childConstraint) {
+            var attr = AOM.newCAttribute(attributeName);
+            attr.children = [childConstraint];
+
+            cons.attributes = cons.attributes || [];
+            cons.attributes.push(attr);
+            return childConstraint;
+        }
+
         self.handlers = {};
         self.handlers["DV_QUANTITY"] = new function () {
             var handler = this;
@@ -567,7 +583,7 @@
             handler.updateConstraint = function (stage, context, cons, errors) {
                 var cValue = AOM.AmQuery.get(cons, "value");
                 if (!cValue) {
-                    cValue = AOM.newCBoolean();
+                    cValue = AOM.newCDuration();
 
                     var aValue = AOM.newCAttribute("value");
                     aValue.children = [cValue];
@@ -580,11 +596,301 @@
             };
 
             return handler;
-        }();
+        }(); // DV_DURATION
+
+        self.handlers["DV_IDENTIFIER"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: "DV_IDENTIFIER"
+                };
+                var issuerCons = AOM.AmQuery.get(cons, "issuer");
+                var typeCons = AOM.AmQuery.get(cons, "type");
+                var assignerCons = AOM.AmQuery.get(cons, "assigner");
+                if (issuerCons) {
+                    context.issuerPattern = issuerCons.pattern;
+                }
+                if (typeCons) {
+                    context.typePattern = typeCons.pattern;
+                }
+                if (assignerCons) {
+                    context.assignerPattern = assignerCons.pattern;
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_IDENTIFIER", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                context.issuerPattern = targetElement.find('#' + context.panel_id + '_issuer').val();
+                context.typePattern = targetElement.find('#' + context.panel_id + '_type').val();
+                context.assignerPattern = targetElement.find('#' + context.panel_id + '_assigner').val();
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                function addAttribute(pattern, attributeName) {
+                    if (pattern && pattern.length > 0) {
+                        var attr = AOM.newCAttribute(attributeName);
+                        var cstr = AOM.newCString(undefined, pattern);
+                        attr.children = [cstr];
+                        cons.attributes = cons.attributes || [];
+                        cons.attributes.push(attr);
+                    }
+                }
+
+                stage.archetypeModel.removeAttribute(["issuer", "type", "assigner"]);
+
+                addAttribute(context.issuerPattern, "issuer");
+                addAttribute(context.typePattern, "type");
+                addAttribute(context.assignerPattern, "assigner");
+            };
+
+            return handler;
+        }(); // DV_IDENTIFIER
+
+        self.handlers["DV_DATE_TIME"] = new function () {
+            var handler = this;
+
+            handler.createContext = function (stage, cons) {
+                var type = cons ? cons.rm_type_name : 'DV_DATE_TIME';
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: type,
+                    value: stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, AOM.AmQuery.get(cons, "value"))
+                };
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_DATE_TIME", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.hide = function (stage, context, targetElement) {
+                var dateTimeHandler = stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME');
+                if (dateTimeHandler.hide) {
+                    dateTimeHandler.hide(stage, context.value, targetElement.find('#' + context.value.panel_id));
+                }
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME")
+                    .updateContext(stage, context.value, targetElement.find('#' + context.value.panel_id));
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                var cValue = AOM.AmQuery.get(cons, "value");
+                if (!cValue) {
+                    cValue = AOM.newCDateTime();
+                    var aValue = AOM.newCAttribute("value");
+                    aValue.children = [cValue];
+                    cons.attributes = cons.attributes || [];
+                    cons.attributes.push(aValue);
+                }
+
+                stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME").updateConstraint(
+                    stage, context.value, cValue, errors.sub("value"));
+            };
+
+            return handler;
+        }(); // DV_DATE_TIME
+
+        self.handlers["DV_DATE"] = self.handlers["DV_DATE_TIME"];
+        self.handlers["DV_TIME"] = self.handlers["DV_DATE_TIME"];
+
+
+        self.handlers["DV_PROPORTION"] = new function () {
+            var handler = this;
+
+            var Kind = {
+                ratio: {value: 0, denominator: true},
+                unitary: {value: 1, denominator: false},
+                percent: {value: 2, denominator: false},
+                fraction: {value: 3, denominator: true},
+                integer_fraction: {value: 4, denominator: true}
+            };
+
+            function hasDenominator(context) {
+                for (var k in Kind) {
+                    if (context.kinds[k]) {
+                        var kind = Kind[k];
+                        if (kind.denominator) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            handler.createContext = function (stage, cons) {
+                var type = cons ? cons.rm_type_name : 'DV_PROPORTION';
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    type: type,
+                    numerator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, AOM.AmQuery.get(cons, "numerator")),
+                    denominator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, AOM.AmQuery.get(cons, "denominator"))
+                };
+
+                var cIsIntegral = AOM.AmQuery.get(cons, "is_integral");
+                context.is_integral = cIsIntegral ? (cIsIntegral.true_valid ? 'true' : 'false') : '';
+                var cType = AOM.AmQuery.get(cons, 'type');
+
+                if (cType && cType.list && cType.list.length > 0) {
+                    context.kinds = {};
+                    for (var k in Kind) {
+                        context.kinds[k] = cType.list.indexOf(Kind[k].value) >= 0;
+                    }
+                } else {
+                    context.kinds = {};
+                    for (var k in Kind) {
+                        context.kinds[k] = true;
+                    }
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_PROPORTION", context, function (generatedDom) {
+                        function applyContextKindsToCheckboxes(checkboxes) {
+                            var prefix = context.panel_id + "_kind_";
+                            for (var i = 0; i < checkboxes.length; i++) {
+                                var checkbox = $(checkboxes[i]);
+                                var kind = checkbox.attr('id').substring(prefix.length);
+                                checkbox.prop('checked', context.kinds[kind]);
+                            }
+                        }
+
+                        function updateVisibilityFromContext() {
+                            var tabsElement = generatedDom.find('#' + context.panel_id + "_tabs");
+                            var numeratorElement = tabsElement.find('a[href="#' + context.numerator.panel_id + '"]');
+                            var denominatorElement = tabsElement.find('a[href="#' + context.denominator.panel_id + '"]');
+                            if (hasDenominator(context)) {
+                                GuiUtils.setVisible(denominatorElement, true);
+                            } else {
+                                numeratorElement.tab('show');
+                                GuiUtils.setVisible(denominatorElement, false);
+                            }
+                        }
+
+                        function applyKindsCheckboxesToContext(checkboxes) {
+                            var prefix = context.panel_id + "_kind_";
+                            for (var i = 0; i < checkboxes.length; i++) {
+                                var checkbox = $(checkboxes[i]);
+                                var kind = checkbox.attr('id').substring(prefix.length);
+                                context.kinds[kind] = checkbox.prop('checked');
+                            }
+                        }
+
+
+                        generatedDom = $(generatedDom);
+
+                        stage.archetypeEditor.applySubModules(stage, generatedDom, context);
+                        targetElement.append(generatedDom);
+
+                        generatedDom.find('#'+context.panel_id+'_integral').val(context.is_integral);
+
+                        var checkboxes = generatedDom.find('#' + context.panel_id + "_kinds_panel").find('input');
+                        applyContextKindsToCheckboxes(checkboxes);
+                        updateVisibilityFromContext();
+
+                        checkboxes.change(function () {
+                            applyKindsCheckboxesToContext(checkboxes);
+                            updateVisibilityFromContext();
+                        });
+
+                    });
+            };
+
+            handler.hide = function (stage, context, targetElement) {
+                stage.archetypeEditor.applySubModulesHide(stage, targetElement, context);
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                context.is_integral = targetElement.find('#' + context.panel_id + "_integral").val();
+
+                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+
+                function getKindsType() {
+                    var any = false;
+                    var all = true;
+                    for (var k in Kind) {
+                        if (context.kinds[k]) {
+                            any = true;
+                        } else {
+                            all = false;
+                        }
+                    }
+                    if (!any) return 'none';
+                    if (!all) return 'some';
+                    return 'all';
+                }
+
+                function getKindsList() {
+                    var result = [];
+                    for (var k in Kind) {
+                        if (context.kinds[k]) {
+                            result.push(Kind[k].value);
+                        }
+                    }
+                    return result;
+                }
+
+                stage.archetypeModel.removeAttribute(cons, ['type', 'is_integral', 'numerator', 'denominator']);
+
+                var kindsType = getKindsType();
+                if (kindsType === 'none') {
+                    errors.add('At least one proportion kind is required', 'kinds');
+                } else if (kindsType === 'some') {
+                    addAttributeConstraint(cons, 'type', AOM.newCInteger(getKindsList()));
+                }
+
+                var cNumerator = addAttributeConstraint(cons, 'numerator', AOM.newCReal());
+
+                stage.archetypeEditor.getRmTypeHandler("C_REAL").updateConstraint(
+                    stage, context.numerator, cNumerator, errors.sub("numerator"));
+                if (hasDenominator(context)) {
+                    var cDenominator = addAttributeConstraint(cons, 'denominator', AOM.newCReal());
+
+                    stage.archetypeEditor.getRmTypeHandler("C_REAL").updateConstraint(
+                        stage, context.denominator, cDenominator, errors.sub("denominator"));
+                }
+
+                if (context.is_integral && context.is_integral.length > 0) {
+                    var cIntegral = AOM.newCBoolean();
+                    var isIntegral = context.is_integral==='true';
+                    cIntegral.true_valid = isIntegral;
+                    cIntegral.false_valid = !isIntegral;
+                    addAttributeConstraint(cons, 'is_integral', cIntegral);
+                }
+            };
+
+            return handler;
+        }(); // DV_PROPORTION
 
     };
 
- // DV_DURATION
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
 }());

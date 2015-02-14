@@ -45,6 +45,15 @@
         handler.show = function (stage, context, targetElement) {
         };
 
+        /**
+         * Optional function that can perform cleanup just before the panel is destroyed.
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param {object} context contains values to populate the gui
+         * @param targetElement jquery element where the gui is displayed
+         */
+        handler.hide = function (stage, context, targetElement) {
+        };
+
         /** Updates context values from the current gui values
          * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
          * @param context
@@ -180,7 +189,7 @@
                 };
                 context.type_internal = cons.code_list && cons.code_list.length > 0;
 
-                var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at")
+                var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
 
                 // todo external data
                 if (context.type_internal) {
@@ -192,9 +201,10 @@
                         }
                     }
                     context.internal_defined_codes = presentTerminologyCodes;
-                    //context.internal_available_codes = availableTerminologyCodes;
+//                    context.internal_available_codes = availableTerminologyCodes;
                 } else {
                     context.internal_defined_codes = {};
+
                 }
 
 
@@ -605,7 +615,7 @@
 
                     GuiUtils.setVisible(patternCustomPanel, !patternAll.prop('checked'));
 
-                    patternAll.change(function() {
+                    patternAll.change(function () {
                         GuiUtils.setVisible(patternCustomPanel, !patternAll.prop('checked'));
                     });
 
@@ -628,18 +638,18 @@
                 var assumedValue = targetElement.find('#' + context.panel_id + '_assumed_value');
 
                 context.units = units.val();
-                context.range.lower_included = Boolean(lowerIncluded.val());
-                context.range.upper_included = Boolean(upperIncluded.val());
+                context.range.lower_included = lowerIncluded.val()==='true';
+                context.range.upper_included = upperIncluded.val()==='true';
                 context.range.lower = getInt(lower.val());
                 context.range.upper = getInt(upper.val());
                 context.assumed_value = getInt(assumedValue.val());
 
-                context.pattern={};
+                context.pattern = {};
                 var unitStrings = ['all', 'years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
                 for (var i in unitStrings) {
-                    var unit=unitStrings[i];
-                    var element = targetElement.find('#' + context.panel_id + '_pattern_'+unit);
-                    context.pattern[unit]=element.prop('checked');
+                    var unit = unitStrings[i];
+                    var element = targetElement.find('#' + context.panel_id + '_pattern_' + unit);
+                    context.pattern[unit] = element.prop('checked');
                 }
             };
 
@@ -656,8 +666,8 @@
                         upper = Iso8601Period.ofUnits(context.units, context.range.upper).toString();
                     }
                     cons.range = AmInterval.of(lower, upper, "INTERVAL_OF_DURATION");
-                    cons.range.lower_included = Boolean(context.range.lower_included);
-                    cons.range.upper_included = Boolean(context.range.upper_included);
+                    cons.range.lower_included = context.range.lower_included==='true';
+                    cons.range.upper_included = context.range.upper_included==='true';
                 } else {
                     cons.range = undefined;
                 }
@@ -671,6 +681,163 @@
 
             return handler;
         }(); // C_DURATION
+
+        self.handlers["C_DATE_TIME"] = new function () {
+            var handler = this;
+
+            // separate list of id to data as jstree doesn't allow additional data on nodes
+            var formatPatterns = {
+                "allow_all": {type: "C_DATE_TIME", pattern: undefined},
+                "date_and_time": {type: "C_DATE_TIME", pattern: "yyyy-mm-ddTHH:MM:SS"},
+                "date_and_partial_time": {type: "C_DATE_TIME", pattern: "yyyy-mm-ddTHH:??:??}"},
+                "date_only": {type: "C_DATE", pattern: undefined},
+                "full_date": {type: "C_DATE", pattern: "yyyy-mm-dd"},
+                "partial_date": {type: "C_DATE", pattern: "yyyy-??-XX"},
+                "partial_date_with_month": {type: "C_DATE", pattern: "yyyy-mm-??"},
+                "time_only": {type: "C_TIME", pattern: undefined},
+                "full_time": {type: "C_TIME", pattern: "HH:MM:SS"},
+                "partial_time": {type: "C_TIME", pattern: "HH:??:XX"},
+                "partial_time_with_minutes": {type: "C_TIME", pattern: "HH:MM:??"}
+            };
+
+
+            handler.createContext = function (stage, cons) {
+                cons = cons || {};
+                var context = {
+                    "panel_id": GuiUtils.generateId(),
+                    "type": cons["@type"] || "C_DATE_TIME",
+                    "pattern": cons.pattern
+                };
+
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+
+                function buildPatternTree() {
+                    var tree = [];
+                    // Allow All
+                    tree.push({
+                        id: "allow_all",
+                        text: "Allow all"
+                    });
+                    // Date and time
+                    tree.push({
+                            id: "date_and_time",
+                            text: "Date and time",
+                            children: [{
+                                id: "date_and_partial_time",
+                                text: "Date and partial time"
+                            }]
+                        }
+                    );
+                    // Date only
+                    tree.push({
+                        id: "date_only",
+                        text: "Date only",
+                        children: [{
+                            id: "full_date",
+                            text: "Full date"
+                        }, {
+                            id: "partial_date",
+                            text: "Partial date",
+                            children: [{
+                                id: "partial_date_with_month",
+                                text: "Partial date with month"
+                            }]
+                        }]
+                    });
+                    // Time only
+                    tree.push({
+                        id: "time_only",
+                        text: "Time only",
+                        children: [{
+                            id: "full_time",
+                            text: "Full time"
+                        }, {
+                            id: "partial_time",
+                            text: "Partial time",
+                            children: [{
+                                id: "partial_date_with_minutes",
+                                text: "Partial date with minutes"
+                            }]
+                        }]
+                    });
+
+                    return tree;
+                }
+
+                /**
+                 *  returns tree node id for a given pattern and ctype
+                 * @param {string?} pattern Input pattern. If absent, only undefined pattern will match
+                 * @param {string?} type AOM type. If absent, any type will match
+                 * @returns {string} pattern id, one of keys from formatPatterns
+                 */
+                function findIdFromPattern(pattern, type) {
+                    var pattern_id, pat;
+                    for (pattern_id in formatPatterns) {
+                        pat = formatPatterns[pattern_id];
+                        if ((type === undefined || type === pat.type) && pat.pattern === pattern) {
+                            return pattern_id;
+                        }
+                    }
+                    // no match by pattern and type, just check for type
+                    for (pattern_id in formatPatterns) {
+                        pat = formatPatterns[pattern_id];
+                        if ((type === undefined || type === pat.type)) {
+                            return pattern_id;
+                        }
+                    }
+                    return "allow_all"; // should never happen
+                }
+
+
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_DATE_TIME", context, function (html) {
+                    targetElement.append(html);
+
+                    var patternElement = targetElement.find('#' + context.panel_id + '_pattern');
+
+
+                    patternElement.jstree(
+                        {
+                            'core': {
+                                'data': buildPatternTree(),
+                                'multiple': false
+                            }
+                        });
+
+                    var patternId = findIdFromPattern(context.pattern, context.type);
+                    patternElement.on('ready.jstree', function() {
+                        patternElement.jstree('select_node', patternId);
+                    });
+
+                    patternElement.on('select_node.jstree', function (event, treeEvent) {
+                        var formatPattern = formatPatterns[treeEvent.node.id];
+                        context.type = formatPattern.type;
+                        context.pattern = formatPattern.pattern;
+                    });
+
+                });
+            };
+
+            handler.hide = function (stage, context, targetElement) {
+                var patternElement = targetElement.find('#' + context.panel_id + '_pattern');
+                patternElement.jstree('destroy');
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+            };
+
+            handler.updateConstraint = function (stage, context, cons, errors) {
+                cons["@type"] = context.type;
+                cons.rm_type_name = context.type;
+                cons.pattern = context.pattern;
+            };
+
+        }(); // handler C_DATE_TIME
+        self.handlers['C_DATE'] = self.handlers['C_DATE_TIME'];
+        self.handlers['C_TIME'] = self.handlers['C_DATE_TIME'];
 
     };
 

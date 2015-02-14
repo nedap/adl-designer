@@ -59,6 +59,8 @@ var ArchetypeEditor = (function () {
         var DefinitionPropertiesPanel = function (archetypeModel, targetElement) {
             var self = this;
 
+            var stage, handler, context;
+
             function addPropertiesPanelToStage(stage, context, handler, targetElement) {
                 stage.propertiesPanel = {
                     redraw: function () {
@@ -78,6 +80,12 @@ var ArchetypeEditor = (function () {
             }
 
             self.clear = function () {
+                if (handler && handler.hide) {
+                    handler.hide(stage, context, targetElement);
+                    handler=undefined;
+                    stage=undefined;
+                    context=undefined;
+                }
                 targetElement.empty();
             };
 
@@ -97,9 +105,7 @@ var ArchetypeEditor = (function () {
                 topHandler.show(topStage, topContext, topDiv);
 
 
-                var handler = my.getRmTypeHandler(cons.rm_type_name);
-
-                var stage, context;
+                handler = my.getRmTypeHandler(cons.rm_type_name);
                 if (handler) {
                     var customDiv = $("<div>");
                     targetElement.append(customDiv);
@@ -183,7 +189,6 @@ var ArchetypeEditor = (function () {
 
             function buildTreeJson(target, cons) {
 
-
                 function addTransparentAttributeConstraints() {
                     for (var i in cons.attributes || []) {
                         var attribute = cons.attributes[i];
@@ -207,9 +212,6 @@ var ArchetypeEditor = (function () {
                             attrJson.children = [];
                             attrJson.a_attr = attrJson.a_attr || {};
                             attrJson.a_attr.class = "definition-tree-node";
-//                            if (archetypeModel.isNodeTopLevel(cons)) {
-//                                consJson.a_attr.class += " specialized";
-//                            }
 
                             for (var j in attribute.children) {
                                 buildTreeJson(attrJson.children, attribute.children[j]);
@@ -320,6 +322,42 @@ var ArchetypeEditor = (function () {
                             var targetElement = generatedDom.find("#" + prop.panel_id);
                             if (targetElement.length > 0) {
                                 handler.show(stage, prop, targetElement);
+                            }
+                        }
+                    }
+                    my.applySubModules(stage, generatedDom, prop);
+                }
+            }
+        };
+
+        my.applySubModulesHide = function (stage, generatedDom, context) {
+            for (var key in context) {
+                var prop = context[key];
+                if (typeof prop === "object") {
+                    if (prop.type && prop.panel_id) {
+                        var handler = my.getRmTypeHandler(prop.type);
+                        if (handler && handler.hide) {
+                            var targetElement = generatedDom.find("#" + prop.panel_id);
+                            if (targetElement.length > 0) {
+                                handler.hide(stage, prop, targetElement);
+                            }
+                        }
+                    }
+                    my.applySubModules(stage, generatedDom, prop);
+                }
+            }
+        };
+
+        my.applySubModulesUpdateContext = function (stage, generatedDom, context) {
+            for (var key in context) {
+                var prop = context[key];
+                if (typeof prop === "object") {
+                    if (prop.type && prop.panel_id) {
+                        var handler = my.getRmTypeHandler(prop.type);
+                        if (handler) {
+                            var targetElement = generatedDom.find("#" + prop.panel_id);
+                            if (targetElement.length > 0) {
+                                handler.updateContext(stage, prop, targetElement);
                             }
                         }
                     }
