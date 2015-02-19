@@ -164,7 +164,7 @@
             };
 
             handler.updateConstraint = function (stage, context, cons, errors) {
-                stage.archetypeModel.removeAttribute(["units", "magnitude", "precision"]);
+                stage.archetypeModel.removeAttribute(cons, ["units", "magnitude", "precision"]);
 
                 cons.attribute_tuples = cons.attribute_tuples || [];
                 if (context.unit_panels.length > 0) {
@@ -179,12 +179,14 @@
                         unitCons.default_value = panel.units;
 
 
-                        var magnitudeCons = AOM.makeEmptyConstrainsClone("C_REAL");
+                        var magnitudeCons = AOM.newCReal();
                         var magnitudeHandler = ArchetypeEditor.getRmTypeHandler("C_REAL");
                         magnitudeHandler.updateConstraint(stage, panel.magnitude, magnitudeCons, unitErrors.sub("magnitude"));
 
-                        var precisionCons = AOM.makeEmptyConstrainsClone("C_INTEGER");
-                        if (panel.precision !== "") {
+                        var precisionCons = AOM.newCInteger();
+                        if (panel.precision === "" || !panel.precision) {
+                            precisionCons.range = AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER");
+                        } else {
                             var val = parseInt(panel.precision);
                             unitErrors.validate(!isNaN(val), "Not a valid integer", "precision");
                             precisionCons.list = [val];
@@ -246,7 +248,6 @@
             handler.updateConstraint = function (stage, context, cons, errors) {
                 var type = context.isCoded ? "DV_CODED_TEXT" : "DV_TEXT";
 
-                cons["@type"] = type;
                 cons.rm_type_name = type;
 
                 if (context.isCoded) { // context is DV_CODED_TEXT
@@ -581,15 +582,14 @@
             };
 
             handler.updateConstraint = function (stage, context, cons, errors) {
-                var cValue = AOM.AmQuery.get(cons, "value");
-                if (!cValue) {
-                    cValue = AOM.newCDuration();
+                stage.archetypeModel.removeAttribute(cons, "value");
 
-                    var aValue = AOM.newCAttribute("value");
-                    aValue.children = [cValue];
-                    cons.attributes = cons.attributes || [];
-                    cons.attributes.push(aValue);
-                }
+                var cValue = AOM.newCDuration();
+                var aValue = AOM.newCAttribute("value");
+                aValue.children = [cValue];
+                cons.attributes = cons.attributes || [];
+                cons.attributes.push(aValue);
+
 
                 stage.archetypeEditor.getRmTypeHandler("C_DURATION").updateConstraint(
                     stage, context.value, cValue, errors.sub("value"));
@@ -806,7 +806,7 @@
                         stage.archetypeEditor.applySubModules(stage, generatedDom, context);
                         targetElement.append(generatedDom);
 
-                        generatedDom.find('#'+context.panel_id+'_integral').val(context.is_integral);
+                        generatedDom.find('#' + context.panel_id + '_integral').val(context.is_integral);
 
                         var checkboxes = generatedDom.find('#' + context.panel_id + "_kinds_panel").find('input');
                         applyContextKindsToCheckboxes(checkboxes);
@@ -879,7 +879,7 @@
 
                 if (context.is_integral && context.is_integral.length > 0) {
                     var cIntegral = AOM.newCBoolean();
-                    var isIntegral = context.is_integral==='true';
+                    var isIntegral = context.is_integral === 'true';
                     cIntegral.true_valid = isIntegral;
                     cIntegral.false_valid = !isIntegral;
                     addAttributeConstraint(cons, 'is_integral', cIntegral);

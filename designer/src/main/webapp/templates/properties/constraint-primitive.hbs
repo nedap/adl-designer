@@ -73,7 +73,74 @@
     </div>
 </div>
 <div id="{{panel_id}}_external_panel">
-    To be implemented
+    <div class="form-group">
+        <label for="{{panel_id}}_external_constraints">Constraints</label>
+        <input id="{{panel_id}}_external_constraints" class="form-control input-sm" value="{{external_term.text}}">
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_external_description">Description</label>
+        <textarea id="{{panel_id}}_external_description" class="form-control"
+                  rows="3">{{external_term.description}}</textarea>
+    </div>
+
+    <table class="external_terminology_table">
+        <thead>
+        <tr>
+            <th>
+                <label>External terminologies</label>
+            </th>
+            <th class="external_terminology_row_actions">
+                <button id="{{panel_id}}_external_add_terminology" class="btn btn-default"
+                        title="add external terminology">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </th>
+        </tr>
+        </thead>
+        <tbody id="{{panel_id}}_external_table_body">
+        </tbody>
+    </table>
+</div>
+
+{>C_TERMINOLOGY_CODE/externalTableRow}
+<tr class="external_terminology_row_header">
+    <td>{{terminology}}</td>
+    <td class="external_terminology_row_actions">
+        <button type="button" name="edit" class="btn btn-default" title="edit">
+            <span class="glyphicon glyphicon-edit"></span>
+        </button>
+        <button type="button" name="remove" class="btn btn-default" title="remove">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </td>
+</tr>
+<tr class="external_terminology_row_binding">
+    <td colspan="2">{{binding}}</td>
+</tr>
+
+{>C_TERMINOLOGY_CODE/addExternalTerminology}
+<div class="form-group">
+    <label for="{{id}}_terminology">Terminology</label>
+
+    <div class="input-group">
+        <input id="{{id}}_terminology" class="form-control" value="{{terminology}}">
+
+        <div class="input-group-btn">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                {{#each terminologies}}
+                    <li><a data-key={{this}} href="#">{{this}}</a></li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="form-group">
+    <label for="{{id}}_url">Url</label>
+    <input id="{{id}}_url" class="form-control" value="{{url}}">
 </div>
 
 

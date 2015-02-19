@@ -322,13 +322,11 @@ var AmInterval = {
             lower: lo,
             upper: hi
         };
-        result.lower_included = typeof a != "undefined";
-        result.upper_included = typeof b != "undefined";
+        result.lower_included = typeof lo != "undefined";
+        result.upper_included = typeof hi != "undefined";
         result.lower_unbounded = !result.lower_included;
         result.upper_unbounded = !result.upper_included;
-        if (type) {
-            result["@type"] = "MULTIPLICITY_INTERVAL";
-        }
+        result["@type"] = type || "MULTIPLICITY_INTERVAL";
         return result;
     },
 

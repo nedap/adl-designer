@@ -253,6 +253,34 @@ var AOM = (function () {
                 return td && td.text;
             };
 
+            /**
+             * Exports all term definitions for a single node_id. Target term nodes are in format
+             * result[language] = {text:..., description=...}. Changes to the result do not result in changes to the
+             * archetype. For this, EditableArchetypeModel.importTermDefinitions(node_id, result) must be called
+             *
+             * @param node_id
+             * @returns {{}} term definitions for node_id, for each language
+             */
+            self.exportTermDefinitions = function (node_id) {
+                var result = {};
+                var allLanguages = self.allLanguages();
+                var term_definitions = self.data.ontology && self.data.ontology.term_definitions || {};
+                for (var i in allLanguages) {
+                    var lang = allLanguages[i];
+                    var langTerms = term_definitions[lang];
+                    if (langTerms) {
+                        var term = langTerms && langTerms[node_id];
+                        if (term) {
+                            result[lang] = {
+                                text: term.text,
+                                description: term.description
+                            };
+                        }
+                    }
+                }
+                return result;
+            };
+
 
             self.explodeValueSets = function (code, language) {
                 var result = {};
@@ -316,6 +344,7 @@ var AOM = (function () {
                 return result;
             };
 
+
             self.allLanguages = function () {
                 var result = [];
                 result.push(defaultLanguage);
@@ -359,6 +388,7 @@ var AOM = (function () {
 
 
             function enrichAttributeData(data, parent) {
+                if (!data) return;
                 data[".parent"] = parent;
                 for (var i in data.children || []) {
                     enrichConstraintData(data.children[i], data);
@@ -366,6 +396,7 @@ var AOM = (function () {
             }
 
             function enrichConstraintData(data, parent) {
+                if (!data) return;
                 data[".parent"] = parent;
 
                 acknowledgeTermId(data.node_id);
@@ -426,7 +457,7 @@ var AOM = (function () {
              * @returns {string} a new, unique term id
              */
             self.generateSpecializedTermId = function (parentTermOrPrefix) {
-                if (parentTermOrPrefix.match(/^\w+$/)) {
+                if (parentTermOrPrefix.match(/^[a-zA-Z]+$/)) {
                     var prefix = parentTermOrPrefix;
                     var maxTermId = maxTermIdsByPrefix[prefix] || 0;
                     var term;
@@ -444,10 +475,12 @@ var AOM = (function () {
                 } else {
                     // todo do not assume 1 for nodes parents
                     var term = my.NodeId.of(parentTermOrPrefix);
-                    while (term.ids < self.specializationDepth - 1) {
+                    while (term.ids.length < self.specializationDepth - 1) {
                         term.ids.push(0);
                     }
-                    term.ids.push(1);
+                    if (term.ids.length < self.specializationDepth) {
+                        term.ids.push(1);
+                    }
                     return term.toString();
                 }
             };
@@ -670,12 +703,13 @@ var AOM = (function () {
             /**
              * Adds a new term definition to ontology. Text and description are given to the original language, while other languages
              * have suffix " (original_language)"
-             * @param {string}prefixOrParentCode prefix (or parent code) under which to generate new termId.
+             * @param {string}prefixOrCode prefix (or code) under which to generate new termId. If it refers to
+             * a parent code, a specialized code will be generated
              * @param {string} text text of the terminology definition
              * @param {string?}description description of the terminology definition
              * @returns {string} code of the generated terminology definition
              */
-            self.addNewTermDefinition = function (prefixOrParentCode, text, description) {
+            self.addNewTermDefinition = function (prefixOrCode, text, description) {
 
                 function addToLanguage(term_definitions, language, code, text, description) {
                     if (!term_definitions[language]) {
@@ -694,8 +728,7 @@ var AOM = (function () {
                     return value;
                 }
 
-                var newCode = self.generateSpecializedTermId(prefixOrParentCode);
-                var term = {};
+                var newCode = self.generateSpecializedTermId(prefixOrCode);
                 if (!self.data.ontology.term_definitions) {
                     self.data.ontology.term_definitions = {};
                 }
@@ -712,6 +745,26 @@ var AOM = (function () {
 
                 return newCode;
             };
+
+            /**
+             * Imports term definitions for a single node_id, for all languages
+             *
+             * @param node_id
+             * @param {{}} termsPerLanguage terms per language, in format {language: {text:..., description:...}}
+             */
+            self.importTermDefinitions = function (node_id, termsPerLanguage) {
+                var ontology = self.data.ontology;
+                var term_definitions = (ontology.term_definitions = ontology.term_definitions || {});
+                for (var language in termsPerLanguage) {
+                    var term = termsPerLanguage[language];
+                    var langTerms = (term_definitions[language] = term_definitions[language] || {});
+                    langTerms[node_id] = {
+                        text: term.text,
+                        description: term.description
+                    };
+                }
+            };
+
 
             /**
              * Enriches constraint with additional attributes form the EditableArchetypeModel. Intended to allow adding attributes on a
@@ -821,6 +874,7 @@ var AOM = (function () {
          */
         my.impoverishedClone = function (cons) {
             var result;
+            if (cons===null || cons===undefined) return cons;
             if (typeof cons === "object") {
                 if (Array.isArray(cons)) {
                     result = [];
@@ -842,7 +896,7 @@ var AOM = (function () {
             } else {
                 return cons;
             }
-        }
+        };
 
 
         return my;

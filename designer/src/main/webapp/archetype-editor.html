@@ -37,6 +37,10 @@
     <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-3.3.2/js/bootstrap.js"></script>
 
+    <!-- Bootstrap Table -->
+    <link href="lib/bootstrap-table-1.6.0/bootstrap-table.min.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/bootstrap-table-1.6.0/bootstrap-table.min.js"></script>
+
     <!-- Handlebars -->
     <script src="lib/handlebars-v2.0.0.js"></script>
 
@@ -46,6 +50,7 @@
     <script src="js/am/am-model.js"></script>
     <script src="js/am/am-factory.js"></script>
     <script src="js/archetype-editor/core.js"></script>
+    <script src="js/archetype-editor/terminology.js"></script>
     <script src="js/archetype-editor/module-common.js"></script>
     <script src="js/archetype-editor/module-primitive.js"></script>
     <script src="js/archetype-editor/module-openehr.js"></script>
@@ -65,7 +70,7 @@
                 $(this).tab('show');
             });
 
-            ArchetypeEditor.initialize(function() {
+            ArchetypeEditor.initialize(function () {
 
                 // TODO: remove for production
                 // preloads a given archetype into the interface. Just for testing
@@ -75,10 +80,10 @@
 //                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
                 var archetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
                 $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
-                  function (data) {
-                      var archetypeModel = new AOM.EditableArchetypeModel(data);
-                      ArchetypeEditor.useArchetype(archetypeModel);
-                  });
+                        function (data) {
+                            var archetypeModel = new AOM.EditableArchetypeModel(data);
+                            ArchetypeEditor.useArchetype(archetypeModel);
+                        });
             });
 
         });
@@ -89,21 +94,27 @@
     <div>
         <!-- main toolbar -->
         <button class="btn" onclick="ArchetypeEditor.loadArchetype()">Load</button>
+        <button class="btn" onclick="ArchetypeEditor.saveCurrentArchetype()">Save</button>
     </div>
     <div id="archetype-editor-archetype-id-main"></div>
     <div id="archetype-editor-archetype-tabs">
-        <ul id="mytab" class="nav nav-tabs">
+        <ul class="nav nav-tabs">
             <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-header">Header</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
+            <li role="presentation"><a href="#archetype-editor-main-tabs-terminology">Terminology</a></li>
         </ul>
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane fade active in" id="archetype-editor-main-tabs-header">
-                <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua, retro synth master
-                    cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro keffiyeh dreamcatcher
-                    synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan
+                <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua,
+                    retro synth master
+                    cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro
+                    keffiyeh dreamcatcher
+                    synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum
+                    iphone. Seitan
                     aliquip quis cardigan american apparel, butcher voluptate nisi qui.</p>
             </div>
-            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition" style="width:100%">
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition"
+                 style="width:100%">
                 <table>
                     <tr>
                         <td style="width:100%;">
@@ -115,9 +126,33 @@
                     </tr>
                 </table>
             </div>
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-terminology"
+                 style="width:100%">
+                <div>
+                    <ul class="nav nav-tabs">
+                        <li role="presentation" class="active">
+                            <a href="#archetype-editor-terminology-tabs-nodes">Nodes</a></li>
+                        <li role="presentation"><a href="#archetype-editor-terminology-tabs-terms">Terms</a></li>
+                        <li role="presentation"><a href="#archetype-editor-terminology-tabs-bindings">Bindings</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in"
+                             id="archetype-editor-terminology-tabs-nodes">
+                            Terminology nodes
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade in"
+                             id="archetype-editor-terminology-tabs-terms">
+                            Terminology terms
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade in"
+                             id="archetype-editor-terminology-tabs-bindings">
+                            Terminology bindings
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
 </body>
 

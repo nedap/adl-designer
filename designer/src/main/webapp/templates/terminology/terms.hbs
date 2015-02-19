@@ -1,0 +1,35 @@
+{>terms}
+<div>
+    <table id="{{table_id}}" data-height="600">
+        <thead>
+        <tr>
+            <th data-field="code">Code</th>
+            <th data-field="text">Text</th>
+            <th data-field="description">Description</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+
+{>updateTermDefinitionDialog}
+{{#each terms}}
+    <div class="form-group row">
+        <div><h2>{{@key}}</h2></div>
+        <div class="row">
+            <div class="col-sm-3"><label>Text</label></div>
+            <div class="col-sm-9">
+                <input data-lang="{{@key}}" data-field="text" class="form-control input-sm"
+                       value="{{text}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><label>Description</label></div>
+            <div class="col-sm-9">
+                <input data-lang="{{@key}}" data-field="description" class="form-control input-sm"
+                        value="{{description}}">
+            </div>
+        </div>
+    </div>
+{{/each}}
+
+

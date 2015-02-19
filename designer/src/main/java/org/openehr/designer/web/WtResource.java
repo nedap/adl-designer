@@ -38,6 +38,8 @@ public interface WtResource {
 
     FlatArchetype getFlatArchetype(String archetypeId);
 
+    void saveFlatArchetype(String archetypeId, FlatArchetype archetype);
+
     List<ArchetypeInfo> listArchetypeInfos();
 
     ReferenceModelData getRmModel(String modelName, String modelVersion);
@@ -51,4 +53,5 @@ public interface WtResource {
     ResponseEntity<byte[]> exportOpt14(String templateId);
 
     ResponseEntity<byte[]> exportAdlt(String templateId);
+
 }

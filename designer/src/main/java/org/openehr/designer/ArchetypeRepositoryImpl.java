@@ -22,11 +22,13 @@ package org.openehr.designer;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.flattener.ArchetypeFlattener;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.BomSupportingReader;
 import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.adl.rm.RmModel;
+import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.jaxb.am.ArchetypeTerm;
 import org.openehr.jaxb.am.CodeDefinitionSet;
 import org.openehr.jaxb.am.DifferentialArchetype;
@@ -38,6 +40,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,8 +93,8 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
                 info.setRmType(archetype.getDefinition().getRmTypeName());
 
                 String mainNodeId = archetype.getDefinition().getNodeId();
-                if (mainNodeId==null) {
-                    mainNodeId=archetype.getConcept();
+                if (mainNodeId == null) {
+                    mainNodeId = archetype.getConcept();
                 }
 
                 String defaultLanguage = archetype.getOriginalLanguage().getCodeString();
@@ -99,11 +102,38 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
 
                 archetypeInfos.add(info);
                 sourceArchetypes.put(info.getArchetypeId(), archetype);
+                String interfaceArchetypeId = ArchetypeIdInfo.parse(info.getArchetypeId()).toInterfaceString();
+                sourceArchetypes.put(interfaceArchetypeId, archetype);
             } catch (Exception e) {
                 LOG.error("Error parsing archetype from file " + repositoryPath.relativize(adlFile) + ". Archetype will be ignored", e);
             }
         }
     }
+
+    @Override
+    public void saveDifferentialArchetype(DifferentialArchetype archetype) {
+        String adl = ArchetypeSerializer.serialize(archetype);
+
+        archetype = deserializer.parse(adl); // checks if the serialization is readable
+        ArchetypeIdInfo aidi = ArchetypeIdInfo.parse(archetype.getArchetypeId().getValue());
+        final Path repositoryPath = Paths.get(repositoryLocation);
+        final Path archetypePath = repositoryPath.resolve(aidi.toInterfaceString() + ".adls");
+        LOG.info("Writing to archetype file {}", repositoryPath.relativize(archetypePath));
+        try {
+            // fixme actually write. Currently does not to preserve on reload
+            // Files.write(archetypePath, adl.getBytes(Charsets.UTF_8));
+            Files.write(Paths.get("d:/temp/inspect.adls"), adl.getBytes(Charsets.UTF_8));
+
+            sourceArchetypes.put(aidi.toString(), archetype);
+            sourceArchetypes.put(aidi.toInterfaceString(), archetype);
+            flatArchetypes.remove(aidi.toString());
+            flatArchetypes.remove(aidi.toInterfaceString());
+
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
 
     private String findTermText(DifferentialArchetype archetype, String concept, String defaultLanguage) {
         if (archetype.getOntology() == null || archetype.getOntology().getTermDefinitions() == null) return null;
@@ -139,7 +169,11 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
     public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
         DifferentialArchetype result = sourceArchetypes.get(archetypeId);
         if (result == null) {
-            throw new IllegalArgumentException(archetypeId);
+            String interfaceArchetypeId = ArchetypeIdInfo.parse(archetypeId).toInterfaceString();
+            result = sourceArchetypes.get(interfaceArchetypeId);
+            if (result == null) {
+                throw new IllegalArgumentException(archetypeId);
+            }
         }
         return result;
     }
@@ -164,13 +198,9 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
         return archetypeInfos;
     }
 
-    private String readArchetype(Path adlFile) {
-        try {
-            return CharStreams.toString(new BomSupportingReader(
-                    Files.newInputStream(adlFile),
-                    Charsets.UTF_8));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private String readArchetype(Path adlFile) throws IOException {
+        return CharStreams.toString(new BomSupportingReader(
+                Files.newInputStream(adlFile),
+                Charsets.UTF_8));
     }
 }

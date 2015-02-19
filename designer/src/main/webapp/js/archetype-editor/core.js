@@ -26,7 +26,7 @@ var ArchetypeEditor = (function () {
 
         my.loadArchetype = function () {
             var loadArchetypeContext = {
-                archetypes: ArchetypeEditor.archetypeRepository.infoList
+                archetypes: my.archetypeRepository.infoList
             };
             GuiUtils.applyTemplate("dialog-load-archetype", loadArchetypeContext, function (htmlString) {
                 var content = $(htmlString);
@@ -47,6 +47,24 @@ var ArchetypeEditor = (function () {
                                 });
                         }
                     });
+            });
+        };
+
+        my.saveCurrentArchetype = function() {
+            if (!my.archetypeModel) return;
+            var archetypeId = my.archetypeModel.data.archetype_id.value;
+            var archetypeJson = AOM.impoverishedClone(my.archetypeModel.data);
+
+            $.ajax({
+                type: "PUT",
+                url: "rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat",
+                data: JSON.stringify(archetypeJson),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data){alert(data);},
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
             });
         };
 
@@ -375,6 +393,8 @@ var ArchetypeEditor = (function () {
 
             var definitionTreeElement = $('#archetype-editor-definition-tree');
             var definitionTree = new DefinitionTree(archetypeModel, definitionTreeElement, definitionPropertiesPanel);
+
+            ArchetypeEditorTerminology.useArchetype(archetypeModel);
         };
 
 
