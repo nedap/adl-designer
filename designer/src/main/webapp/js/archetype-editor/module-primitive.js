@@ -31,9 +31,10 @@
          * Creates context (a gui model from existing or new constrains)
          * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
          * @param {object} cons Object for which to create the context. undefined if it does not exist yet
+         * @param {object?} parentCons Matching constraint in the parent archetype, if available
          * @returns {object} context
          */
-        handler.createContext = function (stage, cons) {
+        handler.createContext = function (stage, cons, parentCons) {
         };
 
         /**

@@ -120,7 +120,7 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
         final Path archetypePath = repositoryPath.resolve(aidi.toInterfaceString() + ".adls");
         LOG.info("Writing to archetype file {}", repositoryPath.relativize(archetypePath));
         try {
-            // fixme actually write. Currently does not to preserve on reload
+            // fixme actually write. Currently does not to preserve original on reload, for development
             // Files.write(archetypePath, adl.getBytes(Charsets.UTF_8));
             Files.write(Paths.get("d:/temp/inspect.adls"), adl.getBytes(Charsets.UTF_8));
 

@@ -120,6 +120,11 @@ var AOM = (function () {
             self.segments = parsePathSegments(path);
         };
 
+        /**
+         *
+         * @param {AOM.RmPath|string}from
+         * @returns {AOM.RmPath}
+         */
         my.RmPath.of = function (from) {
             if (from instanceof my.RmPath) return from;
             return new my.RmPath(from);
@@ -129,12 +134,23 @@ var AOM = (function () {
         my.AmQuery = function () {
             var self = this;
 
-            // id1.1,id1 -> true, id1,id1.1=false, id1,id2=false
-            function isNodeIdSameOrSpecialization(candidate, match) {
+            //  depending on context:
+            //  candidate       match       context.matchParent     context.matchSpecialized    result
+            //  id1             undefined   any                     any                         true
+            //  id1             id1         any                     any                         true
+            //  id1.1           id1         any                     any                         context.matchSpecialized
+            //  id1             id1.1       any                     any                         context.matchParent
+            //  id2             id1         any                     any                         false
+            function noteIdMatches(candidate, match, context) {
                 if (match === undefined) return true;
                 if (candidate === undefined) return false;
                 if (candidate === match) return true;
-                if (candidate.length > match.length && candidate.substring(0, match.length + 1) === candidate + ".") return true;
+                if (context.matchSpecialized) {
+                    if (candidate.length > match.length && candidate.substring(0, match.length + 1) === candidate + ".") return true;
+                }
+                if (context.matchParent) {
+                    if (candidate.length < match.length && match.substring(0, candidate.length + 1) === match + ".") return true;
+                }
                 return false;
             }
 
@@ -142,11 +158,11 @@ var AOM = (function () {
                 return attribute.rm_attribute_name === segment.attribute;
             }
 
-            function constraintMatches(cons, segment) {
-                return isNodeIdSameOrSpecialization(cons.node_id, segment.node_id);
+            function constraintMatches(cons, segment, context) {
+                return noteIdMatches(cons.node_id, segment.node_id, context);
             }
 
-            function findChildConstrains(cons, segment) {
+            function findChildConstrains(cons, segment, context) {
                 var result = [];
 
                 for (var i in cons.attributes || []) {
@@ -154,7 +170,7 @@ var AOM = (function () {
                     if (attributeMatches(attribute, segment)) {
                         for (var j in attribute.children || []) {
                             var childCons = attribute.children[j];
-                            if (constraintMatches(childCons, segment)) {
+                            if (constraintMatches(childCons, segment, context)) {
                                 result.push(childCons);
                             }
                         }
@@ -182,10 +198,12 @@ var AOM = (function () {
             /**
              *
              * @param cons constraints archetype node that is the root for search
-             * @param rmPath {RmPath} path relative to the constraint
-             * @returns {*[]} [] list of all nodes that match the path, empty list if none
+             * @param {RmPath|string} rmPath  path relative to the constraint
+             * @param {{matchParent: false, matchSpecialized: false}?} context Details about what to match
+             * @returns {{}[]} [] list of all nodes that match the path, empty list if none
              */
-            self.findAll = function (cons, rmPath) {
+            self.findAll = function (cons, rmPath, context) {
+                context = context || {};
                 rmPath = my.RmPath.of(rmPath);
                 var matches = [cons];
                 for (var segment_index in rmPath.segments) {
@@ -193,14 +211,21 @@ var AOM = (function () {
                     var roots = matches;
                     matches = [];
                     for (var i in roots) {
-                        matches.push.apply(matches, findChildConstrains(roots[i], segment));
+                        matches.push.apply(matches, findChildConstrains(roots[i], segment, context));
                     }
                 }
                 return matches;
             };
 
-            self.get = function (cons, rmPath) {
-                var matches = self.findAll(cons, rmPath);
+            /**
+             *
+             * @param rootCons constraints archetype node that is the root for search
+             * @param {RmPath|string} rmPath  path relative to the constraint
+             * @param {{matchParent: false, matchSpecialized: false}?} context Details about what to match
+             * @returns {{}} first node that matched, undefined if none
+             */
+            self.get = function (rootCons, rmPath, context) {
+                var matches = self.findAll(rootCons, rmPath, context);
                 if (matches.length === 0) return undefined;
                 return matches[0];
             };
@@ -209,7 +234,7 @@ var AOM = (function () {
             return self;
         }();
 
-        my.ArchetypeModel = function (data) {
+        my.ArchetypeModel = function (data, parentArchetypeModel) {
 
             var defaultLanguage = data.original_language.code_string;
             var self = this;
@@ -359,7 +384,60 @@ var AOM = (function () {
                 return Stream(cons.attributes).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
             };
 
+            /**
+             * Gets a rm path to a constraint, optionally from a given origin
+             * @param {{}} cons - constraint for which to get rm path. Must be part of the archetype model
+             * @param {{}?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
+             * @return {RmPath} rmPath
+             */
+            self.getRmPath = function (cons, originCons) {
 
+                function fillSegments(segments, cons) {
+                    if (cons === undefined || cons === originCons) return;
+
+                    var parentAttr = cons[".parent"];
+                    if (parentAttr) {
+                        var parentCons = parentAttr[".parent"];
+                        if (parentCons["@type"] === "C_ATTRIBUTE_TUPLE") { // if tuple, take actual constraint instead
+                            parentCons = parentCons[".parent"];
+                        }
+
+                        fillSegments(segments, parentCons);
+
+                        var segment = {
+                            attribute: parentAttr.rm_attribute_name
+                        };
+                        if (cons.node_id) {
+                            segment.node_id = cons.node_id;
+                        }
+                        segments.push(segment);
+                    }
+                }
+
+                var segments = [];
+                if (cons["@type"] === "C_ATTRIBUTE") {
+                    fillSegments(segments, cons);
+                    segments.push({attribute: cons.rm_attribute_name});
+                } else {
+                    fillSegments(segments, cons);
+                }
+                return my.RmPath.of(segments);
+            };
+
+            /**
+             * Finds the constraint of the parent archetype that corresponds to this node.
+             * If no parent archetype, or no constraint was found, returns undefined
+             * @param {{}} cons specialized constraint for which the parent should be returned. must be a member of this archetypeModel
+             * @returns {{}} matching constraint of the parent archetype (member of the parentArchetypeModel), or undefined.
+             */
+            self.getParentConstraint = function (cons) {
+                if (!self.parentArchetypeModel) return undefined;
+                var rmPath = cons.getRmPath(cons);
+                return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
+            };
+
+
+            self.parentArchetypeModel = parentArchetypeModel;
             self.data = data;
             self.archetypeId = data.archetype_id.value;
             self.defaultLanguage = defaultLanguage;
@@ -367,9 +445,15 @@ var AOM = (function () {
             self.specializationDepth = new my.NodeId(data.definition.node_id).getSpecializationDepth();
         };
 
-        my.EditableArchetypeModel = function (flatArchetypeData) {
+        /**
+         * Creates a new EditableArchetypeModel
+         * @param {{}} flatArchetypeData json form of the AOM Archetype object
+         * @param {ArchetypeModel?} parentArchetypeModel archetypeModel of the parent archetype
+         * @constructor
+         */
+        my.EditableArchetypeModel = function (flatArchetypeData, parentArchetypeModel) {
             var self = this;
-            my.ArchetypeModel.call(self, flatArchetypeData);
+            my.ArchetypeModel.call(self, flatArchetypeData, parentArchetypeModel);
 
 
             var maxTermIdsByPrefix = {};
@@ -483,41 +567,6 @@ var AOM = (function () {
                     }
                     return term.toString();
                 }
-            };
-
-            /**
-             * Gets a rm path to a constraint, optionally from a given origin
-             * @param {Object} cons - constraint for which to get rm path. Must be part of the archetype model
-             * @param {Object?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
-             * @return {RmPath} rmPath
-             */
-            self.getRmPath = function (cons, originCons) {
-
-                function fillSegments(segments, cons) {
-                    if (cons === undefined || cons === originCons) return;
-
-                    var parentAttr = cons[".parent"];
-                    if (parentAttr) {
-                        var parentCons = parentAttr[".parent"];
-                        if (parentCons["@type"] === "C_ATTRIBUTE_TUPLE") { // if tuple, take actual constraint instead
-                            parentCons = parentCons[".parent"];
-                        }
-
-                        fillSegments(segments, parentCons);
-
-                        var segment = {
-                            attribute: parentAttr.rm_attribute_name
-                        };
-                        if (cons.node_id) {
-                            segment.node_id = cons.node_id;
-                        }
-                        segments.push(segment);
-                    }
-                }
-
-                var segments = [];
-                fillSegments(segments, cons);
-                return my.RmPath.of(segments);
             };
 
 
@@ -874,7 +923,7 @@ var AOM = (function () {
          */
         my.impoverishedClone = function (cons) {
             var result;
-            if (cons===null || cons===undefined) return cons;
+            if (cons === null || cons === undefined) return cons;
             if (typeof cons === "object") {
                 if (Array.isArray(cons)) {
                     result = [];

@@ -24,7 +24,7 @@ var ArchetypeEditor = (function () {
         var rmModules = {};
 
 
-        my.loadArchetype = function () {
+        my.openLoadArchetypeDialog = function () {
             var loadArchetypeContext = {
                 archetypes: my.archetypeRepository.infoList
             };
@@ -40,14 +40,33 @@ var ArchetypeEditor = (function () {
                         callback: function (content) {
                             var archetypeId = content.find('#selectArchetypeId').val();
 
-                            $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
-                                function (data) {
-                                    var archetypeModel = new AOM.EditableArchetypeModel(data);
-                                    my.useArchetype(archetypeModel);
-                                });
+                            my.loadArchetype(archetypeId, my.useArchetype);
                         }
                     });
             });
+        };
+
+        my.loadArchetype = function(archetypeId, callback) {
+            $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
+                function (data) {
+                    if (data.parent_archetype_id) {
+                        $.getJSON("rest/repo/archetype/" + encodeURIComponent(data.parent_archetype_id.value) + "/flat").success(
+                            function(parentData) {
+                                var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
+                                var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
+                                if (callback) {
+                                    callback(archetypeModel);
+                                }
+                            }
+                        );
+                    } else {
+                        var archetypeModel = new AOM.EditableArchetypeModel(data);
+                        if (callback) {
+                            callback(archetypeModel);
+                        }
+                    }
+                });
+
         };
 
         my.saveCurrentArchetype = function() {
