@@ -46,12 +46,12 @@ var ArchetypeEditor = (function () {
             });
         };
 
-        my.loadArchetype = function(archetypeId, callback) {
+        my.loadArchetype = function (archetypeId, callback) {
             $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
                 function (data) {
                     if (data.parent_archetype_id) {
                         $.getJSON("rest/repo/archetype/" + encodeURIComponent(data.parent_archetype_id.value) + "/flat").success(
-                            function(parentData) {
+                            function (parentData) {
                                 var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
                                 var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
                                 if (callback) {
@@ -69,7 +69,7 @@ var ArchetypeEditor = (function () {
 
         };
 
-        my.saveCurrentArchetype = function() {
+        my.saveCurrentArchetype = function () {
             if (!my.archetypeModel) return;
             var archetypeId = my.archetypeModel.data.archetype_id.value;
             var archetypeJson = AOM.impoverishedClone(my.archetypeModel.data);
@@ -80,8 +80,10 @@ var ArchetypeEditor = (function () {
                 data: JSON.stringify(archetypeJson),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
-                success: function(data){alert(data);},
-                failure: function(errMsg) {
+                success: function (data) {
+                    alert(data);
+                },
+                failure: function (errMsg) {
                     alert(errMsg);
                 }
             });
@@ -119,9 +121,9 @@ var ArchetypeEditor = (function () {
             self.clear = function () {
                 if (handler && handler.hide) {
                     handler.hide(stage, context, targetElement);
-                    handler=undefined;
-                    stage=undefined;
-                    context=undefined;
+                    handler = undefined;
+                    stage = undefined;
+                    context = undefined;
                 }
                 targetElement.empty();
             };
@@ -135,23 +137,21 @@ var ArchetypeEditor = (function () {
                 var topDiv = $("<div>");
                 targetElement.append(topDiv);
 
-                var topHandler = my.getRmTypeHandler("top", "@common");
-                var topStage = createEmptyStage();
-                var topContext = topHandler.createContext(topStage, cons);
-                addPropertiesPanelToStage(topStage, topContext, topHandler, topDiv);
-                topHandler.show(topStage, topContext, topDiv);
+                //var topHandler = my.getRmTypeHandler("top", "@common");
+                //var topStage = createEmptyStage();
+                //var topContext = topHandler.createContext(topStage, cons);
+                //addPropertiesPanelToStage(topStage, topContext, topHandler, topDiv);
+                //topHandler.show(topStage, topContext, topDiv);
 
 
-                handler = my.getRmTypeHandler(cons.rm_type_name);
-                if (handler) {
-                    var customDiv = $("<div>");
-                    targetElement.append(customDiv);
+                handler = my.getRmTypeHandler('main', '@common');
+                var customDiv = $("<div>");
+                targetElement.append(customDiv);
 
-                    stage = createEmptyStage();
-                    context = handler.createContext(stage, cons);
-                    addPropertiesPanelToStage(stage, context, handler, customDiv);
-                    handler.show(stage, context, customDiv);
-                }
+                stage = createEmptyStage();
+                context = handler.createContext(stage, cons);
+                addPropertiesPanelToStage(stage, context, handler, customDiv);
+                handler.show(stage, context, customDiv);
 
                 var errorsDiv = $('<div class="errors">');
                 targetElement.append(errorsDiv);
@@ -172,8 +172,7 @@ var ArchetypeEditor = (function () {
 
                 if (!isEditable) {
                     dataElements.prop("disabled", true);
-                    dataElements.prop("disabled", true);
-                    saveButton.prop('disabled', false);
+                    saveButton.prop('disabled', true);
                 }
 
                 saveButton.click(function () {
@@ -182,13 +181,8 @@ var ArchetypeEditor = (function () {
                     var consClone = AOM.makeEmptyConstrainsClone(cons);
 
                     stage.realConstraint = false;
-                    topHandler.updateContext(topStage, topContext, topDiv);
-                    topHandler.updateConstraint(topStage, topContext, consClone, errors);
-
-                    if (handler) {
-                        handler.updateContext(stage, context, customDiv);
-                        handler.updateConstraint(stage, context, consClone, errors);
-                    }
+                    handler.updateContext(stage, context, customDiv);
+                    handler.updateConstraint(stage, context, consClone, errors);
                     errorsDiv.empty();
                     if (errors.getErrors().length > 0) {
                         var errorsContext = {errors: errors.getErrors()};
@@ -203,10 +197,7 @@ var ArchetypeEditor = (function () {
                     console.debug("save changes:\nfrom: ", cons, "\n  to: ", consClone);
 
                     stage.realConstraint = true;
-                    topHandler.updateConstraint(topStage, topContext, cons, errors);
-                    if (handler) {
-                        handler.updateConstraint(stage, context, cons, errors);
-                    }
+                    handler.updateConstraint(stage, context, cons, errors);
                     archetypeModel.enrichReplacementConstraint(cons);
                 });
 
@@ -346,7 +337,7 @@ var ArchetypeEditor = (function () {
             if (rmModule && rmModule.handlers[rm_type]) {
                 return rmModule.handlers[rm_type];
             }
-            return rmModules[""].handlers[rm_type];
+            return rmModules["@common"].handlers[rm_type] || rmModules[""].handlers[rm_type];
         };
 
         my.applySubModules = function (stage, generatedDom, context) {
@@ -359,6 +350,7 @@ var ArchetypeEditor = (function () {
                             var targetElement = generatedDom.find("#" + prop.panel_id);
                             if (targetElement.length > 0) {
                                 handler.show(stage, prop, targetElement);
+                                continue;
                             }
                         }
                     }
@@ -373,14 +365,17 @@ var ArchetypeEditor = (function () {
                 if (typeof prop === "object") {
                     if (prop.type && prop.panel_id) {
                         var handler = my.getRmTypeHandler(prop.type);
-                        if (handler && handler.hide) {
+                        if (handler) {
                             var targetElement = generatedDom.find("#" + prop.panel_id);
                             if (targetElement.length > 0) {
-                                handler.hide(stage, prop, targetElement);
+                                if (handler.hide) {
+                                    handler.hide(stage, prop, targetElement);
+                                    continue;
+                                }
                             }
                         }
                     }
-                    my.applySubModules(stage, generatedDom, prop);
+                    my.applySubModulesHide(stage, generatedDom, prop)
                 }
             }
         };
@@ -395,10 +390,11 @@ var ArchetypeEditor = (function () {
                             var targetElement = generatedDom.find("#" + prop.panel_id);
                             if (targetElement.length > 0) {
                                 handler.updateContext(stage, prop, targetElement);
+                                continue;
                             }
                         }
                     }
-                    my.applySubModules(stage, generatedDom, prop);
+                    my.applySubModulesUpdateContext(stage, generatedDom, prop);
                 }
             }
         };

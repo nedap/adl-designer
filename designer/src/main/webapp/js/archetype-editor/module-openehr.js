@@ -40,9 +40,23 @@
             return childConstraint;
         }
 
+        function extend(childClass, parentClass) {
+            childClass.prototype = Object.create(parentClass.prototype);
+            childClass.prototype.constructor = childClass;
+        }
+
+        var CComplexObjectHandler = function () {
+            var handler=this;
+
+            handler.hide = function (stage, context, targetElement) {
+                stage.archetypeEditor.applySubModulesHide(stage, targetElement, context);
+            };
+        };
+
         self.handlers = {};
-        self.handlers["DV_QUANTITY"] = new function () {
+        var DvQuantityHandler = function () {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 var tupleConstraints = stage.archetypeModel.getAttributesTuple(cons, ["units", "magnitude", "precision"]);
@@ -152,6 +166,7 @@
                     });
             };
 
+
             handler.updateContext = function (stage, context, targetElement) {
                 Stream(context.unit_panels).forEach(
                     function (up) {
@@ -198,12 +213,13 @@
             };
 
 
-            return handler;
+        };
+        extend(DvQuantityHandler, CComplexObjectHandler);
 
-        }();
 
-        self.handlers["DV_CODED_TEXT"] = new function () {
+        var DvTextHandler = function () {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
@@ -239,6 +255,7 @@
                     });
             };
 
+
             handler.updateContext = function (stage, context, targetElement) {
                 stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
                     .updateContext(stage, context.defining_code, targetElement.find('#' + context.defining_code.panel_id));
@@ -266,14 +283,12 @@
                     stage.archetypeModel.removeAttribute(cons, ["defining_code"]);
                 }
             };
+        };
+        extend(DvTextHandler, CComplexObjectHandler);
 
-
-            return handler;
-        }(); // DV_CODED_TEXT
-        self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
-
-        self.handlers["DV_BOOLEAN"] = new function () {
+        var DvBooleanHandler = function () {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 var context = {
@@ -312,13 +327,12 @@
                 stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").updateConstraint(
                     stage, context.value, cValue, errors.sub("value"));
             };
+        };
+        extend(DvBooleanHandler, CComplexObjectHandler);
 
-            return handler;
-        }(); // DV_BOOLEAN
-
-        self.handlers["DV_COUNT"] = new function () {
+        var DvCountHandler = function () {
             var handler = this;
-
+            CComplexObjectHandler.call(handler);
             handler.createContext = function (stage, cons) {
                 var context = {
                     panel_id: GuiUtils.generateId(),
@@ -357,13 +371,12 @@
                     stage, context.magnitude, cValue, errors.sub("magnitude"));
             };
 
-            return handler;
-        }(); // DV_COUNT
+        };
+        extend(DvCountHandler, CComplexObjectHandler);
 
-        self.handlers["DV_ORDINAL"] = new function () {
+        var DvOrdinalHandler = function () {
             var handler = this;
-
-
+            CComplexObjectHandler.call(handler);
             handler.createContext = function (stage, cons) {
                 var context = {
                     panel_id: GuiUtils.generateId(),
@@ -549,11 +562,13 @@
                 }
 
             };
-            return handler;
-        }(); // DV_ORDINAL
 
-        self.handlers["DV_DURATION"] = new function () {
+        };
+        extend(DvOrdinalHandler, CComplexObjectHandler);
+
+        var DvDurationHandler = function () {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 var context = {
@@ -595,11 +610,12 @@
                     stage, context.value, cValue, errors.sub("value"));
             };
 
-            return handler;
-        }(); // DV_DURATION
+        };
+        extend(DvDurationHandler, CComplexObjectHandler);
 
-        self.handlers["DV_IDENTIFIER"] = new function () {
+        var DvIdentifierHandler = function() {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 var context = {
@@ -655,11 +671,13 @@
                 addAttribute(context.assignerPattern, "assigner");
             };
 
-            return handler;
-        }(); // DV_IDENTIFIER
+        };
+        extend(DvIdentifierHandler, CComplexObjectHandler);
 
-        self.handlers["DV_DATE_TIME"] = new function () {
+
+        var DvDateTimeHandler = function() {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 var type = cons ? cons.rm_type_name : 'DV_DATE_TIME';
@@ -709,15 +727,13 @@
                     stage, context.value, cValue, errors.sub("value"));
             };
 
-            return handler;
-        }(); // DV_DATE_TIME
 
-        self.handlers["DV_DATE"] = self.handlers["DV_DATE_TIME"];
-        self.handlers["DV_TIME"] = self.handlers["DV_DATE_TIME"];
+        };
+        extend(DvDateTimeHandler, CComplexObjectHandler);
 
-
-        self.handlers["DV_PROPORTION"] = new function () {
+        var DvProportionHandler = function() {
             var handler = this;
+            CComplexObjectHandler.call(handler);
 
             var Kind = {
                 ratio: {value: 0, denominator: true},
@@ -820,10 +836,6 @@
                     });
             };
 
-            handler.hide = function (stage, context, targetElement) {
-                stage.archetypeEditor.applySubModulesHide(stage, targetElement, context);
-            };
-
             handler.updateContext = function (stage, context, targetElement) {
                 context.is_integral = targetElement.find('#' + context.panel_id + "_integral").val();
 
@@ -885,10 +897,21 @@
                     addAttributeConstraint(cons, 'is_integral', cIntegral);
                 }
             };
+        };
+        extend(DvProportionHandler, CComplexObjectHandler);
 
-            return handler;
-        }(); // DV_PROPORTION
-
+        self.handlers["DV_QUANTITY"] = new DvQuantityHandler();
+        self.handlers["DV_CODED_TEXT"] = new DvTextHandler();
+        self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
+        self.handlers["DV_BOOLEAN"] = new DvBooleanHandler();
+        self.handlers["DV_COUNT"] = new DvCountHandler();
+        self.handlers["DV_ORDINAL"] = new DvOrdinalHandler();
+        self.handlers["DV_DURATION"] = new DvDurationHandler();
+        self.handlers["DV_IDENTIFIER"] = new DvIdentifierHandler();
+        self.handlers["DV_DATE_TIME"] = new DvDateTimeHandler();
+        self.handlers["DV_DATE"] = self.handlers["DV_DATE_TIME"];
+        self.handlers["DV_TIME"] = self.handlers["DV_DATE_TIME"];
+        self.handlers["DV_PROPORTION"] = new DvProportionHandler();
     };
 
 

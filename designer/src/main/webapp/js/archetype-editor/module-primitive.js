@@ -71,7 +71,7 @@
          * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
          * @param context contains values that are to be copied on the context
          * @param cons target constrains where the context values will be copied to
-         * @param {Errors} errors errors for the validation
+         * @param {AmUtils.Errors} errors errors for the validation
          * @returns {*}
          */
         handler.updateConstraint = function (stage, context, cons, errors) {
