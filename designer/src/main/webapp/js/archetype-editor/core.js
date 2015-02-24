@@ -137,13 +137,6 @@ var ArchetypeEditor = (function () {
                 var topDiv = $("<div>");
                 targetElement.append(topDiv);
 
-                //var topHandler = my.getRmTypeHandler("top", "@common");
-                //var topStage = createEmptyStage();
-                //var topContext = topHandler.createContext(topStage, cons);
-                //addPropertiesPanelToStage(topStage, topContext, topHandler, topDiv);
-                //topHandler.show(topStage, topContext, topDiv);
-
-
                 handler = my.getRmTypeHandler('main', '@common');
                 var customDiv = $("<div>");
                 targetElement.append(customDiv);
@@ -178,11 +171,8 @@ var ArchetypeEditor = (function () {
                 saveButton.click(function () {
                     var errors = new AmUtils.Errors();
 
-                    var consClone = AOM.makeEmptyConstrainsClone(cons);
-
-                    stage.realConstraint = false;
-                    handler.updateContext(stage, context, customDiv);
-                    handler.updateConstraint(stage, context, consClone, errors);
+                    handler.updateContext(stage, context, targetElement);
+                    handler.validate(stage, context, errors);
                     errorsDiv.empty();
                     if (errors.getErrors().length > 0) {
                         var errorsContext = {errors: errors.getErrors()};
@@ -191,13 +181,10 @@ var ArchetypeEditor = (function () {
                         return;
                     }
 
-                    // validate required if it has a parent
-                    // todo archetypeModel.validateReplacementConstraint(cons, consClone);
-
-                    console.debug("save changes:\nfrom: ", cons, "\n  to: ", consClone);
-
-                    stage.realConstraint = true;
+                    console.debug("save changes from: ", cons);
                     handler.updateConstraint(stage, context, cons, errors);
+                    console.debug("save changes to:   ", cons);
+
                     archetypeModel.enrichReplacementConstraint(cons);
                 });
 
@@ -239,7 +226,11 @@ var ArchetypeEditor = (function () {
                         if (attribute.children && attribute.children.length > 0) {
                             attrJson.children = [];
                             attrJson.a_attr = attrJson.a_attr || {};
-                            attrJson.a_attr.class = "definition-tree-node";
+                            attrJson.a_attr.class = "definition-tree-node attribute";
+                            if (archetypeModel.isNodeTopLevel(cons)) {
+                                attrJson.a_attr.class += " specialized";
+                            }
+
 
                             for (var j in attribute.children) {
                                 buildTreeJson(attrJson.children, attribute.children[j]);
@@ -281,7 +272,7 @@ var ArchetypeEditor = (function () {
                     consJson.text = archetypeModel.getTermDefinitionText(cons.node_id);
 
                     consJson.a_attr = consJson.a_attr || {};
-                    consJson.a_attr.class = "definition-tree-node";
+                    consJson.a_attr.class = "definition-tree-node constraint";
                     if (archetypeModel.isNodeTopLevel(cons)) {
                         consJson.a_attr.class += " specialized";
                     }

@@ -18,75 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-(function () {
+(function (ArchetypeEditor) {
 
-    /**
-     * Example for handler api. Is not actually used, serves just as documentation
-     * @returns {HandlerTemplate}
-     * @constructor
-     */
-    var HandlerTemplate = function () {
-        var handler = this;
-        /**
-         * Creates context (a gui model from existing or new constrains)
-         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
-         * @param {object} cons Object for which to create the context. undefined if it does not exist yet
-         * @param {object?} parentCons Matching constraint in the parent archetype, if available
-         * @returns {object} context
-         */
-        handler.createContext = function (stage, cons, parentCons) {
-        };
-
-        /**
-         * Displays the gui and populates it with the values of the context
-         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
-         * @param {object} context contains values to populate the gui
-         * @param targetElement jquery element where the gui will be displayed
-         */
-        handler.show = function (stage, context, targetElement) {
-        };
-
-        /**
-         * Optional function that can perform cleanup just before the panel is destroyed.
-         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
-         * @param {object} context contains values to populate the gui
-         * @param targetElement jquery element where the gui is displayed
-         */
-        handler.hide = function (stage, context, targetElement) {
-        };
-
-        /** Updates context values from the current gui values
-         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
-         * @param context
-         * @param targetElement
-         */
-        handler.updateContext = function (stage, context, targetElement) {
-        };
-
-        /**
-         * Updates constraint values from the context values. Also performs validation.
-         * This function is called twice: first with an empty context object, and if validation succeeds,
-         * again with the actual archetype object
-         *
-         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
-         * @param context contains values that are to be copied on the context
-         * @param cons target constrains where the context values will be copied to
-         * @param {AmUtils.Errors} errors errors for the validation
-         * @returns {*}
-         */
-        handler.updateConstraint = function (stage, context, cons, errors) {
-        };
-
-        return handler;
-    };
 
     var PrimitiveModule = function () {
         var self = this;
         self.name = ""; // empty string stands for primitives
 
-        self.handlers = {};
-        self.handlers["C_REAL"] = new function () {
+        var PrimitiveRmHandler = function () {
             var handler = this;
+            ArchetypeEditor.Modules.RmHandler.call(handler);
+
+        };
+        AmUtils.extend(PrimitiveRmHandler, ArchetypeEditor.Modules.RmHandler);
+
+        var CRealHandler = function () {
+            var handler = this;
+            PrimitiveRmHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
@@ -110,28 +58,35 @@
                 context.assumed_value = targetElement.find('#' + context.assumed_value_id).val().trim();
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+
+            handler.validate = function (stage, context, errors) {
                 if (typeof context.assumed_value === "string" && context.assumed_value.length > 0) {
-                    cons.assumed_value = parseFloat(context.assumed_value);
-                    errors.validate(!isNaN(cons.assumed_value), "Invalid number", "assumed_value");
+                    var assumed_value = parseFloat(context.assumed_value);
+                    errors.validate(!isNaN(assumed_value), "Invalid number", "assumed_value");
                 }
+                if (context.range && context.range.length > 0) {
+                    var range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_REAL");
+                    errors.validate(range, "Invalid interval", "range");
+                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                cons.assumed_value = parseFloat(context.assumed_value);
 
                 if (context.range === "" || context.range === "(*..*)") {
-                    context.range = undefined;
+                    cons.range = undefined;
                 } else {
                     cons.range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_REAL");
-                    errors.validate(cons.range, "Invalid interval", "range");
                     if (cons.range && cons.range.upper === undefined && cons.range.lower === undefined) cons.range = undefined;
                 }
                 return cons;
             };
+        };
+        AmUtils.extend(CRealHandler, PrimitiveRmHandler);
 
-            return handler;
-        }(); // handler C_REAL
-
-        self.handlers["C_INTEGER"] = new function () {
+        var CIntegerHandler = function () {
             var handler = this;
-
+            PrimitiveRmHandler.call(handler);
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
                 var context = {
@@ -154,31 +109,41 @@
                 context.assumed_value = targetElement.find('#' + context.assumed_value_id).val().trim();
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                if (context.assumed_value && context.assumed_value.length > 0) {
+                    var num = parseInt(context.assumed_value);
+                    errors.validate(AmUtils.isInt(num), "Invalid integer", "assumed_value");
+                }
+                if ((context.range) && context.range.length > 0 && context.range !== "(*..*)") {
+                    var range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
+                    errors.validate(range, "Invalid interval", "range");
+                    errors.validate(range.lower === undefined || AmUtils.isInt(range.lower), "Invalid integer", "range.lower");
+                    errors.validate(range.upper === undefined || AmUtils.isInt(range.upper), "Invalid integer", "range.upper");
+                }
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 if (typeof context.assumed_value === "string" && context.assumed_value.length > 0) {
                     cons.assumed_value = parseInt(context.assumed_value);
-                    errors.validate(AmUtils.isInt(cons.assumed_value), "Invalid integer", "assumed_value");
                 }
 
                 if (context.range === "" || context.range === "(*..*)") {
                     context.range = undefined;
                 } else {
                     cons.range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
-                    errors.validate(cons.range, "Invalid interval", "range");
-                    errors.validate(cons.range.lower === undefined || AmUtils.isInt(cons.range.lower), "Invalid integer", "range.lower");
-                    errors.validate(cons.range.upper === undefined || AmUtils.isInt(cons.range.upper), "Invalid integer", "range.upper");
                     if (cons.range && cons.range.upper === undefined && cons.range.lower === undefined) {
                         cons.range = undefined;
                     }
                 }
                 return cons;
             };
+        };
+        AmUtils.extend(CIntegerHandler, PrimitiveRmHandler);
 
-            return handler;
-        }(); // handler C_INTEGER
-
-        self.handlers["C_TERMINOLOGY_CODE"] = new function () {
+        var CTerminologyCodeHandler = function () {
             var handler = this;
+            PrimitiveRmHandler.call(handler);
 
             function getTerminologyData(archetypeModel, cons) {
                 function getValueSet(node_id) {
@@ -424,7 +389,7 @@
                             terminologies: [],
                             url: ''
                         };
-                        var ontology=stage.archetypeModel.data.ontology;
+                        var ontology = stage.archetypeModel.data.ontology;
                         if (ontology.term_bindings) {
                             for (var terminology in ontology.term_bindings) {
                                 if (!context.external_bindings[terminology]) {
@@ -434,10 +399,10 @@
                         }
                         GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE/addExternalTerminology", addTerminologyContext, function (html) {
                             var dialogBody = $(html);
-                            var terminologyInput = dialogBody.find('#'+addTerminologyContext.id+'_terminology');
+                            var terminologyInput = dialogBody.find('#' + addTerminologyContext.id + '_terminology');
 
-                            dialogBody.find('a').click(function() {
-                                var a=$(this);
+                            dialogBody.find('a').click(function () {
+                                var a = $(this);
                                 var key = a.attr('data-key');
                                 terminologyInput.val(key);
                             });
@@ -479,7 +444,7 @@
                 context.external_term.description = targetElement.find('#' + context.panel_id + '_external_description').val().trim();
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons) {
                 function findNearestTerm(language) {
                     var c = cons;
                     while (c) {
@@ -576,31 +541,28 @@
                 }
 
 
-                if (stage.realConstraint) {
-                    var oldTerminologyData = getTerminologyData(stage.archetypeModel, cons);
-                    if (oldTerminologyData && oldTerminologyData.code) {
-                        removeConstraint(oldTerminologyData.code);
-                    }
-                    var newAcCode = (oldTerminologyData && oldTerminologyData.code) ? oldTerminologyData.code :
-                        stage.archetypeModel.generateSpecializedTermId("ac");
+                var oldTerminologyData = getTerminologyData(stage.archetypeModel, cons);
+                if (oldTerminologyData && oldTerminologyData.code) {
+                    removeConstraint(oldTerminologyData.code);
+                }
+                var newAcCode = (oldTerminologyData && oldTerminologyData.code) ? oldTerminologyData.code :
+                    stage.archetypeModel.generateSpecializedTermId("ac");
 
-                    if (context.type_internal) {
-                        updateConstraintInternal(newAcCode);
-                    } else {
-                        updateConstraintExternal(newAcCode);
-                    }
+                if (context.type_internal) {
+                    updateConstraintInternal(newAcCode);
+                } else {
+                    updateConstraintExternal(newAcCode);
                 }
 
 
                 return cons;
             };
+        };
+        AmUtils.extend(CTerminologyCodeHandler, PrimitiveRmHandler);
 
-            return handler;
-        }(); // handler C_TERMINOLOGY_CODE
-
-        self.handlers["C_BOOLEAN"] = new function () {
+        var CBooleanHandler = function () {
             var handler = this;
-
+            PrimitiveRmHandler.call(handler);
 
             handler.createContext = function (stage, cons) {
                 cons = cons || {};
@@ -666,18 +628,18 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons) {
                 cons.true_valid = context.true_valid;
                 cons.false_valid = context.false_valid;
                 cons.assumed_value = context.assumed_value === 'true' ? true : (context.assumed_value === 'false' ? false : undefined);
             };
 
-            return handler;
-        }(); // handler C_BOOLEAN
+        };
+        AmUtils.extend(CBooleanHandler, PrimitiveRmHandler);
 
-
-        self.handlers["C_DURATION"] = new function () {
+        var CDurationHandler = function () {
             var handler = this;
+            PrimitiveRmHandler.call(handler);
 
             function maxPeriodUnit(period) {
                 return period.years ? "years" : period.months ? "months" : period.weeks ? "weeks" : period.days ? "days" : period.minutes ? "minutes" : period.seconds ? "seconds" : "years";
@@ -835,11 +797,15 @@
                 }
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
                 if (context.range && (context.range.lower !== undefined || context.range.upper != undefined)) {
                     if (context.range.lower !== undefined && context.range.upper !== undefined && context.range.lower > context.range.upper) {
                         errors.add("lower bound is greater than upper bound", "range")
                     }
+                }
+            };
+            handler.updateConstraint = function (stage, context, cons) {
+                if (context.range && (context.range.lower !== undefined || context.range.upper != undefined)) {
                     var upper, lower;
                     if (context.range.lower !== undefined) {
                         lower = Iso8601Period.ofUnits(context.units, context.range.lower).toString();
@@ -860,12 +826,12 @@
                 }
                 cons.pattern = patternToString(context.pattern);
             };
+        };
+        AmUtils.extend(CDurationHandler, PrimitiveRmHandler);
 
-            return handler;
-        }(); // C_DURATION
-
-        self.handlers["C_DATE_TIME"] = new function () {
+        var CDateTimeHandler = function () {
             var handler = this;
+            PrimitiveRmHandler.call(handler);
 
             // separate list of id to data as jstree doesn't allow additional data on nodes
             var formatPatterns = {
@@ -980,7 +946,6 @@
 
                     var patternElement = targetElement.find('#' + context.panel_id + '_pattern');
 
-
                     patternElement.jstree(
                         {
                             'core': {
@@ -1011,17 +976,25 @@
             handler.updateContext = function (stage, context, targetElement) {
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons) {
                 cons["@type"] = context.type;
                 cons.rm_type_name = context.type;
                 cons.pattern = context.pattern;
             };
+        };
+        AmUtils.extend(CDateTimeHandler, PrimitiveRmHandler);
 
-        }(); // handler C_DATE_TIME
+        self.handlers = {};
+        self.handlers["C_REAL"] = new CRealHandler();
+        self.handlers["C_INTEGER"] = new CIntegerHandler();
+        self.handlers["C_TERMINOLOGY_CODE"] = new CTerminologyCodeHandler();
+        self.handlers["C_BOOLEAN"] = new CBooleanHandler();
+        self.handlers["C_DURATION"] = new CDurationHandler();
+        self.handlers["C_DATE_TIME"] = new CDateTimeHandler();
         self.handlers['C_DATE'] = self.handlers['C_DATE_TIME'];
         self.handlers['C_TIME'] = self.handlers['C_DATE_TIME'];
 
     };
 
     ArchetypeEditor.addRmModule(new PrimitiveModule());
-}() );
+}(ArchetypeEditor) );

@@ -203,6 +203,7 @@ var AOM = (function () {
              * @returns {{}[]} [] list of all nodes that match the path, empty list if none
              */
             self.findAll = function (cons, rmPath, context) {
+                if (!cons) return [];
                 context = context || {};
                 rmPath = my.RmPath.of(rmPath);
                 var matches = [cons];
@@ -431,7 +432,7 @@ var AOM = (function () {
              * @returns {{}} matching constraint of the parent archetype (member of the parentArchetypeModel), or undefined.
              */
             self.getParentConstraint = function (cons) {
-                if (!self.parentArchetypeModel) return undefined;
+                if (!cons || !self.parentArchetypeModel) return undefined;
                 var rmPath = cons.getRmPath(cons);
                 return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
             };

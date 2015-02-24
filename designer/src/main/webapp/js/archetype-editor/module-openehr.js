@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-(function () {
+(function (ArchetypeEditor) {
     var OpenEhrModule = function () {
         var self = this;
 
@@ -40,26 +40,27 @@
             return childConstraint;
         }
 
-        function extend(childClass, parentClass) {
-            childClass.prototype = Object.create(parentClass.prototype);
-            childClass.prototype.constructor = childClass;
-        }
 
         var CComplexObjectHandler = function () {
-            var handler=this;
-
+            var handler = this;
+            ArchetypeEditor.Modules.RmHandler.call(handler);
+            
             handler.hide = function (stage, context, targetElement) {
                 stage.archetypeEditor.applySubModulesHide(stage, targetElement, context);
             };
         };
+        AmUtils.extend(CComplexObjectHandler, ArchetypeEditor.Modules.RmHandler);
 
         self.handlers = {};
         var DvQuantityHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 var tupleConstraints = stage.archetypeModel.getAttributesTuple(cons, ["units", "magnitude", "precision"]);
+                var parentTupleConstraints = parentCons
+                    ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["units", "magnitude", "precision"])
+                    : undefined;
 
                 var context = {
                     panel_id: GuiUtils.generateId(),
@@ -69,6 +70,7 @@
                 };
                 for (var i in tupleConstraints) {
                     var tupleConstraint = tupleConstraints[i];
+                    var parentTupleConstraint = parentTupleConstraints && parentTupleConstraints[i];
                     var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
                     tupleConstraint.precision.list.length > 0);
                     var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
@@ -76,7 +78,8 @@
 
                     var panel = {
                         panel_id: GuiUtils.generateId(),
-                        magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage, tupleConstraint.magnitude),
+                        magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage, tupleConstraint.magnitude,
+                            parentTupleConstraint && parentTupleConstraint.magnitude),
                         units: units,
                         precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
                     };
@@ -178,7 +181,21 @@
                     });
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                for (var panelIndex in context.unit_panels) {
+                    var panel = context.unit_panels[panelIndex];
+                    var unitErrors = errors.sub("[" + panel.units + "]");
+
+                    var magnitudeHandler = ArchetypeEditor.getRmTypeHandler("C_REAL");
+                    magnitudeHandler.validate(stage, panel.magnitude, unitErrors.sub("magnitude"));
+
+                    if (panel.precision && panel.precision.length > 0) {
+                        var val = parseInt(panel.precision);
+                        unitErrors.validate(AmUtils.isInt(val), "Not a valid integer", "precision");
+                    }
+                }
+            };
+            handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, ["units", "magnitude", "precision"]);
 
                 cons.attribute_tuples = cons.attribute_tuples || [];
@@ -187,24 +204,20 @@
 
                     for (var panelIndex in context.unit_panels) {
                         var panel = context.unit_panels[panelIndex];
-                        var unitErrors = errors.sub("[" + panel.units + "]");
 
                         var unitCons = AOM.newCString();
                         unitCons.list = [panel.units];
                         unitCons.default_value = panel.units;
 
-
                         var magnitudeCons = AOM.newCReal();
                         var magnitudeHandler = ArchetypeEditor.getRmTypeHandler("C_REAL");
-                        magnitudeHandler.updateConstraint(stage, panel.magnitude, magnitudeCons, unitErrors.sub("magnitude"));
+                        magnitudeHandler.updateConstraint(stage, panel.magnitude, magnitudeCons);
 
                         var precisionCons = AOM.newCInteger();
                         if (panel.precision === "" || !panel.precision) {
                             precisionCons.range = AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER");
                         } else {
-                            var val = parseInt(panel.precision);
-                            unitErrors.validate(!isNaN(val), "Not a valid integer", "precision");
-                            precisionCons.list = [val];
+                            precisionCons.list = [parseInt(panel.precision)];
                         }
                         attributeTuple.children.push(AOM.newCObjectTuple([unitCons, magnitudeCons, precisionCons]));
                     }
@@ -214,20 +227,22 @@
 
 
         };
-        extend(DvQuantityHandler, CComplexObjectHandler);
+        AmUtils.extend(DvQuantityHandler, CComplexObjectHandler);
 
 
         var DvTextHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
+                var definingCodeCons = AOM.AmQuery.get(cons, "defining_code");
+                var parentDefiningCodeCons = AOM.AmQuery.get(parentCons, "defining_code");
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: cons && cons.rm_type_name ? cons.rm_type_name : "DV_TEXT",
                     defining_code: stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
-                        .createContext(stage, AOM.AmQuery.get(cons, "defining_code"))
+                        .createContext(stage, definingCodeCons, parentDefiningCodeCons)
                 };
                 context.isCoded = context.type === "DV_CODED_TEXT";
 
@@ -262,7 +277,14 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                if (context.isCoded) { // context is DV_CODED_TEXT
+                    stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE").validate(
+                        stage, context.defining_code, errors.sub("defining_code"));
+                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 var type = context.isCoded ? "DV_CODED_TEXT" : "DV_TEXT";
 
                 cons.rm_type_name = type;
@@ -277,24 +299,27 @@
                         cons.attributes.push(aDefiningCode);
                     }
                     stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE").updateConstraint(
-                        stage, context.defining_code, cDefiningCode, errors.sub("defining_code"));
+                        stage, context.defining_code, cDefiningCode);
 
                 } else { // context is DV_TEXT
                     stage.archetypeModel.removeAttribute(cons, ["defining_code"]);
                 }
             };
         };
-        extend(DvTextHandler, CComplexObjectHandler);
+        AmUtils.extend(DvTextHandler, CComplexObjectHandler);
 
         var DvBooleanHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
+                var valueCons = AOM.AmQuery.get(cons, "value");
+                var parentValueCons = AOM.AmQuery.get(parentCons, "value");
+
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: "DV_BOOLEAN",
-                    value: stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").createContext(stage, AOM.AmQuery.get(cons, "value"))
+                    value: stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").createContext(stage, valueCons, parentValueCons)
                 };
 
                 return context;
@@ -316,7 +341,12 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").validate(
+                    stage, context.value, errors.sub("value"));
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, "value");
                 var aValue = AOM.newCAttribute("value");
                 var cValue = AOM.newCBoolean();
@@ -325,19 +355,22 @@
                 cons.attributes.push(aValue);
 
                 stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").updateConstraint(
-                    stage, context.value, cValue, errors.sub("value"));
+                    stage, context.value, cValue);
             };
         };
-        extend(DvBooleanHandler, CComplexObjectHandler);
+        AmUtils.extend(DvBooleanHandler, CComplexObjectHandler);
 
         var DvCountHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
+                var magnitudeCons = AOM.AmQuery.get(cons, "magnitude");
+                var parentMagnitudeCons = AOM.AmQuery.get(parentCons, "magnitude");
+
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: "DV_COUNT",
-                    magnitude: stage.archetypeEditor.getRmTypeHandler("C_INTEGER").createContext(stage, AOM.AmQuery.get(cons, "magnitude"))
+                    magnitude: stage.archetypeEditor.getRmTypeHandler("C_INTEGER").createContext(stage, magnitudeCons, parentMagnitudeCons)
                 };
 
                 return context;
@@ -359,7 +392,12 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                stage.archetypeEditor.getRmTypeHandler("C_INTEGER").validate(
+                    stage, context.magnitude, errors.sub("magnitude"));
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, "magnitude");
                 var aValue = AOM.newCAttribute("magnitude");
                 var cValue = AOM.newCInteger();
@@ -368,16 +406,16 @@
                 cons.attributes.push(aValue);
 
                 stage.archetypeEditor.getRmTypeHandler("C_INTEGER").updateConstraint(
-                    stage, context.magnitude, cValue, errors.sub("magnitude"));
+                    stage, context.magnitude, cValue);
             };
 
         };
-        extend(DvCountHandler, CComplexObjectHandler);
+        AmUtils.extend(DvCountHandler, CComplexObjectHandler);
 
         var DvOrdinalHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: "DV_ORDINAL",
@@ -386,8 +424,10 @@
                 };
 
                 var tuples = stage.archetypeModel.getAttributesTuple(cons, ["value", "symbol"]);
+                //var parentTuples = parentCons ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["value", "symbol"]) : undefined;
                 for (var i in tuples) {
                     var tuple = tuples[i];
+                    //var parentTuple = parentTuples && parentTuples[i];
                     var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
                     var value = {
                         value: tuple["value"].list[0],
@@ -541,7 +581,7 @@
                 // context is updated on the fly in show
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, ["value", "symbol"]);
 
                 cons.attribute_tuples = cons.attribute_tuples || [];
@@ -564,17 +604,20 @@
             };
 
         };
-        extend(DvOrdinalHandler, CComplexObjectHandler);
+        AmUtils.extend(DvOrdinalHandler, CComplexObjectHandler);
 
         var DvDurationHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
+                var valueCons = AOM.AmQuery.get(cons, "value");
+                var parentValueCons = AOM.AmQuery.get(parentCons, "value");
+
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: "DV_DURATION",
-                    value: stage.archetypeEditor.getRmTypeHandler("C_DURATION").createContext(stage, AOM.AmQuery.get(cons, "value"))
+                    value: stage.archetypeEditor.getRmTypeHandler("C_DURATION").createContext(stage, valueCons, parentValueCons)
                 };
 
                 return context;
@@ -596,7 +639,12 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                stage.archetypeEditor.getRmTypeHandler("C_DURATION").validate(
+                    stage, context.value, errors.sub("value"));
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, "value");
 
                 var cValue = AOM.newCDuration();
@@ -605,19 +653,18 @@
                 cons.attributes = cons.attributes || [];
                 cons.attributes.push(aValue);
 
-
                 stage.archetypeEditor.getRmTypeHandler("C_DURATION").updateConstraint(
-                    stage, context.value, cValue, errors.sub("value"));
+                    stage, context.value, cValue);
             };
 
         };
-        extend(DvDurationHandler, CComplexObjectHandler);
+        AmUtils.extend(DvDurationHandler, CComplexObjectHandler);
 
-        var DvIdentifierHandler = function() {
+        var DvIdentifierHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: "DV_IDENTIFIER"
@@ -653,7 +700,7 @@
                 context.assignerPattern = targetElement.find('#' + context.panel_id + '_assigner').val();
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.updateConstraint = function (stage, context, cons) {
                 function addAttribute(pattern, attributeName) {
                     if (pattern && pattern.length > 0) {
                         var attr = AOM.newCAttribute(attributeName);
@@ -672,19 +719,22 @@
             };
 
         };
-        extend(DvIdentifierHandler, CComplexObjectHandler);
+        AmUtils.extend(DvIdentifierHandler, CComplexObjectHandler);
 
 
-        var DvDateTimeHandler = function() {
+        var DvDateTimeHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
+                var valueCons = AOM.AmQuery.get(cons, "value");
+                var parentValueCons = AOM.AmQuery.get(parentCons, "value");
+
                 var type = cons ? cons.rm_type_name : 'DV_DATE_TIME';
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: type,
-                    value: stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, AOM.AmQuery.get(cons, "value"))
+                    value: stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, valueCons, parentValueCons)
                 };
 
                 return context;
@@ -713,7 +763,12 @@
 
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME").validate(
+                    stage, context.value, errors.sub("value"));
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
                 var cValue = AOM.AmQuery.get(cons, "value");
                 if (!cValue) {
                     cValue = AOM.newCDateTime();
@@ -724,14 +779,12 @@
                 }
 
                 stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME").updateConstraint(
-                    stage, context.value, cValue, errors.sub("value"));
+                    stage, context.value, cValue);
             };
-
-
         };
-        extend(DvDateTimeHandler, CComplexObjectHandler);
+        AmUtils.extend(DvDateTimeHandler, CComplexObjectHandler);
 
-        var DvProportionHandler = function() {
+        var DvProportionHandler = function () {
             var handler = this;
             CComplexObjectHandler.call(handler);
 
@@ -755,13 +808,44 @@
                 return false;
             }
 
-            handler.createContext = function (stage, cons) {
+            function getKindsType(context) {
+                var any = false;
+                var all = true;
+                for (var k in Kind) {
+                    if (context.kinds[k]) {
+                        any = true;
+                    } else {
+                        all = false;
+                    }
+                }
+                if (!any) return 'none';
+                if (!all) return 'some';
+                return 'all';
+            }
+
+            function getKindsList(context) {
+                var result = [];
+                for (var k in Kind) {
+                    if (context.kinds[k]) {
+                        result.push(Kind[k].value);
+                    }
+                }
+                return result;
+            }
+
+
+            handler.createContext = function (stage, cons, parentCons) {
+                var numeratorCons = AOM.AmQuery.get(cons, "numerator");
+                var parentNumeratorCons = AOM.AmQuery.get(parentCons, "numerator");
+                var denominatorCons = AOM.AmQuery.get(cons, "denominator");
+                var parentDenominatorCons = AOM.AmQuery.get(parentCons, "denominator");
+
                 var type = cons ? cons.rm_type_name : 'DV_PROPORTION';
                 var context = {
                     panel_id: GuiUtils.generateId(),
                     type: type,
-                    numerator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, AOM.AmQuery.get(cons, "numerator")),
-                    denominator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, AOM.AmQuery.get(cons, "denominator"))
+                    numerator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, numeratorCons, parentNumeratorCons),
+                    denominator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, denominatorCons, parentDenominatorCons)
                 };
 
                 var cIsIntegral = AOM.AmQuery.get(cons, "is_integral");
@@ -842,51 +926,39 @@
                 stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
+            handler.validate = function (stage, context, errors) {
+                var kindsType = getKindsType();
+                if (kindsType === 'none') {
+                    errors.add('At least one proportion kind is required', 'kinds');
+                }
+                stage.archetypeEditor.getRmTypeHandler("C_REAL").validate(
+                    stage, context.numerator, errors.sub("numerator"));
 
-                function getKindsType() {
-                    var any = false;
-                    var all = true;
-                    for (var k in Kind) {
-                        if (context.kinds[k]) {
-                            any = true;
-                        } else {
-                            all = false;
-                        }
-                    }
-                    if (!any) return 'none';
-                    if (!all) return 'some';
-                    return 'all';
+                if (hasDenominator(context)) {
+                    stage.archetypeEditor.getRmTypeHandler("C_REAL").validate(
+                        stage, context.denominator, errors.sub("denominator"));
                 }
 
-                function getKindsList() {
-                    var result = [];
-                    for (var k in Kind) {
-                        if (context.kinds[k]) {
-                            result.push(Kind[k].value);
-                        }
-                    }
-                    return result;
-                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
 
                 stage.archetypeModel.removeAttribute(cons, ['type', 'is_integral', 'numerator', 'denominator']);
 
                 var kindsType = getKindsType();
-                if (kindsType === 'none') {
-                    errors.add('At least one proportion kind is required', 'kinds');
-                } else if (kindsType === 'some') {
+                if (kindsType === 'some') {
                     addAttributeConstraint(cons, 'type', AOM.newCInteger(getKindsList()));
                 }
 
                 var cNumerator = addAttributeConstraint(cons, 'numerator', AOM.newCReal());
 
                 stage.archetypeEditor.getRmTypeHandler("C_REAL").updateConstraint(
-                    stage, context.numerator, cNumerator, errors.sub("numerator"));
+                    stage, context.numerator, cNumerator);
                 if (hasDenominator(context)) {
                     var cDenominator = addAttributeConstraint(cons, 'denominator', AOM.newCReal());
 
                     stage.archetypeEditor.getRmTypeHandler("C_REAL").updateConstraint(
-                        stage, context.denominator, cDenominator, errors.sub("denominator"));
+                        stage, context.denominator, cDenominator);
                 }
 
                 if (context.is_integral && context.is_integral.length > 0) {
@@ -898,7 +970,7 @@
                 }
             };
         };
-        extend(DvProportionHandler, CComplexObjectHandler);
+        AmUtils.extend(DvProportionHandler, CComplexObjectHandler);
 
         self.handlers["DV_QUANTITY"] = new DvQuantityHandler();
         self.handlers["DV_CODED_TEXT"] = new DvTextHandler();
@@ -916,4 +988,4 @@
 
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
-}());
+}(ArchetypeEditor) ) ;

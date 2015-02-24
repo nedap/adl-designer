@@ -32,11 +32,19 @@
     display: none
 }
 
-.definition-tree-node {
+a.definition-tree-node {
+    color: #AAA !important;
 }
 
-.specialized {
-    font-style: italic;
+a.definition-tree-node.attribute {
+    font-style: italic !important;
+}
+a.definition-tree-node.constraint {
+    font-style: normal !important;
+}
+
+a.definition-tree-node.specialized {
+    color: black !important;
 }
 
 /* marks the field that represent actual model data (used in constraint properties, to enable save button) */

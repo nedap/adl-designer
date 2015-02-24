@@ -235,6 +235,12 @@ var AmUtils = function () {
         }
     };
 
+    my.extend = function (childClass, parentClass) {
+        childClass.prototype = Object.create(parentClass.prototype);
+        childClass.prototype.constructor = childClass;
+    };
+
+
     /**
      * Cleans object properties according to a given criteria. Cleanup wil be performed in place.
      *
@@ -299,7 +305,7 @@ var AmUtils = function () {
 
     /**
      * Checks if a parameter is an integer
-     * @param num number to check.
+     * @param {number} num number to check.
      * @returns {boolean} true if a parameter is an integer, false if float or not a number
      */
     my.isInt = function (num) {
