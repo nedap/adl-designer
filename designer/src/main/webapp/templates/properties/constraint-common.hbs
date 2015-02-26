@@ -41,7 +41,12 @@
 </div>
 
 {>footer}
-<button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+<div>
+    {{#unless specialized}}
+        <button id="{{footer_id}}_specialize" class="btn btn-primary">Specialize</button>
+    {{/unless}}
+    <button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+</div>
 
 {>errors}
 <ul>

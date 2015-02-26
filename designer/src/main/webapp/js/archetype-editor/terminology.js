@@ -22,7 +22,6 @@ var ArchetypeEditorTerminology = (function () {
     var my = {};
 
 
-
     var createTerminologyTerms = function (archetypeModel, targetElement, prefix) {
         var context = {
             table_id: GuiUtils.generateId()
@@ -96,9 +95,21 @@ var ArchetypeEditorTerminology = (function () {
         });
     };
 
-    my.useArchetype = function(archetypeModel) {
-        createTerminologyTerms(archetypeModel, $('#archetype-editor-terminology-tabs-nodes'), "id");
-        createTerminologyTerms(archetypeModel, $('#archetype-editor-terminology-tabs-terms'), "at");
+    my.showTerminology = function (archetypeModel, mainTargetElement) {
+        mainTargetElement.empty();
+
+        var mainContext = {
+            panel_id: GuiUtils.generateId()
+        };
+
+        GuiUtils.applyTemplate('terminology/main|mainTabs', mainContext, function (html) {
+            html = $(html);
+
+            createTerminologyTerms(archetypeModel, html.find('#' + mainContext.panel_id + '_nodes'), "id");
+            createTerminologyTerms(archetypeModel, html.find('#' + mainContext.panel_id + '_terms'), "at");
+
+            mainTargetElement.append(html);
+        });
     };
 
 

@@ -36,11 +36,11 @@
             var handler = this;
             PrimitiveRmHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(), "type": "C_REAL"
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_REAL';
+
                 context.range_id = GuiUtils.generateId();
                 context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
                 context.assumed_value_id = GuiUtils.generateId();
@@ -87,11 +87,10 @@
         var CIntegerHandler = function () {
             var handler = this;
             PrimitiveRmHandler.call(handler);
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(), "type": "C_INTEGER"
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_INTEGER';
                 context.range_id = GuiUtils.generateId();
                 context.range = (cons.range) ? AmInterval.toContainedString(cons.range) : "(*..*)";
                 context.assumed_value_id = GuiUtils.generateId();
@@ -169,6 +168,7 @@
                 if (!cons.code_list || cons.code_list.length === 0) {
                     return {
                         type: 'internal',
+                        any: true, // if can be changed to external
                         code: undefined,
                         internal_code_list: {},
                         external_term: undefined,
@@ -210,21 +210,19 @@
 
             }
 
-            handler.createContext = function (stage, cons) {
-
-
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(), "type": "C_TERMINOLOGY_CODE", assumed_value: cons.assumed_value
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_TERMINOLOGY_CODE';
+                context.assumed_value = cons.assumed_value;
 
                 var terminologyData = getTerminologyData(stage.archetypeModel, cons);
                 context.type_internal = terminologyData.type === 'internal';
+                context.any = terminologyData.any;
 
                 context.internal_defined_codes = terminologyData.internal_code_list;
                 context.external_term = terminologyData.external_term || {};
                 context.external_bindings = terminologyData.external_bindings;
-
 
                 return context;
             };
@@ -245,12 +243,23 @@
                     }
                 }
 
-                function getAvailableInternalTerms(present_codes) {
-                    var allTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
+                function isParentConstrained(context) {
+                    return !!(context.parent && !context.parent.any);
+                }
+
+                function getAvailableInternalTerms(context) {
+                    var present_codes = context.internal_defined_codes;
+
+                    var availableTerminologyCodes;
+                    if (isParentConstrained(context)) {
+                        availableTerminologyCodes = context.parent.internal_defined_codes;
+                    } else {
+                        availableTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
+                    }
                     var result = {};
-                    for (var code in allTerminologyCodes) {
+                    for (var code in availableTerminologyCodes) {
                         if (!present_codes[code]) {
-                            result[code] = allTerminologyCodes[code];
+                            result[code] = availableTerminologyCodes[code];
                         }
                     }
                     return result;
@@ -321,6 +330,10 @@
                     var radioExternal = targetElement.find("#" + context.panel_id + "_external");
                     var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
 
+                    var parentConstrained = isParentConstrained(context);
+                    radioInternal.prop('disabled', parentConstrained);
+                    radioExternal.prop('disabled', parentConstrained);
+
                     updateInternalAssumedValue(assumedValueSelect);
 
                     assumedValueSelect.change(function () {
@@ -347,7 +360,7 @@
                             addDefinedTerm(nodeId);
                             updateInternalAssumedValue(assumedValueSelect);
                         })
-                    });
+                    }).prop('disabled', parentConstrained);
 
                     targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
                         var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
@@ -364,7 +377,7 @@
 
                     targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
                         var dialogContext = {
-                            terms: getAvailableInternalTerms(context.internal_defined_codes)
+                            terms: getAvailableInternalTerms(context)
                         };
                         if ($.isEmptyObject(dialogContext.terms)) return;
 
@@ -564,13 +577,14 @@
             var handler = this;
             PrimitiveRmHandler.call(handler);
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(), "type": "C_BOOLEAN", true_valid: cons.true_valid !== false, // undefined defaults to true
-                    false_valid: cons.false_valid !== false, // undefined defaults to true
-                    assumed_value: cons.assumed_value === undefined ? "" : (cons.assumed_value ? "true" : "false")
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_BOOLEAN';
+
+                context.true_valid = cons.true_valid !== false; // undefined defaults to true
+                context.false_valid = cons.false_valid !== false; // undefined defaults to true
+                context.assumed_value = cons.assumed_value === undefined ? "" : (cons.assumed_value ? "true" : "false");
 
                 return context;
             };
@@ -706,12 +720,11 @@
                 return result;
             }
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_DURATION';
 
-                var context = {
-                    "panel_id": GuiUtils.generateId(), "type": "C_DURATION"
-                };
                 if (cons.range) {
                     var anyPeriod = cons.range.lower || cons.range.upper;
                     if (anyPeriod) {
@@ -849,13 +862,12 @@
             };
 
 
-            handler.createContext = function (stage, cons) {
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "type": cons["@type"] || "C_DATE_TIME",
-                    "pattern": cons.pattern
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = cons["@type"] || "C_DATE_TIME";
+
+                context.pattern = cons.pattern;
 
 
                 return context;

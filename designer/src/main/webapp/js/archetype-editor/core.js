@@ -46,6 +46,34 @@ var ArchetypeEditor = (function () {
             });
         };
 
+        // todo specialize with archetype
+        //my.openSpecializeArchetypeDialog = function(parentArchetypeModel) {
+        //};
+
+        my.createSpecializedArchetypeModel = function (parentArchetypeId, newArchetypeId, callback) {
+            $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat")
+                .done(function (data) {
+                    var parentData = AmUtils.clone(data);
+                    var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
+                    data.archetype_id.value = newArchetypeId;
+                    data.parent_archetype_id = {
+                        "@type": "ARCHETYPE_ID",
+                        value: parentArchetypeId
+                    };
+
+                    var originalNodeId = data.definition.node_id;
+                    var specializedNodeId = data.definition.node_id + ".1";
+                    data.definition.node_id = specializedNodeId;
+                    var td = data.ontology.term_definitions;
+                    for (var lang in td) {
+                        td[lang][specializedNodeId] = AmUtils.clone(td[lang][originalNodeId]);
+                    }
+                    var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
+                    callback(archetypeModel);
+                });
+        };
+
+
         my.loadArchetype = function (archetypeId, callback) {
             $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
                 function (data) {
@@ -89,6 +117,29 @@ var ArchetypeEditor = (function () {
             });
         };
 
+
+        /**
+         * Specializes a given constraint, and updates the
+         * @param {AOM.EditableArchetypeModel} archetypeModel
+         * @param {object} cons
+         * @param {DefinitionTree} definitionTree
+         * @param {object} definitionTreeNode treeNode of the definition tree
+         */
+        function specializeConstraint(archetypeModel, cons, definitionTree, definitionTreeNode) {
+            archetypeModel.specializeConstraint(cons);
+            // did not work, so remove node_id from name
+//            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
+            definitionTree.styleNodes(definitionTreeNode);
+            if (definitionTree.jstree.is_selected(definitionTreeNode)) {
+                var constraintData = {
+                    definitionTree: definitionTree,
+                    treeNode: definitionTreeNode,
+                    cons: cons
+                };
+                definitionTree.propertiesPanel.showConstraintProperties(constraintData);
+            }
+        }
+
         /**
          *
          * @param {AOM.EditableArchetypeModel} archetypeModel
@@ -129,10 +180,12 @@ var ArchetypeEditor = (function () {
             };
 
 
-            self.showConstraintProperties = function (cons) {
+            self.showConstraintProperties = function (constraintData) {
                 self.clear();
+                var cons = constraintData.cons;
                 if (!cons) return;
-                var isEditable = archetypeModel.isNodeTopLevel(cons);
+                var parentCons = archetypeModel.getParentConstraint(cons);
+                var specialized = archetypeModel.isNodeTopLevel(cons);
 
                 var topDiv = $("<div>");
                 targetElement.append(topDiv);
@@ -142,7 +195,7 @@ var ArchetypeEditor = (function () {
                 targetElement.append(customDiv);
 
                 stage = createEmptyStage();
-                context = handler.createContext(stage, cons);
+                context = handler.createContext(stage, cons, parentCons);
                 addPropertiesPanelToStage(stage, context, handler, customDiv);
                 handler.show(stage, context, customDiv);
 
@@ -154,7 +207,8 @@ var ArchetypeEditor = (function () {
                 targetElement.append(footerDiv);
 
                 var footerContext = {
-                    footer_id: GuiUtils.generateId()
+                    footer_id: GuiUtils.generateId(),
+                    specialized: specialized
                 };
 
                 GuiUtils.applyTemplate("properties/constraint-common|footer", footerContext, footerDiv);
@@ -163,9 +217,14 @@ var ArchetypeEditor = (function () {
                 var dataElements = targetElement.find(".data");
                 var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
 
-                if (!isEditable) {
+                if (!specialized) {
                     dataElements.prop("disabled", true);
                     saveButton.prop('disabled', true);
+
+                    var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
+                    specializeButton.click(function () {
+                        specializeConstraint(archetypeModel, cons, constraintData.definitionTree, constraintData.treeNode);
+                    });
                 }
 
                 saveButton.click(function () {
@@ -201,6 +260,14 @@ var ArchetypeEditor = (function () {
             function nextTreeId() {
                 return treeIdPrefix + (nextTreeIdIndex++).toString();
             }
+
+            self.extractConstraintName = function (cons) {
+                var result = archetypeModel.getTermDefinitionText(cons.node_id);
+                if (!result) {
+                    result = cons.rm_type_name;
+                }
+                return result;
+            };
 
             function buildTreeJson(target, cons) {
 
@@ -269,7 +336,6 @@ var ArchetypeEditor = (function () {
                     treeData[consJson.id] = {
                         cons: cons
                     };
-                    consJson.text = archetypeModel.getTermDefinitionText(cons.node_id);
 
                     consJson.a_attr = consJson.a_attr || {};
                     consJson.a_attr.class = "definition-tree-node constraint";
@@ -278,7 +344,7 @@ var ArchetypeEditor = (function () {
                     }
 
                     if (!consJson.text) {
-                        consJson.text = ((cons.rm_type_name || "") + " " + (cons.node_id || "")).trim();
+                        consJson.text = self.extractConstraintName(cons);
                     }
 
                     // only add attributes if no custom handler for this type
@@ -302,6 +368,32 @@ var ArchetypeEditor = (function () {
                 target.push(consJson);
             }
 
+            self.styleNodes = function (rootTreeNode) {
+
+                function styleNode(liElement) {
+                    var treeNodeId = liElement.attr('id');
+                    var cons = treeData[treeNodeId].cons || treeData[treeNodeId].attr;
+//                    var isAttr = cons["@type"]==="C_ATTRIBUTE";
+                    var aElement = liElement.find('>a');
+                    var isSpecialized = archetypeModel.isNodeTopLevel(cons);
+                    aElement.removeClass('specialized');
+                    if (isSpecialized) {
+                        aElement.addClass('specialized');
+                    }
+                }
+
+                var parentLi = targetElement.find('#' + rootTreeNode.id);
+                styleNode(parentLi);
+                parentLi.find('li').each(function () {
+                    var liElement = $(this);
+                    styleNode(liElement);
+                });
+
+            };
+
+
+            self.propertiesPanel = definitionPropertiesPanel;
+
             var jsonTreeTarget = [];
             buildTreeJson(jsonTreeTarget, archetypeModel.data.definition);
 
@@ -315,10 +407,19 @@ var ArchetypeEditor = (function () {
                     }
                 });
 
+            self.jstree = targetElement.jstree(true);
+
             targetElement.on('select_node.jstree', function (event, treeEvent) {
                 var data = treeData[treeEvent.node.id];
-                definitionPropertiesPanel.showConstraintProperties(data.cons);
+                var constraintData = {
+                    definitionTree: self,
+                    treeNode: treeEvent.node,
+                    cons: data.cons
+                };
+                definitionPropertiesPanel.showConstraintProperties(constraintData);
             });
+
+
         };
 
 
@@ -400,7 +501,11 @@ var ArchetypeEditor = (function () {
             var definitionTreeElement = $('#archetype-editor-definition-tree');
             var definitionTree = new DefinitionTree(archetypeModel, definitionTreeElement, definitionPropertiesPanel);
 
-            ArchetypeEditorTerminology.useArchetype(archetypeModel);
+            $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', function (e) {
+                var mainTerminologyTargetElement = $('#archetype-editor-main-tabs-terminology');
+                ArchetypeEditorTerminology.showTerminology(archetypeModel, mainTerminologyTargetElement);
+            });
+//            ArchetypeEditorTerminology.useArchetype(archetypeModel);
         };
 
 

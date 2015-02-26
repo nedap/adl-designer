@@ -30,12 +30,18 @@
     ArchetypeEditor.Modules.RmHandler = function () {
         var handler = this;
 
-        handler.createCommonContext = function(stage, cons) {
+        handler.createCommonContext = function (stage, cons, parentCons) {
             cons = cons || {};
             var context = {
                 "panel_id": GuiUtils.generateId(),
                 "type": cons.rm_type_name
             };
+            if (parentCons) {
+                var h = stage.archetypeEditor.getRmTypeHandler(parentCons.rm_type_name);
+                if (h) {
+                    context.parent = h.createContext(stage, parentCons);
+                }
+            }
             return context;
         };
 
@@ -97,7 +103,6 @@
     };
 
 
-
     ArchetypeEditor.CommonModule = {
         createCommonContext: function (stage, cons) {
             cons = cons || {};
@@ -113,7 +118,7 @@
         var self = this;
         self.name = "@common"; // stands for common module
 
-        var CommonRmHandler = function() {
+        var CommonRmHandler = function () {
             var handler = this;
             ArchetypeEditor.Modules.RmHandler.call(handler);
 
@@ -147,15 +152,26 @@
                 context.occurrences = occStr;
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
-                cons.occurrences = errors.validate(
+            handler.validate = function (stage, context, errors) {
+                var occ = errors.validate(
                     AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL"),
                     "Invalid occurrences format", "occurrences");
+                //if (occ) {
+                //    if (typeof occ.lower==="number" && typeof occ.upper==="number") {
+                //        errors.validate(occ.lower<=occ.upper, "Lower bound cannot be larger than upper bound", "occurrences");
+                //    }
+                //}
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                cons.occurrences =
+                    AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
             };
         };
         AmUtils.extend(TopCommonHandler, CommonRmHandler);
 
-        var MainCommonHandler = function() {
+        var MainCommonHandler = function () {
             var handler = this;
             CommonRmHandler.call(handler);
 
@@ -163,9 +179,9 @@
                 cons = cons || {};
                 var context = handler.createCommonContext(stage, cons);
                 var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
-                var constraintHandler = stage.archetypeEditor.getRmTypeHandler(cons.rm_type_name);
                 context.type = "main";
                 context.top = topHandler.createContext(stage, cons, parentCons);
+                var constraintHandler = stage.archetypeEditor.getRmTypeHandler(cons.rm_type_name);
                 if (constraintHandler) {
                     context.constraint = constraintHandler.createContext(stage, cons, parentCons);
                 }
@@ -189,7 +205,7 @@
 
             handler.validate = function (stage, context, errors) {
                 var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
-                topHandler.validate(stage, context, errors);
+                topHandler.validate(stage, context.top, errors);
                 if (context.constraint) {
                     var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.constraint.type);
                     constraintHandler.validate(stage, context.constraint, errors);

@@ -44,7 +44,7 @@
         var CComplexObjectHandler = function () {
             var handler = this;
             ArchetypeEditor.Modules.RmHandler.call(handler);
-            
+
             handler.hide = function (stage, context, targetElement) {
                 stage.archetypeEditor.applySubModulesHide(stage, targetElement, context);
             };
@@ -62,12 +62,11 @@
                     ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["units", "magnitude", "precision"])
                     : undefined;
 
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_QUANTITY",
-                    units_id: GuiUtils.generateId(),
-                    unit_panels: []
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_QUANTITY';
+                context.units_id = GuiUtils.generateId();
+                context.unit_panels = [];
+
                 for (var i in tupleConstraints) {
                     var tupleConstraint = tupleConstraints[i];
                     var parentTupleConstraint = parentTupleConstraints && parentTupleConstraints[i];
@@ -76,9 +75,11 @@
                     var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
                     if (units === undefined) continue;
 
+
+                    var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL")
                     var panel = {
                         panel_id: GuiUtils.generateId(),
-                        magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage, tupleConstraint.magnitude,
+                        magnitude: magnitudeHandler.createContext(stage, tupleConstraint.magnitude,
                             parentTupleConstraint && parentTupleConstraint.magnitude),
                         units: units,
                         precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
@@ -234,16 +235,21 @@
             var handler = this;
             CComplexObjectHandler.call(handler);
 
+
+            function isParentConstrained(context) {
+                return !!(context.parent && context.parent.type==='DV_CODED_TEXT');
+            }
+
             handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
                 var definingCodeCons = AOM.AmQuery.get(cons, "defining_code");
                 var parentDefiningCodeCons = AOM.AmQuery.get(parentCons, "defining_code");
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: cons && cons.rm_type_name ? cons.rm_type_name : "DV_TEXT",
-                    defining_code: stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
-                        .createContext(stage, definingCodeCons, parentDefiningCodeCons)
-                };
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = cons && cons.rm_type_name ? cons.rm_type_name : "DV_TEXT";
+                context.defining_code = stage.archetypeEditor.getRmTypeHandler("C_TERMINOLOGY_CODE")
+                    .createContext(stage, definingCodeCons, parentDefiningCodeCons);
+
                 context.isCoded = context.type === "DV_CODED_TEXT";
 
                 return context;
@@ -257,6 +263,7 @@
                         var codedTextCheckbox = generatedDom.find("#" + context.panel_id + "_coded_text");
                         var definingCodeDiv = generatedDom.find("#" + context.defining_code.panel_id);
 
+                        codedTextCheckbox.prop('disabled', isParentConstrained(context));
                         codedTextCheckbox.prop('checked', context.isCoded);
                         GuiUtils.setVisible(definingCodeDiv, codedTextCheckbox.prop('checked'));
                         codedTextCheckbox.click(
@@ -285,9 +292,7 @@
             };
 
             handler.updateConstraint = function (stage, context, cons) {
-                var type = context.isCoded ? "DV_CODED_TEXT" : "DV_TEXT";
-
-                cons.rm_type_name = type;
+                cons.rm_type_name = context.isCoded ? "DV_CODED_TEXT" : "DV_TEXT";
 
                 if (context.isCoded) { // context is DV_CODED_TEXT
                     var cDefiningCode = AOM.AmQuery.get(cons, "defining_code");
@@ -316,11 +321,11 @@
                 var valueCons = AOM.AmQuery.get(cons, "value");
                 var parentValueCons = AOM.AmQuery.get(parentCons, "value");
 
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_BOOLEAN",
-                    value: stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").createContext(stage, valueCons, parentValueCons)
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_BOOLEAN';
+                context.value = stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN").createContext(
+                    stage, valueCons, parentValueCons);
+
 
                 return context;
             };
@@ -367,11 +372,9 @@
                 var magnitudeCons = AOM.AmQuery.get(cons, "magnitude");
                 var parentMagnitudeCons = AOM.AmQuery.get(parentCons, "magnitude");
 
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_COUNT",
-                    magnitude: stage.archetypeEditor.getRmTypeHandler("C_INTEGER").createContext(stage, magnitudeCons, parentMagnitudeCons)
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_COUNT';
+                context.magnitude = stage.archetypeEditor.getRmTypeHandler("C_INTEGER").createContext(stage, magnitudeCons, parentMagnitudeCons);
 
                 return context;
             };
@@ -416,12 +419,11 @@
             var handler = this;
             CComplexObjectHandler.call(handler);
             handler.createContext = function (stage, cons, parentCons) {
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_ORDINAL",
-                    values: [],
-                    assumed_value: cons.assumed_value
-                };
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_ORDINAL';
+                context.values = [];
+                context.assumed_value = cons.assumed_value;
 
                 var tuples = stage.archetypeModel.getAttributesTuple(cons, ["value", "symbol"]);
                 //var parentTuples = parentCons ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["value", "symbol"]) : undefined;
@@ -614,11 +616,9 @@
                 var valueCons = AOM.AmQuery.get(cons, "value");
                 var parentValueCons = AOM.AmQuery.get(parentCons, "value");
 
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_DURATION",
-                    value: stage.archetypeEditor.getRmTypeHandler("C_DURATION").createContext(stage, valueCons, parentValueCons)
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_DURATION';
+                context.value = stage.archetypeEditor.getRmTypeHandler("C_DURATION").createContext(stage, valueCons, parentValueCons);
 
                 return context;
             };
@@ -665,10 +665,9 @@
             CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons, parentCons) {
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: "DV_IDENTIFIER"
-                };
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'DV_IDENTIFIER';
+
                 var issuerCons = AOM.AmQuery.get(cons, "issuer");
                 var typeCons = AOM.AmQuery.get(cons, "type");
                 var assignerCons = AOM.AmQuery.get(cons, "assigner");
@@ -731,11 +730,10 @@
                 var parentValueCons = AOM.AmQuery.get(parentCons, "value");
 
                 var type = cons ? cons.rm_type_name : 'DV_DATE_TIME';
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: type,
-                    value: stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, valueCons, parentValueCons)
-                };
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = type;
+                context.value = stage.archetypeEditor.getRmTypeHandler('C_DATE_TIME').createContext(stage, valueCons, parentValueCons);
 
                 return context;
             };
@@ -841,12 +839,11 @@
                 var parentDenominatorCons = AOM.AmQuery.get(parentCons, "denominator");
 
                 var type = cons ? cons.rm_type_name : 'DV_PROPORTION';
-                var context = {
-                    panel_id: GuiUtils.generateId(),
-                    type: type,
-                    numerator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, numeratorCons, parentNumeratorCons),
-                    denominator: stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, denominatorCons, parentDenominatorCons)
-                };
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = type;
+                context.numerator = stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, numeratorCons, parentNumeratorCons);
+                context.denominator = stage.archetypeEditor.getRmTypeHandler('C_REAL').createContext(stage, denominatorCons, parentDenominatorCons);
 
                 var cIsIntegral = AOM.AmQuery.get(cons, "is_integral");
                 context.is_integral = cIsIntegral ? (cIsIntegral.true_valid ? 'true' : 'false') : '';
@@ -988,4 +985,4 @@
 
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
-}(ArchetypeEditor) ) ;
+}(ArchetypeEditor) );

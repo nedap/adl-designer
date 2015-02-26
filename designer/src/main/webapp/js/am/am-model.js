@@ -146,10 +146,10 @@ var AOM = (function () {
                 if (candidate === undefined) return false;
                 if (candidate === match) return true;
                 if (context.matchSpecialized) {
-                    if (candidate.length > match.length && candidate.substring(0, match.length + 1) === candidate + ".") return true;
+                    if (candidate.length > match.length && candidate.substring(0, match.length + 1) === match + ".") return true;
                 }
                 if (context.matchParent) {
-                    if (candidate.length < match.length && match.substring(0, candidate.length + 1) === match + ".") return true;
+                    if (candidate.length < match.length && match.substring(0, candidate.length + 1) === candidate + ".") return true;
                 }
                 return false;
             }
@@ -371,6 +371,9 @@ var AOM = (function () {
             };
 
 
+            /**
+             * @returns {Array} all languages present in the archetype. First language is always the main language
+             */
             self.allLanguages = function () {
                 var result = [];
                 result.push(defaultLanguage);
@@ -384,6 +387,59 @@ var AOM = (function () {
                 if (!cons.attribute) return undefined;
                 return Stream(cons.attributes).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
             };
+
+            /**
+             *
+             * @param {object} cons constraint object
+             * @param {string[]} attributeNames list of attribute names
+             * @returns {Array} array of name->constraint objects for each tuple
+             */
+            self.getAttributesTuple = function (cons, attributeNames) {
+                var commonAttributes = {};
+                var result = [];
+
+                for (var i in attributeNames) {
+                    var attributeName = attributeNames[i];
+                    var attribute = self.getAttribute(cons, attributeName);
+                    if (attribute) {
+                        commonAttributes[attributeName] = attribute;
+                    }
+                }
+
+                for (var i in cons.attribute_tuples || []) {
+                    var attribute_tuple = cons.attribute_tuples[i];
+                    var tupleMembers = Stream(attribute_tuple.members).flatMap("rm_attribute_name").toArray();
+                    var containedCount = 0;
+                    for (var j in tupleMembers) {
+                        if (attributeNames.indexOf(tupleMembers[j]) > 0) {
+                            containedCount++;
+                        }
+                    }
+                    if (containedCount > 0) {
+                        var indices = {};
+                        for (var j in attributeNames) {
+                            indices[attributeNames[j]] = tupleMembers.indexOf(attributeNames[j]);
+                        }
+
+                        for (var j in attribute_tuple.children || []) {
+                            var resultItem = {};
+                            var object_tuple = attribute_tuple.children[j];
+                            for (var k in attributeNames) {
+                                var index = indices[attributeNames[k]];
+                                var attributeName = attributeNames[k];
+                                resultItem[attributeName] = index >= 0 ? object_tuple.members[index] : commonAttributes[attributeName];
+                            }
+                            result.push(resultItem);
+                        }
+                        break; // only allow one tuple
+                    }
+                }
+                if (result.length == 0) {
+                    result.push(commonAttributes); // just use common attributes, if no tuples are defined
+                }
+                return result;
+            };
+
 
             /**
              * Gets a rm path to a constraint, optionally from a given origin
@@ -433,7 +489,7 @@ var AOM = (function () {
              */
             self.getParentConstraint = function (cons) {
                 if (!cons || !self.parentArchetypeModel) return undefined;
-                var rmPath = cons.getRmPath(cons);
+                var rmPath = self.getRmPath(cons);
                 return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
             };
 
@@ -449,8 +505,9 @@ var AOM = (function () {
         /**
          * Creates a new EditableArchetypeModel
          * @param {{}} flatArchetypeData json form of the AOM Archetype object
-         * @param {ArchetypeModel?} parentArchetypeModel archetypeModel of the parent archetype
+         * @param {AOM.ArchetypeModel?} parentArchetypeModel archetypeModel of the parent archetype
          * @constructor
+         * @extends AOM.ArchetypeModel
          */
         my.EditableArchetypeModel = function (flatArchetypeData, parentArchetypeModel) {
             var self = this;
@@ -459,6 +516,11 @@ var AOM = (function () {
 
             var maxTermIdsByPrefix = {};
 
+            /**
+             * Used in preprocessor for each existing nodeId, to know what node ids already exist in the archetype. Used
+             * for generating new ids
+             * @param {string} termId termId string to acknowledge, i.e. id2.1
+             */
             function acknowledgeTermId(termId) {
                 if (!termId) return;
                 termId = my.NodeId.of(termId);
@@ -587,57 +649,6 @@ var AOM = (function () {
             };
 
 
-            /**
-             *
-             * @param {object} cons constraint object
-             * @param {string[]} attributeNames list of attribute names
-             * @returns {Array} array of name->constraint objects for each tuple
-             */
-            self.getAttributesTuple = function (cons, attributeNames) {
-                var commonAttributes = {};
-                var result = [];
-
-                for (var i in attributeNames) {
-                    var attributeName = attributeNames[i];
-                    var attribute = self.getAttribute(cons, attributeName);
-                    if (attribute) {
-                        commonAttributes[attributeName] = attribute;
-                    }
-                }
-
-                for (var i in cons.attribute_tuples || []) {
-                    var attribute_tuple = cons.attribute_tuples[i];
-                    var tupleMembers = Stream(attribute_tuple.members).flatMap("rm_attribute_name").toArray();
-                    var containedCount = 0;
-                    for (var j in tupleMembers) {
-                        if (attributeNames.indexOf(tupleMembers[j]) > 0) {
-                            containedCount++;
-                        }
-                    }
-                    if (containedCount > 0) {
-                        var indices = {};
-                        for (var j in attributeNames) {
-                            indices[attributeNames[j]] = tupleMembers.indexOf(attributeNames[j]);
-                        }
-
-                        for (var j in attribute_tuple.children || []) {
-                            var resultItem = {};
-                            var object_tuple = attribute_tuple.children[j];
-                            for (var k in attributeNames) {
-                                var index = indices[attributeNames[k]];
-                                var attributeName = attributeNames[k];
-                                resultItem[attributeName] = index >= 0 ? object_tuple.members[index] : commonAttributes[attributeName];
-                            }
-                            result.push(resultItem);
-                        }
-                        break; // only allow one tuple
-                    }
-                }
-                if (result.length == 0) {
-                    result.push(commonAttributes); // just use common attributes, if no tuples are defined
-                }
-                return result;
-            };
 
             /**
              * Remove attribute from constraint
@@ -751,6 +762,28 @@ var AOM = (function () {
             };
 
             /**
+             * Sets a term definition to ontology term_definitions. Will override existing definition or add a new one
+             * <p>When adding you must always make sure that you add terms to all languages
+             *
+             * @param {string} code node_id of the term definition
+             * @param {string} language language of the definition
+             * @param {string} text term definition text
+             * @param {string?}description term definition description
+             */
+            self.setTermDefinition = function (code, language, text, description) {
+                var term_definitions = (self.data.ontology.term_definitions = self.data.ontology.term_definitions || {});
+
+                if (!term_definitions[language]) {
+                    term_definitions[language] = {};
+                }
+                term_definitions[language][code] = {
+                    text: text,
+                    description: description
+                };
+                AmUtils.cleanObjectProperties(term_definitions[language][code]);
+            };
+
+            /**
              * Adds a new term definition to ontology. Text and description are given to the original language, while other languages
              * have suffix " (original_language)"
              * @param {string}prefixOrCode prefix (or code) under which to generate new termId. If it refers to
@@ -761,16 +794,6 @@ var AOM = (function () {
              */
             self.addNewTermDefinition = function (prefixOrCode, text, description) {
 
-                function addToLanguage(term_definitions, language, code, text, description) {
-                    if (!term_definitions[language]) {
-                        term_definitions[language] = {};
-                    }
-                    term_definitions[language][code] = {
-                        text: text,
-                        description: description
-                    };
-                    AmUtils.cleanObjectProperties(term_definitions[language][code]);
-                }
 
                 function quickTranslate(value, sourceLanguage, targetLanguage) {
                     if (!value) return undefined;
@@ -782,12 +805,11 @@ var AOM = (function () {
                 if (!self.data.ontology.term_definitions) {
                     self.data.ontology.term_definitions = {};
                 }
-                var td = self.data.ontology.term_definitions;
 
-                addToLanguage(td, self.defaultLanguage, newCode, text, description);
+                self.setTermDefinition(newCode, self.defaultLanguage, text, description);
                 for (var i in self.translations) {
                     var lang = self.translations[i];
-                    addToLanguage(td, lang, newCode,
+                    self.setTermDefinition(newCode, lang,
                         quickTranslate(text, self.defaultLanguage, lang),
                         quickTranslate(description, self.defaultLanguage, lang));
                 }
@@ -812,6 +834,24 @@ var AOM = (function () {
                         text: term.text,
                         description: term.description
                     };
+                }
+            };
+
+
+            self.specializeConstraint = function (cons) {
+                if (self.isNodeTopLevel(cons)) return;
+                var originalNodeId = cons.node_id;
+                var specializedNodeId = self.generateSpecializedTermId(cons.node_id || "id");
+                cons.node_id = specializedNodeId;
+
+                // add specialized term to term definitions if present in parent
+                var allLanguages = self.allLanguages();
+                for (var langIndex in allLanguages) {
+                    var lang = allLanguages[langIndex];
+                    var term = self.getTermDefinition(originalNodeId, lang);
+                    if (term) {
+                        self.setTermDefinition(specializedNodeId, lang, term.text, term.description);
+                    }
                 }
             };
 
