@@ -303,6 +303,16 @@ var AmUtils = function () {
         return result;
     };
 
+    my.keys= function(object) {
+        var result = [];
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                result.push(key);
+            }
+        }
+        return result;
+    };
+
     /**
      * Checks if a parameter is an integer
      * @param {number} num number to check.
@@ -395,6 +405,8 @@ var AmInterval = {
 
         return true;
     },
+
+
 
     toString: function (self) {
         if (!self) return "";

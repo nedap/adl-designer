@@ -18,13 +18,28 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
+{>load}
 <div class="form-group">
-    <label for="selectArchetypeId">Archetype Id</label>
-    <select name="archetypeId" class="form-control" id="selectArchetypeId">
+    <label for="{{panel_id}}_archetype">Archetype Id</label>
+    <select id="{{panel_id}}_archetype" class="form-control" id="selectArchetypeId">
         {{#each archetypes}}
         <option value="{{archetypeId}}">{{archetypeId}}</option>
         {{/each}}
     </select>
+</div>
+
+{>specialize}
+<div class="form-group">
+    <label for="{{panel_id}}_parent">Parent Archetype Id</label>
+    <select id="{{panel_id}}_parent" class="form-control" id="selectArchetypeId">
+        {{#each archetypes}}
+            <option value="{{archetypeId}}">{{archetypeId}}</option>
+        {{/each}}
+    </select>
+</div>
+<div class="form-group">
+    <label for="{{panel_id}}_specialized">Specialized Archetype Id</label>
+    <input id="{{panel_id}}_specialized" type="text" class="form-control input-sm">
 </div>
 
 

@@ -131,7 +131,9 @@ var GuiUtils = (function () {
             frameContext.buttons.push(buttonContext);
         }
 
-        frameContext.buttons[frameContext.buttons.length - 1].class = "btn btn-primary";
+        if (frameContext.buttons.length>0) {
+            frameContext.buttons[frameContext.buttons.length - 1].class = "btn btn-primary";
+        }
 
         var content = options.content;
         if (typeof content === "string") {

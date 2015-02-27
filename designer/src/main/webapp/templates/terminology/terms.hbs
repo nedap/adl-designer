@@ -33,3 +33,54 @@
 {{/each}}
 
 
+{>updateValueSetDialog}
+<div class="form-group row">
+    <div class="row">
+        <div class="col-sm-3"><label>Text</label></div>
+        <div class="col-sm-9">
+            <input id="{{panel_id}}_text" class="form-control input-sm" value="{{term.text}}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3"><label>Description</label></div>
+        <div class="col-sm-9">
+            <input id="{{panel_id}}_description" class="form-control input-sm" value="{{term.description}}">
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        <div class="btn-group-vertical" role="group">
+            <button id="{{panel_id}}_add_new_member" type="button" class="btn btn-default data">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+            <button id="{{panel_id}}_remove_member" type="button" class="btn btn-default data">
+                <span class="glyphicon glyphicon-minus"></span>
+            </button>
+
+            <button id="{{panel_id}}_add_existing_member" type="button" class="btn btn-default data">
+                <span class="glyphicon glyphicon-edit"></span>
+            </button>
+        </div>
+    </div>
+    <div class="col-sm-9">
+        <select id="{{panel_id}}_members" class="form-control data" name="term" size="10">
+            {{#each members}}
+                <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
+            {{/each}}
+        </select>
+    </div>
+</div>
+
+{>constraints}
+<div>
+    <table id="{{table_id}}" data-height="600">
+        <thead>
+        <tr>
+            <th data-field="code">Code</th>
+            <th data-field="text">Text</th>
+            <th data-field="description">Description</th>
+        </tr>
+        </thead>
+    </table>
+</div>

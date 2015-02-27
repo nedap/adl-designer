@@ -47,6 +47,11 @@ var AOM = (function () {
                 return self.ids.length;
             }
         };
+
+        /**
+         * @param {AOM.NodeId|string} node_id
+         * @returns {AOM.NodeId}
+         */
         my.NodeId.of = function (node_id) {
             if (node_id instanceof my.NodeId) {
                 return node_id;
@@ -515,6 +520,7 @@ var AOM = (function () {
 
 
             var maxTermIdsByPrefix = {};
+            var existingTerms = {};
 
             /**
              * Used in preprocessor for each existing nodeId, to know what node ids already exist in the archetype. Used
@@ -523,6 +529,7 @@ var AOM = (function () {
              */
             function acknowledgeTermId(termId) {
                 if (!termId) return;
+                existingTerms[termId] = true;
                 termId = my.NodeId.of(termId);
                 if (termId.getSpecializationDepth() === self.specializationDepth) {
                     var lastTermIdSegment = termId.ids[termId.ids.length - 1];
@@ -604,10 +611,11 @@ var AOM = (function () {
              * @returns {string} a new, unique term id
              */
             self.generateSpecializedTermId = function (parentTermOrPrefix) {
+
+                var term;
                 if (parentTermOrPrefix.match(/^[a-zA-Z]+$/)) {
                     var prefix = parentTermOrPrefix;
                     var maxTermId = maxTermIdsByPrefix[prefix] || 0;
-                    var term;
                     if (self.specializationDepth === 1) {
                         term = my.NodeId.of(prefix + String(++maxTermId));
                     } else {
@@ -618,16 +626,21 @@ var AOM = (function () {
                         term.ids.push(++maxTermId);
                     }
                     maxTermIdsByPrefix[prefix] = maxTermId;
+                    existingTerms[term.toString()] = true;
                     return term.toString();
                 } else {
                     // todo do not assume 1 for nodes parents
-                    var term = my.NodeId.of(parentTermOrPrefix);
+                    term = my.NodeId.of(parentTermOrPrefix);
                     while (term.ids.length < self.specializationDepth - 1) {
                         term.ids.push(0);
                     }
                     if (term.ids.length < self.specializationDepth) {
                         term.ids.push(1);
                     }
+                    while (existingTerms[term.toString()]) { // find first unique id
+                        term.ids[term.ids.length - 1]++;
+                    }
+                    existingTerms[term.toString()] = true;
                     return term.toString();
                 }
             };
@@ -636,18 +649,45 @@ var AOM = (function () {
             /**
              * Checks if node is defined directly in this archetype
              *
-             * @param cons constraint data node
+             * @param {object|string} cons constraint data node, or node_id
              * @returns {boolean} true if the node is defined in current archetype, false if defined only in parent
              */
-            self.isNodeTopLevel = function (cons) {
-                while (cons && !cons.node_id) { // find nearest parent with node_id
-                    cons = cons[".parent"];
+            self.isSpecialized = function (cons) {
+                if (typeof cons === "object") {
+                    while (cons && !cons.node_id) { // find nearest parent with node_id
+                        cons = cons[".parent"];
+                    }
+                    if (!cons) return false;
+                    return self.isSpecialized(cons.node_id);
+                } else {
+                    var specializationDepth = my.NodeId.of(cons).getSpecializationDepth();
+                    return specializationDepth === self.specializationDepth;
                 }
-                if (!cons) return false;
-                var specializationDepth = new my.NodeId(cons.node_id).getSpecializationDepth();
-                return specializationDepth === self.specializationDepth;
             };
 
+
+            self.specializeTermDefinition = function (termId) {
+                var newTermId = self.generateSpecializedTermId(termId);
+                Stream(self.allLanguages()).forEach(function (lang) {
+                    var term = self.getTermDefinition(termId, lang);
+                    if (term) {
+                        self.setTermDefinition(newTermId, lang, term.text, term.description);
+                    }
+                });
+                return newTermId;
+            };
+
+            self.specializeValueSet = function (valueSetId) {
+                var value_set = self.data.ontology.value_sets[valueSetId];
+                if (!value_set) return undefined;
+
+                var newValueSetId = self.specializeTermDefinition(valueSetId);
+
+                value_set = AmUtils.clone(value_set);
+                value_set.id = newValueSetId;
+                self.data.ontology.value_sets[newValueSetId] = value_set;
+                return newValueSetId;
+            };
 
 
             /**
@@ -761,17 +801,36 @@ var AOM = (function () {
                 return true;
             };
 
+
             /**
              * Sets a term definition to ontology term_definitions. Will override existing definition or add a new one
              * <p>When adding you must always make sure that you add terms to all languages
              *
              * @param {string} code node_id of the term definition
-             * @param {string} language language of the definition
+             * @param {string|undefined} language language of the definition. If undefined, sets terms for all definitions
              * @param {string} text term definition text
              * @param {string?}description term definition description
              */
             self.setTermDefinition = function (code, language, text, description) {
-                var term_definitions = (self.data.ontology.term_definitions = self.data.ontology.term_definitions || {});
+                function quickTranslate(value, sourceLanguage, targetLanguage) {
+                    if (!value) return undefined;
+                    value = value + " (" + sourceLanguage + ")";
+                    return value;
+                }
+
+
+                if (!language) {
+                    self.setTermDefinition(code, self.defaultLanguage, text, description);
+                    for (var i in self.translations) {
+                        var lang = self.translations[i];
+                        self.setTermDefinition(code, lang,
+                            quickTranslate(text, self.defaultLanguage, lang),
+                            quickTranslate(description, self.defaultLanguage, lang));
+                    }
+                    return;
+                }
+
+                var term_definitions = self.data.ontology.term_definitions;
 
                 if (!term_definitions[language]) {
                     term_definitions[language] = {};
@@ -795,25 +854,12 @@ var AOM = (function () {
             self.addNewTermDefinition = function (prefixOrCode, text, description) {
 
 
-                function quickTranslate(value, sourceLanguage, targetLanguage) {
-                    if (!value) return undefined;
-                    value = value + " (" + sourceLanguage + ")";
-                    return value;
-                }
-
                 var newCode = self.generateSpecializedTermId(prefixOrCode);
-                if (!self.data.ontology.term_definitions) {
-                    self.data.ontology.term_definitions = {};
-                }
+                //if (!self.data.ontology.term_definitions) {
+                //    self.data.ontology.term_definitions = {};
+                //}
 
-                self.setTermDefinition(newCode, self.defaultLanguage, text, description);
-                for (var i in self.translations) {
-                    var lang = self.translations[i];
-                    self.setTermDefinition(newCode, lang,
-                        quickTranslate(text, self.defaultLanguage, lang),
-                        quickTranslate(description, self.defaultLanguage, lang));
-                }
-
+                self.setTermDefinition(newCode, undefined, text, description);
 
                 return newCode;
             };
@@ -839,7 +885,7 @@ var AOM = (function () {
 
 
             self.specializeConstraint = function (cons) {
-                if (self.isNodeTopLevel(cons)) return;
+                if (self.isSpecialized(cons)) return;
                 var originalNodeId = cons.node_id;
                 var specializedNodeId = self.generateSpecializedTermId(cons.node_id || "id");
                 cons.node_id = specializedNodeId;
@@ -879,12 +925,15 @@ var AOM = (function () {
         my.ArchetypeRepository = function (callback) {
             var self = this;
 
-            $.getJSON("rest/repo/list").success(function (data) {
-                self.infoList = data;
-                if (callback) callback(self);
-            }).error(function () {
-                self.state = "error";
-            });
+
+            self.reload = function (successCallback) {
+                $.getJSON("rest/repo/list").success(function (data) {
+                    self.infoList = data;
+                    if (successCallback) successCallback(self);
+                });
+            };
+
+            self.reload(callback);
         };
 
         my.ReferenceModel = function (callback) {

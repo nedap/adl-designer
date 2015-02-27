@@ -26,9 +26,10 @@ var ArchetypeEditor = (function () {
 
         my.openLoadArchetypeDialog = function () {
             var loadArchetypeContext = {
+                panel_id: GuiUtils.generateId(),
                 archetypes: my.archetypeRepository.infoList
             };
-            GuiUtils.applyTemplate("dialog-load-archetype", loadArchetypeContext, function (htmlString) {
+            GuiUtils.applyTemplate("dialog-archetype|load", loadArchetypeContext, function (htmlString) {
                 var content = $(htmlString);
 
 
@@ -38,7 +39,7 @@ var ArchetypeEditor = (function () {
                         buttons: {"load": "Load"},
                         content: content,
                         callback: function (content) {
-                            var archetypeId = content.find('#selectArchetypeId').val();
+                            var archetypeId = content.find('#'+loadArchetypeContext.panel_id+'_archetype').val();
 
                             my.loadArchetype(archetypeId, my.useArchetype);
                         }
@@ -46,9 +47,46 @@ var ArchetypeEditor = (function () {
             });
         };
 
-        // todo specialize with archetype
-        //my.openSpecializeArchetypeDialog = function(parentArchetypeModel) {
-        //};
+        my.openSpecializeArchetypeDialog = function () {
+            var loadArchetypeContext = {
+                panel_id: GuiUtils.generateId(),
+                archetypes: my.archetypeRepository.infoList
+            };
+            GuiUtils.applyTemplate("dialog-archetype|specialize", loadArchetypeContext, function (htmlString) {
+                var content = $(htmlString);
+
+                var parentSelect = content.find('#'+loadArchetypeContext.panel_id+'_parent');
+                var specializedInput = content.find('#'+loadArchetypeContext.panel_id+'_specialized');
+
+                specializedInput.val(parentSelect.val());
+                parentSelect.change(function(){
+                    specializedInput.val(parentSelect.val());
+                });
+
+
+                GuiUtils.openSimpleDialog(
+                    {
+                        title: "Specialize archetype",
+                        buttons: {"specialize": "Specialize"},
+                        content: content,
+                        callback: function (content) {
+                            var parentArchetypeId = parentSelect.val();
+                            var specializedArchetypeId = specializedInput.val().trim();
+                            if (specializedArchetypeId.length===0) {
+                                return "Missing specialized archetype id"
+                            }
+
+                            var existing = Stream(my.archetypeRepository.infoList)
+                                .anyMatch({archetypeId: specializedArchetypeId});
+                            if (existing) {
+                                return "Specialized archetype id already exists";
+                            }
+
+                            my.createSpecializedArchetypeModel(parentArchetypeId, specializedArchetypeId, my.useArchetype);
+                        }
+                    });
+            });
+        };
 
         my.createSpecializedArchetypeModel = function (parentArchetypeId, newArchetypeId, callback) {
             $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat")
@@ -107,14 +145,12 @@ var ArchetypeEditor = (function () {
                 url: "rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat",
                 data: JSON.stringify(archetypeJson),
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    alert(data);
-                },
-                failure: function (errMsg) {
-                    alert(errMsg);
-                }
-            });
+                dataType: "json"
+            }).done(function(data) {
+                alert("Archetype saved");
+            }).fail(function (errMsg) {
+                alert(errMsg);
+            }) ;
         };
 
 
@@ -141,7 +177,6 @@ var ArchetypeEditor = (function () {
         }
 
         /**
-         *
          * @param {AOM.EditableArchetypeModel} archetypeModel
          * @param  targetElement
          * @constructor
@@ -185,7 +220,7 @@ var ArchetypeEditor = (function () {
                 var cons = constraintData.cons;
                 if (!cons) return;
                 var parentCons = archetypeModel.getParentConstraint(cons);
-                var specialized = archetypeModel.isNodeTopLevel(cons);
+                var specialized = archetypeModel.isSpecialized(cons);
 
                 var topDiv = $("<div>");
                 targetElement.append(topDiv);
@@ -294,7 +329,7 @@ var ArchetypeEditor = (function () {
                             attrJson.children = [];
                             attrJson.a_attr = attrJson.a_attr || {};
                             attrJson.a_attr.class = "definition-tree-node attribute";
-                            if (archetypeModel.isNodeTopLevel(cons)) {
+                            if (archetypeModel.isSpecialized(cons)) {
                                 attrJson.a_attr.class += " specialized";
                             }
 
@@ -339,7 +374,7 @@ var ArchetypeEditor = (function () {
 
                     consJson.a_attr = consJson.a_attr || {};
                     consJson.a_attr.class = "definition-tree-node constraint";
-                    if (archetypeModel.isNodeTopLevel(cons)) {
+                    if (archetypeModel.isSpecialized(cons)) {
                         consJson.a_attr.class += " specialized";
                     }
 
@@ -375,7 +410,7 @@ var ArchetypeEditor = (function () {
                     var cons = treeData[treeNodeId].cons || treeData[treeNodeId].attr;
 //                    var isAttr = cons["@type"]==="C_ATTRIBUTE";
                     var aElement = liElement.find('>a');
-                    var isSpecialized = archetypeModel.isNodeTopLevel(cons);
+                    var isSpecialized = archetypeModel.isSpecialized(cons);
                     aElement.removeClass('specialized');
                     if (isSpecialized) {
                         aElement.addClass('specialized');
@@ -586,6 +621,4 @@ var ArchetypeEditor = (function () {
         };
 
         return my;
-    }()
-    )
-    ;
+    }() );
