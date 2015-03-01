@@ -18,23 +18,127 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-(function () {
+(function (ArchetypeEditor) {
+
+    ArchetypeEditor.Modules = {};
+
+    /**
+     * Base object for rm handlers.
+     * @abstract
+     * @constructor
+     */
+    ArchetypeEditor.Modules.RmHandler = function () {
+        var handler = this;
+
+        handler.createCommonContext = function (stage, cons, parentCons) {
+            cons = cons || {};
+            var context = {
+                "panel_id": GuiUtils.generateId(),
+                "type": cons.rm_type_name
+            };
+            if (parentCons) {
+                var h = stage.archetypeEditor.getRmTypeHandler(parentCons.rm_type_name);
+                if (h) {
+                    context.parent = h.createContext(stage, parentCons);
+                }
+            }
+            return context;
+        };
+
+        /**
+         * Creates context (a gui model from existing or new constrains)
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param {object} cons Object for which to create the context. undefined if it does not exist yet
+         * @param {object?} parentCons Matching constraint in the parent archetype, if available
+         * @returns {object} context
+         */
+        handler.createContext = function (stage, cons, parentCons) {
+        };
+
+        /**
+         * Displays the gui and populates it with the values of the context
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param {object} context contains values to populate the gui
+         * @param targetElement jquery element where the gui will be displayed
+         */
+        handler.show = function (stage, context, targetElement) {
+        };
+
+        /**
+         * Optional function that can perform cleanup just before the panel is destroyed.
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param {object} context contains values to populate the gui
+         * @param targetElement jquery element where the gui is displayed
+         */
+        handler.hide = function (stage, context, targetElement) {
+        };
+
+        /** Updates context values from the current gui values
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param context
+         * @param targetElement
+         */
+        handler.updateContext = function (stage, context, targetElement) {
+        };
+
+        /**
+         * Validates a context
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param {context} context context to validate.
+         * @param {AmUtils.Errors} errors Target for any validation errors
+         */
+        handler.validate = function (stage, context, errors) {
+        };
+
+        /**
+         * Updates constraint values from the context values. Also performs validation.
+         *
+         * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
+         * @param context contains values that are to be copied on the context
+         * @param cons target constrains where the context values will be written
+         */
+        handler.updateConstraint = function (stage, context, cons) {
+        };
+
+    };
+
+
+    ArchetypeEditor.CommonModule = {
+        createCommonContext: function (stage, cons) {
+            cons = cons || {};
+            var context = {
+                "panel_id": GuiUtils.generateId(),
+                "type": cons.rm_type_name
+            };
+            return context;
+        }
+    };
 
     var CommonModule = function () {
         var self = this;
         self.name = "@common"; // stands for common module
 
-        self.handlers = {};
-        self.handlers["top"] = new function () {
+        var CommonRmHandler = function () {
             var handler = this;
-            handler.createContext = function (stage, cons) {
+            ArchetypeEditor.Modules.RmHandler.call(handler);
+
+        };
+        AmUtils.extend(CommonRmHandler, ArchetypeEditor.Modules.RmHandler);
+
+
+        var TopCommonHandler = function () {
+            var handler = this;
+            CommonRmHandler.call(handler);
+
+            handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
-                var context = {
-                    "panel_id": GuiUtils.generateId(),
-                    "node_id": cons.node_id,
-                    "type": "top"
-                };
+                var context = handler.createCommonContext(stage, cons);
+                context.node_id = cons.node_id;
+                context.type = "top";
                 context.occurrences = (cons.occurrences) ? AmInterval.toContainedString(cons.occurrences) : "(*..*)";
+                if (parentCons) {
+                    context.parent = handler.createContext(stage, parentCons);
+                }
 
                 return context;
             };
@@ -48,15 +152,82 @@
                 context.occurrences = occStr;
             };
 
-            handler.updateConstraint = function (stage, context, cons, errors) {
-                cons.occurrences = errors.validate(
-                  AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL"),
-                  "Invalid occurrences format", "occurrences");
+            handler.validate = function (stage, context, errors) {
+                var occ = errors.validate(
+                    AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL"),
+                    "Invalid occurrences format", "occurrences");
+                //if (occ) {
+                //    if (typeof occ.lower==="number" && typeof occ.upper==="number") {
+                //        errors.validate(occ.lower<=occ.upper, "Lower bound cannot be larger than upper bound", "occurrences");
+                //    }
+                //}
+
             };
 
-            return handler;
-        }();
+            handler.updateConstraint = function (stage, context, cons) {
+                cons.occurrences =
+                    AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
+            };
+        };
+        AmUtils.extend(TopCommonHandler, CommonRmHandler);
+
+        var MainCommonHandler = function () {
+            var handler = this;
+            CommonRmHandler.call(handler);
+
+            handler.createContext = function (stage, cons, parentCons) {
+                cons = cons || {};
+                var context = handler.createCommonContext(stage, cons);
+                var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                context.type = "main";
+                context.top = topHandler.createContext(stage, cons, parentCons);
+                var constraintHandler = stage.archetypeEditor.getRmTypeHandler(cons.rm_type_name);
+                if (constraintHandler) {
+                    context.constraint = constraintHandler.createContext(stage, cons, parentCons);
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate("properties/constraint-common|main", context, function (html) {
+                    html = $(html);
+                    targetElement.append(html);
+
+                    stage.archetypeEditor.applySubModules(stage, html, context);
+
+                });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+            };
+
+            handler.validate = function (stage, context, errors) {
+                var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                topHandler.validate(stage, context.top, errors);
+                if (context.constraint) {
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.constraint.type);
+                    constraintHandler.validate(stage, context.constraint, errors);
+                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                topHandler.updateConstraint(stage, context.top, cons);
+                if (context.constraint) {
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.constraint.type);
+                    constraintHandler.updateConstraint(stage, context.constraint, cons);
+                }
+            };
+        };
+        AmUtils.extend(MainCommonHandler, CommonRmHandler);
+
+        self.handlers = {};
+        self.handlers["top"] = new TopCommonHandler();
+        self.handlers["main"] = new MainCommonHandler()
+
     };
 
     ArchetypeEditor.addRmModule(new CommonModule());
-}());
+}(ArchetypeEditor));

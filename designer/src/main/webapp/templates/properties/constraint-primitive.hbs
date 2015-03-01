@@ -34,30 +34,30 @@
 {>C_TERMINOLOGY_CODE}
 <div class="terminology-type-choice">
     <label class="radio-inline">
-        <input type="radio" name="terminologyTarget" id="{{panel_id}}_internal" value="internal">Internal
+        <input type="radio" name="terminologyTarget" id="{{panel_id}}_internal" class="data" value="internal">Internal
     </label>
     <label class="radio-inline">
-        <input type="radio" name="terminologyTarget" id="{{panel_id}}_external" value="external">External
+        <input type="radio" name="terminologyTarget" id="{{panel_id}}_external" class="data" value="external">External
     </label>
 </div>
 <div id="{{panel_id}}_internal_panel">
     <div class="table-layout">
         <div class="table-cell vertical-button-column">
             <div class="btn-group-vertical" role="group">
-                <button id="{{panel_id}}_add_new_term" type="button" class="btn btn-default">
+                <button id="{{panel_id}}_add_new_term" type="button" class="btn btn-default data">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
-                <button id="{{panel_id}}_remove_term" type="button" class="btn btn-default">
+                <button id="{{panel_id}}_remove_term" type="button" class="btn btn-default data">
                     <span class="glyphicon glyphicon-minus"></span>
                 </button>
 
-                <button id="{{panel_id}}_add_existing_term" type="button" class="btn btn-default">
+                <button id="{{panel_id}}_add_existing_term" type="button" class="btn btn-default data">
                     <span class="glyphicon glyphicon-edit"></span>
                 </button>
             </div>
         </div>
         <div class="table-cell">
-            <select id="{{panel_id}}_internal_defined_codes" class="form-control" name="term" size="10">
+            <select id="{{panel_id}}_internal_defined_codes" class="form-control data" name="term" size="10">
                 {{#each internal_defined_codes}}
                     <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
                 {{/each}}
@@ -67,13 +67,80 @@
     <div>
         <div class="form-group">
             <label for="{{panel_id}}_assumed_value">Assumed Value</label>
-            <select id="{{panel_id}}_assumed_value" class="form-control">
+            <select id="{{panel_id}}_assumed_value" class="form-control data">
             </select>
         </div>
     </div>
 </div>
 <div id="{{panel_id}}_external_panel">
-    To be implemented
+    <div class="form-group">
+        <label for="{{panel_id}}_external_constraints">Constraints</label>
+        <input id="{{panel_id}}_external_constraints" class="form-control input-sm data" value="{{external_term.text}}">
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_external_description">Description</label>
+        <textarea id="{{panel_id}}_external_description" class="form-control data"
+                  rows="3">{{external_term.description}}</textarea>
+    </div>
+
+    <table class="external_terminology_table">
+        <thead>
+        <tr>
+            <th>
+                <label>External terminologies</label>
+            </th>
+            <th class="external_terminology_row_actions">
+                <button id="{{panel_id}}_external_add_terminology" class="btn btn-default data"
+                        title="add external terminology">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </th>
+        </tr>
+        </thead>
+        <tbody id="{{panel_id}}_external_table_body">
+        </tbody>
+    </table>
+</div>
+
+{>C_TERMINOLOGY_CODE/externalTableRow}
+<tr class="external_terminology_row_header">
+    <td>{{terminology}}</td>
+    <td class="external_terminology_row_actions">
+        <button type="button" name="edit" class="btn btn-default" title="edit">
+            <span class="glyphicon glyphicon-edit"></span>
+        </button>
+        <button type="button" name="remove" class="btn btn-default" title="remove">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </td>
+</tr>
+<tr class="external_terminology_row_binding">
+    <td colspan="2">{{binding}}</td>
+</tr>
+
+{>C_TERMINOLOGY_CODE/addExternalTerminology}
+<div class="form-group">
+    <label for="{{id}}_terminology">Terminology</label>
+
+    <div class="input-group">
+        <input id="{{id}}_terminology" class="form-control" value="{{terminology}}">
+
+        <div class="input-group-btn">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                {{#each terminologies}}
+                    <li><a data-key={{this}} href="#">{{this}}</a></li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="form-group">
+    <label for="{{id}}_url">Url</label>
+    <input id="{{id}}_url" class="form-control" value="{{url}}">
 </div>
 
 
@@ -83,17 +150,17 @@
         <label class="col-sm-6 control-label">Allowed values</label>
 
         <div class="col-sm-3">
-            <input type="checkbox" id="{{panel_id}}_true_valid">True
+            <input type="checkbox" id="{{panel_id}}_true_valid" class="data">True
         </div>
         <div class="col-sm-3">
-            <input type="checkbox" id="{{panel_id}}_false_valid">False
+            <input type="checkbox" id="{{panel_id}}_false_valid" class="data">False
         </div>
     </div>
     <div class="form-group">
         <label for="{{panel_id}}_assumed_value" class="col-sm-6 control-label">Assumed value</label>
 
         <div class="col-sm-6">
-            <select id="{{panel_id}}_assumed_value" class="form-control">
+            <select id="{{panel_id}}_assumed_value" class="form-control data">
             </select>
         </div>
     </div>
@@ -103,29 +170,29 @@
 <div class="form-horizontal">
     <div class="form-group duration_pattern_panel">
         <div class="col-sm-12">
-            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}}>Allow all time units
+            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}} class="data">Allow all time units
         </div>
         <div id="{{panel_id}}_pattern_custom" class="custom">
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_years" {{#if pattern.years}}checked{{/if}}>Years
+                <input type="checkbox" id="{{panel_id}}_pattern_years" {{#if pattern.years}}checked{{/if}} class="data">Years
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_hours" {{#if pattern.hours}}checked{{/if}}>Hours
+                <input type="checkbox" id="{{panel_id}}_pattern_hours" {{#if pattern.hours}}checked{{/if}} class="data">Hours
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}}>Months
+                <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}} class="data">Months
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}}>Minutes
+                <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}} class="data">Minutes
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_weeks" {{#if pattern.weeks}}checked{{/if}}>Weeks
+                <input type="checkbox" id="{{panel_id}}_pattern_weeks" {{#if pattern.weeks}}checked{{/if}} class="data">Weeks
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}}>Seconds
+                <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}} class="data">Seconds
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_days" {{#if pattern.days}}checked{{/if}}>Days
+                <input type="checkbox" id="{{panel_id}}_pattern_days" {{#if pattern.days}}checked{{/if}} class="data">Days
             </div>
             <div class="col-sm-6"></div>
         </div>
@@ -163,7 +230,7 @@
         <label for="{{panel_id}}_upper" class="col-sm-4 control-label">Max value</label>
 
         <div class="col-sm-4">
-            <select id="{{panel_id}}_upper_included" class="form-control  input-sm data">
+            <select id="{{panel_id}}_upper_included" class="form-control input-sm data">
                 <option value="true">=&lt;</option>
                 <option value="false">&lt;</option>
             </select>

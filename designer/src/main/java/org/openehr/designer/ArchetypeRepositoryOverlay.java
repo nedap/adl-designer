@@ -56,8 +56,13 @@ public class ArchetypeRepositoryOverlay implements ArchetypeRepository {
     @Override
     public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
         DifferentialArchetype archetype = overlayArchetypeMap.get(archetypeId);
-        if (archetype!=null) return archetype;
+        if (archetype != null) return archetype;
         return delegate.getDifferentialArchetype(archetypeId);
+    }
+
+    @Override
+    public void saveDifferentialArchetype(DifferentialArchetype archetype) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

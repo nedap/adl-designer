@@ -36,20 +36,20 @@ import static org.openehr.adl.rm.RmObjectFactory.newTerminologyId;
 /**
  * @author Marko Pipan
  */
-public class TermBindingMapToListConverter extends StdConverter<Map<String, Map<String, Map<String, Object>>>, List<TermBindingSet>> {
+public class TermBindingMapToListConverter extends StdConverter<Map<String, Map<String, String>>, List<TermBindingSet>> {
 
     @Override
-    public List<TermBindingSet> convert(Map<String, Map<String, Map<String, Object>>> value) {
+    public List<TermBindingSet> convert(Map<String, Map<String, String>> value) {
         return value.entrySet()
                 .stream()
                 .map(tbsEntry -> AmObjectFactory.newTermBindingSet(tbsEntry.getKey(), buildTermBindingItem(tbsEntry.getValue())))
                 .collect(Collectors.toList());
     }
 
-    private List<TermBindingItem> buildTermBindingItem(Map<String, Map<String, Object>> value) {
+    private List<TermBindingItem> buildTermBindingItem(Map<String, String> value) {
         return value.entrySet()
                 .stream()
-                .map(tbiEntry -> AmObjectFactory.newTermBindingItem(tbiEntry.getKey(), parseCodePhrase(tbiEntry.getValue())))
+                .map(tbiEntry -> AmObjectFactory.newTermBindingItem(tbiEntry.getKey(), tbiEntry.getValue()))
                 .collect(Collectors.toList());
     }
 

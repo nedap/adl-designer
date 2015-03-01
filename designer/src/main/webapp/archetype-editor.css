@@ -32,11 +32,19 @@
     display: none
 }
 
-.definition-tree-node {
+a.definition-tree-node {
+    color: #AAA !important;
 }
 
-.specialized {
-    font-style: italic;
+a.definition-tree-node.attribute {
+    font-style: italic !important;
+}
+a.definition-tree-node.constraint {
+    font-style: normal !important;
+}
+
+a.definition-tree-node.specialized {
+    color: black !important;
 }
 
 /* marks the field that represent actual model data (used in constraint properties, to enable save button) */
@@ -114,4 +122,18 @@ form .table-layout .table-cell {
     width: 100%;
     height: 200px;
     overflow: auto;
+}
+
+#archetype-editor-definition-node-properties .external_terminology_table {
+    width: 100%
+}
+#archetype-editor-definition-node-properties .external_terminology_row_header {
+    padding-top: 20px;
+}
+
+#archetype-editor-definition-node-properties .external_terminology_row_binding {
+    font-size: 10px;
+}
+
+#archetype-editor-definition-node-properties .external_terminology_row_actions {
 }

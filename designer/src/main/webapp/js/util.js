@@ -235,6 +235,12 @@ var AmUtils = function () {
         }
     };
 
+    my.extend = function (childClass, parentClass) {
+        childClass.prototype = Object.create(parentClass.prototype);
+        childClass.prototype.constructor = childClass;
+    };
+
+
     /**
      * Cleans object properties according to a given criteria. Cleanup wil be performed in place.
      *
@@ -297,9 +303,19 @@ var AmUtils = function () {
         return result;
     };
 
+    my.keys= function(object) {
+        var result = [];
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                result.push(key);
+            }
+        }
+        return result;
+    };
+
     /**
      * Checks if a parameter is an integer
-     * @param num number to check.
+     * @param {number} num number to check.
      * @returns {boolean} true if a parameter is an integer, false if float or not a number
      */
     my.isInt = function (num) {
@@ -322,13 +338,11 @@ var AmInterval = {
             lower: lo,
             upper: hi
         };
-        result.lower_included = typeof a != "undefined";
-        result.upper_included = typeof b != "undefined";
+        result.lower_included = typeof lo != "undefined";
+        result.upper_included = typeof hi != "undefined";
         result.lower_unbounded = !result.lower_included;
         result.upper_unbounded = !result.upper_included;
-        if (type) {
-            result["@type"] = "MULTIPLICITY_INTERVAL";
-        }
+        result["@type"] = type || "MULTIPLICITY_INTERVAL";
         return result;
     },
 
@@ -391,6 +405,8 @@ var AmInterval = {
 
         return true;
     },
+
+
 
     toString: function (self) {
         if (!self) return "";

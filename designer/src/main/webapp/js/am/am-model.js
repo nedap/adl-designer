@@ -47,6 +47,11 @@ var AOM = (function () {
                 return self.ids.length;
             }
         };
+
+        /**
+         * @param {AOM.NodeId|string} node_id
+         * @returns {AOM.NodeId}
+         */
         my.NodeId.of = function (node_id) {
             if (node_id instanceof my.NodeId) {
                 return node_id;
@@ -120,6 +125,11 @@ var AOM = (function () {
             self.segments = parsePathSegments(path);
         };
 
+        /**
+         *
+         * @param {AOM.RmPath|string}from
+         * @returns {AOM.RmPath}
+         */
         my.RmPath.of = function (from) {
             if (from instanceof my.RmPath) return from;
             return new my.RmPath(from);
@@ -129,12 +139,23 @@ var AOM = (function () {
         my.AmQuery = function () {
             var self = this;
 
-            // id1.1,id1 -> true, id1,id1.1=false, id1,id2=false
-            function isNodeIdSameOrSpecialization(candidate, match) {
+            //  depending on context:
+            //  candidate       match       context.matchParent     context.matchSpecialized    result
+            //  id1             undefined   any                     any                         true
+            //  id1             id1         any                     any                         true
+            //  id1.1           id1         any                     any                         context.matchSpecialized
+            //  id1             id1.1       any                     any                         context.matchParent
+            //  id2             id1         any                     any                         false
+            function noteIdMatches(candidate, match, context) {
                 if (match === undefined) return true;
                 if (candidate === undefined) return false;
                 if (candidate === match) return true;
-                if (candidate.length > match.length && candidate.substring(0, match.length + 1) === candidate + ".") return true;
+                if (context.matchSpecialized) {
+                    if (candidate.length > match.length && candidate.substring(0, match.length + 1) === match + ".") return true;
+                }
+                if (context.matchParent) {
+                    if (candidate.length < match.length && match.substring(0, candidate.length + 1) === candidate + ".") return true;
+                }
                 return false;
             }
 
@@ -142,11 +163,11 @@ var AOM = (function () {
                 return attribute.rm_attribute_name === segment.attribute;
             }
 
-            function constraintMatches(cons, segment) {
-                return isNodeIdSameOrSpecialization(cons.node_id, segment.node_id);
+            function constraintMatches(cons, segment, context) {
+                return noteIdMatches(cons.node_id, segment.node_id, context);
             }
 
-            function findChildConstrains(cons, segment) {
+            function findChildConstrains(cons, segment, context) {
                 var result = [];
 
                 for (var i in cons.attributes || []) {
@@ -154,7 +175,7 @@ var AOM = (function () {
                     if (attributeMatches(attribute, segment)) {
                         for (var j in attribute.children || []) {
                             var childCons = attribute.children[j];
-                            if (constraintMatches(childCons, segment)) {
+                            if (constraintMatches(childCons, segment, context)) {
                                 result.push(childCons);
                             }
                         }
@@ -182,10 +203,13 @@ var AOM = (function () {
             /**
              *
              * @param cons constraints archetype node that is the root for search
-             * @param rmPath {RmPath} path relative to the constraint
-             * @returns {*[]} [] list of all nodes that match the path, empty list if none
+             * @param {RmPath|string} rmPath  path relative to the constraint
+             * @param {{matchParent: false, matchSpecialized: false}?} context Details about what to match
+             * @returns {{}[]} [] list of all nodes that match the path, empty list if none
              */
-            self.findAll = function (cons, rmPath) {
+            self.findAll = function (cons, rmPath, context) {
+                if (!cons) return [];
+                context = context || {};
                 rmPath = my.RmPath.of(rmPath);
                 var matches = [cons];
                 for (var segment_index in rmPath.segments) {
@@ -193,14 +217,21 @@ var AOM = (function () {
                     var roots = matches;
                     matches = [];
                     for (var i in roots) {
-                        matches.push.apply(matches, findChildConstrains(roots[i], segment));
+                        matches.push.apply(matches, findChildConstrains(roots[i], segment, context));
                     }
                 }
                 return matches;
             };
 
-            self.get = function (cons, rmPath) {
-                var matches = self.findAll(cons, rmPath);
+            /**
+             *
+             * @param rootCons constraints archetype node that is the root for search
+             * @param {RmPath|string} rmPath  path relative to the constraint
+             * @param {{matchParent: false, matchSpecialized: false}?} context Details about what to match
+             * @returns {{}} first node that matched, undefined if none
+             */
+            self.get = function (rootCons, rmPath, context) {
+                var matches = self.findAll(rootCons, rmPath, context);
                 if (matches.length === 0) return undefined;
                 return matches[0];
             };
@@ -209,7 +240,7 @@ var AOM = (function () {
             return self;
         }();
 
-        my.ArchetypeModel = function (data) {
+        my.ArchetypeModel = function (data, parentArchetypeModel) {
 
             var defaultLanguage = data.original_language.code_string;
             var self = this;
@@ -251,6 +282,34 @@ var AOM = (function () {
             self.getTermDefinitionText = function (node_id, language) {
                 var td = getTermDefinition(node_id, language || defaultLanguage);
                 return td && td.text;
+            };
+
+            /**
+             * Exports all term definitions for a single node_id. Target term nodes are in format
+             * result[language] = {text:..., description=...}. Changes to the result do not result in changes to the
+             * archetype. For this, EditableArchetypeModel.importTermDefinitions(node_id, result) must be called
+             *
+             * @param node_id
+             * @returns {{}} term definitions for node_id, for each language
+             */
+            self.exportTermDefinitions = function (node_id) {
+                var result = {};
+                var allLanguages = self.allLanguages();
+                var term_definitions = self.data.ontology && self.data.ontology.term_definitions || {};
+                for (var i in allLanguages) {
+                    var lang = allLanguages[i];
+                    var langTerms = term_definitions[lang];
+                    if (langTerms) {
+                        var term = langTerms && langTerms[node_id];
+                        if (term) {
+                            result[lang] = {
+                                text: term.text,
+                                description: term.description
+                            };
+                        }
+                    }
+                }
+                return result;
             };
 
 
@@ -316,6 +375,10 @@ var AOM = (function () {
                 return result;
             };
 
+
+            /**
+             * @returns {Array} all languages present in the archetype. First language is always the main language
+             */
             self.allLanguages = function () {
                 var result = [];
                 result.push(defaultLanguage);
@@ -330,7 +393,113 @@ var AOM = (function () {
                 return Stream(cons.attributes).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
             };
 
+            /**
+             *
+             * @param {object} cons constraint object
+             * @param {string[]} attributeNames list of attribute names
+             * @returns {Array} array of name->constraint objects for each tuple
+             */
+            self.getAttributesTuple = function (cons, attributeNames) {
+                var commonAttributes = {};
+                var result = [];
 
+                for (var i in attributeNames) {
+                    var attributeName = attributeNames[i];
+                    var attribute = self.getAttribute(cons, attributeName);
+                    if (attribute) {
+                        commonAttributes[attributeName] = attribute;
+                    }
+                }
+
+                for (var i in cons.attribute_tuples || []) {
+                    var attribute_tuple = cons.attribute_tuples[i];
+                    var tupleMembers = Stream(attribute_tuple.members).flatMap("rm_attribute_name").toArray();
+                    var containedCount = 0;
+                    for (var j in tupleMembers) {
+                        if (attributeNames.indexOf(tupleMembers[j]) > 0) {
+                            containedCount++;
+                        }
+                    }
+                    if (containedCount > 0) {
+                        var indices = {};
+                        for (var j in attributeNames) {
+                            indices[attributeNames[j]] = tupleMembers.indexOf(attributeNames[j]);
+                        }
+
+                        for (var j in attribute_tuple.children || []) {
+                            var resultItem = {};
+                            var object_tuple = attribute_tuple.children[j];
+                            for (var k in attributeNames) {
+                                var index = indices[attributeNames[k]];
+                                var attributeName = attributeNames[k];
+                                resultItem[attributeName] = index >= 0 ? object_tuple.members[index] : commonAttributes[attributeName];
+                            }
+                            result.push(resultItem);
+                        }
+                        break; // only allow one tuple
+                    }
+                }
+                if (result.length == 0) {
+                    result.push(commonAttributes); // just use common attributes, if no tuples are defined
+                }
+                return result;
+            };
+
+
+            /**
+             * Gets a rm path to a constraint, optionally from a given origin
+             * @param {{}} cons - constraint for which to get rm path. Must be part of the archetype model
+             * @param {{}?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
+             * @return {RmPath} rmPath
+             */
+            self.getRmPath = function (cons, originCons) {
+
+                function fillSegments(segments, cons) {
+                    if (cons === undefined || cons === originCons) return;
+
+                    var parentAttr = cons[".parent"];
+                    if (parentAttr) {
+                        var parentCons = parentAttr[".parent"];
+                        if (parentCons["@type"] === "C_ATTRIBUTE_TUPLE") { // if tuple, take actual constraint instead
+                            parentCons = parentCons[".parent"];
+                        }
+
+                        fillSegments(segments, parentCons);
+
+                        var segment = {
+                            attribute: parentAttr.rm_attribute_name
+                        };
+                        if (cons.node_id) {
+                            segment.node_id = cons.node_id;
+                        }
+                        segments.push(segment);
+                    }
+                }
+
+                var segments = [];
+                if (cons["@type"] === "C_ATTRIBUTE") {
+                    fillSegments(segments, cons);
+                    segments.push({attribute: cons.rm_attribute_name});
+                } else {
+                    fillSegments(segments, cons);
+                }
+                return my.RmPath.of(segments);
+            };
+
+            /**
+             * Finds the constraint of the parent archetype that corresponds to this node.
+             * If no parent archetype, or no constraint was found, returns undefined
+             * @param {{}} cons specialized constraint for which the parent should be returned. must be a member of this archetypeModel
+             * @returns {{}} matching constraint of the parent archetype (member of the parentArchetypeModel), or undefined.
+             */
+            self.getParentConstraint = function (cons) {
+                if (!cons || !self.parentArchetypeModel) return undefined;
+                var rmPath = self.getRmPath(cons);
+                return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
+            };
+
+
+            self.parentArchetypeModel = parentArchetypeModel;
             self.data = data;
             self.archetypeId = data.archetype_id.value;
             self.defaultLanguage = defaultLanguage;
@@ -338,15 +507,29 @@ var AOM = (function () {
             self.specializationDepth = new my.NodeId(data.definition.node_id).getSpecializationDepth();
         };
 
-        my.EditableArchetypeModel = function (flatArchetypeData) {
+        /**
+         * Creates a new EditableArchetypeModel
+         * @param {{}} flatArchetypeData json form of the AOM Archetype object
+         * @param {AOM.ArchetypeModel?} parentArchetypeModel archetypeModel of the parent archetype
+         * @constructor
+         * @extends AOM.ArchetypeModel
+         */
+        my.EditableArchetypeModel = function (flatArchetypeData, parentArchetypeModel) {
             var self = this;
-            my.ArchetypeModel.call(self, flatArchetypeData);
+            my.ArchetypeModel.call(self, flatArchetypeData, parentArchetypeModel);
 
 
             var maxTermIdsByPrefix = {};
+            var existingTerms = {};
 
+            /**
+             * Used in preprocessor for each existing nodeId, to know what node ids already exist in the archetype. Used
+             * for generating new ids
+             * @param {string} termId termId string to acknowledge, i.e. id2.1
+             */
             function acknowledgeTermId(termId) {
                 if (!termId) return;
+                existingTerms[termId] = true;
                 termId = my.NodeId.of(termId);
                 if (termId.getSpecializationDepth() === self.specializationDepth) {
                     var lastTermIdSegment = termId.ids[termId.ids.length - 1];
@@ -359,6 +542,7 @@ var AOM = (function () {
 
 
             function enrichAttributeData(data, parent) {
+                if (!data) return;
                 data[".parent"] = parent;
                 for (var i in data.children || []) {
                     enrichConstraintData(data.children[i], data);
@@ -366,6 +550,7 @@ var AOM = (function () {
             }
 
             function enrichConstraintData(data, parent) {
+                if (!data) return;
                 data[".parent"] = parent;
 
                 acknowledgeTermId(data.node_id);
@@ -426,10 +611,11 @@ var AOM = (function () {
              * @returns {string} a new, unique term id
              */
             self.generateSpecializedTermId = function (parentTermOrPrefix) {
-                if (parentTermOrPrefix.match(/^\w+$/)) {
+
+                var term;
+                if (parentTermOrPrefix.match(/^[a-zA-Z]+$/)) {
                     var prefix = parentTermOrPrefix;
                     var maxTermId = maxTermIdsByPrefix[prefix] || 0;
-                    var term;
                     if (self.specializationDepth === 1) {
                         term = my.NodeId.of(prefix + String(++maxTermId));
                     } else {
@@ -440,121 +626,69 @@ var AOM = (function () {
                         term.ids.push(++maxTermId);
                     }
                     maxTermIdsByPrefix[prefix] = maxTermId;
+                    existingTerms[term.toString()] = true;
                     return term.toString();
                 } else {
                     // todo do not assume 1 for nodes parents
-                    var term = my.NodeId.of(parentTermOrPrefix);
-                    while (term.ids < self.specializationDepth - 1) {
+                    term = my.NodeId.of(parentTermOrPrefix);
+                    while (term.ids.length < self.specializationDepth - 1) {
                         term.ids.push(0);
                     }
-                    term.ids.push(1);
+                    if (term.ids.length < self.specializationDepth) {
+                        term.ids.push(1);
+                    }
+                    while (existingTerms[term.toString()]) { // find first unique id
+                        term.ids[term.ids.length - 1]++;
+                    }
+                    existingTerms[term.toString()] = true;
                     return term.toString();
                 }
-            };
-
-            /**
-             * Gets a rm path to a constraint, optionally from a given origin
-             * @param {Object} cons - constraint for which to get rm path. Must be part of the archetype model
-             * @param {Object?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
-             * @return {RmPath} rmPath
-             */
-            self.getRmPath = function (cons, originCons) {
-
-                function fillSegments(segments, cons) {
-                    if (cons === undefined || cons === originCons) return;
-
-                    var parentAttr = cons[".parent"];
-                    if (parentAttr) {
-                        var parentCons = parentAttr[".parent"];
-                        if (parentCons["@type"] === "C_ATTRIBUTE_TUPLE") { // if tuple, take actual constraint instead
-                            parentCons = parentCons[".parent"];
-                        }
-
-                        fillSegments(segments, parentCons);
-
-                        var segment = {
-                            attribute: parentAttr.rm_attribute_name
-                        };
-                        if (cons.node_id) {
-                            segment.node_id = cons.node_id;
-                        }
-                        segments.push(segment);
-                    }
-                }
-
-                var segments = [];
-                fillSegments(segments, cons);
-                return my.RmPath.of(segments);
             };
 
 
             /**
              * Checks if node is defined directly in this archetype
              *
-             * @param cons constraint data node
+             * @param {object|string} cons constraint data node, or node_id
              * @returns {boolean} true if the node is defined in current archetype, false if defined only in parent
              */
-            self.isNodeTopLevel = function (cons) {
-                while (cons && !cons.node_id) { // find nearest parent with node_id
-                    cons = cons[".parent"];
+            self.isSpecialized = function (cons) {
+                if (typeof cons === "object") {
+                    while (cons && !cons.node_id) { // find nearest parent with node_id
+                        cons = cons[".parent"];
+                    }
+                    if (!cons) return false;
+                    return self.isSpecialized(cons.node_id);
+                } else {
+                    var specializationDepth = my.NodeId.of(cons).getSpecializationDepth();
+                    return specializationDepth === self.specializationDepth;
                 }
-                if (!cons) return false;
-                var specializationDepth = new my.NodeId(cons.node_id).getSpecializationDepth();
-                return specializationDepth === self.specializationDepth;
             };
 
 
-            /**
-             *
-             * @param {object} cons constraint object
-             * @param {string[]} attributeNames list of attribute names
-             * @returns {Array} array of name->constraint objects for each tuple
-             */
-            self.getAttributesTuple = function (cons, attributeNames) {
-                var commonAttributes = {};
-                var result = [];
-
-                for (var i in attributeNames) {
-                    var attributeName = attributeNames[i];
-                    var attribute = self.getAttribute(cons, attributeName);
-                    if (attribute) {
-                        commonAttributes[attributeName] = attribute;
+            self.specializeTermDefinition = function (termId) {
+                var newTermId = self.generateSpecializedTermId(termId);
+                Stream(self.allLanguages()).forEach(function (lang) {
+                    var term = self.getTermDefinition(termId, lang);
+                    if (term) {
+                        self.setTermDefinition(newTermId, lang, term.text, term.description);
                     }
-                }
-
-                for (var i in cons.attribute_tuples || []) {
-                    var attribute_tuple = cons.attribute_tuples[i];
-                    var tupleMembers = Stream(attribute_tuple.members).flatMap("rm_attribute_name").toArray();
-                    var containedCount = 0;
-                    for (var j in tupleMembers) {
-                        if (attributeNames.indexOf(tupleMembers[j]) > 0) {
-                            containedCount++;
-                        }
-                    }
-                    if (containedCount > 0) {
-                        var indices = {};
-                        for (var j in attributeNames) {
-                            indices[attributeNames[j]] = tupleMembers.indexOf(attributeNames[j]);
-                        }
-
-                        for (var j in attribute_tuple.children || []) {
-                            var resultItem = {};
-                            var object_tuple = attribute_tuple.children[j];
-                            for (var k in attributeNames) {
-                                var index = indices[attributeNames[k]];
-                                var attributeName = attributeNames[k];
-                                resultItem[attributeName] = index >= 0 ? object_tuple.members[index] : commonAttributes[attributeName];
-                            }
-                            result.push(resultItem);
-                        }
-                        break; // only allow one tuple
-                    }
-                }
-                if (result.length == 0) {
-                    result.push(commonAttributes); // just use common attributes, if no tuples are defined
-                }
-                return result;
+                });
+                return newTermId;
             };
+
+            self.specializeValueSet = function (valueSetId) {
+                var value_set = self.data.ontology.value_sets[valueSetId];
+                if (!value_set) return undefined;
+
+                var newValueSetId = self.specializeTermDefinition(valueSetId);
+
+                value_set = AmUtils.clone(value_set);
+                value_set.id = newValueSetId;
+                self.data.ontology.value_sets[newValueSetId] = value_set;
+                return newValueSetId;
+            };
+
 
             /**
              * Remove attribute from constraint
@@ -667,51 +801,106 @@ var AOM = (function () {
                 return true;
             };
 
+
             /**
-             * Adds a new term definition to ontology. Text and description are given to the original language, while other languages
-             * have suffix " (original_language)"
-             * @param {string}prefixOrParentCode prefix (or parent code) under which to generate new termId.
-             * @param {string} text text of the terminology definition
-             * @param {string?}description description of the terminology definition
-             * @returns {string} code of the generated terminology definition
+             * Sets a term definition to ontology term_definitions. Will override existing definition or add a new one
+             * <p>When adding you must always make sure that you add terms to all languages
+             *
+             * @param {string} code node_id of the term definition
+             * @param {string|undefined} language language of the definition. If undefined, sets terms for all definitions
+             * @param {string} text term definition text
+             * @param {string?}description term definition description
              */
-            self.addNewTermDefinition = function (prefixOrParentCode, text, description) {
-
-                function addToLanguage(term_definitions, language, code, text, description) {
-                    if (!term_definitions[language]) {
-                        term_definitions[language] = {};
-                    }
-                    term_definitions[language][code] = {
-                        text: text,
-                        description: description
-                    };
-                    AmUtils.cleanObjectProperties(term_definitions[language][code]);
-                }
-
+            self.setTermDefinition = function (code, language, text, description) {
                 function quickTranslate(value, sourceLanguage, targetLanguage) {
                     if (!value) return undefined;
                     value = value + " (" + sourceLanguage + ")";
                     return value;
                 }
 
-                var newCode = self.generateSpecializedTermId(prefixOrParentCode);
-                var term = {};
-                if (!self.data.ontology.term_definitions) {
-                    self.data.ontology.term_definitions = {};
-                }
-                var td = self.data.ontology.term_definitions;
 
-                addToLanguage(td, self.defaultLanguage, newCode, text, description);
-                for (var i in self.translations) {
-                    var lang = self.translations[i];
-                    addToLanguage(td, lang, newCode,
-                        quickTranslate(text, self.defaultLanguage, lang),
-                        quickTranslate(description, self.defaultLanguage, lang));
+                if (!language) {
+                    self.setTermDefinition(code, self.defaultLanguage, text, description);
+                    for (var i in self.translations) {
+                        var lang = self.translations[i];
+                        self.setTermDefinition(code, lang,
+                            quickTranslate(text, self.defaultLanguage, lang),
+                            quickTranslate(description, self.defaultLanguage, lang));
+                    }
+                    return;
                 }
 
+                var term_definitions = self.data.ontology.term_definitions;
+
+                if (!term_definitions[language]) {
+                    term_definitions[language] = {};
+                }
+                term_definitions[language][code] = {
+                    text: text,
+                    description: description
+                };
+                AmUtils.cleanObjectProperties(term_definitions[language][code]);
+            };
+
+            /**
+             * Adds a new term definition to ontology. Text and description are given to the original language, while other languages
+             * have suffix " (original_language)"
+             * @param {string}prefixOrCode prefix (or code) under which to generate new termId. If it refers to
+             * a parent code, a specialized code will be generated
+             * @param {string} text text of the terminology definition
+             * @param {string?}description description of the terminology definition
+             * @returns {string} code of the generated terminology definition
+             */
+            self.addNewTermDefinition = function (prefixOrCode, text, description) {
+
+
+                var newCode = self.generateSpecializedTermId(prefixOrCode);
+                //if (!self.data.ontology.term_definitions) {
+                //    self.data.ontology.term_definitions = {};
+                //}
+
+                self.setTermDefinition(newCode, undefined, text, description);
 
                 return newCode;
             };
+
+            /**
+             * Imports term definitions for a single node_id, for all languages
+             *
+             * @param node_id
+             * @param {{}} termsPerLanguage terms per language, in format {language: {text:..., description:...}}
+             */
+            self.importTermDefinitions = function (node_id, termsPerLanguage) {
+                var ontology = self.data.ontology;
+                var term_definitions = (ontology.term_definitions = ontology.term_definitions || {});
+                for (var language in termsPerLanguage) {
+                    var term = termsPerLanguage[language];
+                    var langTerms = (term_definitions[language] = term_definitions[language] || {});
+                    langTerms[node_id] = {
+                        text: term.text,
+                        description: term.description
+                    };
+                }
+            };
+
+
+            self.specializeConstraint = function (cons) {
+                if (self.isSpecialized(cons)) return;
+                var originalNodeId = cons.node_id;
+                var specializedNodeId = self.generateSpecializedTermId(cons.node_id || "id");
+                cons.node_id = specializedNodeId;
+
+                // add specialized term to term definitions if present in parent
+                var allLanguages = self.allLanguages();
+                for (var langIndex in allLanguages) {
+                    var lang = allLanguages[langIndex];
+                    var term = self.getTermDefinition(originalNodeId, lang);
+                    if (term) {
+                        self.setTermDefinition(specializedNodeId, lang, term.text, term.description);
+                    }
+                }
+            };
+
 
             /**
              * Enriches constraint with additional attributes form the EditableArchetypeModel. Intended to allow adding attributes on a
@@ -736,12 +925,15 @@ var AOM = (function () {
         my.ArchetypeRepository = function (callback) {
             var self = this;
 
-            $.getJSON("rest/repo/list").success(function (data) {
-                self.infoList = data;
-                if (callback) callback(self);
-            }).error(function () {
-                self.state = "error";
-            });
+
+            self.reload = function (successCallback) {
+                $.getJSON("rest/repo/list").success(function (data) {
+                    self.infoList = data;
+                    if (successCallback) successCallback(self);
+                });
+            };
+
+            self.reload(callback);
         };
 
         my.ReferenceModel = function (callback) {
@@ -821,6 +1013,7 @@ var AOM = (function () {
          */
         my.impoverishedClone = function (cons) {
             var result;
+            if (cons === null || cons === undefined) return cons;
             if (typeof cons === "object") {
                 if (Array.isArray(cons)) {
                     result = [];
@@ -842,7 +1035,7 @@ var AOM = (function () {
             } else {
                 return cons;
             }
-        }
+        };
 
 
         return my;

@@ -1,0 +1,65 @@
+/*
+ * ADL2-core
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+ *
+ * This file is part of ADL2-core.
+ *
+ * ADL2-core is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.openehr.designer.diff;
+
+import com.google.common.base.Charsets;
+import org.openehr.adl.rm.OpenEhrRmModel;
+import org.openehr.adl.rm.RmModel;
+import org.openehr.adl.serializer.ArchetypeSerializer;
+import org.openehr.designer.ArchetypeRepositoryImpl;
+import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.FlatArchetype;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.testng.Assert.*;
+
+public class ArchetypeDifferentiatorTestManual {
+//    private final RmModel rmModel = new OpenEhrRmModel();
+    private ArchetypeRepositoryImpl archetypeRepository;
+
+
+    @BeforeClass
+    public void init() throws Exception {
+
+        URL myTestURL = ClassLoader.getSystemResource("differentiator/openEHR-EHR-OBSERVATION.bodily_output.v1.adls");
+        Path repositoryPath = Paths.get(myTestURL.toURI()).getParent();
+
+        archetypeRepository = new ArchetypeRepositoryImpl();
+        archetypeRepository.setRepositoryLocation(repositoryPath.toString());
+        archetypeRepository.init();
+
+    }
+
+    @Test
+    public void testBuild() throws Exception {
+        FlatArchetype parent = archetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
+        FlatArchetype flatChild = archetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
+        DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(parent, flatChild);
+        String archetype = ArchetypeSerializer.serialize(diff);
+        Files.write(Paths.get("D:/temp/diff.adls"), archetype.getBytes(Charsets.UTF_8));
+    }
+}

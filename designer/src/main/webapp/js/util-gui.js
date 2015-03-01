@@ -33,7 +33,7 @@ var GuiUtils = (function () {
         function applyTemplateAndCallback(template) {
             var html = template(context);
             if (typeof callback === "function") {
-                callback(html);
+                callback(html, context);
             } else if (callback instanceof jQuery) {
                 callback.append(html);
             }
@@ -131,7 +131,9 @@ var GuiUtils = (function () {
             frameContext.buttons.push(buttonContext);
         }
 
-        frameContext.buttons[frameContext.buttons.length - 1].class = "btn btn-primary";
+        if (frameContext.buttons.length>0) {
+            frameContext.buttons[frameContext.buttons.length - 1].class = "btn btn-primary";
+        }
 
         var content = options.content;
         if (typeof content === "string") {
@@ -148,7 +150,7 @@ var GuiUtils = (function () {
                 var buttonName = $(this).attr('name');
 
                 if (options.callback) {
-                    var result = options.callback(content, buttonName);
+                    var result = options.callback(content, buttonName, options);
                     if (typeof result === "string") {
                         var alertDiv = modalFooter.find(".alert");
                         alertDiv.text(result).removeClass("hidden");

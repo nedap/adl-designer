@@ -31,8 +31,8 @@
             </select>
         </div>
         <div class="table-cell right">
-            <button id="{{units_id}}_remove" class="btn btn-default">-</button>
-            <button id="{{units_id}}_add" class="btn btn-default">+</button>
+            <button id="{{units_id}}_remove" class="btn btn-default data">-</button>
+            <button id="{{units_id}}_add" class="btn btn-default data">+</button>
         </div>
     </div>
     {{#each unit_panels}}
@@ -48,7 +48,7 @@
 <div>
     <div class="checkbox">
         <label>
-            <input id="{{panel_id}}_coded_text" type="checkbox">Coded text
+            <input id="{{panel_id}}_coded_text" type="checkbox" class="data">Coded text
         </label>
     </div>
     <div id="{{defining_code.panel_id}}"></div>
@@ -71,24 +71,24 @@
     <div class="table-layout">
         <div class="table-cell vertical-button-column">
             <div class="btn-group-vertical" role="group">
-                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default" title="add new value">
+                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default data" title="add new value">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
-                <button id="{{panel_id}}_remove_value" type="button" class="btn btn-default" title="remove">
+                <button id="{{panel_id}}_remove_value" type="button" class="btn btn-default data" title="remove">
                     <span class="glyphicon glyphicon-minus"></span>
                 </button>
 
-                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default"
+                <button id="{{panel_id}}_add_existing_value" type="button" class="btn btn-default data"
                         title="add existing value">
                     <span class="glyphicon glyphicon-edit"></span>
                 </button>
-                <button id="{{panel_id}}_edit_value" type="button" class="btn btn-default" title="edit">
+                <button id="{{panel_id}}_edit_value" type="button" class="btn btn-default data" title="edit">
                     <span class="glyphicon glyphicon-wrench"></span>
                 </button>
             </div>
         </div>
         <div class="table-cell">
-            <select id="{{panel_id}}_values" class="form-control" size="10">
+            <select id="{{panel_id}}_values" class="form-control data" size="10">
             </select>
         </div>
     </div>
@@ -162,19 +162,19 @@
         </div>
         <div id="{{panel_id}}_kinds_panel" class="col-sm-6">
             <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_ratio" type="checkbox">Ratio
+                <input id="{{panel_id}}_kind_ratio" type="checkbox" class="data">Ratio
             </div>
             <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_unitary" type="checkbox">Unitary
+                <input id="{{panel_id}}_kind_unitary" type="checkbox" class="data">Unitary
             </div>
             <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_percent" type="checkbox">Percent
+                <input id="{{panel_id}}_kind_percent" type="checkbox" class="data">Percent
             </div>
             <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_fraction" type="checkbox">Fraction
+                <input id="{{panel_id}}_kind_fraction" type="checkbox" class="data">Fraction
             </div>
             <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_integer_fraction" type="checkbox">Integer Fraction
+                <input id="{{panel_id}}_kind_integer_fraction" type="checkbox" class="data">Integer Fraction
             </div>
         </div>
     </div>

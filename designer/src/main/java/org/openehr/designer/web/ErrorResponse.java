@@ -18,26 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer;
-
-import org.openehr.adl.FlatArchetypeProvider;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
-
-import java.util.List;
+package org.openehr.designer.web;
 
 /**
- * @author Marko Pipan
+ * @author markopi
  */
-public interface ArchetypeRepository extends FlatArchetypeProvider {
+public class ErrorResponse {
+    public String message;
 
-    public RmModel getRmModel();
+    public ErrorResponse(String message) {
+        this.message = message;
+    }
 
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId);
-    public void saveDifferentialArchetype(DifferentialArchetype archetype);
+    public String getMessage() {
+        return message;
+    }
 
-    public FlatArchetype getFlatArchetype(String archetypeId);
-
-    public List<ArchetypeInfo> getArchetypeInfos();
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

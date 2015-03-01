@@ -45,6 +45,7 @@ public class ValueSetMapToListConverter extends StdConverter<Map, List> {
                     vs.getMembers().addAll((Collection<String>) vsEntry.getValue().get("members"));
                 }
             }
+            result.add(vs);
         }
         return result;
     }

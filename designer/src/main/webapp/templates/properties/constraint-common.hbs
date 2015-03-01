@@ -18,23 +18,35 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 {>top}
-<form>
-    <div class="table-layout">
-        <div class="table-row">
-            <div class="table-cell"><label>Node Id</label></div>
-            <div class="table-cell data">{{node_id}}</div>
-        </div>
-        <div class="table-row">
-            <div class="table-cell"><label for="occurrences">Occurrences</label></div>
-            <div class="table-cell">
-                <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data" value="{{occurrences}}"/>
-            </div>
+<div class="table-layout">
+    <div class="table-row">
+        <div class="table-cell"><label>Node Id</label></div>
+        <div class="table-cell data">{{node_id}}</div>
+    </div>
+    <div class="table-row">
+        <div class="table-cell"><label for="occurrences">Occurrences</label></div>
+        <div class="table-cell">
+            <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data"
+                   value="{{occurrences}}"/>
         </div>
     </div>
-</form>
+</div>
+
+{>main}
+<div id="{{panel_id}}">
+    <div id="{{top.panel_id}}"></div>
+    {{#if constraint}}
+        <div id="{{constraint.panel_id}}"></div>
+    {{/if}}
+</div>
 
 {>footer}
-<button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+<div>
+    {{#unless specialized}}
+        <button id="{{footer_id}}_specialize" class="btn btn-primary">Specialize</button>
+    {{/unless}}
+    <button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+</div>
 
 {>errors}
 <ul>

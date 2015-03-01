@@ -21,10 +21,12 @@
 package org.openehr.designer.web;
 
 import com.google.common.base.Charsets;
+import org.json4s.Diff;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.TemplateInfo;
@@ -72,10 +74,25 @@ public class WtResourceImpl implements WtResource {
         return archetypeRepository.getDifferentialArchetype(archetypeId);
     }
 
-    @RequestMapping(value = "/archetype/{archetypeId}/flat")
+    @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.GET)
     @Override
     public FlatArchetype getFlatArchetype(@PathVariable("archetypeId") String archetypeId) {
         return archetypeRepository.getFlatArchetype(archetypeId);
+    }
+
+    @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.PUT)
+    @Override
+    public void saveFlatArchetype(@PathVariable("archetypeId") String archetypeId, @RequestBody FlatArchetype archetype) {
+        if (!archetypeId.equals(archetype.getArchetypeId().getValue())) {
+            throw new IllegalArgumentException("Archetype id in path does not match archetype id in body");
+        }
+        FlatArchetype parentArchetype=null;
+        if (archetype.getParentArchetypeId()!=null && archetype.getParentArchetypeId().getValue()!=null) {
+            parentArchetype = archetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+        }
+
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);
+        archetypeRepository.saveDifferentialArchetype(differentialArchetype);
     }
 
     @RequestMapping(value = "/list")
@@ -172,4 +189,21 @@ public class WtResourceImpl implements WtResource {
         headers.add("Content-Length", Integer.toString(adltContent.length));
         return new ResponseEntity<>(adltContent, headers, HttpStatus.OK);
     }
+
+    @ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Bad argument")
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseBody
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
+        LOG.error("Bad Request", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ErrorResponse handleIllegalArgumentException(Exception e) {
+        LOG.error("Internal server error", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
 }
