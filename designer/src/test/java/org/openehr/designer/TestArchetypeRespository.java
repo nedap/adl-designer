@@ -20,22 +20,22 @@
 
 package org.openehr.designer;
 
-import org.openehr.designer.ArchetypeRepository;
-import org.openehr.designer.ArchetypeRepositoryImpl;
-
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * @author Marko Pipan
  */
 public class TestArchetypeRespository {
     private static ArchetypeRepositoryImpl archetypeRepository;
+    private static final String TEST_REPO_KEY = "test.repo";
 
     public static synchronized ArchetypeRepository getInstance() {
         if (archetypeRepository == null) {
             try {
                 ArchetypeRepositoryImpl repo = new ArchetypeRepositoryImpl();
-                repo.setRepositoryLocation("c:/projects/openehr/Adl Workbench repositories/adl-archetypes/Reference/CKM_2013_12_09");
+                repo.setRepositoryLocation(getPathFromRepoProperties());
                 repo.init();
                 archetypeRepository = repo;
             } catch (IOException e) {
@@ -44,5 +44,31 @@ public class TestArchetypeRespository {
         }
         return archetypeRepository;
 
+    }
+
+    private static String getPathFromRepoProperties() throws IOException {
+        InputStream is = TestArchetypeRespository.class.getClassLoader().getResourceAsStream("repo.properties");
+        if (is == null) {
+            return getPathFromRepoPropertiesTemplate();
+        } else {
+            Properties p = new Properties();
+            p.load(is);
+            is.close();
+            return p.getProperty(TEST_REPO_KEY);
+        }
+    }
+
+    private static String getPathFromRepoPropertiesTemplate() throws IOException {
+
+        InputStream is = TestArchetypeRespository.class.getClassLoader().getResourceAsStream("repo.properties-TEMPLATE");
+        if (is == null) {
+            throw new RuntimeException("No repo.properties or repo.properties-TEMPLATE found");
+        } else {
+            Properties p = new Properties();
+            p.load(is);
+            is.close();
+            return p.getProperty(TEST_REPO_KEY);
+
+        }
     }
 }
