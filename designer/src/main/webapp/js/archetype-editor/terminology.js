@@ -68,24 +68,29 @@ var ArchetypeEditorTerminology = (function () {
 
     var createValueSetsTable = function (archetypeModel, targetElement) {
         var context = {
-            table_id: GuiUtils.generateId()
+            panel_id: GuiUtils.generateId()
         };
-        GuiUtils.applyTemplate("terminology/terms|constraints", context, function (html) {
-            html = $(html);
+        GuiUtils.applyTemplate("terminology/terms|valueSets", context, function (html) {
 
-            var language = archetypeModel.defaultLanguage;
-            var value_sets = archetypeModel.data.ontology.value_sets;
-            var data = [];
-            for (var nodeId in value_sets) {
-                var term = archetypeModel.getTermDefinition(nodeId, language);
-                data.push({
-                    code: nodeId,
-                    text: term.text,
-                    description: term.description
-                });
+            function loadData() {
+                var language = archetypeModel.defaultLanguage;
+                var value_sets = archetypeModel.data.ontology.value_sets;
+                var data = [];
+                for (var nodeId in value_sets) {
+                    var term = archetypeModel.getTermDefinition(nodeId, language);
+                    data.push({
+                        code: nodeId,
+                        text: term.text,
+                        description: term.description
+                    });
+                }
+                return data;
             }
 
-            var tableElement = html.find('#' + context.table_id);
+            html = $(html);
+            var data = loadData();
+
+            var tableElement = html.find('#' + context.panel_id + "_table");
             tableElement.bootstrapTable({
                 data: data
             });
@@ -93,7 +98,7 @@ var ArchetypeEditorTerminology = (function () {
             tableElement.on('click-row.bs.table', function (e, row, $element) {
                 my.openUpdateValueSetDialog(archetypeModel, row.code,
                     {canSpecialize: true},
-                    function (newCode, specialized) {
+                    function (newCode) {
                         var term = archetypeModel.getTermDefinition(row.code, language);
 
                         var thisRow = Stream(data).filter({code: newCode}).findFirst().orElse(null);
@@ -114,13 +119,19 @@ var ArchetypeEditorTerminology = (function () {
                     });
             });
 
+            html.find('#' + context.panel_id + '_new').click(function () {
+                my.openUpdateValueSetDialog(archetypeModel, undefined, {}, function() {
+                    data=loadData();
+                    tableElement.bootstrapTable('load', data);
+                });
+            });
+
 
             targetElement.empty();
             targetElement.append(html);
 
         });
     };
-
 
     my.openUpdateTermDefinitionDialog = function (archetypeModel, term_id, updateCallback) {
         var contentContext = {
@@ -152,6 +163,14 @@ var ArchetypeEditorTerminology = (function () {
         });
     };
 
+    /**
+     * Opens an Update/Create/Specialize valueSet dialog.
+     *
+     * @param {AOM.EditableArchetypeModel} archetypeModel
+     * @param {string|undefined} valueSetId Id of the valueSet to be updated. If undefined, allows creation of new value set
+     * @param options Dialog options.
+     * @param {function(string, boolean)} updateCallback Called when the action is confirmed.
+     */
     my.openUpdateValueSetDialog = function (archetypeModel, valueSetId, options, updateCallback) {
         var defaultOptions = {canSpecialize: true};
         options = $.extend({}, defaultOptions, options);
@@ -161,9 +180,11 @@ var ArchetypeEditorTerminology = (function () {
             term: archetypeModel.getTermDefinition(valueSetId)
         };
         context.members = {};
-        Stream(archetypeModel.data.ontology.value_sets[valueSetId].members).forEach(function (member_id) {
-            context.members[member_id] = archetypeModel.getTermDefinition(member_id);
-        });
+        if (valueSetId) {
+            Stream(archetypeModel.data.ontology.value_sets[valueSetId].members).forEach(function (member_id) {
+                context.members[member_id] = archetypeModel.getTermDefinition(member_id);
+            });
+        }
 
 
         GuiUtils.applyTemplate("terminology/terms|updateValueSetDialog", context, function (content) {
@@ -246,33 +267,47 @@ var ArchetypeEditorTerminology = (function () {
             var textElement = content.find('#' + context.panel_id + '_text');
             var descriptionElement = content.find('#' + context.panel_id + '_description');
 
-            var specialized = archetypeModel.isSpecialized(valueSetId);
-            setReadOnly(!specialized);
-            var buttons = {};
-            if (specialized) {
-                buttons['update'] = "Update";
-            } else if (options.canSpecialize) {
-                buttons['specialize'] = "Specialize";
-            }
+            var opts = {buttons: {}};
+            if (!valueSetId) {
+                setReadOnly(false);
+                opts.title = "Create Value Set";
+                opts.buttons['create'] = "Create";
+            } else {
+                var specialized = archetypeModel.isSpecialized(valueSetId);
+                setReadOnly(!specialized);
+                if (specialized) {
+                    opts.title = "Update Value Set";
+                    opts.buttons['update'] = "Update";
+                } else if (options.canSpecialize) {
+                    opts.title = "View/Specialize Value Set";
+                    opts.buttons['specialize'] = "Specialize";
+                }
 
+            }
             GuiUtils.openSimpleDialog({
-                title: "Update value set",
-                buttons: buttons,
+                title: opts.title,
+                buttons: opts.buttons,
                 content: content,
                 callback: function (content, button) {
-                    if (button === "update") {
+
+
+                    if (button === 'create' || button === 'update') {
+
                         var text = textElement.val().trim();
                         var description = descriptionElement.val().trim();
 
                         if (text.length === 0) {
                             return "text is required";
                         }
-                        if (AmUtils.keys(context.members).length===0) {
+                        if (AmUtils.keys(context.members).length === 0) {
                             return "At least one code is required"
                         }
 
-                        archetypeModel.setTermDefinition(valueSetId, undefined, text, description);
+                        if (button === 'create') {
+                            valueSetId = archetypeModel.generateSpecializedTermId("ac");
+                        }
 
+                        archetypeModel.setTermDefinition(valueSetId, undefined, text, description);
                         archetypeModel.data.ontology.value_sets[valueSetId] = {
                             id: valueSetId,
                             members: AmUtils.keys(context.members)
