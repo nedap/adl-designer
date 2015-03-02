@@ -124,16 +124,16 @@ form .table-layout .table-cell {
     overflow: auto;
 }
 
-#archetype-editor-definition-node-properties .external_terminology_table {
+.external_terminology_table {
     width: 100%
 }
-#archetype-editor-definition-node-properties .external_terminology_row_header {
-    padding-top: 20px;
+.external_terminology_row_header {
+    padding-top: 22px;
 }
 
-#archetype-editor-definition-node-properties .external_terminology_row_binding {
-    font-size: 10px;
+.external_terminology_row_binding {
+    font-size: 14px;
 }
 
-#archetype-editor-definition-node-properties .external_terminology_row_actions {
+.external_terminology_row_actions {
 }

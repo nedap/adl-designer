@@ -358,6 +358,14 @@ var AOM = (function () {
             };
 
             /**
+             * Gets all external terminologies that are currently present in the archetype
+             * @returns {string[]}
+             */
+            self.getAvailableTerminologies = function () {
+                return AmUtils.keys(self.data.ontology.term_bindings);
+            };
+
+            /**
              * Gets all terminology definitions with codes that have a given prefix. Returns definitions in archetype0s
              * original language.
              *
@@ -795,6 +803,30 @@ var AOM = (function () {
                     addAttributeTuple(cons.attribute_tuples[i])
                 }
             };
+
+            /**
+             * Saves external term bindings on the archetype
+             * @param {string} termId constraint node id
+             * @param {{terminology:url}} bindings of terminology to query url
+             */
+            self.setExternalTerminologyBinding = function (termId, bindings) {
+                var tds = self.data.ontology.term_bindings;
+
+                for (var bt in bindings) {
+                    if (!tds[bt]) {
+                        tds[bt] = {};
+                    }
+                }
+
+                for (var terminology in tds) {
+                    if (bindings[terminology]) {
+                        tds[terminology][termId] = bindings[terminology];
+                    } else {
+                        delete tds[terminology][termId];
+                    }
+                }
+            };
+
 
             self.validateReplacementConstraint = function (cons, replacementCons) {
                 // todo check with parent, rm_model?, use AmUtils.Errors

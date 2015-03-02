@@ -185,7 +185,7 @@
                         return {
                             type: 'internal',
                             code: cons.code_list[0],
-                            internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
+                            //internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
                             external_term: undefined,
                             external_bindings: {}
                         }
@@ -194,7 +194,7 @@
                     return {
                         type: 'external',
                         code: code,
-                        internal_code_list: {},
+                        //internal_code_list: {},
                         external_term: externalBinding ? AmUtils.clone(externalBinding.term) : {},
                         external_bindings: externalBinding ? externalBinding.bindings : {}
                     }
@@ -203,7 +203,7 @@
                 return {
                     type: 'internal',
                     code: undefined,
-                    internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
+                    //internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
                     external_term: undefined,
                     external_bindings: {}
                 }
@@ -219,8 +219,11 @@
                 var terminologyData = getTerminologyData(stage.archetypeModel, cons);
                 context.type_internal = terminologyData.type === 'internal';
                 context.any = terminologyData.any;
-
-                context.internal_defined_codes = terminologyData.internal_code_list;
+                if (context.type_internal) {
+                    context.value_set_code = terminologyData.code;
+                } else {
+                    context.external_term_code = terminologyData.code;
+                }
                 context.external_term = terminologyData.external_term || {};
                 context.external_bindings = terminologyData.external_bindings;
 
@@ -228,55 +231,43 @@
             };
 
             handler.show = function (stage, context, targetElement) {
-                function addDefinedTerm(nodeId) {
-                    var term = stage.archetypeModel.getTermDefinition(nodeId);
-                    var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
-                    var option = $("<option>").attr("value", nodeId).attr('title', nodeId + ": " + term.description).text(term.text);
-                    select.append(option);
-                    context.internal_defined_codes[nodeId] = term;
-                }
-
-
                 function updatePanelVisibility(radios, panels) {
                     for (var i in radios) {
                         GuiUtils.setVisible(panels[i], radios[i].prop('checked'));
                     }
                 }
 
-                function isParentConstrained(context) {
-                    return !!(context.parent && !context.parent.any);
-                }
 
-                function getAvailableInternalTerms(context) {
-                    var present_codes = context.internal_defined_codes;
-
-                    var availableTerminologyCodes;
-                    if (isParentConstrained(context)) {
-                        availableTerminologyCodes = context.parent.internal_defined_codes;
-                    } else {
-                        availableTerminologyCodes = stage.archetypeModel.getAllTerminologyDefinitionsWithPrefix("at");
-                    }
-                    var result = {};
-                    for (var code in availableTerminologyCodes) {
-                        if (!present_codes[code]) {
-                            result[code] = availableTerminologyCodes[code];
-                        }
-                    }
-                    return result;
-                }
-
-                function updateInternalAssumedValue(select) {
-                    select.empty();
-                    var noAssumedValueOption = $("<option>").attr("value", "");
-                    select.append(noAssumedValueOption);
-                    var found = false;
-                    for (var code in context.internal_defined_codes) {
-                        var option = $("<option>").attr("value", code).text(context.internal_defined_codes[code].text);
-                        if (code === context.assumed_value) {
+                function updateInternalValueSet(valueSetSelect) {
+                    valueSetSelect.empty();
+                    var valueSets = stage.archetypeModel.data.ontology.value_sets;
+                    for (var valueSetId in valueSets) {
+                        var term = stage.archetypeModel.getTermDefinition(valueSetId);
+                        var option = $("<option>").attr("value", valueSetId).text(term.text);
+                        if (valueSetId === context.value_set_code) {
                             option.prop("selected", true);
-                            found = true;
                         }
-                        select.append(option);
+                        valueSetSelect.append(option);
+                    }
+                }
+
+                function updateInternalAssumedValue(assumedValueSelect) {
+                    assumedValueSelect.empty();
+                    var noAssumedValueOption = $("<option>").attr("value", "");
+                    assumedValueSelect.append(noAssumedValueOption);
+                    var found = false;
+                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+                    if (valueSet) {
+                        for (var i in valueSet.members) {
+                            var memberId = valueSet.members[i];
+                            var term = stage.archetypeModel.getTermDefinition(memberId);
+                            var option = $("<option>").attr("value", memberId).text(term.text);
+                            if (memberId === context.assumed_value) {
+                                option.prop("selected", true);
+                                found = true;
+                            }
+                            assumedValueSelect.append(option);
+                        }
                     }
                     if (!found) {
                         noAssumedValueOption.prop('selected', true);
@@ -320,6 +311,7 @@
 
 
                 GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
+                    html = $(html);
                     targetElement.append(html);
 
 
@@ -328,13 +320,39 @@
 
                     var radioInternal = targetElement.find("#" + context.panel_id + "_internal");
                     var radioExternal = targetElement.find("#" + context.panel_id + "_external");
+                    var valueSetSelect = targetElement.find('#' + context.panel_id + "_value_set");
                     var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
 
-                    var parentConstrained = isParentConstrained(context);
-                    radioInternal.prop('disabled', parentConstrained);
-                    radioExternal.prop('disabled', parentConstrained);
+                    valueSetSelect.change(function () {
+                        context.value_set_code = valueSetSelect.val();
+                        updateInternalAssumedValue(assumedValueSelect);
+                    });
 
+                    updateInternalValueSet(valueSetSelect);
                     updateInternalAssumedValue(assumedValueSelect);
+
+
+                    targetElement.find("#" + context.panel_id + "_value_set_edit").click(function () {
+                        ArchetypeEditorTerminology.openUpdateValueSetDialog(stage.archetypeModel, context.value_set_code,
+                            {readOnly: stage.readOnly},
+                            function (newValueSetId) {
+                                context.value_set_code = newValueSetId;
+                                updateInternalValueSet(valueSetSelect);
+                                updateInternalAssumedValue(assumedValueSelect);
+                            });
+                    });
+                    targetElement.find("#" + context.panel_id + "_value_set_new").click(function () {
+                        ArchetypeEditorTerminology.openUpdateValueSetDialog(stage.archetypeModel, undefined, {},
+                            function (newValueSetId) {
+                                context.value_set_code = newValueSetId;
+                                updateInternalValueSet(valueSetSelect);
+                                updateInternalAssumedValue(assumedValueSelect);
+                            });
+                    });
+
+                    targetElement.find("#" + context.panel_id + "_value_set_add").click(function () {
+
+                    });
 
                     assumedValueSelect.change(function () {
                         context.assumed_value = assumedValueSelect.val();
@@ -354,41 +372,41 @@
 
                     updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
 
-                    // internal panel
-                    targetElement.find('#' + context.panel_id + "_add_new_term").click(function () {
-                        stage.archetypeEditor.openAddNewTermDefinitionDialog(stage.archetypeModel, function (nodeId) {
-                            addDefinedTerm(nodeId);
-                            updateInternalAssumedValue(assumedValueSelect);
-                        })
-                    }).prop('disabled', parentConstrained);
-
-                    targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
-                        var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
-                        var option = select.find(":selected");
-                        if (option.length > 0) {
-                            var nodeId = option.val();
-                            delete context.internal_defined_codes[nodeId];
-                            option.remove();
-                            if (context.assumed_value === nodeId) {
-                                updateInternalAssumedValue(assumedValueSelect);
-                            }
-                        }
-                    });
-
-                    targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
-                        var dialogContext = {
-                            terms: getAvailableInternalTerms(context)
-                        };
-                        if ($.isEmptyObject(dialogContext.terms)) return;
-
-                        stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
-                            for (var i in selectedTerms) {
-                                var nodeId = selectedTerms[i];
-                                addDefinedTerm(nodeId);
-                                updateInternalAssumedValue(assumedValueSelect);
-                            }
-                        });
-                    });
+                    //// internal panel
+                    //targetElement.find('#' + context.panel_id + "_add_new_term").click(function () {
+                    //    stage.archetypeEditor.openAddNewTermDefinitionDialog(stage.archetypeModel, function (nodeId) {
+                    //        addDefinedTerm(nodeId);
+                    //        updateInternalAssumedValue(assumedValueSelect);
+                    //    })
+                    //});
+                    //
+                    //targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
+                    //    var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
+                    //    var option = select.find(":selected");
+                    //    if (option.length > 0) {
+                    //        var nodeId = option.val();
+                    //        delete context.internal_defined_codes[nodeId];
+                    //        option.remove();
+                    //        if (context.assumed_value === nodeId) {
+                    //            updateInternalAssumedValue(assumedValueSelect);
+                    //        }
+                    //    }
+                    //});
+                    //
+                    //targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
+                    //    var dialogContext = {
+                    //        terms: getAvailableInternalTerms(context)
+                    //    };
+                    //    if ($.isEmptyObject(dialogContext.terms)) return;
+                    //
+                    //    stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
+                    //        for (var i in selectedTerms) {
+                    //            var nodeId = selectedTerms[i];
+                    //            addDefinedTerm(nodeId);
+                    //            updateInternalAssumedValue(assumedValueSelect);
+                    //        }
+                    //    });
+                    //});
 
                     // external panel
                     var externalTableBody = targetElement.find('#' + context.panel_id + '_external_table_body');
@@ -458,113 +476,15 @@
             };
 
             handler.updateConstraint = function (stage, context, cons) {
-                function findNearestTerm(language) {
-                    var c = cons;
-                    while (c) {
-                        var text = stage.archetypeModel.getTermDefinition(c.node_id, language);
-                        if (text) {
-                            return text;
-                        }
-                        c = c[".parent"];
-                    }
-                    return undefined;
-                }
 
-                function removeConstraint(acCode) {
-                    var ontology = stage.archetypeModel.data.ontology;
-                    if (ontology.value_sets) {
-                        delete ontology.value_sets[acCode];
-                    }
-                    for (var lang in ontology.term_definitions || {}) {
-                        delete ontology.term_definitions[lang][acCode];
-                    }
-                    for (var terminology in ontology.term_bindings || {}) {
-                        delete ontology.term_bindings[terminology][acCode];
-                    }
-                }
-
-                function updateConstraintInternal(newAcCode) {
-
-                    cons.assumed_value = context.assumed_value;
-
-                    // internal terminology
-                    if ($.isEmptyObject(context.internal_defined_codes)) {
-                        cons.code_list = [];
-                    } else {
-                        // on real constraint populate code_list with reference to value_set, and create/update the value set
-                        var valueSet;
-
-                        // create new value set
-                        valueSet = {
-                            "id": newAcCode, members: []
-                        };
-                        // give term_definition to the new value set, for each language
-                        var term_definitions = stage.archetypeModel.data.ontology.term_definitions;
-                        for (var language in term_definitions) {
-                            var nearestTerm = findNearestTerm(language);
-                            if (nearestTerm) {
-                                var term = term_definitions[language][newAcCode] = {};
-                                term.text = nearestTerm.text + " (synthesised)";
-                                if (nearestTerm.description) {
-                                    term.description = nearestTerm.description + " (synthesised)";
-                                }
-                            }
-                        }
-
-                        // add value set to ontology value_sets
-                        if (!stage.archetypeModel.data.ontology.value_sets) {
-                            stage.archetypeModel.data.ontology.value_sets = {};
-                        }
-                        stage.archetypeModel.data.ontology.value_sets[newAcCode] = valueSet;
-                        cons.code_list = [newAcCode];
-
-
-                        valueSet.members = [];
-                        for (var code in context.internal_defined_codes) {
-                            valueSet.members.push(code);
-                        }
-                    }
-                }
-
-
-                function updateConstraintExternal(newAcCode) {
-
-                    cons.assumed_value = undefined;
-
-                    var ontology = stage.archetypeModel.data.ontology;
-
-                    stage.archetypeModel.addNewTermDefinition(newAcCode, context.external_term.text, context.external_term.description);
-
-                    //for (var language in ontology.term_definitions) {
-                    //    var nearestTerm = findNearestTerm(language);
-                    //    if (nearestTerm) {
-                    //        var term = ontology.term_definitions[language][newAcCode] = {};
-                    //        term.text = nearestTerm.text + " (external)";
-                    //        if (nearestTerm.description) {
-                    //            term.description = nearestTerm.description + " (external)";
-                    //        }
-                    //    }
-                    //}
-                    ontology.term_bindings = ontology.term_bindings || {};
-                    for (var terminology in context.external_bindings) {
-                        var tb = (ontology.term_bindings[terminology] = ontology.term_bindings[terminology] || {});
-                        tb[newAcCode] = context.external_bindings[terminology];
-                    }
-                    cons.code_list = [newAcCode];
-                }
-
-
-                var oldTerminologyData = getTerminologyData(stage.archetypeModel, cons);
-                if (oldTerminologyData && oldTerminologyData.code) {
-                    removeConstraint(oldTerminologyData.code);
-                }
-                var newAcCode = (oldTerminologyData && oldTerminologyData.code) ? oldTerminologyData.code :
-                    stage.archetypeModel.generateSpecializedTermId("ac");
-
+                delete cons.assumed_value;
                 if (context.type_internal) {
-                    updateConstraintInternal(newAcCode);
+                    if (context.value_set_code && context.value_set_code.length>0) {
+                        cons.code_list=[context.value_set_code];
+                        cons.assumed_value = context.assumed_value;
+                    }
                 } else {
-                    updateConstraintExternal(newAcCode);
+                    // todo update external
                 }
 
 

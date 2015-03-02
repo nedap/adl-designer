@@ -230,6 +230,7 @@ var ArchetypeEditor = (function () {
                 targetElement.append(customDiv);
 
                 stage = createEmptyStage();
+                stage.readOnly = !specialized;
                 context = handler.createContext(stage, cons, parentCons);
                 addPropertiesPanelToStage(stage, context, handler, customDiv);
                 handler.show(stage, context, customDiv);

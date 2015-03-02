@@ -41,33 +41,25 @@
     </label>
 </div>
 <div id="{{panel_id}}_internal_panel">
-    <div class="table-layout">
-        <div class="table-cell vertical-button-column">
-            <div class="btn-group-vertical" role="group">
-                <button id="{{panel_id}}_add_new_term" type="button" class="btn btn-default data">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
-                <button id="{{panel_id}}_remove_term" type="button" class="btn btn-default data">
-                    <span class="glyphicon glyphicon-minus"></span>
-                </button>
+    <div>
+        <label for="{{panel_id}}_value_set">Value Set</label>
 
-                <button id="{{panel_id}}_add_existing_term" type="button" class="btn btn-default data">
+        <div class="input-group">
+            <select id="{{panel_id}}_value_set" class="form-control input-sm data">
+            </select>
+            <span class="input-group-btn">
+                <button id="{{panel_id}}_value_set_edit" type="button" class="btn btn-default">
                     <span class="glyphicon glyphicon-edit"></span>
                 </button>
-            </div>
+                <button id="{{panel_id}}_value_set_new" type="button" class="btn btn-default data">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </span>
         </div>
-        <div class="table-cell">
-            <select id="{{panel_id}}_internal_defined_codes" class="form-control data" name="term" size="10">
-                {{#each internal_defined_codes}}
-                    <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
-                {{/each}}
-            </select>
-        </div>
-    </div>
-    <div>
-        <div class="form-group">
-            <label for="{{panel_id}}_assumed_value">Assumed Value</label>
-            <select id="{{panel_id}}_assumed_value" class="form-control data">
+        <label for="{{panel_id}}_assumed_value">Assumed Value</label>
+
+        <div class="input-group">
+            <select id="{{panel_id}}_assumed_value" class="form-control input-sm data">
             </select>
         </div>
     </div>
@@ -102,46 +94,6 @@
     </table>
 </div>
 
-{>C_TERMINOLOGY_CODE/externalTableRow}
-<tr class="external_terminology_row_header">
-    <td>{{terminology}}</td>
-    <td class="external_terminology_row_actions">
-        <button type="button" name="edit" class="btn btn-default" title="edit">
-            <span class="glyphicon glyphicon-edit"></span>
-        </button>
-        <button type="button" name="remove" class="btn btn-default" title="remove">
-            <span class="glyphicon glyphicon-minus"></span>
-        </button>
-    </td>
-</tr>
-<tr class="external_terminology_row_binding">
-    <td colspan="2">{{binding}}</td>
-</tr>
-
-{>C_TERMINOLOGY_CODE/addExternalTerminology}
-<div class="form-group">
-    <label for="{{id}}_terminology">Terminology</label>
-
-    <div class="input-group">
-        <input id="{{id}}_terminology" class="form-control" value="{{terminology}}">
-
-        <div class="input-group-btn">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                {{#each terminologies}}
-                    <li><a data-key={{this}} href="#">{{this}}</a></li>
-                {{/each}}
-            </ul>
-        </div>
-    </div>
-</div>
-<div class="form-group">
-    <label for="{{id}}_url">Url</label>
-    <input id="{{id}}_url" class="form-control" value="{{url}}">
-</div>
 
 
 {>C_BOOLEAN}
@@ -170,7 +122,8 @@
 <div class="form-horizontal">
     <div class="form-group duration_pattern_panel">
         <div class="col-sm-12">
-            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}} class="data">Allow all time units
+            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}} class="data">Allow
+            all time units
         </div>
         <div id="{{panel_id}}_pattern_custom" class="custom">
             <div class="col-sm-6">
@@ -180,16 +133,19 @@
                 <input type="checkbox" id="{{panel_id}}_pattern_hours" {{#if pattern.hours}}checked{{/if}} class="data">Hours
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}} class="data">Months
+                <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}}
+                       class="data">Months
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}} class="data">Minutes
+                <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}}
+                       class="data">Minutes
             </div>
             <div class="col-sm-6">
                 <input type="checkbox" id="{{panel_id}}_pattern_weeks" {{#if pattern.weeks}}checked{{/if}} class="data">Weeks
             </div>
             <div class="col-sm-6">
-                <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}} class="data">Seconds
+                <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}}
+                       class="data">Seconds
             </div>
             <div class="col-sm-6">
                 <input type="checkbox" id="{{panel_id}}_pattern_days" {{#if pattern.days}}checked{{/if}} class="data">Days

@@ -26,7 +26,7 @@
             <div class="col-sm-3"><label>Description</label></div>
             <div class="col-sm-9">
                 <input data-lang="{{@key}}" data-field="description" class="form-control input-sm"
-                        value="{{description}}">
+                       value="{{description}}">
             </div>
         </div>
     </div>
@@ -72,6 +72,86 @@
     </div>
 </div>
 
+{>updateExternalTerminologyDialog}
+<div class="form-group row">
+    <div class="row">
+        <div class="col-sm-3"><label>Text</label></div>
+        <div class="col-sm-9">
+            <input id="{{panel_id}}_text" class="form-control input-sm" value="{{term.text}}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3"><label>Description</label></div>
+        <div class="col-sm-9">
+            <input id="{{panel_id}}_description" class="form-control input-sm" value="{{term.description}}">
+        </div>
+    </div>
+</div>
+<div class="row">
+    <h4>Bindings</h4>
+    <table id="{{panel_id}}_terminologies" class="external_terminology_table">
+        <thead>
+        <tr>
+            <th>Terminology</th>
+            <th>Url</th>
+            <th class="external_terminology_row_actions">
+                <button id="{{panel_id}}_add_binding" class="btn btn-default"
+                        title="add terminology binding">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+{>updateExternalTerminologyDialog/bindingRow}
+<tr>
+    <td>{{terminology}}</td>
+    <td>{{url}}</td>
+    <td class="external_terminology_row_actions">
+        <button type="button" name="edit" class="btn btn-default" data-terminology='{{terminology}}' title="edit">
+            <span class="glyphicon glyphicon-edit"></span>
+        </button>
+        <button type="button" name="remove" class="btn btn-default" data-terminology='{{terminology}}' title="remove">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </td>
+</tr>
+
+{>updateExternalTerminologyDialog/addBinding}
+<div class="form-group">
+    <label for="{{id}}_terminology">Terminology</label>
+
+    {{#if create}}
+        <div class="input-group">
+            <input id="{{id}}_terminology" class="form-control" value="{{terminology}}">
+
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                        aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                    {{#each terminologies}}
+                        <li><a data-key={{this}} href="#">{{this}}</a></li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    {{else}}
+        <input id="{{id}}_terminology" class="form-control" value="{{terminology}}" disabled>
+    {{/if}}
+</div>
+<div class="form-group">
+    <label for="{{id}}_url">Url</label>
+    <input id="{{id}}_url" class="form-control" value="{{url}}">
+</div>
+
+
 {>valueSets}
 <div>
     <table id="{{panel_id}}_table" data-height="600">
@@ -86,5 +166,36 @@
     <div>
         <button id="{{panel_id}}_new" class="btn btn-primary">New Value Set</button>
     </div>
+</div>
 
+{>externalTerminologies}
+<div>
+    <table id="{{panel_id}}_table" data-height="600">
+        <thead>
+        <tr>
+            <th data-field="code">Code</th>
+            <th data-field="text">Text</th>
+            <th data-field="description">Description</th>
+        </tr>
+        </thead>
+    </table>
+    <div>
+        <button id="{{panel_id}}_new" class="btn btn-primary">New External Terminology</button>
+    </div>
+</div>
+
+
+{>bindings}
+<div>
+    <div class="form-horizontal row">
+        <div class="form-group">
+            <label for="{{panel_id}}_terminology" class="col-sm-3 control-label">Terminology</label>
+            <div class="col-sm-9">
+                <select class="form-control" id="{{panel_id}}_terminology"></select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
 </div>
