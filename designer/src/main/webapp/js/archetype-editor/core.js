@@ -528,6 +528,13 @@ var ArchetypeEditor = (function () {
 
 
         my.useArchetype = function (archetypeModel) {
+
+            function loadTerminology() {
+                var mainTerminologyTargetElement = $('#archetype-editor-main-tabs-terminology');
+                ArchetypeEditorTerminology.showTerminology(archetypeModel, mainTerminologyTargetElement);
+            }
+
+
             my.archetypeModel = archetypeModel;
 
             var definitionPropertiesElement = $('#archetype-editor-definition-node-properties');
@@ -536,10 +543,8 @@ var ArchetypeEditor = (function () {
             var definitionTreeElement = $('#archetype-editor-definition-tree');
             var definitionTree = new DefinitionTree(archetypeModel, definitionTreeElement, definitionPropertiesPanel);
 
-            $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', function (e) {
-                var mainTerminologyTargetElement = $('#archetype-editor-main-tabs-terminology');
-                ArchetypeEditorTerminology.showTerminology(archetypeModel, mainTerminologyTargetElement);
-            });
+            loadTerminology();
+            $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', loadTerminology);
 //            ArchetypeEditorTerminology.useArchetype(archetypeModel);
         };
 
