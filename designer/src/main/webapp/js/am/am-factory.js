@@ -21,6 +21,11 @@
 AOM = (function (AOM) {
     var my=AOM;
 
+    my.amTypes = AmUtils.listToSet([
+        "C_ATTRIBUTE", "C_ATTRIBUTE_TUPLE", "C_OBJECT_TUPLE", "C_COMPLEX_OBJECT", "C_STRING",  "C_INTEGER",
+        "C_REAL", "C_TERMINOLOGY_CODE", "C_BOOLEAN", "C_DURATION", "C_DATE_TIME", "C_DATE", "C_TIME"
+    ]);
+
     my.newCAttribute = function(name) {
         return {
             "@type": "C_ATTRIBUTE",
@@ -170,7 +175,6 @@ AOM = (function (AOM) {
         };
         return result;
     };
-
 
     return my;
 }(AOM));

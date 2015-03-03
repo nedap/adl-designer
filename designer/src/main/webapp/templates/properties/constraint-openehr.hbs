@@ -71,7 +71,8 @@
     <div class="table-layout">
         <div class="table-cell vertical-button-column">
             <div class="btn-group-vertical" role="group">
-                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default data" title="add new value">
+                <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default data"
+                        title="add new value">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
                 <button id="{{panel_id}}_remove_value" type="button" class="btn btn-default data" title="remove">
@@ -197,4 +198,25 @@
         </div>
 
     </div>
+</div>
+
+{>DV_INTERVAL}
+<div id="{{panel_id}}_tabs" role="tabpanel">
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#{{lower.panel_id}}" role="tab" data-toggle="tab">Lower</a>
+        </li>
+        <li role="presentation"><a href="#{{upper.panel_id}}" role="tab" data-toggle="tab">Upper</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="{{lower.panel_id}}">
+        </div>
+        <div role="tabpanel" class="tab-pane" id="{{upper.panel_id}}">
+        </div>
+    </div>
+
 </div>

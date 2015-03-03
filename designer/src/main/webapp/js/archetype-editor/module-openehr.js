@@ -237,7 +237,7 @@
 
 
             function isParentConstrained(context) {
-                return !!(context.parent && context.parent.type==='DV_CODED_TEXT');
+                return !!(context.parent && context.parent.type === 'DV_CODED_TEXT');
             }
 
             handler.createContext = function (stage, cons, parentCons) {
@@ -969,6 +969,78 @@
         };
         AmUtils.extend(DvProportionHandler, CComplexObjectHandler);
 
+        var DvIntervalHandler = function () {
+            var handler = this;
+            CComplexObjectHandler.call(handler);
+
+            function parseGenericRmTypeName(rm_type) {
+                var ltPos = rm_type.indexOf('<');
+                var gtPos = rm_type.lastIndexOf('>');
+                var result = {};
+                result.main = rm_type.substring(0, ltPos);
+                result.param = rm_type.substring(ltPos + 1, gtPos);
+                return result;
+            }
+
+
+            handler.createContext = function (stage, cons, parentCons) {
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                var genericRmType = parseGenericRmTypeName(cons.rm_type_name);
+
+                var lowerCons = AOM.AmQuery.get(cons, "lower");
+                var parentLowerCons = AOM.AmQuery.get(parentCons, "lower");
+                var upperCons = AOM.AmQuery.get(cons, "upper");
+                var parentUpperCons = AOM.AmQuery.get(parentCons, "upper");
+
+                if (!lowerCons) lowerCons = AOM.newCComplexObject(genericRmType.param);
+                if (!upperCons) upperCons = AOM.newCComplexObject(genericRmType.param);
+
+                context.lower = stage.archetypeEditor.getRmTypeHandler(lowerCons.rm_type_name)
+                    .createContext(stage, lowerCons, parentLowerCons);
+                context.upper = stage.archetypeEditor.getRmTypeHandler(upperCons.rm_type_name)
+                    .createContext(stage, upperCons, parentUpperCons);
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|DV_INTERVAL", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+                        targetElement.append(generatedDom);
+                        stage.archetypeEditor.applySubModules(stage, targetElement, context);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+            };
+
+            handler.validate = function (stage, context, errors) {
+                stage.archetypeEditor.getRmTypeHandler(context.lower.type).validate(stage, context.lower, errors.sub('lower'));
+                stage.archetypeEditor.getRmTypeHandler(context.upper.type).validate(stage, context.upper, errors.sub('upper'));
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                var boundHandler = stage.archetypeEditor.getRmTypeHandler(context.lower.type);
+
+                stage.archetypeModel.removeAttribute(cons, ['lower', 'upper']);
+                cons.attributes = cons.attributes || [];
+                var lowerAttr = AOM.newCAttribute('lower');
+                lowerAttr.children = [AOM.newCComplexObject(context.lower.type)];
+                var upperAttr = AOM.newCAttribute('upper');
+                upperAttr.children = [AOM.newCComplexObject(context.upper.type)];
+
+                cons.attributes.push(lowerAttr);
+                cons.attributes.push(upperAttr);
+
+                boundHandler.updateConstraint(stage, context.lower, lowerAttr.children[0]);
+                boundHandler.updateConstraint(stage, context.upper, upperAttr.children[0]);
+            };
+        };
+        AmUtils.extend(DvIntervalHandler, CComplexObjectHandler);
+
         self.handlers["DV_QUANTITY"] = new DvQuantityHandler();
         self.handlers["DV_CODED_TEXT"] = new DvTextHandler();
         self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
@@ -981,6 +1053,7 @@
         self.handlers["DV_DATE"] = self.handlers["DV_DATE_TIME"];
         self.handlers["DV_TIME"] = self.handlers["DV_DATE_TIME"];
         self.handlers["DV_PROPORTION"] = new DvProportionHandler();
+        self.handlers["DV_INTERVAL"] = new DvIntervalHandler();
     };
 
 
