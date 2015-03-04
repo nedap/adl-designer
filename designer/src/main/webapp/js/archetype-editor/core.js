@@ -549,8 +549,13 @@ var ArchetypeEditor = (function () {
     my.useArchetype = function (archetypeModel) {
 
         function loadTerminology() {
-            var mainTerminologyTargetElement = $('#archetype-editor-main-tabs-terminology');
-            ArchetypeEditorTerminology.showTerminology(archetypeModel, mainTerminologyTargetElement);
+            var targetElement = $('#archetype-editor-main-tabs-terminology');
+            ArchetypeEditorTerminology.showTerminology(archetypeModel, targetElement);
+        }
+
+        function loadDescription() {
+            var targetElement = $('#archetype-editor-main-tabs-description');
+            my.Description.show(archetypeModel, targetElement);
         }
 
 
@@ -564,7 +569,8 @@ var ArchetypeEditor = (function () {
 
         loadTerminology();
         $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', loadTerminology);
-//            ArchetypeEditorTerminology.useArchetype(archetypeModel);
+        loadDescription();
+        $('a[href="#archetype-editor-main-tabs-description"]').on('show.bs.tab', loadDescription);
     };
 
 
@@ -636,11 +642,12 @@ var ArchetypeEditor = (function () {
     };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(3);
+        var latch = new CountdownLatch(4);
         latch.execute(callback);
         my.referenceModel = new AOM.ReferenceModel(latch.countDown);
         my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
         // these templates must be loaded at initialization, to avoid asynchronous callback
+        GuiUtils.loadTemplates("util", true, latch.countDown);
         GuiUtils.loadTemplates("properties/constraint-common", true, latch.countDown);
     };
 

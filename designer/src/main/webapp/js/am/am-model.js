@@ -805,6 +805,76 @@ var AOM = (function () {
             };
 
             /**
+             * Adds a translation to the archetype. The language must not already exist. Also adds quick translations
+             * of details and term definitions
+             *
+             * @param {string} langCode Code of the language to add
+             */
+            self.addTranslation = function (langCode) {
+                function quickTranslate(value) {
+                    if (!value) return undefined;
+                    value = "*" + value + " (" + self.data.original_language.code_string + ")";
+                    return value;
+                }
+
+                function addDescriptionDetails() {
+                    var orig = self.data.description.details[0];
+                    self.data.description.details.push({
+                        "@type": "RESOURCE_DESCRIPTION_ITEM",
+                        "language": {
+                            "@type": "CODE_PHRASE",
+                            "terminology_id": {
+                                "@type": "TERMINOLOGY_ID",
+                                "value": "ISO_639-1"
+                            },
+                            "code_string": "en"
+                        },
+                        "purpose": quickTranslate(orig.purpose),
+                        "keywords": [],
+                        "use": quickTranslate(orig.use),
+                        "misuse": quickTranslate(orig.misuse),
+                        "copyright": orig.copyright,
+                        "original_resource_uri": {},
+                        "other_details": {}
+                    });
+
+                }
+
+                function addTermDefinitions() {
+                    var orig = self.data.ontology.term_definitions[self.data.original_language.code_string];
+                    var tds = {};
+                    self.data.ontology.term_definitions[langCode] = tds;
+                    for (var nodeId in orig) {
+                        var term = orig[nodeId];
+                        tds[nodeId] = {
+                            text: quickTranslate(term.text),
+                            description: quickTranslate(term.description)
+                        }
+                    }
+                }
+
+                var translation = {
+                    "@type": "TRANSLATION_DETAILS",
+                    "language": {
+                        "@type": "CODE_PHRASE",
+                        "terminology_id": {
+                            "@type": "TERMINOLOGY_ID",
+                            "value": "ISO_639-1"
+                        },
+                        "code_string": langCode
+                    },
+                    "author": {},
+                    "accreditation": "",
+                    "other_details": {}
+                };
+
+
+                self.data.translations.push(translation);
+                addDescriptionDetails();
+                addTermDefinitions();
+            };
+
+            /**
              * Saves external term bindings on the archetype
              * @param {string} termId constraint node id
              * @param {{terminology:url}} bindings of terminology to query url

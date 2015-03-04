@@ -1,0 +1,86 @@
+{>main}
+<div>
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active">
+            <a href="#{{panel_id}}_authoring" data-toggle="tab">Authoring</a></li>
+        <li role="presentation"><a href="#{{panel_id}}_language" data-toggle="tab">Language</a></li>
+        <li role="presentation"><a href="#{{panel_id}}_details" data-toggle="tab">Details</a></li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade active in"
+             id="{{panel_id}}_authoring">
+            Authoring
+        </div>
+        <div role="tabpanel" class="tab-pane fade in"
+             id="{{panel_id}}_language">
+            Language
+        </div>
+        <div role="tabpanel" class="tab-pane fade in"
+             id="{{panel_id}}_details">
+            Details
+        </div>
+    </div>
+</div>
+
+{>authoring}
+<div class="row">
+    <div class="col-sm-6">
+        <label>Original Author</label>
+
+        <div id="{{panel_id}}_original_author">
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <label>Contributors</label>
+
+        <div id="{{panel_id}}_contributors">
+        </div>
+    </div>
+</div>
+
+{>language}
+<div>
+    <div class="form-horizontal row">
+        <div class="form-group col-sm-4">
+            <label class="col-sm-4 control-label">Original Language</label>
+
+            <div class="col-sm-8">
+                <p class="form-control-static" id="{{panel_id}}_original_language">{{original_language}}</p>
+            </div>
+        </div>
+        <div class="form-group col-sm-8">
+            <label for="{{panel_id}}_translations" class="col-sm-4 control-label">Translations</label>
+
+            <div class="input-group col-sm-8">
+                <select id="{{panel_id}}_translations" class="form-control input"></select>
+                <span class="input-group-btn">
+                    <button id="{{panel_id}}_add_translation" type="button" class="btn btn-default"
+                            title="add translation">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row">
+                <label>Translator</label>
+
+                <div id="{{panel_id}}_translator">
+                </div>
+            </div>
+            <div class="row">
+                <label for="{{panel_id}}_accreditation">Translator Accreditation</label>
+
+                <input id="{{panel_id}}_accreditation" class="form-control input data">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <label>Translator Other Details</label>
+
+            <div id="{{panel_id}}_other_details">
+            </div>
+        </div>
+    </div>
+</div>

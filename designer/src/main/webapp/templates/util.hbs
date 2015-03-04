@@ -1,0 +1,51 @@
+{>tableMap}
+<table class="table">
+    <thead>
+    <tr>
+        <th>Key</th>
+        <th>Value</th>
+        <th>
+            <button id="{{panel_id}}_add" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+{>tableMap/row}
+<tr id="{{panel_id}}_{{row_id}}">
+    <td><input name="key" data-row="{{row_id}}" value="{{key}}" class="form-control input"></td>
+    <td><input name="value" data-row="{{row_id}}" value="{{value}}" class="form-control input"></td>
+    <td>
+        <button id="{{panel_id}}_{{row_id}}_remove" data-row="{{row_id}}" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </td>
+</tr>
+
+{>stringList}
+<table>
+    <tr>
+        <td style="width:100%">
+            <select id="{{panel_id}}" class="form-control input" {{#if size}}size="{{size}}"{{/if}}>
+            </select>
+        </td>
+        <td>
+            <div class="btn-group-vertical" role="group">
+                <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+                <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>
+
+                <button id="{{panel_id}}_edit" type="button" class="btn btn-default data" title="edit">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+            </div>
+        </td>
+    </tr>
+</table>
