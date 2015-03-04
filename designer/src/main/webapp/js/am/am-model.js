@@ -827,7 +827,7 @@ var AOM = (function () {
                                 "@type": "TERMINOLOGY_ID",
                                 "value": "ISO_639-1"
                             },
-                            "code_string": "en"
+                            "code_string": langCode
                         },
                         "purpose": quickTranslate(orig.purpose),
                         "keywords": [],
@@ -872,6 +872,7 @@ var AOM = (function () {
                 self.data.translations.push(translation);
                 addDescriptionDetails();
                 addTermDefinitions();
+                self.translations.push(langCode);
             };
 
             /**
