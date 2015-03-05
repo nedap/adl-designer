@@ -67,6 +67,15 @@ var GuiUtils = (function () {
         }
     };
 
+    my.preloadTemplates = function(paths, callback) {
+        var latch = new CountdownLatch(paths.length);
+        for (var i in paths) {
+            my.loadTemplates(paths[i], true, latch.countDown)
+        }
+        if (callback) {
+            latch.execute(callback);
+        }
+    };
     my.loadTemplates = function (path, multi, callback) {
         function splitTemplateStringById(string) {
             var hbs_id_re = /^{>.+}\s*$/;

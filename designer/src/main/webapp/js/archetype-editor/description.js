@@ -143,6 +143,106 @@
             });
         }
 
+        function showDetails(archetypeModel, targetElement) {
+            targetElement.empty();
+            var context = {
+                panel_id: GuiUtils.generateId()
+            };
+
+            GuiUtils.applyTemplate('description|details', context, function (html) {
+                html = $(html);
+
+                function populateLanguages() {
+                    languageSelect.empty();
+                    var allLanguages = archetypeModel.allLanguages();
+                    for (var i in allLanguages) {
+                        var lang = allLanguages[i];
+                        var option = $("<option>").attr("value", lang).text(lang);
+                        languageSelect.append(option);
+                    }
+                }
+
+
+                function populateLanguageDetails() {
+                    var lang = languageSelect.val();
+                    var details = Stream(archetypeModel.data.description.details)
+                        .filter(function (d) {
+                            return d.language.code_string === lang
+                        })
+                        .findFirst()
+                        .orElse(undefined);
+
+                    purposeInput.val(details.purpose);
+                    useInput.val(details.use);
+                    misuseInput.val(details.misuse);
+                    copyrightInput.val(details.copyright);
+                    keywordsInput.val(details.keywords.join(", "));
+
+                    resourcesDiv.empty();
+                    resources = new GuiUtils.TableMap(details.original_resource_uri, resourcesDiv);
+                    resources.onBlur(updateLanguageDetails);
+
+                    otherDetailsDiv.empty();
+                    otherDetails = new GuiUtils.TableMap(details.other_details, otherDetailsDiv);
+                    otherDetails.onBlur(updateLanguageDetails);
+
+
+                }
+
+                function updateLanguageDetails() {
+                    var lang = languageSelect.val();
+                    var details = Stream(archetypeModel.data.description.details)
+                        .filter(function (d) {
+                            return d.language.code_string === lang
+                        })
+                        .findFirst()
+                        .orElse(undefined);
+
+                    details.purpose = purposeInput.val();
+                    details.use = useInput.val();
+                    details.misuse = misuseInput.val();
+                    details.copyright = copyrightInput.val();
+                    details.keywords = [];
+                    var keywords = keywordsInput.val().split(",");
+                    for (var i in keywords) {
+                        var keyword = keywords[i].trim();
+                        if (keyword.length > 0) {
+                            details.keywords.push(keyword);
+                        }
+                    }
+
+                    details.original_resource_uri = resources.getAsMap();
+                    details.other_details = otherDetails.getAsMap();
+                }
+
+                var languageSelect = html.find('#' + context.panel_id + '_language');
+                var purposeInput = html.find('#' + context.panel_id + '_purpose');
+                var useInput = html.find('#' + context.panel_id + '_use');
+                var misuseInput = html.find('#' + context.panel_id + '_misuse');
+                var copyrightInput = html.find('#' + context.panel_id + '_copyright');
+                var keywordsInput = html.find('#' + context.panel_id + '_keywords');
+                var resourcesDiv = html.find('#' + context.panel_id + '_resources');
+                var otherDetailsDiv = html.find('#' + context.panel_id + '_other_details');
+
+                var resources, otherDetails;
+
+                purposeInput.blur(updateLanguageDetails);
+                useInput.blur(updateLanguageDetails);
+                misuseInput.blur(updateLanguageDetails);
+                copyrightInput.blur(updateLanguageDetails);
+                keywordsInput.blur(updateLanguageDetails);
+
+
+                populateLanguages();
+                populateLanguageDetails();
+                languageSelect.change(populateLanguageDetails);
+
+
+                targetElement.append(html);
+            });
+        }
+
+
         my.show = function (archetypeModel, targetElement) {
             targetElement.empty();
             var context = {
@@ -157,6 +257,9 @@
                 });
                 html.find('a[href="#' + context.panel_id + '_language"]').on('show.bs.tab', function (e) {
                     showLanguage(archetypeModel, html.find('#' + context.panel_id + '_language'));
+                });
+                html.find('a[href="#' + context.panel_id + '_details"]').on('show.bs.tab', function (e) {
+                    showDetails(archetypeModel, html.find('#' + context.panel_id + '_details'));
                 });
 
                 showAuthoring(archetypeModel, html.find('#' + context.panel_id + '_authoring'));

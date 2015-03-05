@@ -271,7 +271,6 @@ var ArchetypeEditor = (function () {
             setTimeout(disableIfSpecialized, 100);
 
 
-
             saveButton.click(function () {
                 var errors = new AmUtils.Errors();
 
@@ -642,13 +641,17 @@ var ArchetypeEditor = (function () {
     };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(4);
+        var latch = new CountdownLatch(3);
         latch.execute(callback);
         my.referenceModel = new AOM.ReferenceModel(latch.countDown);
         my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
-        // these templates must be loaded at initialization, to avoid asynchronous callback
-        GuiUtils.loadTemplates("util", true, latch.countDown);
-        GuiUtils.loadTemplates("properties/constraint-common", true, latch.countDown);
+        // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
+        GuiUtils.preloadTemplates([
+                "util",
+                "properties/constraint-common",
+                "terminology/terms"
+            ],
+            latch.countDown);
     };
 
     return my;

@@ -819,6 +819,7 @@ var AOM = (function () {
 
                 function addDescriptionDetails() {
                     var orig = self.data.description.details[0];
+
                     self.data.description.details.push({
                         "@type": "RESOURCE_DESCRIPTION_ITEM",
                         "language": {
@@ -830,7 +831,7 @@ var AOM = (function () {
                             "code_string": langCode
                         },
                         "purpose": quickTranslate(orig.purpose),
-                        "keywords": [],
+                        "keywords": AmUtils.clone(orig.keywords),
                         "use": quickTranslate(orig.use),
                         "misuse": quickTranslate(orig.misuse),
                         "copyright": orig.copyright,
