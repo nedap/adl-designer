@@ -86,25 +86,30 @@ form .table-layout .table-cell {
     height: 100%
 }
 
-#archetype-editor-definition-tree {
-    height: 100%;
+.definition-tree {
+    height: 600px;
     overflow: auto;
 }
 
-#archetype-editor-definition-node-properties {
-    width: 300px;
+.constraint-properties {
     font-size: 12px;
 }
 
-#archetype-editor-definition-node-properties .footer {
+.constraint-properties .footer {
     padding-top: 20px;
     text-align: right
 }
 
-#archetype-editor-definition-node-properties .errors {
+.constraint-properties .errors {
     color: #8b0000;
 }
 
+.constraint-properties .date_time_pattern {
+    border: solid 1px black;
+    width: 100%;
+    height: 200px;
+    overflow: auto;
+}
 .terminology-type-choice {
     padding-bottom: 20px;
 }
@@ -117,12 +122,7 @@ form .table-layout .table-cell {
     padding-left: 20px;
 }
 
-#archetype-editor-definition-node-properties .date_time_pattern {
-    border: solid 1px black;
-    width: 100%;
-    height: 200px;
-    overflow: auto;
-}
+
 
 .external_terminology_table {
     width: 100%

@@ -19,30 +19,38 @@
   -->
 
 {>DV_QUANTITY}
-<div>
+<div class="row">
     <label for="{{units_id}}">Units</label>
 
-    <div class="table-layout">
-        <div class="table-cell">
-            <select id="{{units_id}}" class="form-control input-sm">
-                {{#each unit_panels}}
-                    <option value="{{panel_id}}">{{units}}</option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="table-cell right">
-            <button id="{{units_id}}_remove" class="btn btn-default data">-</button>
-            <button id="{{units_id}}_add" class="btn btn-default data">+</button>
+    <div class="input-group">
+        <select id="{{units_id}}" class="form-control input-sm">
+            {{#each unit_panels}}
+                <option value="{{panel_id}}">{{units}}</option>
+            {{/each}}
+        </select>
+            <span class="input-group-btn">
+                <button id="{{units_id}}_remove" class="btn btn-default data">-</button>
+            </span>
+            <span class="input-group-btn">
+                <button id="{{units_id}}_add" class="btn btn-default data">+</button>
+            </span>
+    </div>
+</div>
+{{#each unit_panels}}
+    <div class="row unit_panel" id="{{panel_id}}">
+        <div id="{{magnitude.panel_id}}"></div>
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="{{panel_id}}_precision" class="col-sm-4 control-label">Limit decimal places</label>
+
+                <div class="col-sm-8">
+                    <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data"
+                           value="{{precision}}">
+                </div>
+            </div>
         </div>
     </div>
-    {{#each unit_panels}}
-        <div class="unit_panel" id="{{panel_id}}">
-            <div id="{{magnitude.panel_id}}"></div>
-            <label for="{{panel_id}}_precision">Limit decimal places</label>
-            <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data" value="{{precision}}">
-        </div>
-    {{/each}}
-</div>
+{{/each}}
 
 {>DV_CODED_TEXT}
 <div>

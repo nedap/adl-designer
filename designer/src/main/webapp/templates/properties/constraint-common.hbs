@@ -18,17 +18,15 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 {>top}
-<div class="table-layout">
-    <div class="table-row">
-        <div class="table-cell"><label>Node Id</label></div>
-        <div class="table-cell data">{{node_id}}</div>
-    </div>
-    <div class="table-row">
-        <div class="table-cell"><label for="occurrences">Occurrences</label></div>
-        <div class="table-cell">
-            <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data"
-                   value="{{occurrences}}"/>
-        </div>
+<div class="row">
+    <div class="col-sm-6"><label>Node Id</label></div>
+    <div class="col-sm-6 data">{{node_id}}</div>
+</div>
+<div class="row">
+    <div class="col-sm-6"><label for="occurrences">Occurrences</label></div>
+    <div class="col-sm-6">
+        <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data"
+               value="{{occurrences}}"/>
     </div>
 </div>
 

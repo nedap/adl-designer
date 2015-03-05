@@ -166,7 +166,9 @@ var ArchetypeEditor = (function () {
         // did not work, so remove node_id from name
 //            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
         definitionTree.styleNodes(definitionTreeNode);
-        if (definitionTree.jstree.is_selected(definitionTreeNode)) {
+        var isSelected = definitionTree.targetElement.jstree('is_selected', definitionTreeNode);
+        //var isSelected = definitionTree.jstree.is_selected(definitionTreeNode)
+        if (isSelected) {
             var constraintData = {
                 definitionTree: definitionTree,
                 treeNode: definitionTreeNode,
@@ -231,11 +233,11 @@ var ArchetypeEditor = (function () {
             var parentCons = archetypeModel.getParentConstraint(cons);
             var specialized = archetypeModel.isSpecialized(cons);
 
-            var topDiv = $("<div>");
+            var topDiv = $('<div class="container-fluid">');
             targetElement.append(topDiv);
 
             handler = my.getRmTypeHandler('main', '@common');
-            var customDiv = $("<div>");
+            var customDiv = $('<div class="container-fluid">');
             targetElement.append(customDiv);
 
             stage = createEmptyStage();
@@ -441,8 +443,8 @@ var ArchetypeEditor = (function () {
         var jsonTreeTarget = [];
         buildTreeJson(jsonTreeTarget, archetypeModel.data.definition);
 
-        targetElement.html("");
         targetElement.jstree("destroy");
+        targetElement.empty();
         targetElement.jstree(
             {
                 'core': {
@@ -452,6 +454,7 @@ var ArchetypeEditor = (function () {
             });
 
         self.jstree = targetElement.jstree(true);
+        self.targetElement = targetElement;
 
         targetElement.on('select_node.jstree', function (event, treeEvent) {
             var data = treeData[treeEvent.node.id];
@@ -544,6 +547,24 @@ var ArchetypeEditor = (function () {
         }
     };
 
+    function showDefinition(archetypeModel, targetElement) {
+        targetElement.empty();
+        var context = {
+            panel_id: GuiUtils.generateId()
+        };
+
+        GuiUtils.applyTemplate("definition|main", context, function (html) {
+            html = $(html);
+
+            var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraint_properties');
+            var definitionPropertiesPanel = new DefinitionPropertiesPanel(archetypeModel, definitionPropertiesElement);
+
+            var definitionTreeElement = html.find('#'+context.panel_id+'_tree');
+            var definitionTree = new DefinitionTree(archetypeModel, definitionTreeElement, definitionPropertiesPanel);
+
+            targetElement.append(html);
+        });
+    }
 
     my.useArchetype = function (archetypeModel) {
 
@@ -560,11 +581,8 @@ var ArchetypeEditor = (function () {
 
         my.archetypeModel = archetypeModel;
 
-        var definitionPropertiesElement = $('#archetype-editor-definition-node-properties');
-        var definitionPropertiesPanel = new DefinitionPropertiesPanel(archetypeModel, definitionPropertiesElement);
-
-        var definitionTreeElement = $('#archetype-editor-definition-tree');
-        var definitionTree = new DefinitionTree(archetypeModel, definitionTreeElement, definitionPropertiesPanel);
+        var targetElement = $('#archetype-editor-main-tabs-definition');
+        showDefinition(archetypeModel, targetElement);
 
         loadTerminology();
         $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', loadTerminology);
