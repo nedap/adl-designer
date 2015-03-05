@@ -1,7 +1,16 @@
 {>main}
 <div class="container-fluid">
     <div class="row">
-        <div id="{{panel_id}}_tree" class="col-sm-8 definition-tree"></div>
+        <div class="col-sm-8">
+            <div class="row">
+                <div class="btn-toolbar pull-right" role="toolbar">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div id="{{panel_id}}_tree" class="row definition-tree"></div>
+        </div>
         <div id="{{panel_id}}_constraint_properties" class="col-sm-4 constraint-properties">
         </div>
     </div>

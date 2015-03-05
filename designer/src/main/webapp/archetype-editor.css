@@ -87,6 +87,7 @@ form .table-layout .table-cell {
 }
 
 .definition-tree {
+    border: solid 1px #ccc;
     height: 600px;
     overflow: auto;
 }
