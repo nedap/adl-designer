@@ -249,7 +249,7 @@ var ArchetypeEditor = (function () {
         my.archetypeModel = archetypeModel;
 
         var targetElement = $('#archetype-editor-main-tabs-definition');
-        my.Definition.show(archetypeModel, targetElement);
+        my.Definition.show(archetypeModel, my.referenceModel, targetElement);
 
         loadTerminology();
         $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', loadTerminology);

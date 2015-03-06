@@ -19,22 +19,22 @@
  */
 
 AOM = (function (AOM) {
-    var my=AOM;
+    var my = AOM;
 
     my.amTypes = AmUtils.listToSet([
-        "C_ATTRIBUTE", "C_ATTRIBUTE_TUPLE", "C_OBJECT_TUPLE", "C_COMPLEX_OBJECT", "C_STRING",  "C_INTEGER",
+        "C_ATTRIBUTE", "C_ATTRIBUTE_TUPLE", "C_OBJECT_TUPLE", "C_COMPLEX_OBJECT", "C_STRING", "C_INTEGER",
         "C_REAL", "C_TERMINOLOGY_CODE", "C_BOOLEAN", "C_DURATION", "C_DATE_TIME", "C_DATE", "C_TIME"
     ]);
 
-    my.newCAttribute = function(name) {
+    my.newCAttribute = function (name) {
         return {
             "@type": "C_ATTRIBUTE",
             rm_attribute_name: name,
-            existence: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            existence: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
     };
 
-    my.newCAttributeTuple = function(attributeNames) {
+    my.newCAttributeTuple = function (attributeNames) {
         var result = {
             "@type": "C_ATTRIBUTE_TUPLE",
             members: [],
@@ -48,7 +48,7 @@ AOM = (function (AOM) {
         return result;
     };
 
-    my.newCObjectTuple = function(memberConstrains) {
+    my.newCObjectTuple = function (memberConstrains) {
         var result = {
             "@type": "C_OBJECT_TUPLE",
             members: []
@@ -67,7 +67,7 @@ AOM = (function (AOM) {
      * @param {object?} occurrences - rm occurrences
      * @returns {object} C_COMPLEX_OBJECT
      */
-    my.newCComplexObject = function(rmType, node_id, occurrences) {
+    my.newCComplexObject = function (rmType, node_id, occurrences) {
         var result = {
             "@type": "C_COMPLEX_OBJECT",
             rm_type_name: rmType,
@@ -85,13 +85,13 @@ AOM = (function (AOM) {
      * @param {string?} pattern regex pattern
      * @returns {object} C_STRING constraint
      */
-    my.newCString = function(list, pattern) {
+    my.newCString = function (list, pattern) {
         var result = {
             "@type": "C_STRING",
             rm_type_name: "C_STRING",
-            list: list||[],
+            list: list || [],
             pattern: pattern,
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         AmUtils.cleanObjectProperties(result);
         return result;
@@ -102,12 +102,12 @@ AOM = (function (AOM) {
      * @param {number[]?} list valid values list
      * @returns {object} C_INTEGER constraint
      */
-    my.newCInteger = function(list) {
+    my.newCInteger = function (list) {
         var result = {
             "@type": "C_INTEGER",
             rm_type_name: "C_INTEGER",
-            list: list||[],
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            list: list || [],
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
@@ -116,12 +116,12 @@ AOM = (function (AOM) {
      * @param {number[]?} list valid values list
      * @returns {object} C_REAL constraint
      */
-    my.newCReal = function(list) {
+    my.newCReal = function (list) {
         var result = {
             "@type": "C_REAL",
             rm_type_name: "C_REAL",
-            list: list||[],
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            list: list || [],
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
@@ -130,11 +130,11 @@ AOM = (function (AOM) {
      * Creates new C_TERMINOLOGY_CODE constraint
      * @returns {object} C_TERMINOLOGY_CODE constraint
      */
-    my.newCTerminologyCode = function() {
+    my.newCTerminologyCode = function () {
         var result = {
             "@type": "C_TERMINOLOGY_CODE",
             rm_type_name: "C_TERMINOLOGY_CODE",
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
@@ -142,11 +142,11 @@ AOM = (function (AOM) {
      * Creates new C_BOOLEAN constraint
      * @returns {object} C_BOOLEAN constraint
      */
-    my.newCBoolean = function() {
+    my.newCBoolean = function () {
         var result = {
             "@type": "C_BOOLEAN",
             rm_type_name: "C_BOOLEAN",
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
@@ -154,11 +154,11 @@ AOM = (function (AOM) {
      * Creates new C_DURATION constraint
      * @returns {object} C_DURATION constraint
      */
-    my.newCDuration = function() {
+    my.newCDuration = function () {
         var result = {
             "@type": "C_DURATION",
             rm_type_name: "C_DURATION",
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
@@ -167,11 +167,20 @@ AOM = (function (AOM) {
      * Creates new C_DATE_TIME constraint
      * @returns {object} C_DATE_TIME constraint
      */
-    my.newCDateTime = function() {
+    my.newCDateTime = function () {
         var result = {
             "@type": "C_DATE_TIME",
             rm_type_name: "C_DATE_TIME",
-            occurrences: AmInterval.of(1,1, "MULTIPLICITY_INTERVAL")
+            occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
+    my.newConstraint = function (rm_type) {
+        var result = {
+            "@type": my.amTypes[rm_type] ? rm_type : "C_COMPLEX_OBJECT",
+            rm_type_name: rm_type,
+            occurrences: AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };

@@ -274,7 +274,7 @@
                         context.assumed_value = undefined;
                     }
                 }
-
+                // todo make a reference to terminology code in external
                 function updateExternalTerminologyTableRows(tableBody) {
                     tableBody.empty();
                     for (var terminology in context.external_bindings) {

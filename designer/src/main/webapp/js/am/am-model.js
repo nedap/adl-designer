@@ -959,9 +959,6 @@ var AOM = (function () {
 
 
                 var newCode = self.generateSpecializedTermId(prefixOrCode);
-                //if (!self.data.ontology.term_definitions) {
-                //    self.data.ontology.term_definitions = {};
-                //}
 
                 self.setTermDefinition(newCode, undefined, text, description);
 
@@ -1071,6 +1068,36 @@ var AOM = (function () {
             self.getType = function (name) {
                 return self.model.types[name];
             };
+
+
+            self.isSubclass = function(parentType, childType) {
+                var rmType = self.model.types[childType];
+                while (rmType) {
+                    if (rmType.name===parentType) return true;
+                    rmType=self.model.types[rmType.parent];
+                }
+                return false;
+            };
+            /**
+             * Returns a list of types that are children of parentType
+             *
+             * @param {string} parentType
+             * @param {boolean?} includeParent true if the parent should be included. By default false
+             * @returns {string[]} list of subtypes of parentType
+             */
+            self.getSubclassTypes = function(parentType, includeParent) {
+                var result = [];
+                if (includeParent) {
+                    result.push(parentType);
+                }
+                for (var type in self.model.types) {
+                    if (parentType!==type && self.isSubclass(parentType, type)) {
+                        result.push(type);
+                    }
+                }
+                return result;
+            }
+
         };
 
         my.ArchetypeRepository = function (callback) {

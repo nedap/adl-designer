@@ -5,13 +5,61 @@
             <div class="row">
                 <div class="btn-toolbar pull-right" role="toolbar">
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary">Add</button>
+                        <button id="{{panel_id}}_addChild" type="button" class="btn btn-primary">Add</button>
                     </div>
                 </div>
             </div>
-            <div id="{{panel_id}}_tree" class="row definition-tree"></div>
+            <div class="row">
+                <div id="{{panel_id}}_tree" class="definition-tree"></div>
+            </div>
         </div>
         <div id="{{panel_id}}_constraint_properties" class="col-sm-4 constraint-properties">
+        </div>
+    </div>
+</div>
+
+
+{>addAttributeDialog}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label for="{{panel_id}}_attributes" class="col-sm-4 control-label">Attribute</label>
+
+        <div class="col-sm-8">
+            <select id="{{panel_id}}_attributes" class="form-control">
+                {{#each attributes}}
+                    <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+</div>
+
+
+{>addConstraintDialog}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label for="{{panel_id}}_text" class="col-sm-4 control-label">Text</label>
+
+        <div class="col-sm-8">
+            <input id="{{panel_id}}_text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_description" class="col-sm-4 control-label">Description</label>
+
+        <div class="col-sm-8">
+            <input id="{{panel_id}}_description" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{panel_id}}_types" class="col-sm-4 control-label">Rm type</label>
+
+        <div class="col-sm-8">
+            <select id="{{panel_id}}_types" class="form-control">
+                {{#each types}}
+                    <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
         </div>
     </div>
 </div>
