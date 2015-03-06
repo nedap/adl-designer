@@ -43,7 +43,7 @@
                     treeNode: definitionTreeNode,
                     cons: cons
                 };
-                info.propertiesPanel.showConstraintProperties(constraintData);
+                info.propertiesPanel.show(constraintData);
             }
         }
 
@@ -101,10 +101,11 @@
 
         /**
          * @param {AOM.EditableArchetypeModel} archetypeModel
-         * @param  targetElement
+         * @param targetElement
          * @constructor
          */
         my.DefinitionPropertiesPanel = function (archetypeModel, targetElement) {
+            targetElement.empty();
             var self = this;
 
             var stage, handler, context;
@@ -127,18 +128,23 @@
                 return stage;
             }
 
-            self.clear = function () {
+            function clearConstraints(targetElement) {
                 if (handler && handler.hide) {
                     handler.hide(stage, context, targetElement);
                     handler = undefined;
                     stage = undefined;
                     context = undefined;
                 }
+            }
+
+            self.clear = function () {
+                clearConstraints(targetElement);
                 targetElement.empty();
             };
 
 
-            self.showConstraintProperties = function (constraintData) {
+            function showConstraintProperties(constraintData, targetElement) {
+
                 function disableIfSpecialized() {
                     // add global handlers
                     if (!specialized) {
@@ -148,7 +154,7 @@
                     }
                 }
 
-                self.clear();
+                clearConstraints(targetElement);
                 var cons = constraintData.cons;
                 if (!cons) return;
                 var parentCons = archetypeModel.getParentConstraint(cons);
@@ -213,8 +219,67 @@
 
                     archetypeModel.enrichReplacementConstraint(cons);
                 });
+            } // showConstraintProperties
 
+            function showAnnotations(constraintData, targetElement) {
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    lang: archetypeModel.defaultLanguage
+                };
+                GuiUtils.applyTemplate("definition|annotations", context, function (html) {
+
+                    function populateLanguageSelect() {
+                        languageSelect.empty();
+                        var allLanguages = archetypeModel.allLanguages();
+                        for (var i in allLanguages) {
+                            var option = $("<option>").attr('value', allLanguages[i]).text(allLanguages[i]);
+                            languageSelect.append(option);
+                        }
+                    }
+
+                    function showLanguageAnnotations() {
+                        var lang = languageSelect.val();
+                        var allAnnotations = archetypeModel.getAnnotationsForNode(constraintData.cons);
+                        annotationsDiv.empty();
+                        var annotationsMap = new GuiUtils.TableMap(allAnnotations[lang], annotationsDiv);
+
+                        annotationsMap.onBlur(function () {
+                            allAnnotations[lang] = annotationsMap.getAsMap();
+                            archetypeModel.updateAnnotationsForNode(constraintData.cons, allAnnotations);
+                        });
+                    }
+
+                    html = $(html);
+
+                    var languageSelect = html.find('#' + context.panel_id + '_language');
+                    var annotationsDiv = html.find('#' + context.panel_id + '_annotations');
+
+
+                    populateLanguageSelect();
+                    showLanguageAnnotations();
+                    languageSelect.on('change', showLanguageAnnotations);
+
+                    targetElement.append(html);
+                })
             }
+
+            self.show = function (constraintData) {
+                self.clear();
+
+                var context = {
+                    panel_id: GuiUtils.generateId()
+                };
+                GuiUtils.applyTemplate('definition|constraintsPanel', context, function (html) {
+                    html = $(html);
+                    var constraintsTab = html.find('#' + context.panel_id + '_constraints');
+                    var annotationsTab = html.find('#' + context.panel_id + '_annotations');
+                    showConstraintProperties(constraintData, constraintsTab);
+                    showAnnotations(constraintData, annotationsTab);
+
+                    targetElement.append(html);
+                });
+            }
+
         };
 
         my.DefinitionTree = function (archetypeModel, targetElement, info) {
@@ -508,7 +573,7 @@
                     treeNode: treeEvent.node,
                     cons: data.cons
                 };
-                info.propertiesPanel.showConstraintProperties(constraintData);
+                info.propertiesPanel.show(constraintData);
             });
         };
 
@@ -528,7 +593,7 @@
                         addChild: html.find('#' + context.panel_id + '_addChild')
                     }
                 };
-                var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraint_properties');
+                var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
                 info.propertiesPanel = new my.DefinitionPropertiesPanel(archetypeModel, definitionPropertiesElement);
 
                 var definitionTreeElement = html.find('#' + context.panel_id + '_tree');

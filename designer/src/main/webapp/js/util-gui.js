@@ -223,7 +223,7 @@ var GuiUtils = (function () {
                     self.onBlur(blurHandler);
                 });
 
-                for (var key in map) {
+                for (var key in map ||{}) {
                     self.addRow(key, map[key]);
                 }
                 targetElement.append(tableElement);
@@ -240,8 +240,9 @@ var GuiUtils = (function () {
             GuiUtils.applyTemplate("util|tableMap/row", context, function (html) {
                 html = $(html);
                 var removeBtn = html.find('#' + context.panel_id + '_' + context.row_id + '_remove');
-                removeBtn.click(function () {
+                removeBtn.click(function (e) {
                     removeBtn.closest('tr').remove();
+                    if (blurHandler) blurHandler(e, self);
                 });
                 tableBodyElement.append(html);
             });

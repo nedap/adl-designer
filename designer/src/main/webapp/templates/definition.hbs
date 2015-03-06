@@ -13,9 +13,36 @@
                 <div id="{{panel_id}}_tree" class="definition-tree"></div>
             </div>
         </div>
-        <div id="{{panel_id}}_constraint_properties" class="col-sm-4 constraint-properties">
+        <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
         </div>
     </div>
+</div>
+
+{>constraintsPanel}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active">
+        <a href="#{{panel_id}}_constraints" data-toggle="tab">Constraints</a></li>
+    <li role="presentation"><a href="#{{panel_id}}_annotations" data-toggle="tab">Annotations</a></li>
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade active in"
+         id="{{panel_id}}_constraints">
+    </div>
+    <div role="tabpanel" class="tab-pane fade in"
+         id="{{panel_id}}_annotations">
+    </div>
+</div>
+
+{>annotations}
+<div class="container-fluid">
+    <div class="form-horizontal form-group">
+        <label for="{{panel_id}}_language" class="col-sm-6 control-label">Language ({{lang}})</label>
+
+        <div class="col-sm-6">
+            <select id="{{panel_id}}_language" class="form-control input-sm"></select>
+        </div>
+    </div>
+    <div id="{{panel_id}}_annotations" class="row"></div>
 </div>
 
 

@@ -70,6 +70,8 @@ var AOM = (function () {
                 if (path.length > 0 && path.charAt(0) === "/") {
                     path = path.substring(1);
                 }
+                if (path.length===0) return [];
+
                 var result = [];
                 var strSegments = path.split("/");
                 for (var pathPartIndex in strSegments) {
@@ -104,6 +106,10 @@ var AOM = (function () {
                 newSegments.splice(0, 1);
 
                 return new my.RmPath(newSegments);
+            };
+
+            self.lastSegment = function () {
+                return self.segments[self.segments.length - 1];
             };
 
             self.toString = function () {
@@ -146,7 +152,7 @@ var AOM = (function () {
             //  id1.1           id1         any                     any                         context.matchSpecialized
             //  id1             id1.1       any                     any                         context.matchParent
             //  id2             id1         any                     any                         false
-            function noteIdMatches(candidate, match, context) {
+            function nodeIdMatches(candidate, match, context) {
                 if (match === undefined) return true;
                 if (candidate === undefined) return false;
                 if (candidate === match) return true;
@@ -164,7 +170,7 @@ var AOM = (function () {
             }
 
             function constraintMatches(cons, segment, context) {
-                return noteIdMatches(cons.node_id, segment.node_id, context);
+                return nodeIdMatches(cons.node_id, segment.node_id, context);
             }
 
             function findChildConstrains(cons, segment, context) {
@@ -200,6 +206,30 @@ var AOM = (function () {
                 return result;
             }
 
+            /**
+             * Returns true if the candidate path matches match match, with a given context
+             * @param {string|AOM.RmPath} candidate candidate path
+             * @param {string|AOM.RmPath} match match path
+             * @param {{matchParent: false, matchSpecialized: false}?} context Details about what to match
+             * @returns {boolean} true if candidate path matches match path
+             */
+            self.pathMatches = function (candidate, match, context) {
+                context = context || {};
+
+                var candidatePath = my.RmPath.of(candidate);
+                var matchPath = my.RmPath.of(match);
+
+                if (candidatePath.segments.length !== matchPath.segments.length) return false;
+
+                for (var segment_index in candidatePath.segments) {
+                    var candidateSegment = candidatePath.segments[segment_index];
+                    var matchSegment = matchPath.segments[segment_index];
+
+                    if (candidateSegment.attribute !== matchSegment.attribute) return false;
+                    if (!nodeIdMatches(candidateSegment.node_id, matchSegment.node_id, context)) return false;
+                }
+                return true;
+            };
             /**
              *
              * @param cons constraints archetype node that is the root for search
@@ -343,11 +373,12 @@ var AOM = (function () {
                 return result;
             };
 
+
             self.getAnnotation = function (path, language) {
                 if (!language) language = self.defaultLanguage;
-                if (!data.annotations) return undefined;
-                if (!data.annotations.items) return undefined;
-                var langAnnotations = data.annotations.items[language];
+                if (!self.data.annotations) return undefined;
+                if (!self.data.annotations.items) return undefined;
+                var langAnnotations = self.data.annotations.items[language];
                 if (!langAnnotations) return undefined;
 
                 path = AmUtils.getPathSegments(path);
@@ -357,6 +388,49 @@ var AOM = (function () {
                 return undefined;
             };
 
+
+            /**
+             * Gets all annotations for a particular node
+             * @param {object} cons Constraint object for which to retrieve annotations
+             * @returns {{}} A {language: {key: value}} structure,
+             *          containing all annotations for all languages
+             */
+            self.getAnnotationsForNode = function (cons) {
+
+                function addToLangResult(langResult, nodeItems) {
+                    for (var key in nodeItems) {
+                        langResult[key] = nodeItems[key];
+                    }
+                    return nodeItems;
+                }
+
+                if (!self.data.annotations || !self.data.annotations.items) {
+                    return {};
+                }
+                var consPath = self.getRmPath(cons);
+
+                var result = {};
+
+
+                for (var lang in self.data.annotations.items) {
+                    var langItems = self.data.annotations.items[lang];
+                    var langResult = {};
+                    for (var path in langItems) {
+                        if (AOM.AmQuery.pathMatches(path, consPath, {matchParent: true})) {
+                            addToLangResult(langResult, langItems[path]);
+                        }
+                    }
+                    // ensure exact match overrides any previous annotations
+                    for (var path in langItems) {
+                        if (AOM.AmQuery.pathMatches(path, consPath)) {
+                            addToLangResult(langResult, langItems[path]);
+                        }
+                    }
+
+                    result[lang] = langResult;
+                }
+                return result;
+            };
             /**
              * Gets all external terminologies that are currently present in the archetype
              * @returns {string[]}
@@ -388,8 +462,8 @@ var AOM = (function () {
              *
              * @returns {string[]} list of external terminology codes
              */
-            self.getExternalTerminologyCodes = function() {
-                var result=[];
+            self.getExternalTerminologyCodes = function () {
+                var result = [];
                 var termCandidates = self.getAllTerminologyDefinitionsWithPrefix("ac");
                 for (var nodeId in termCandidates) {
                     if (!self.data.ontology.value_sets[nodeId]) {
@@ -1030,6 +1104,72 @@ var AOM = (function () {
                 enrichConstraintData(cons, parent || cons[".parent"]);
             };
 
+            function ensureAnnotations() {
+                if (!self.data.annotations) {
+                    self.data.annotations = {
+                        "@type": "RESOURCE_ANNOTATIONS",
+                        items: {}
+                    }
+                }
+                if (!self.data.annotations.items) {
+                    self.data.annotations.items = {};
+                }
+            }
+
+            /**
+             * Updates annotations for a node.
+             *
+             * @param cons Constraint for which to update annotations
+             * @param annotations A {language: {key: value}} structure, containing all annotations for all languages
+             * @returns {{}}
+             */
+            self.updateAnnotationsForNode = function (cons, annotations) {
+
+                var consRmPath = self.getRmPath(cons);
+                var consPath = consRmPath.toString();
+
+                ensureAnnotations();
+
+                // remove specialized annotations
+                Stream(self.allLanguages()).each(function (lang) {
+                    var langAnnotations = self.data.annotations.items[lang];
+                    if (langAnnotations) {
+                        if (consRmPath.segments.node_id) {
+                            // delete all annotations that match path and have specialized node_id
+                            for (var path in langAnnotations) {
+                                if (my.AmQuery.pathMatches(path, consRmPath, {matchParent: true})) {
+                                    var attrPath = my.RmPath.of(path);
+                                    if (attrPath.lastSegment().node_id === consRmPath.lastSegment().node_id) {
+                                        delete langAnnotations[path];
+                                    }
+                                }
+                            }
+                        } else {
+                            delete langAnnotations[consPath];
+                        }
+
+                    }
+                });
+                var parentAnnotations = self.getAnnotationsForNode(cons);
+
+                for (var lang in annotations) {
+                    var langAnnotations = annotations[lang];
+                    var parentLangAnnotations = parentAnnotations[lang] || {};
+                    for (var key in langAnnotations) {
+                        if (parentLangAnnotations[key] && parentLangAnnotations[key] === langAnnotations[key]) {
+                            delete langAnnotations[key];
+                        }
+                    }
+                    if (!$.isEmptyObject(langAnnotations)) {
+                        var aitems = self.data.annotations.items;
+                        if (!aitems[lang]) {
+                            aitems[lang] = {};
+                        }
+                        aitems[lang][consPath] = AmUtils.clone(langAnnotations);
+                    }
+                }
+            };
+
 
             enrichConstraintData(flatArchetypeData.definition, undefined);
             processOntology(flatArchetypeData.ontology);
@@ -1086,11 +1226,11 @@ var AOM = (function () {
             };
 
 
-            self.isSubclass = function(parentType, childType) {
+            self.isSubclass = function (parentType, childType) {
                 var rmType = self.model.types[childType];
                 while (rmType) {
-                    if (rmType.name===parentType) return true;
-                    rmType=self.model.types[rmType.parent];
+                    if (rmType.name === parentType) return true;
+                    rmType = self.model.types[rmType.parent];
                 }
                 return false;
             };
@@ -1101,13 +1241,13 @@ var AOM = (function () {
              * @param {boolean?} includeParent true if the parent should be included. By default false
              * @returns {string[]} list of subtypes of parentType
              */
-            self.getSubclassTypes = function(parentType, includeParent) {
+            self.getSubclassTypes = function (parentType, includeParent) {
                 var result = [];
                 if (includeParent) {
                     result.push(parentType);
                 }
                 for (var type in self.model.types) {
-                    if (parentType!==type && self.isSubclass(parentType, type)) {
+                    if (parentType !== type && self.isSubclass(parentType, type)) {
                         result.push(type);
                     }
                 }
@@ -1186,5 +1326,6 @@ var AOM = (function () {
 
 
         return my;
-    }() )
+    }()
+    )
     ;

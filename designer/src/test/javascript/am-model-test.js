@@ -103,16 +103,28 @@ var res = {
         },
         "translations": [{
             "@type": "TRANSLATION_DETAILS",
-            "language": {"@type": "CODE_PHRASE", "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"}, "code_string": "de"},
+            "language": {
+                "@type": "CODE_PHRASE",
+                "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"},
+                "code_string": "de"
+            },
             "author": [{
                 "@type": "STRING_DICTIONARY_ITEM",
                 "value": "Sebastian Garde, Jasmin Buck",
                 "id": "name"
-            }, {"@type": "STRING_DICTIONARY_ITEM", "value": "Ocean Informatics, University of Heidelberg", "id": "organisation"}],
+            }, {
+                "@type": "STRING_DICTIONARY_ITEM",
+                "value": "Ocean Informatics, University of Heidelberg",
+                "id": "organisation"
+            }],
             "other_details": []
         }, {
             "@type": "TRANSLATION_DETAILS",
-            "language": {"@type": "CODE_PHRASE", "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"}, "code_string": "ru"},
+            "language": {
+                "@type": "CODE_PHRASE",
+                "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"},
+                "code_string": "ru"
+            },
             "author": [{"@type": "STRING_DICTIONARY_ITEM", "value": "Igor Lizunov", "id": "name"}, {
                 "@type": "STRING_DICTIONARY_ITEM",
                 "value": "i.lizunov@infinnity.ru",
@@ -121,7 +133,11 @@ var res = {
             "other_details": []
         }, {
             "@type": "TRANSLATION_DETAILS",
-            "language": {"@type": "CODE_PHRASE", "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"}, "code_string": "nl"},
+            "language": {
+                "@type": "CODE_PHRASE",
+                "terminology_id": {"@type": "TERMINOLOGY_ID", "value": "ISO_639-1"},
+                "code_string": "nl"
+            },
             "author": [{"@type": "STRING_DICTIONARY_ITEM", "value": "Marja Buur", "id": "name"}, {
                 "@type": "STRING_DICTIONARY_ITEM",
                 "value": "Medisch Centrum Alkmaar, Nederland",
@@ -957,7 +973,10 @@ var res = {
                         "text": "Volledig gekleed, inclusief schoenen",
                         "description": "Kleren die een significante bijdrage hebben aan het gewicht, inclusief schoenen."
                     },
-                    "at12": {"text": "Lichte kleding/ondergoed", "description": "Kleding die niet significant het gewicht beÏnvloedt."},
+                    "at12": {
+                        "text": "Lichte kleding/ondergoed",
+                        "description": "Kleding die niet significant het gewicht beÏnvloedt."
+                    },
                     "at14": {"text": "Naakt", "description": "Zonder kleding."},
                     "at18": {
                         "text": "Luier",
@@ -990,9 +1009,15 @@ var res = {
                         "text": "Fully clothed, including shoes",
                         "description": "Clothing which may add significantly to weight, including shoes."
                     },
-                    "at12": {"text": "Lightly clothed/underwear", "description": "Clothing which will not add to weight significantly."},
+                    "at12": {
+                        "text": "Lightly clothed/underwear",
+                        "description": "Clothing which will not add to weight significantly."
+                    },
                     "at14": {"text": "Naked", "description": "Without any clothes."},
-                    "at18": {"text": "Nappy/diaper", "description": "Wearing only a nappy - can add significant weight."},
+                    "at18": {
+                        "text": "Nappy/diaper",
+                        "description": "Wearing only a nappy - can add significant weight."
+                    },
                     "id21": {"text": "Device", "description": "Details about the weighing device."},
                     "id25": {"text": "Comment", "description": "Comment about the measurement of weight."},
                     "id26": {
@@ -1000,7 +1025,10 @@ var res = {
                         "description": "Record any issues or factors that may impact on the measurement of body weight eg timing in menstrual cycle, timing of recent bowel motion or noting of amputation."
                     },
                     "id27": {"text": "Birth", "description": "First weight recorded after birth."},
-                    "id28": {"text": "Weight Estimation Formula", "description": "Formula used to calculate the estimated weight."},
+                    "id28": {
+                        "text": "Weight Estimation Formula",
+                        "description": "Formula used to calculate the estimated weight."
+                    },
                     "id29": {"text": "Pregnant?", "description": "Is the woman pregnant at time of measurement?"},
                     "at19": {"text": "Mass", "description": "Mass"},
                     "ac1": {
@@ -1012,7 +1040,10 @@ var res = {
                     "id1": {"text": "Körpergewicht", "description": "Messung des Körpergewichts eines Individuums."},
                     "id4": {"text": "*Any event(en)", "description": "*Any event(en)"},
                     "id5": {"text": "Gewicht", "description": "Das Gewicht eines Individuums."},
-                    "id10": {"text": "Bekleidung", "description": "Beschreibung der Bekleidung zum Zeitpunkt der Messung."},
+                    "id10": {
+                        "text": "Bekleidung",
+                        "description": "Beschreibung der Bekleidung zum Zeitpunkt der Messung."
+                    },
                     "at11": {
                         "text": "Voll bekleidet, mit Schuhen",
                         "description": "Bekleidung, die signifikant zum Gewicht beiträgt, mit Schuhen."
@@ -1042,7 +1073,10 @@ var res = {
                     "id1": {"text": "Peso corporal", "description": "A medição do peso corporal de um indivíduo."},
                     "id4": {"text": "Qualquer evento", "description": "Qualquer evento."},
                     "id5": {"text": "Peso", "description": "O peso do indivíduo."},
-                    "id10": {"text": "Vestuário", "description": "Descrição do vestuário da pessoa na hora da pesagem."},
+                    "id10": {
+                        "text": "Vestuário",
+                        "description": "Descrição do vestuário da pessoa na hora da pesagem."
+                    },
                     "at11": {
                         "text": "Totalmente vestida, incluindo sapatos",
                         "description": "Roupas que podem aumentar significativamente o peso, incluindo sapatos."
@@ -1052,7 +1086,10 @@ var res = {
                         "description": "Roupas que não irão acrescentar ao peso de forma significativa."
                     },
                     "at14": {"text": "Despido", "description": "Sem nenhuma roupa."},
-                    "at18": {"text": "Fralda", "description": "Vestindo apenas uma fralda - pode adicionar peso significativo."},
+                    "at18": {
+                        "text": "Fralda",
+                        "description": "Vestindo apenas uma fralda - pode adicionar peso significativo."
+                    },
                     "id21": {"text": "Dispositivo", "description": "Detalhes sobre o dispositivo de pesagem."},
                     "id25": {"text": "Comentário", "description": "Comentário sobre a medição do peso."},
                     "id26": {
@@ -1077,10 +1114,19 @@ var res = {
                         "description": "Описание наличия и характера одежды пациента во время взвешивания."
                     },
                     "at11": {"text": "В одежде без обуви", "description": "Одежда может добавить значительный вес."},
-                    "at12": {"text": "В лёгкой одежде или раздевшись до белья", "description": "Одежда, не добавляющая значительный вес."},
+                    "at12": {
+                        "text": "В лёгкой одежде или раздевшись до белья",
+                        "description": "Одежда, не добавляющая значительный вес."
+                    },
                     "at14": {"text": "Обнажен", "description": "Без какой-либо одежды и белья."},
-                    "at18": {"text": "В памперсе", "description": "Одет(а) только в памперс - может добавить значительный вес."},
-                    "id21": {"text": "Устройство", "description": "Весы (устройство, на котором производилось взвешивание): информация."},
+                    "at18": {
+                        "text": "В памперсе",
+                        "description": "Одет(а) только в памперс - может добавить значительный вес."
+                    },
+                    "id21": {
+                        "text": "Устройство",
+                        "description": "Весы (устройство, на котором производилось взвешивание): информация."
+                    },
                     "id25": {"text": "Комментарии", "description": "Комментарии к взвешиванию."},
                     "id26": {
                         "text": "Стохастическая погрешность",
@@ -1159,6 +1205,18 @@ describe("EditableArchetypeModel.getRmPath", function () {
         cons = cons.attribute_tuples[0].children[0].members[0];
         var rmPath = am.getRmPath(cons).toString();
         expect(rmPath).toEqual("/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]/magnitude");
+    });
+
+    it("updates annotations", function () {
+        var cons = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]");
+        var annotations = {"en": {"one": "1", "two": "2"}};
+        am.updateAnnotationsForNode(cons, annotations);
+        expect(am.data.annotations.items["en"]["/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]"]["one"]).toEqual("1");
+        annotations = {"en": {"one": "1", "three": "3"}};
+        am.updateAnnotationsForNode(cons, annotations);
+        expect(am.data.annotations.items["en"]["/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]"]["two"]).toBeUndefined();
+        expect(am.data.annotations.items["en"]["/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]"]["three"]).toEqual("3");
+
     });
 
 });
@@ -1241,9 +1299,9 @@ describe("RmPath", function () {
 
     it("builds rm path string", function () {
         var rmPath = new AOM.RmPath([
-                                        {attribute: "content", node_id: "id1"},
-                                        {attribute: "data", node_id: "id2.3"},
-                                        {attribute: "events"}]);
+            {attribute: "content", node_id: "id1"},
+            {attribute: "data", node_id: "id2.3"},
+            {attribute: "events"}]);
 
         expect(rmPath.toString()).toEqual("/content[id1]/data[id2.3]/events");
     });
