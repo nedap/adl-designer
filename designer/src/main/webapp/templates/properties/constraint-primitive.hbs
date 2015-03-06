@@ -78,33 +78,22 @@
     </div>
 </div>
 <div id="{{panel_id}}_external_panel">
-    <div class="form-group">
-        <label for="{{panel_id}}_external_constraints">Constraints</label>
-        <input id="{{panel_id}}_external_constraints" class="form-control input-sm data" value="{{external_term.text}}">
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_external_description">Description</label>
-        <textarea id="{{panel_id}}_external_description" class="form-control data"
-                  rows="3">{{external_term.description}}</textarea>
-    </div>
+    <div>
+        <label for="{{panel_id}}_external_select">External Terminology</label>
 
-    <table class="external_terminology_table">
-        <thead>
-        <tr>
-            <th>
-                <label>External terminologies</label>
-            </th>
-            <th class="external_terminology_row_actions">
-                <button id="{{panel_id}}_external_add_terminology" class="btn btn-default data"
-                        title="add external terminology">
+        <div class="input-group">
+            <select id="{{panel_id}}_external_select" class="form-control input-sm data">
+            </select>
+            <span class="input-group-btn">
+                <button id="{{panel_id}}_external_edit" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </button>
+                <button id="{{panel_id}}_external_new" type="button" class="btn btn-default data">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
-            </th>
-        </tr>
-        </thead>
-        <tbody id="{{panel_id}}_external_table_body">
-        </tbody>
-    </table>
+            </span>
+        </div>
+    </div>
 </div>
 
 

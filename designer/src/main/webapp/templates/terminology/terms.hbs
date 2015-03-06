@@ -77,13 +77,13 @@
     <div class="row">
         <div class="col-sm-3"><label>Text</label></div>
         <div class="col-sm-9">
-            <input id="{{panel_id}}_text" class="form-control input-sm" value="{{term.text}}">
+            <input id="{{panel_id}}_text" class="form-control input-sm data" value="{{term.text}}">
         </div>
     </div>
     <div class="row">
         <div class="col-sm-3"><label>Description</label></div>
         <div class="col-sm-9">
-            <input id="{{panel_id}}_description" class="form-control input-sm" value="{{term.description}}">
+            <input id="{{panel_id}}_description" class="form-control input-sm data" value="{{term.description}}">
         </div>
     </div>
 </div>
@@ -95,7 +95,7 @@
             <th>Terminology</th>
             <th>Url</th>
             <th class="external_terminology_row_actions">
-                <button id="{{panel_id}}_add_binding" class="btn btn-default"
+                <button id="{{panel_id}}_add_binding" class="btn btn-default data"
                         title="add terminology binding">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
@@ -112,10 +112,10 @@
     <td>{{terminology}}</td>
     <td>{{url}}</td>
     <td class="external_terminology_row_actions">
-        <button type="button" name="edit" class="btn btn-default" data-terminology='{{terminology}}' title="edit">
+        <button type="button" name="edit" class="btn btn-default data" data-terminology='{{terminology}}' title="edit">
             <span class="glyphicon glyphicon-edit"></span>
         </button>
-        <button type="button" name="remove" class="btn btn-default" data-terminology='{{terminology}}' title="remove">
+        <button type="button" name="remove" class="btn btn-default data" data-terminology='{{terminology}}' title="remove">
             <span class="glyphicon glyphicon-minus"></span>
         </button>
     </td>

@@ -224,8 +224,6 @@
                 } else {
                     context.external_term_code = terminologyData.code;
                 }
-                context.external_term = terminologyData.external_term || {};
-                context.external_bindings = terminologyData.external_bindings;
 
                 return context;
             };
@@ -274,41 +272,21 @@
                         context.assumed_value = undefined;
                     }
                 }
-                // todo make a reference to terminology code in external
-                function updateExternalTerminologyTableRows(tableBody) {
-                    tableBody.empty();
-                    for (var terminology in context.external_bindings) {
-                        var rowCtx = {
-                            terminology: terminology,
-                            binding: context.external_bindings[terminology]
-                        };
-                        GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE/externalTableRow", rowCtx, function (html, rowCtx) {
-                            html = $(html);
-                            tableBody.append(html);
 
-                            var editButton = html.find('button[name="edit"]');
-                            editButton.click(function () {
-                                GuiUtils.openSingleTextInputDialog(
-                                    {
-                                        title: "Edit external terminology binding",
-                                        inputLabel: "binding for terminology " + rowCtx.terminology,
-                                        inputValue: rowCtx.binding,
-                                        callback: function (dataElement) {
-                                            context.external_bindings[rowCtx.terminology] = dataElement.find('input').val();
-                                            updateExternalTerminologyTableRows(tableBody);
-                                        }
-                                    });
-                            });
-
-                            var removeButton = html.find('button[name="remove"]');
-                            removeButton.click(function () {
-                                delete context.external_bindings[rowCtx.terminology];
-                                updateExternalTerminologyTableRows(tableBody);
-                            });
-                        });
+                function updateExternalSelect(externalSelect) {
+                    externalSelect.empty();
+                    var nodeIds = stage.archetypeModel.getExternalTerminologyCodes();
+                    for (var i in nodeIds) {
+                        var nodeId = nodeIds[i];
+                        var term = stage.archetypeModel.getTermDefinition(nodeId);
+                        var option = $("<option>").attr("value", nodeId).text(term.text);
+                        if (nodeId === context.external_term_code) {
+                            option.prop("selected", true);
+                        }
+                        externalSelect.append(option);
                     }
-                }
 
+                }
 
                 GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE", context, function (html) {
                     html = $(html);
@@ -323,6 +301,23 @@
                     var valueSetSelect = targetElement.find('#' + context.panel_id + "_value_set");
                     var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
 
+                    var externalSelect = targetElement.find('#' + context.panel_id + '_external_select');
+
+                    radioInternal.change(function () {
+                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                        context.type_internal = radioInternal.prop('checked');
+                    });
+                    radioExternal.change(function () {
+                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+                        context.type_internal = !radioExternal.prop('checked');
+                    });
+
+                    radioInternal.prop("checked", context.type_internal);
+                    radioExternal.prop("checked", !context.type_internal);
+
+                    updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
+
+                    // internal panel
                     valueSetSelect.change(function () {
                         context.value_set_code = valueSetSelect.val();
                         updateInternalAssumedValue(assumedValueSelect);
@@ -350,116 +345,29 @@
                             });
                     });
 
-                    targetElement.find("#" + context.panel_id + "_value_set_add").click(function () {
-
-                    });
 
                     assumedValueSelect.change(function () {
                         context.assumed_value = assumedValueSelect.val();
                     });
 
-                    radioInternal.change(function () {
-                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                        context.type_internal = radioInternal.prop('checked');
-                    });
-                    radioExternal.change(function () {
-                        updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-                        context.type_internal = !radioExternal.prop('checked');
-                    });
-
-                    radioInternal.prop("checked", context.type_internal);
-                    radioExternal.prop("checked", !context.type_internal);
-
-                    updatePanelVisibility([radioInternal, radioExternal], [panelInternal, panelExternal]);
-
-                    //// internal panel
-                    //targetElement.find('#' + context.panel_id + "_add_new_term").click(function () {
-                    //    stage.archetypeEditor.openAddNewTermDefinitionDialog(stage.archetypeModel, function (nodeId) {
-                    //        addDefinedTerm(nodeId);
-                    //        updateInternalAssumedValue(assumedValueSelect);
-                    //    })
-                    //});
-                    //
-                    //targetElement.find('#' + context.panel_id + "_remove_term").click(function () {
-                    //    var select = targetElement.find("#" + context.panel_id + "_internal_defined_codes");
-                    //    var option = select.find(":selected");
-                    //    if (option.length > 0) {
-                    //        var nodeId = option.val();
-                    //        delete context.internal_defined_codes[nodeId];
-                    //        option.remove();
-                    //        if (context.assumed_value === nodeId) {
-                    //            updateInternalAssumedValue(assumedValueSelect);
-                    //        }
-                    //    }
-                    //});
-                    //
-                    //targetElement.find('#' + context.panel_id + "_add_existing_term").click(function () {
-                    //    var dialogContext = {
-                    //        terms: getAvailableInternalTerms(context)
-                    //    };
-                    //    if ($.isEmptyObject(dialogContext.terms)) return;
-                    //
-                    //    stage.archetypeEditor.openAddExistingTermsDialog(stage.archetypeModel, dialogContext, function (selectedTerms) {
-                    //        for (var i in selectedTerms) {
-                    //            var nodeId = selectedTerms[i];
-                    //            addDefinedTerm(nodeId);
-                    //            updateInternalAssumedValue(assumedValueSelect);
-                    //        }
-                    //    });
-                    //});
-
                     // external panel
-                    var externalTableBody = targetElement.find('#' + context.panel_id + '_external_table_body');
-                    updateExternalTerminologyTableRows(externalTableBody);
+                    updateExternalSelect(externalSelect);
 
-                    var externalAddButton = targetElement.find('#' + context.panel_id + '_external_add_terminology');
-                    externalAddButton.click(function () {
-                        var addTerminologyContext = {
-                            id: GuiUtils.generateId(),
-                            terminology: '',
-                            terminologies: [],
-                            url: ''
-                        };
-                        var ontology = stage.archetypeModel.data.ontology;
-                        if (ontology.term_bindings) {
-                            for (var terminology in ontology.term_bindings) {
-                                if (!context.external_bindings[terminology]) {
-                                    addTerminologyContext.terminologies.push(terminology);
-                                }
-                            }
-                        }
-                        GuiUtils.applyTemplate("properties/constraint-primitive|C_TERMINOLOGY_CODE/addExternalTerminology", addTerminologyContext, function (html) {
-                            var dialogBody = $(html);
-                            var terminologyInput = dialogBody.find('#' + addTerminologyContext.id + '_terminology');
-
-                            dialogBody.find('a').click(function () {
-                                var a = $(this);
-                                var key = a.attr('data-key');
-                                terminologyInput.val(key);
+                    targetElement.find("#" + context.panel_id + "_external_edit").click(function () {
+                        ArchetypeEditorTerminology.openUpdateExternalTerminologyDialog(stage.archetypeModel, context.external_term_code,
+                            {readOnly: stage.readOnly},
+                            function (externalTermId) {
+                                context.external_term_code = externalTermId;
+                                updateExternalSelect(externalSelect);
                             });
-
-                            GuiUtils.openSimpleDialog({
-                                title: "Add external terminology binding",
-                                content: dialogBody,
-                                callback: function () {
-                                    var terminology = terminologyInput.val().trim();
-                                    var url = dialogBody.find('#' + addTerminologyContext.id + "_url").val().trim();
-                                    if (terminology.length === 0) {
-                                        return "Terminology must not be empty";
-                                    }
-                                    if (url.length === 0) {
-                                        return "Url must not be empty";
-                                    }
-                                    if (context.external_bindings[terminology]) {
-                                        return "Terminology is already defined";
-                                    }
-                                    context.external_bindings[terminology] = url;
-                                    updateExternalTerminologyTableRows(externalTableBody);
-                                }
+                    });
+                    targetElement.find("#" + context.panel_id + "_external_new").click(function () {
+                        ArchetypeEditorTerminology.openUpdateExternalTerminologyDialog(stage.archetypeModel, undefined,
+                            {},
+                            function (externalTermId) {
+                                context.external_term_code = externalTermId;
+                                updateExternalSelect(externalSelect);
                             });
-
-                        });
-
                     });
 
 
@@ -468,23 +376,24 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                if (context.assumed_value && context.assumed_value.length === 0) {
-                    context.assumed_value = undefined;
-                }
-                context.external_term.text = targetElement.find('#' + context.panel_id + '_external_constraints').val().trim();
-                context.external_term.description = targetElement.find('#' + context.panel_id + '_external_description').val().trim();
             };
 
             handler.updateConstraint = function (stage, context, cons) {
 
                 delete cons.assumed_value;
                 if (context.type_internal) {
-                    if (context.value_set_code && context.value_set_code.length>0) {
-                        cons.code_list=[context.value_set_code];
-                        cons.assumed_value = context.assumed_value;
+                    if (context.value_set_code && context.value_set_code.length > 0) {
+                        cons.code_list = [context.value_set_code];
+                        cons.assumed_value = AmUtils.undefinedIfEmpty(context.assumed_value);
+                    } else {
+                        cons.code_list=[];
                     }
                 } else {
-                    // todo update external
+                    if (context.external_term_code && context.external_term_code.length>0) {
+                        cons.code_list=[context.external_term_code];
+                    } else {
+                        cons.code_list=[];
+                    }
                 }
 
 

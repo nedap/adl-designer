@@ -325,6 +325,20 @@ var AmUtils = function () {
         return true;
     };
 
+    /**
+     * Returns str, or undefined if str is an empty string. Useful for reading from optional inputs/selects
+     *
+     * @param {string} str String to check
+     * @param {boolean?} trim Should the string be trimmed first. Default false.
+     * @returns {string|undefined}
+     */
+    my.undefinedIfEmpty = function(str, trim) {
+        if (str && trim) {
+            str=str.trim();
+        }
+        return str && str.length>0 ? str : undefined;
+    };
+
 
     return my;
 }();

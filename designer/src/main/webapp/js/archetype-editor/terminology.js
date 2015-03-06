@@ -139,11 +139,12 @@ var ArchetypeEditorTerminology = (function () {
             GuiUtils.applyTemplate("terminology/terms|externalTerminologies", context, function (html) {
 
                 function loadData() {
-                    var termCandidates = archetypeModel.getAllTerminologyDefinitionsWithPrefix("ac");
+                    var nodeIds = archetypeModel.getExternalTerminologyCodes();
                     var data = [];
-                    for (var nodeId in termCandidates) {
+                    for (var i in nodeIds) {
+                        var nodeId = nodeIds[i];
                         if (!archetypeModel.data.ontology.value_sets[nodeId]) {
-                            var term = termCandidates[nodeId];
+                            var term = archetypeModel.getTermDefinition(nodeId);
                             data.push({
                                 code: nodeId,
                                 text: term.text,
@@ -373,7 +374,7 @@ var ArchetypeEditorTerminology = (function () {
         my.openUpdateExternalTerminologyDialog = function (archetypeModel, termId, options, updateCallback) {
             var create = termId === undefined;
 
-            var defaultOptions = {};
+            var defaultOptions = {readOnly: false};
             options = $.extend({}, defaultOptions, options);
 
             var context = {
@@ -411,6 +412,8 @@ var ArchetypeEditorTerminology = (function () {
                         addTerminologyContext.url = context.bindings[terminology];
                     }
                     GuiUtils.applyTemplate("terminology/terms|updateExternalTerminologyDialog/addBinding", addTerminologyContext, function (html) {
+
+
                         var dialogBody = $(html);
                         var terminologyInput = dialogBody.find('#' + addTerminologyContext.id + '_terminology');
 
@@ -491,28 +494,38 @@ var ArchetypeEditorTerminology = (function () {
                     updateExternalTerminologyTableRows(terminologiesTable.find('tbody'));
                 }
 
+                function setReadOnly(readOnly) {
+                    if (readOnly) {
+                        content.find('.data').prop('disabled', true);
+                    }
+                }
+
+
                 content = $(content);
 
-                var opts = {buttons: {}};
-                if (create) {
-                    opts.title = 'Create External Terminology';
-                    opts.buttons['create'] = 'Create';
-                } else {
-                    opts.title = 'Update External Terminology';
-                    opts.buttons['update'] = 'Update';
-
-                }
 
                 var terminologiesTable = content.find('#' + context.panel_id + '_terminologies');
 
-                content.find('#' + context.panel_id + '_add_binding').click(function () {
-                    addTerminologyBinding();
-                });
+                var addBindingButton = content.find('#' + context.panel_id + '_add_binding');
+                addBindingButton.click(addTerminologyBinding);
 
                 var textElement = content.find('#' + context.panel_id + '_text');
                 var descriptionElement = content.find('#' + context.panel_id + '_description');
 
                 populateTerminologiesTable(terminologiesTable);
+
+
+                var opts = {buttons: {}};
+                if (options.readOnly) {
+                    opts.title = 'View External Terminology';
+                    setReadOnly(true);
+                } else if (create) {
+                    opts.title = 'Create External Terminology';
+                    opts.buttons['create'] = 'Create';
+                } else {
+                    opts.title = 'Update External Terminology';
+                    opts.buttons['update'] = 'Update';
+                }
 
                 GuiUtils.openSimpleDialog({
                     title: opts.title,
@@ -622,7 +635,7 @@ var ArchetypeEditorTerminology = (function () {
 
                                     rowHtml.find("button[data-action='edit']").click(function () {
                                         var termId = $(this).data('term');
-                                        my.updateNodeBindingDialog(archetypeModel, terminology, termId, function() {
+                                        my.updateNodeBindingDialog(archetypeModel, terminology, termId, function () {
                                             populateNodeBindingTable(tableBody);
                                         });
                                     });
@@ -644,7 +657,6 @@ var ArchetypeEditorTerminology = (function () {
                 var terminologies = archetypeModel.getAvailableTerminologies();
                 var terminologySelect = content.find('#' + context.panel_id + "_terminology");
                 populateTerminologySelect();
-
 
 
                 var termTable = content.find('#' + context.panel_id + '_termTable');
@@ -674,7 +686,7 @@ var ArchetypeEditorTerminology = (function () {
                 populateTermBindingTable(termTableBody);
                 populateNodeBindingTable(nodeTableBody);
 
-                terminologySelect.change(function() {
+                terminologySelect.change(function () {
                     populateTermBindingTable(termTableBody);
                     populateNodeBindingTable(nodeTableBody);
                 });

@@ -34,7 +34,7 @@
             archetypeModel.specializeConstraint(cons);
             // did not work, so remove node_id from name
 //            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
-            info.tree.styleNodes(definitionTreeNode);
+            info.tree.styleNodes(definitionTreeNode.id, 1);
             var isSelected = info.tree.targetElement.jstree('is_selected', definitionTreeNode);
             //var isSelected = definitionTree.jstree.is_selected(definitionTreeNode)
             if (isSelected) {
@@ -66,6 +66,7 @@
                 })
             })
         }
+
         function openAddConstraintDialog(childTypes, callback) {
             var context = {
                 panel_id: GuiUtils.generateId(),
@@ -82,15 +83,15 @@
                         var text = content.find('#' + context.panel_id + '_text').val().trim();
                         var description = content.find('#' + context.panel_id + '_description').val().trim();
                         var type = content.find('#' + context.panel_id + '_types').val();
-                        if (text.length===0) {
+                        if (text.length === 0) {
                             return "text is required";
                         }
-                        if (description.length==0) {
+                        if (description.length == 0) {
                             return "description is required";
                         }
                         callback({
-                            text:text,
-                            description:description,
+                            text: text,
+                            description: description,
                             type: type
                         });
                     }
@@ -245,11 +246,11 @@
                 attrJson.text = attribute.rm_attribute_name;
                 if (attribute.children && attribute.children.length > 0) {
                     attrJson.children = [];
-                    attrJson.a_attr = attrJson.a_attr || {};
-                    attrJson.a_attr.class = "definition-tree-node attribute";
-                    if (archetypeModel.isSpecialized(attribute)) {
-                        attrJson.a_attr.class += " specialized";
-                    }
+                    //attrJson.a_attr = attrJson.a_attr || {};
+                    //attrJson.a_attr.class = "definition-tree-node attribute";
+                    //if (archetypeModel.isSpecialized(attribute)) {
+                    //    attrJson.a_attr.class += " specialized";
+                    //}
 
 
                     for (var j in attribute.children) {
@@ -308,11 +309,11 @@
                         cons: cons
                     };
 
-                    consJson.a_attr = consJson.a_attr || {};
-                    consJson.a_attr.class = "definition-tree-node constraint";
-                    if (archetypeModel.isSpecialized(cons)) {
-                        consJson.a_attr.class += " specialized";
-                    }
+                    //consJson.a_attr = consJson.a_attr || {};
+                    //consJson.a_attr.class = "definition-tree-node constraint";
+                    //if (archetypeModel.isSpecialized(cons)) {
+                    //    consJson.a_attr.class += " specialized";
+                    //}
 
                     if (!consJson.text) {
                         consJson.text = self.extractConstraintName(cons);
@@ -339,33 +340,49 @@
                 target.push(consJson);
             }
 
-            self.styleNodes = function (rootTreeNode) {
+            function styleNodeJson(treeNodeJson) {
+                var cons = treeData[treeNodeJson.id].cons || treeData[treeNodeJson.id].attr;
+                var isAttr = !treeData[treeNodeJson.id].cons;
+                var isSpecialized = archetypeModel.isSpecialized(cons);
 
-                function styleNode(liElement) {
-                    var treeNodeId = liElement.attr('id');
-                    var cons = treeData[treeNodeId].cons || treeData[treeNodeId].attr;
-//                    var isAttr = cons["@type"]==="C_ATTRIBUTE";
-                    var aElement = liElement.find('>a');
-                    var isSpecialized = archetypeModel.isSpecialized(cons);
-                    aElement.removeClass('specialized');
-                    if (isSpecialized) {
-                        aElement.addClass('specialized');
+                treeNodeJson.a_attr = treeNodeJson.a_attr || {};
+                treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
+                if (isSpecialized) {
+                    treeNodeJson.a_attr.class += ' specialized';
+                }
+            }
+
+            /**
+             * Restyles definition nodes to give them proper style.
+             *
+             * @param {string} rootTreeNodeId Id of the node from which to style.
+             * @param {number?} depth Limit styling to a number of levels below the node:
+             *      0=this node only, 1=immediate children...
+             *      If not defined, style the entire subtree
+             */
+            self.styleNodes = function (rootTreeNodeId, depth) {
+
+                function styleNodes(treeNodeId, depth) {
+                    var treeNode = self.targetElement.jstree('get_node', treeNodeId);
+                    styleNodeJson(treeNode);
+
+                    if (depth === undefined || depth > 0) {
+                        var childDepth = depth === undefined ? undefined : depth - 1;
+                        for (var i in treeNode.children) {
+                            styleNodes(treeNode.children[i], childDepth);
+                        }
                     }
+
                 }
 
-                var parentLi = targetElement.find('#' + rootTreeNode.id);
-                styleNode(parentLi);
-                parentLi.find('li').each(function () {
-                    var liElement = $(this);
-                    styleNode(liElement);
-                });
-
+                styleNodes(rootTreeNodeId, depth);
+                self.targetElement.jstree('redraw', true);
             };
 
             function addAttributeTreeNode(parentNode, childCons) {
                 var attrJson = createAttrJson(childCons);
                 self.targetElement.jstree('create_node', parentNode, attrJson);
-                self.styleNodes(parentNode);
+                self.styleNodes(parentNode.id);
             }
 
             function addConstraintTreeNode(parentNode, childCons) {
@@ -373,7 +390,7 @@
                 buildTreeJson(target, childCons);
                 var childJson = target[0];
                 self.targetElement.jstree('create_node', parentNode, childJson);
-                self.styleNodes(parentNode);
+                self.styleNodes(parentNode.id);
             }
 
             self.addChild = function () {
@@ -381,7 +398,7 @@
                 function addAttribute(cons) {
                     var rmType = info.referenceModel.getType(cons.rm_type_name);
 
-                    var presentAttributes = AmUtils.listToSet(Stream(cons.attributes).map("rm_attribute_name").toArray());
+                    var presentAttributes = AmUtils.listToSet(Stream(cons.attributes || []).map("rm_attribute_name").toArray());
 
                     var attributesToAdd = [];
                     for (var attrName in rmType.attributes) {
@@ -448,11 +465,20 @@
                 }
             };
 
+            function styleJson(list) {
+                for (var i in list) {
+                    styleNodeJson(list[i]);
+                    if (list[i].children) {
+                        styleJson(list[i].children);
+                    }
+                }
+            }
 
             self.info = info;
 
             var jsonTreeTarget = [];
             buildTreeJson(jsonTreeTarget, archetypeModel.data.definition);
+            styleJson(jsonTreeTarget);
 
             targetElement.empty();
             targetElement.jstree("destroy");
@@ -469,6 +495,7 @@
             self.jstree = targetElement.jstree(true);
             self.targetElement = targetElement;
 
+
             targetElement.on('select_node.jstree', function (event, treeEvent) {
                 var data = treeData[treeEvent.node.id];
                 self.current = {
@@ -483,7 +510,6 @@
                 };
                 info.propertiesPanel.showConstraintProperties(constraintData);
             });
-
         };
 
         my.show = function (archetypeModel, referenceModel, targetElement) {

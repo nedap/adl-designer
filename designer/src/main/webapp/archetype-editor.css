@@ -111,6 +111,11 @@ form .table-layout .table-cell {
     height: 200px;
     overflow: auto;
 }
+
+.constraint-properties .custom-container {
+    padding-top: 20px;
+}
+
 .terminology-type-choice {
     padding-bottom: 20px;
 }

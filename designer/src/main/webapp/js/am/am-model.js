@@ -383,6 +383,22 @@ var AOM = (function () {
                 return result;
             };
 
+            /**
+             *  Returns existing external terminology codes
+             *
+             * @returns {string[]} list of external terminology codes
+             */
+            self.getExternalTerminologyCodes = function() {
+                var result=[];
+                var termCandidates = self.getAllTerminologyDefinitionsWithPrefix("ac");
+                for (var nodeId in termCandidates) {
+                    if (!self.data.ontology.value_sets[nodeId]) {
+                        result.push(nodeId)
+                    }
+                }
+                return result;
+            };
+
 
             /**
              * @returns {Array} all languages present in the archetype. First language is always the main language
