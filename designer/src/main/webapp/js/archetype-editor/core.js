@@ -88,6 +88,104 @@ var ArchetypeEditor = (function () {
         });
     };
 
+    my.createNewArchetypeDialog = function () {
+        var context = {
+            panel_id: GuiUtils.generateId()
+        };
+        GuiUtils.applyTemplate("dialog-archetype|create", context, function (htmlString) {
+            function populateRmTypeSelect() {
+                rmTypeSelect.empty();
+                var types = [];
+                for (var type in my.referenceModel.model.types) {
+                    types.push(type);
+                }
+                types.sort();
+                for (var i in types) {
+                    rmTypeSelect.append($("<option>").attr("value", types[i]).text(types[i]));
+                }
+            }
+
+            function createArchetypeId() {
+                return "openEHR-EHR-" + rmTypeSelect.val() + "."
+                    + sanitizeConcept(conceptInput.val().trim()) + ".v"
+                    + versionInput.val().trim();
+            }
+            function isValidConcept(str) {
+                // invalid ascii characters
+                if (/[\u0000-\u002f\u003a-\u0040\u005b-\u005e\u0060\u007b-\u007f]/.test(str)) return false;
+                return true;
+            }
+
+            function sanitizeConcept(str) {
+                str = str.toLowerCase();
+                str = str.replace(/[\s\.]/g, "_");
+                return str;
+            }
+
+            function changeValue() {
+                archetypeIdText.text(createArchetypeId());
+            }
+
+            var content = $(htmlString);
+
+            var rmTypeSelect = content.find('#' + context.panel_id + '_rm_type');
+            var conceptInput = content.find('#' + context.panel_id + '_concept');
+            var versionInput = content.find('#' + context.panel_id + '_version');
+            var languageInput = content.find('#' + context.panel_id + '_language');
+            var archetypeIdText = content.find('#' + context.panel_id + '_archetype_id');
+
+            rmTypeSelect.on('change', changeValue);
+            conceptInput.on('change', changeValue);
+            versionInput.on('change', changeValue);
+
+            populateRmTypeSelect();
+            changeValue();
+
+            GuiUtils.openSimpleDialog(
+                {
+                    title: "Create new archetype",
+                    buttons: {"create": "Create"},
+                    content: content,
+                    callback: function (content) {
+                        var rawConcept = conceptInput.val().trim();
+                        var sanitizedConcept = sanitizeConcept(rawConcept);
+                        if (rawConcept.length===0) {
+                            return "Concept is required";
+                        }
+                        if (!isValidConcept(sanitizedConcept)) {
+                            return "Invalid concept";
+                        }
+                        var version = versionInput.val().trim();
+                        if (version.length===0) {
+                            return "Version is invalid";
+                        }
+                        var language = languageInput.val().trim();
+                        if (language.length===0) {
+                            return "Language is required";
+                        }
+
+                        var archetypeId = createArchetypeId();
+                        var existing = Stream(my.archetypeRepository.infoList)
+                            .anyMatch({archetypeId: archetypeId});
+                        if (existing) {
+                            return "New archetype id already exists";
+                        }
+
+                        var newArchetypeModel = AOM.createNewArchetype({
+                            rm_type: rmTypeSelect.val(),
+                            concept: sanitizedConcept,
+                            version: version,
+                            language: language,
+                            definition_text: rawConcept,
+                            definition_description: rawConcept
+                        });
+
+                        my.useArchetype(newArchetypeModel);
+                    }
+                });
+        });
+    }
+
     my.createSpecializedArchetypeModel = function (parentArchetypeId, newArchetypeId, callback) {
         $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat")
             .done(function (data) {
@@ -152,7 +250,6 @@ var ArchetypeEditor = (function () {
             alert(errMsg);
         });
     };
-
 
 
     my.getRmTypeHandler = function (rm_type, referenceModel) {

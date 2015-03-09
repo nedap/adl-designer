@@ -122,15 +122,15 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
         try {
             // fixme actually write. Currently does not to preserve original on reload, for development
             // Files.write(archetypePath, adl.getBytes(Charsets.UTF_8));
-            Files.write(Paths.get("d:/temp/inspect.adls"), adl.getBytes(Charsets.UTF_8));
+            //Files.write(Paths.get("d:/temp/inspect.adls"), adl.getBytes(Charsets.UTF_8));
 
             sourceArchetypes.put(aidi.toString(), archetype);
             sourceArchetypes.put(aidi.toInterfaceString(), archetype);
             flatArchetypes.remove(aidi.toString());
             flatArchetypes.remove(aidi.toInterfaceString());
 
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

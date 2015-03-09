@@ -70,7 +70,7 @@ var AOM = (function () {
                 if (path.length > 0 && path.charAt(0) === "/") {
                     path = path.substring(1);
                 }
-                if (path.length===0) return [];
+                if (path.length === 0) return [];
 
                 var result = [];
                 var strSegments = path.split("/");
@@ -1178,6 +1178,107 @@ var AOM = (function () {
         my.EditableArchetypeModel.prototype = Object.create(my.ArchetypeModel.prototype);
         my.EditableArchetypeModel.prototype.constructor = my.EditableArchetypeModel;
 
+        /**
+         * Creates a new archetype with no parent.
+         *
+         * @param {object} options archetype options
+         * @param {string} options.rm_type rm type of the archetype, e.g. OBSERVATION
+         * @param {string} options.concept concept name e.g. blood_pressure. By default converted from definition_text
+         * @param {string?} options.version Archetype version, default is 1.0.0
+         * @param {string} options.language Original language for the archetype, e.g. en
+         * @param {object} options.definition_text Text of the main definition, e.g. Blood Pressure
+         * @param {string} options.definition_description Description of the main definition, e.g.
+         *              "Blood Pressure Measurement".
+         * @return {AOM.EditableArchetypeModel} editable model of the new archetype
+         */
+        my.createNewArchetype = function (options) {
+            var defaultOptions = {version: "1.0.0"};
+            options = $.extend({}, defaultOptions, options);
+
+            var newArchetypeJson = {
+                "@type": "FLAT_ARCHETYPE",
+                "description": {
+                    "@type": "RESOURCE_DESCRIPTION",
+                    "original_author": {},
+                    "lifecycle_state": "unmanaged",
+                    "other_details": {},
+                    "details": [{
+                        "@type": "RESOURCE_DESCRIPTION_ITEM",
+                        "language": {
+                            "@type": "CODE_PHRASE",
+                            "terminology_id": {
+                                "@type": "TERMINOLOGY_ID",
+                                "value": "ISO_639-1"
+                            },
+                            "code_string": options.language
+                        },
+                        "purpose": "",
+                        "copyright": "",
+                        "keywords": [],
+                        "original_resource_uri": {},
+                        "other_details": {}
+                    }]
+                },
+                "translations": [],
+                "definition": {
+                    "@type": "C_COMPLEX_OBJECT",
+                    "attributes": [],
+                    "attribute_tuples": [],
+                    "occurrences": {
+                        "@type": "MULTIPLICITY_INTERVAL",
+                        "lower_included": true,
+                        "upper_included": true,
+                        "lower_unbounded": false,
+                        "upper_unbounded": false,
+                        "lower": 1,
+                        "upper": 1
+                    },
+                    "rm_type_name": options.rm_type,
+                    "node_id": "id1"
+                },
+                "invariants": [],
+                "ontology": {
+                    "@type": "ARCHETYPE_ONTOLOGY",
+                    "term_definitions": {},
+                    "constraint_definitions": {},
+                    "term_bindings": {},
+                    "constraint_bindings": {},
+                    "terminology_extracts": {},
+                    "value_sets": {}
+                },
+                "original_language": {
+                    "@type": "CODE_PHRASE",
+                    "terminology_id": {
+                        "@type": "TERMINOLOGY_ID",
+                        "value": "ISO_639-1"
+                    },
+                    "code_string": options.language
+                },
+                "is_controlled": false,
+                "annotations": {
+                    "@type": "RESOURCE_ANNOTATIONS",
+                    "items": {}
+                },
+                "archetype_id": {
+                    "@type": "ARCHETYPE_ID",
+                    "value": ""
+                },
+                "adl_version": "2.0.4",
+                "is_template": false,
+                "is_overlay": false
+            };
+
+            newArchetypeJson.archetype_id.value = "openEHR-EHR-" + options.rm_type + "." + options.concept + ".v" + options.version;
+
+            newArchetypeJson.ontology.term_definitions[options.language] = {
+                "id1": {
+                    "text": options.definition_text,
+                    "description": options.definition_description
+                }
+            };
+
+            return new my.EditableArchetypeModel(newArchetypeJson);
+        };
 
         my.ArchetypeRepository = function (callback) {
             var self = this;

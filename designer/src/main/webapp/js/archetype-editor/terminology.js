@@ -507,7 +507,9 @@ var ArchetypeEditorTerminology = (function () {
                 var terminologiesTable = content.find('#' + context.panel_id + '_terminologies');
 
                 var addBindingButton = content.find('#' + context.panel_id + '_add_binding');
-                addBindingButton.click(addTerminologyBinding);
+                addBindingButton.click(function () {
+                    addTerminologyBinding(context.terminology)
+                });
 
                 var textElement = content.find('#' + context.panel_id + '_text');
                 var descriptionElement = content.find('#' + context.panel_id + '_description');
