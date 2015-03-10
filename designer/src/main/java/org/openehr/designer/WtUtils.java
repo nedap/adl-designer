@@ -21,6 +21,8 @@
 package org.openehr.designer;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Marko Pipan
@@ -33,10 +35,34 @@ public class WtUtils {
 
     public static String parentNodeId(String nodeId) {
         int pos = nodeId.lastIndexOf('.');
-        return nodeId.substring(0,pos);
+        return nodeId.substring(0, pos);
     }
 
-     public static <T> Iterable<T> iterable(Iterator<T> iterator) {
-         return () -> iterator;
-     }
+    public static <T> Iterable<T> iterable(Iterator<T> iterator) {
+        return () -> iterator;
+    }
+
+    public static <T> int indexOf(List<T> list, Predicate<T> predicate, int startIndex) {
+        for (int i = 0; i < list.size(); i++) {
+            T t = list.get(i);
+            if (predicate.test(t)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns index of first element in list, or -1 if no predicate matches. Works like List.indexOf, but can
+     * use any test condition.
+     *
+     * @param list list through which to search
+     * @param predicate test condition
+     * @param <T> type of list elements
+     * @return index of the first matched item, or -1 if no item found
+     */
+    public static <T> int indexOf(List<T> list, Predicate<T> predicate) {
+        return indexOf(list, predicate, 0);
+    }
+
 }

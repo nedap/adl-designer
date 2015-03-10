@@ -110,6 +110,7 @@ var ArchetypeEditor = (function () {
                     + sanitizeConcept(conceptInput.val().trim()) + ".v"
                     + versionInput.val().trim();
             }
+
             function isValidConcept(str) {
                 // invalid ascii characters
                 if (/[\u0000-\u002f\u003a-\u0040\u005b-\u005e\u0060\u007b-\u007f]/.test(str)) return false;
@@ -149,18 +150,18 @@ var ArchetypeEditor = (function () {
                     callback: function (content) {
                         var rawConcept = conceptInput.val().trim();
                         var sanitizedConcept = sanitizeConcept(rawConcept);
-                        if (rawConcept.length===0) {
+                        if (rawConcept.length === 0) {
                             return "Concept is required";
                         }
                         if (!isValidConcept(sanitizedConcept)) {
                             return "Invalid concept";
                         }
                         var version = versionInput.val().trim();
-                        if (version.length===0) {
+                        if (version.length === 0) {
                             return "Version is invalid";
                         }
                         var language = languageInput.val().trim();
-                        if (language.length===0) {
+                        if (language.length === 0) {
                             return "Language is required";
                         }
 
@@ -184,7 +185,7 @@ var ArchetypeEditor = (function () {
                     }
                 });
         });
-    }
+    };
 
     my.createSpecializedArchetypeModel = function (parentArchetypeId, newArchetypeId, callback) {
         $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat")
@@ -243,11 +244,14 @@ var ArchetypeEditor = (function () {
             url: "rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat",
             data: JSON.stringify(archetypeJson),
             contentType: "application/json; charset=utf-8",
-            dataType: "json"
+            dataType: "text"
         }).done(function (data) {
-            alert("Archetype saved");
+            // reload list of archetypes
+            my.archetypeRepository.reload(function () {
+                alert("Archetype saved");
+            });
         }).fail(function (errMsg) {
-            alert(errMsg);
+            alert("Error saving archetype: " + errMsg.status + " " + errMsg.statusText);
         });
     };
 

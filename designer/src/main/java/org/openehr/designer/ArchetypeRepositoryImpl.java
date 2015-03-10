@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,6 +62,8 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
     private final List<ArchetypeInfo> archetypeInfos = new ArrayList<>();
 
     private final Map<String, FlatArchetype> flatArchetypes = new ConcurrentHashMap<>();
+
+    private Path devInspectPath;
 
 
     private String repositoryLocation;
@@ -88,17 +89,7 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
                 String adlContent = readArchetype(adlFile);
                 DifferentialArchetype archetype = deserializer.parse(adlContent);
 
-                ArchetypeInfo info = new ArchetypeInfo();
-                info.setArchetypeId(archetype.getArchetypeId().getValue());
-                info.setRmType(archetype.getDefinition().getRmTypeName());
-
-                String mainNodeId = archetype.getDefinition().getNodeId();
-                if (mainNodeId == null) {
-                    mainNodeId = archetype.getConcept();
-                }
-
-                String defaultLanguage = archetype.getOriginalLanguage().getCodeString();
-                info.setName(findTermText(archetype, mainNodeId, defaultLanguage));
+                ArchetypeInfo info = createArchetypeInfo(archetype);
 
                 archetypeInfos.add(info);
                 sourceArchetypes.put(info.getArchetypeId(), archetype);
@@ -108,6 +99,26 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
                 LOG.error("Error parsing archetype from file " + repositoryPath.relativize(adlFile) + ". Archetype will be ignored", e);
             }
         }
+
+        String devInspectPathStr = System.getProperty("designer.dev.repository.inspect.file");
+        if (devInspectPathStr!=null) {
+            devInspectPath = Paths.get(devInspectPathStr);
+        }
+    }
+
+    private ArchetypeInfo createArchetypeInfo(DifferentialArchetype archetype) {
+        ArchetypeInfo info = new ArchetypeInfo();
+        info.setArchetypeId(archetype.getArchetypeId().getValue());
+        info.setRmType(archetype.getDefinition().getRmTypeName());
+
+        String mainNodeId = archetype.getDefinition().getNodeId();
+        if (mainNodeId == null) {
+            mainNodeId = archetype.getConcept();
+        }
+
+        String defaultLanguage = archetype.getOriginalLanguage().getCodeString();
+        info.setName(findTermText(archetype, mainNodeId, defaultLanguage));
+        return info;
     }
 
     @Override
@@ -120,14 +131,31 @@ public class ArchetypeRepositoryImpl implements ArchetypeRepository {
         final Path archetypePath = repositoryPath.resolve(aidi.toInterfaceString() + ".adls");
         LOG.info("Writing to archetype file {}", repositoryPath.relativize(archetypePath));
         try {
-            // fixme actually write. Currently does not to preserve original on reload, for development
-            // Files.write(archetypePath, adl.getBytes(Charsets.UTF_8));
-            //Files.write(Paths.get("d:/temp/inspect.adls"), adl.getBytes(Charsets.UTF_8));
+            /* if system property "designer.dev.repository.inspect.file" is defined, write archetype there instead of in the repository.
+             * used to preserve testing environment on restart
+             */
+            if (devInspectPath==null)  {
+                // production
+                Files.write(archetypePath, adl.getBytes(Charsets.UTF_8));
+            } else {
+                Files.write(devInspectPath, adl.getBytes(Charsets.UTF_8));
+            }
 
+            // replace differential archetype in memory, remove flat archetype in cache
             sourceArchetypes.put(aidi.toString(), archetype);
             sourceArchetypes.put(aidi.toInterfaceString(), archetype);
             flatArchetypes.remove(aidi.toString());
             flatArchetypes.remove(aidi.toInterfaceString());
+
+            // add or replace archetype in listing
+            ArchetypeInfo info = createArchetypeInfo(archetype);
+            int archetypeInfoIndex = WtUtils.indexOf(archetypeInfos, (t)->t.getArchetypeId().equals(info.getArchetypeId()));
+            if (archetypeInfoIndex>=0) {
+                archetypeInfos.set(archetypeInfoIndex, info);
+            } else {
+                archetypeInfos.add(info);
+            }
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
