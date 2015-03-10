@@ -1361,15 +1361,16 @@ var AOM = (function () {
             var self = this;
             self.state = undefined;
 
-
-            $.getJSON("rest/repo/list").success(function (data) {
-                self.state = "ok";
-                self.infoList = data;
-                callback(self);
-            }).error(function () {
-                self.state = "error";
-            });
-
+            self.reload = function (callback) {
+                $.getJSON("rest/repo/list").success(function (data) {
+                    self.state = "ok";
+                    self.infoList = data;
+                    if (callback) callback(self);
+                }).error(function () {
+                    self.state = "error";
+                });
+            };
+            self.reload(callback);
         };
 
         my.makeEmptyConstrainsClone = function (cons) {

@@ -67,33 +67,74 @@
             })
         }
 
-        function openAddConstraintDialog(childTypes, callback) {
+        /**
+         * @param {string[]} childTypes list of valid rm types
+         * @param {object} options
+         * @param {true|false|undefined} options.named Whether a node is named. If undefined, a checkbox is displayed for that.
+         * @param {function} callback with data about the constraint to add
+         */
+        function openAddConstraintDialog(childTypes, options, callback) {
+            var defaultOptions = {named: undefined};
+
+            options = $.extend({}, defaultOptions, options);
+
             var context = {
                 panel_id: GuiUtils.generateId(),
+                namedCheckShow: options.named === undefined,
+                nameShow: options.named !== false,
                 types: childTypes
             };
 
             GuiUtils.applyTemplate("definition|addConstraintDialog", context, function (content) {
                 content = $(content);
+
+                if (context.namedCheckShow) {
+                    var namedCheck = content.find('#' + context.panel_id + '_named');
+                    namedCheck.on('change', function () {
+                        GuiUtils.setVisible(
+                            content.find('#' + context.panel_id + '_name_panel'),
+                            namedCheck.prop('checked'));
+                    });
+                }
+
                 GuiUtils.openSimpleDialog({
                     title: "Add Child Constraint",
                     buttons: {'add': 'Add'},
                     content: content,
                     callback: function (content) {
-                        var text = content.find('#' + context.panel_id + '_text').val().trim();
-                        var description = content.find('#' + context.panel_id + '_description').val().trim();
+                        var named, text, description;
+                        if (options.named === true) {
+                            named = true;
+                        } else if (options.named === false) {
+                            named = false;
+                        } else {
+                            named = content.find('#' + context.panel_id + '_named').prop('checked');
+                        }
                         var type = content.find('#' + context.panel_id + '_types').val();
-                        if (text.length === 0) {
-                            return "text is required";
+
+                        if (named) {
+                            text = content.find('#' + context.panel_id + '_text').val().trim();
+                            description = content.find('#' + context.panel_id + '_description').val().trim();
+
+                            if (text.length === 0) {
+                                return "text is required";
+                            }
+                            if (description.length == 0) {
+                                description = text;
+                            }
+
+                            callback({
+                                named: true,
+                                text: text,
+                                description: description,
+                                type: type
+                            });
+                        } else {
+                            callback({
+                                named: false,
+                                type: type
+                            });
                         }
-                        if (description.length == 0) {
-                            return "description is required";
-                        }
-                        callback({
-                            text: text,
-                            description: description,
-                            type: type
-                        });
                     }
                 })
             })
@@ -500,13 +541,15 @@
                     }
 
                     var subtypes = self.info.referenceModel.getSubclassTypes(rmAttr.type, true);
-                    openAddConstraintDialog(subtypes, function (data) {
+                    openAddConstraintDialog(subtypes, {}, function (data) {
                         var cConstraint = AOM.newConstraint(data.type);
                         cConstraint.node_id = archetypeModel.generateSpecializedTermId("id");
                         attr.children = attr.children || [];
                         attr.children.push(cConstraint);
 
-                        archetypeModel.setTermDefinition(cConstraint.node_id, undefined, data.text, data.description);
+                        if (data.named) {
+                            archetypeModel.setTermDefinition(cConstraint.node_id, undefined, data.text, data.description);
+                        }
 
                         archetypeModel.enrichReplacementConstraint(cConstraint, attr);
                         addConstraintTreeNode(self.current.treeNode, cConstraint);
