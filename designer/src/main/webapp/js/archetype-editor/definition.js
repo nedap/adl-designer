@@ -352,12 +352,6 @@
                 attrJson.text = attribute.rm_attribute_name;
                 if (attribute.children && attribute.children.length > 0) {
                     attrJson.children = [];
-                    //attrJson.a_attr = attrJson.a_attr || {};
-                    //attrJson.a_attr.class = "definition-tree-node attribute";
-                    //if (archetypeModel.isSpecialized(attribute)) {
-                    //    attrJson.a_attr.class += " specialized";
-                    //}
-
 
                     for (var j in attribute.children) {
                         buildTreeJson(attrJson.children, attribute.children[j]);
@@ -414,12 +408,6 @@
                     treeData[consJson.id] = {
                         cons: cons
                     };
-
-                    //consJson.a_attr = consJson.a_attr || {};
-                    //consJson.a_attr.class = "definition-tree-node constraint";
-                    //if (archetypeModel.isSpecialized(cons)) {
-                    //    consJson.a_attr.class += " specialized";
-                    //}
 
                     if (!consJson.text) {
                         consJson.text = self.extractConstraintName(cons);
@@ -517,10 +505,7 @@
                     if (attributesToAdd.length === 0) return;
 
                     openAddAttributeDialog(attributesToAdd, function (attribute) {
-                        var cAttribute = AOM.newCAttribute(attribute);
-                        cons.attributes = cons.attributes || [];
-                        cons.attributes.push(cAttribute);
-                        archetypeModel.enrichReplacementConstraint(cAttribute, cons);
+                        var cAttribute = archetypeModel.addAttribute(cons, attribute);
                         addAttributeTreeNode(self.current.treeNode, cAttribute);
                     });
                 }

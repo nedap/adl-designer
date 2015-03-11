@@ -190,22 +190,12 @@ var ArchetypeEditor = (function () {
     my.createSpecializedArchetypeModel = function (parentArchetypeId, newArchetypeId, callback) {
         $.getJSON("rest/repo/archetype/" + encodeURIComponent(parentArchetypeId) + "/flat")
             .done(function (data) {
-                var parentData = AmUtils.clone(data);
-                var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
-                data.archetype_id.value = newArchetypeId;
-                data.parent_archetype_id = {
-                    "@type": "ARCHETYPE_ID",
-                    value: parentArchetypeId
-                };
-
-                var originalNodeId = data.definition.node_id;
-                var specializedNodeId = data.definition.node_id + ".1";
-                data.definition.node_id = specializedNodeId;
-                var td = data.ontology.term_definitions;
-                for (var lang in td) {
-                    td[lang][specializedNodeId] = AmUtils.clone(td[lang][originalNodeId]);
-                }
-                var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
+                //var parentData = AmUtils.clone(data);
+                var archetypeModel = AOM.createSpecializedArchetype({
+                        archetypeId: newArchetypeId,
+                        parent: new AOM.ArchetypeModel(data)
+                    }
+                );
                 callback(archetypeModel);
             });
     };

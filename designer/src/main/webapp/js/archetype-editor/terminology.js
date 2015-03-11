@@ -99,7 +99,7 @@ var ArchetypeEditorTerminology = (function () {
                     my.openUpdateValueSetDialog(archetypeModel, row.code,
                         {},
                         function (newCode) {
-                            var term = archetypeModel.getTermDefinition(row.code, language);
+                            var term = archetypeModel.getTermDefinition(row.code);
 
                             var thisRow = Stream(data).filter({code: newCode}).findFirst().orElse(null);
                             if (thisRow) {
@@ -107,7 +107,7 @@ var ArchetypeEditorTerminology = (function () {
                                 thisRow.description = term.description;
                                 tableElement.bootstrapTable('load', data);
                             } else {
-                                var newTerm = archetypeModel.getTermDefinition(newCode, language);
+                                var newTerm = archetypeModel.getTermDefinition(newCode);
                                 row = {
                                     code: newCode,
                                     text: newTerm.text,
@@ -222,7 +222,7 @@ var ArchetypeEditorTerminology = (function () {
          * @param {function(string, boolean)} updateCallback Called when the action is confirmed.
          */
         my.openUpdateValueSetDialog = function (archetypeModel, valueSetId, options, updateCallback) {
-            var defaultOptions = {canSpecialize: true, readOnly: false};
+            var defaultOptions = {canSpecialize: false, readOnly: false};
             options = $.extend({}, defaultOptions, options);
 
             var context = {
@@ -861,6 +861,4 @@ var ArchetypeEditorTerminology = (function () {
         };
 
         return my;
-    }()
-    )
-    ;
+    }() );

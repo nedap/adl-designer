@@ -1116,6 +1116,15 @@ var AOM = (function () {
                 }
             }
 
+
+            self.addAttribute = function(parentCons, name) {
+                var cAttribute = AOM.newCAttribute(name);
+                parentCons.attributes = parentCons.attributes || [];
+                parentCons.attributes.push(cAttribute);
+                self.enrichReplacementConstraint(cAttribute, parentCons)
+                return cAttribute;
+            };
+
             /**
              * Updates annotations for a node.
              *
@@ -1278,6 +1287,35 @@ var AOM = (function () {
             };
 
             return new my.EditableArchetypeModel(newArchetypeJson);
+        };
+
+        /**
+         * Creates a model of an archetype that specializes an existing archetype.
+         *
+         * @param {object} options specialization options
+         * @param {string} options.archetypeId archetypeId of the new archetype
+         * @param {AOM.ArchetypeModel} options.parent Archetype model of the parent archetype
+         * @return (AOM.EditableArchetypeModel) archetype model of the new specialized archetype
+         */
+        my.createSpecializedArchetype = function(options) {
+            var data = my.impoverishedClone(options.parent.data);
+
+            data.archetype_id.value = options.archetypeId;
+            data.parent_archetype_id = {
+                "@type": "ARCHETYPE_ID",
+                value: options.parent.archetypeId
+            };
+
+            var originalNodeId = data.definition.node_id;
+            var specializedNodeId = data.definition.node_id + ".1";
+            data.definition.node_id = specializedNodeId;
+            var td = data.ontology.term_definitions;
+            for (var lang in td) {
+                td[lang][specializedNodeId] = AmUtils.clone(td[lang][originalNodeId]);
+            }
+            return new AOM.EditableArchetypeModel(data, options.parent);
+
+
         };
 
         my.ArchetypeRepository = function (callback) {
