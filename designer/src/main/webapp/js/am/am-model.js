@@ -404,7 +404,8 @@ var AOM = (function () {
                     return nodeItems;
                 }
 
-                if (!self.data.annotations || !self.data.annotations.items) {
+
+                if (!cons || !self.data.annotations || !self.data.annotations.items) {
                     return {};
                 }
                 var consPath = self.getRmPath(cons);
@@ -1117,13 +1118,21 @@ var AOM = (function () {
             }
 
 
-            self.addAttribute = function(parentCons, name) {
+            self.addAttribute = function (parentCons, name) {
                 var cAttribute = AOM.newCAttribute(name);
                 parentCons.attributes = parentCons.attributes || [];
                 parentCons.attributes.push(cAttribute);
-                self.enrichReplacementConstraint(cAttribute, parentCons)
+                self.enrichReplacementConstraint(cAttribute, parentCons);
                 return cAttribute;
             };
+
+            self.addConstraint = function (parentAttrCons, ccons) {
+                parentAttrCons.children = parentAttrCons.children || [];
+                parentAttrCons.children.push(ccons);
+                self.enrichReplacementConstraint(ccons, parentAttrCons);
+                return ccons;
+            };
+
 
             /**
              * Updates annotations for a node.
@@ -1186,6 +1195,27 @@ var AOM = (function () {
         }; // EditableArchetypeModel
         my.EditableArchetypeModel.prototype = Object.create(my.ArchetypeModel.prototype);
         my.EditableArchetypeModel.prototype.constructor = my.EditableArchetypeModel;
+
+
+        // fabio wants me to do this before I even know the reference model. >:(
+        function fillNewArchetypeDefinition(archetypeModel) {
+            function fillObservation() {
+                var aObservationData = archetypeModel.addAttribute(archetypeModel.data.definition, "data");
+                var cDataHistory = AOM.newCComplexObject("HISTORY", archetypeModel.generateSpecializedTermId("id"));
+                archetypeModel.addConstraint(aObservationData, cDataHistory);
+                var aHistoryEvents = archetypeModel.addAttribute(cDataHistory, "events");
+                var cEventsAny = AOM.newCComplexObject("EVENT", archetypeModel.generateSpecializedTermId("id"));
+                archetypeModel.addConstraint(aHistoryEvents, cEventsAny);
+                archetypeModel.setTermDefinition(cEventsAny.node_id, undefined, "Any event");
+                var aEventData = archetypeModel.addAttribute(cEventsAny, "data");
+            }
+
+            switch (archetypeModel.data.definition.rm_type_name) {
+                case "OBSERVATION":
+                    fillObservation();
+                    break;
+            }
+        }
 
         /**
          * Creates a new archetype with no parent.
@@ -1286,7 +1316,9 @@ var AOM = (function () {
                 }
             };
 
-            return new my.EditableArchetypeModel(newArchetypeJson);
+            var archetypeModel = new my.EditableArchetypeModel(newArchetypeJson);
+            fillNewArchetypeDefinition(archetypeModel);
+            return archetypeModel;
         };
 
         /**
@@ -1297,7 +1329,7 @@ var AOM = (function () {
          * @param {AOM.ArchetypeModel} options.parent Archetype model of the parent archetype
          * @return (AOM.EditableArchetypeModel) archetype model of the new specialized archetype
          */
-        my.createSpecializedArchetype = function(options) {
+        my.createSpecializedArchetype = function (options) {
             var data = my.impoverishedClone(options.parent.data);
 
             data.archetype_id.value = options.archetypeId;
@@ -1391,7 +1423,7 @@ var AOM = (function () {
                     }
                 }
                 return result;
-            }
+            };
 
         };
 

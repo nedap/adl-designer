@@ -26,6 +26,7 @@ import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
@@ -47,6 +48,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -104,35 +106,38 @@ public class WtResourceImpl implements WtResource {
 
     @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
     @Override
-    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) {
+    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
         List<RmType> types = archetypeRepository.getRmModel().getAllTypes();
 
-        ReferenceModelData result = new ReferenceModelData();
-        result.setName("openEHR");
-        result.setVersion("1.0.2");
-        result.setTypes(new LinkedHashMap<>());
-        for (RmType type : types) {
-            ReferenceModelData.Type t = new ReferenceModelData.Type();
-            t.setName(type.getRmType());
-            t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
-            t.setFinalType(type.isFinalType());
-            t.setDataAttribute(type.getDataAttribute());
-            if (type.getDisplay()!=null) {
-                t.setDisplay(type.getDisplay().toString());
-            }
-            if (!type.getAttributes().isEmpty()) {
-                t.setAttributes(new LinkedHashMap<>());
-                for (RmTypeAttribute attribute : type.getAttributes().values()) {
-                    ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
-                    a.setName(attribute.getAttributeName());
-                    a.setExistence(attribute.getExistence());
-                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
-                    t.getAttributes().put(a.getName(), a);
-                }
-            }
-            result.getTypes().put(t.getName(), t);
-        }
-        return result;
+            ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
+            return builder.build(archetypeRepository.getRmModel());
+//        ReferenceModelData result = new ReferenceModelData();
+//        result.setName("openEHR");
+//        result.setVersion("1.0.2");
+//        result.setTypes(new LinkedHashMap<>());
+//        for (RmType type : types) {
+//            ReferenceModelData.Type t = new ReferenceModelData.Type();
+//            t.setName(type.getRmType());
+//            t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
+//            t.setFinalType(type.isFinalType());
+//            t.setRootType(type.isRootType());
+//            t.setDataAttribute(type.getDataAttribute());
+//            if (type.getDisplay()!=null) {
+//                t.setDisplay(type.getDisplay().toString());
+//            }
+//            if (!type.getAttributes().isEmpty()) {
+//                t.setAttributes(new LinkedHashMap<>());
+//                for (RmTypeAttribute attribute : type.getAttributes().values()) {
+//                    ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
+//                    a.setName(attribute.getAttributeName());
+//                    a.setExistence(attribute.getExistence());
+//                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
+//                    t.getAttributes().put(a.getName(), a);
+//                }
+//            }
+//            result.getTypes().put(t.getName(), t);
+//        }
+//        return result;
     }
 
     @RequestMapping(value = "/tom", method = RequestMethod.POST)

@@ -97,7 +97,10 @@ var ArchetypeEditor = (function () {
                 rmTypeSelect.empty();
                 var types = [];
                 for (var type in my.referenceModel.model.types) {
-                    types.push(type);
+                    var rmType = my.referenceModel.model.types[type];
+                    if (rmType.rootType) {
+                        types.push(type);
+                    }
                 }
                 types.sort();
                 for (var i in types) {

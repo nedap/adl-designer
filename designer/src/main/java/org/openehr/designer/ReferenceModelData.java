@@ -62,6 +62,7 @@ public class ReferenceModelData {
         private String parent;
         private Map<String, Attribute> attributes;
         private boolean finalType;
+        private boolean rootType;
         private String dataAttribute;
         private String display;
 
@@ -96,6 +97,14 @@ public class ReferenceModelData {
 
         public void setFinalType(boolean finalType) {
             this.finalType = finalType;
+        }
+
+        public boolean isRootType() {
+            return rootType;
+        }
+
+        public void setRootType(boolean rootType) {
+            this.rootType = rootType;
         }
 
         public String getDataAttribute() {
