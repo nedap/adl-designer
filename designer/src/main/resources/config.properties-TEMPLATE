@@ -19,4 +19,4 @@
 #
 
 archetype.repository.location=c:/projects/openehr/Knowledge/Archetypes/CKM BRANCH
-template.repository.location=c:/temp/workbench-tree/templates
+template.repository.location=
