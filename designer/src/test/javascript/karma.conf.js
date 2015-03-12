@@ -40,6 +40,9 @@ module.exports = function(config) {
 	  'main/webapp/js/am/am-model.js',
 	  'main/webapp/js/am/am-factory.js',
 
+        'main/webapp/js/rm/model-base.js',
+        'main/webapp/js/rm/model-primitive.js',
+
 	  // tests
 	  'test/javascript/**/*.js'
     ],

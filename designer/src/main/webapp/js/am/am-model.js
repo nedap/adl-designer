@@ -1512,6 +1512,4 @@ var AOM = (function () {
 
 
         return my;
-    }()
-    )
-    ;
+    }() );

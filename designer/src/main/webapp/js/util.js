@@ -233,6 +233,10 @@ var AmUtils = function () {
             ctx = context + (ctx || "");
             return new my.Errors(ctx, errors);
         }
+
+        self.empty = function () {
+            return errors.length === 0;
+        }
     };
 
     my.extend = function (childClass, parentClass) {
@@ -303,7 +307,7 @@ var AmUtils = function () {
         return result;
     };
 
-    my.keys= function(object) {
+    my.keys = function (object) {
         var result = [];
         for (var key in object) {
             if (object.hasOwnProperty(key)) {
@@ -332,11 +336,11 @@ var AmUtils = function () {
      * @param {boolean?} trim Should the string be trimmed first. Default false.
      * @returns {string|undefined}
      */
-    my.undefinedIfEmpty = function(str, trim) {
+    my.undefinedIfEmpty = function (str, trim) {
         if (str && trim) {
-            str=str.trim();
+            str = str.trim();
         }
-        return str && str.length>0 ? str : undefined;
+        return str && str.length > 0 ? str : undefined;
     };
 
 
@@ -419,7 +423,6 @@ var AmInterval = {
 
         return true;
     },
-
 
 
     toString: function (self) {

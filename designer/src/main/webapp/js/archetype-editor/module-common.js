@@ -91,7 +91,7 @@
         };
 
         /**
-         * Updates constraint values from the context values. Also performs validation.
+         * Updates constraint values from the context values.
          *
          * @param {object} stage contains caller persistent information, such as archetypeModel and archetypeEditor
          * @param context contains values that are to be copied on the context
