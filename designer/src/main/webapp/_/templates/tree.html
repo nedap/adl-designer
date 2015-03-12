@@ -1,0 +1,11 @@
+<ul class="tree">
+	<li ng-repeat="node in data">
+		<i class="fa"
+		   ng-class="node.exp ? 'fa-minus-square-o' : 'fa-plus-square-o'"
+		   ng-hide="!node.children.length"
+		   ng-click="expCol(node,$event)">
+		</i>
+		<span class="p" ng-click="form(node)" ng-class="node.selected ? 'selected' : ''">{{node.name}}</span>
+		<tree data="node.children" ng-show="node.exp"></tree>
+	</li>
+</ul>

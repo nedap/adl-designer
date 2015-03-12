@@ -1400,7 +1400,7 @@ var AOM = (function () {
             self.state = undefined;
 
             self.reload = function (callback) {
-                $.getJSON("rest/repo/list").success(function (data) {
+                $.getJSON("/rest/repo/list").success(function (data) {
                     self.state = "ok";
                     self.infoList = data;
                     if (callback) callback(self);
