@@ -25,10 +25,6 @@ import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.adl.util.walker.AbstractAmVisitor;
-import org.openehr.adl.util.walker.AmConstraintContext;
-import org.openehr.adl.util.walker.ArchetypeWalker;
-import org.openehr.am.AmObject;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ArchetypeRepositoryOverlay;
 import org.openehr.designer.tom.*;
@@ -38,7 +34,6 @@ import org.openehr.jaxb.rm.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -56,6 +51,19 @@ public class AomToTomParser {
         this.archetypeRepository = new ArchetypeRepositoryOverlay(archetypeRepository, archetypes);
 
         this.archetypes = archetypes;
+    }
+
+    public static Set<String> explodeCodes(ArchetypeWrapper archetype, List<String> codeList) {
+        Set<String> result = new LinkedHashSet<>();
+        for (String code : codeList) {
+            List<String> valueSet = archetype.getValueSet(code);
+            if (valueSet != null) {
+                result.addAll(valueSet);
+            } else {
+                result.add(code);
+            }
+        }
+        return result;
     }
 
     public TemplateTom parse() {
@@ -76,7 +84,6 @@ public class AomToTomParser {
         node.setOverlayArchetype(new ArchetypeWrapper(overlayArchetype));
         node.setParentArchetype(new ArchetypeWrapper(parentArchetype));
         node.setFlatOverlayArchetype(new ArchetypeWrapper(flatOverlayArchetype));
-
 
 
         ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(overlayArchetype);
@@ -132,7 +139,7 @@ public class AomToTomParser {
         result.setAnnotations(buildAnnotations(node.getOverlayArchetype(), makeNodePath(node.getPath(), cobj.getNodeId())));
 
         RmType rmType = rmModel.getRmType(cobj.getRmTypeName());
-        if (rmType.isFinalType()) {
+        if (Element.class.isAssignableFrom(rmType.getMainRmClass())) {
             final CObject dataCObj, parentDataCObj, flatOverlayDataCObj;
             CObject parentCObj = AmQuery.get(node.getParentArchetype().getArchetype(), node.getPathFromArchetypeRoot());
 //            CObject flatOverlayCObj = AmQuery.get(node.getFlatOverlayArchetype().getArchetype(), node.getPathFromArchetypeRoot());
@@ -189,7 +196,7 @@ public class AomToTomParser {
         return nodeId.substring(0, cp);
     }
 
-//    private String makeParentPath(String basePath, String nodeId) {
+    //    private String makeParentPath(String basePath, String nodeId) {
 //        if (nodeId == null) {
 //            return basePath;
 //        }
@@ -304,7 +311,6 @@ public class AomToTomParser {
         return result;
     }
 
-
     private CIntegerTom parseIntegerConstraint(AomToTomContext context, CInteger cobj, CInteger parentCObj) {
         if (cobj == null) return null;
 
@@ -317,7 +323,6 @@ public class AomToTomParser {
         return result;
     }
 
-
     private CStringTom parseStringConstraint(AomToTomContext context, CString cobj, CString parentCObj) {
         if (cobj == null) return null;
         CStringTom result = new CStringTom();
@@ -329,7 +334,7 @@ public class AomToTomParser {
     }
 
     private CTerminologyCodeTom parseTerminologyCodeConstraint(AomToTomContext context, CTerminologyCode cobj,
-            CTerminologyCode parentCObj) {
+                                                               CTerminologyCode parentCObj) {
         if (cobj == null) return null;
 
         CTerminologyCodeTom result = parseTerminologyCodeConstraint(context.node().getOverlayArchetype(), cobj);
@@ -346,19 +351,6 @@ public class AomToTomParser {
 
         Set<String> codes = explodeCodes(archetype, cobj.getCodeList());
         result.setCodeList(Lists.newArrayList(codes));
-        return result;
-    }
-
-    public static Set<String> explodeCodes(ArchetypeWrapper archetype, List<String> codeList) {
-        Set<String> result = new LinkedHashSet<>();
-        for (String code : codeList) {
-            List<String> valueSet = archetype.getValueSet(code);
-            if (valueSet != null) {
-                result.addAll(valueSet);
-            } else {
-                result.add(code);
-            }
-        }
         return result;
     }
 

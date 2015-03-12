@@ -21,11 +21,14 @@
 package org.openehr.designer.web;
 
 import com.google.common.base.Charsets;
-import org.json4s.Diff;
+import org.openehr.adl.rm.RmModel;
+import org.openehr.adl.rm.RmType;
+import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
@@ -34,9 +37,6 @@ import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.tom.TemplateTom;
 import org.openehr.designer.tom.aom.builder.TomTemplateBuilder;
 import org.openehr.designer.tom.aom.parser.AomToTomParser;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.adl.rm.RmType;
-import org.openehr.adl.rm.RmTypeAttribute;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.LinkedHashMap;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -86,8 +86,8 @@ public class WtResourceImpl implements WtResource {
         if (!archetypeId.equals(archetype.getArchetypeId().getValue())) {
             throw new IllegalArgumentException("Archetype id in path does not match archetype id in body");
         }
-        FlatArchetype parentArchetype=null;
-        if (archetype.getParentArchetypeId()!=null && archetype.getParentArchetypeId().getValue()!=null) {
+        FlatArchetype parentArchetype = null;
+        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
             parentArchetype = archetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
         }
 
@@ -104,35 +104,38 @@ public class WtResourceImpl implements WtResource {
 
     @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
     @Override
-    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) {
+    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
         List<RmType> types = archetypeRepository.getRmModel().getAllTypes();
 
-        ReferenceModelData result = new ReferenceModelData();
-        result.setName("openEHR");
-        result.setVersion("1.0.2");
-        result.setTypes(new LinkedHashMap<>());
-        for (RmType type : types) {
-            ReferenceModelData.Type t = new ReferenceModelData.Type();
-            t.setName(type.getRmType());
-            t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
-            t.setFinalType(type.isFinalType());
-            t.setDataAttribute(type.getDataAttribute());
-            if (type.getDisplay()!=null) {
-                t.setDisplay(type.getDisplay().toString());
-            }
-            if (!type.getAttributes().isEmpty()) {
-                t.setAttributes(new LinkedHashMap<>());
-                for (RmTypeAttribute attribute : type.getAttributes().values()) {
-                    ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
-                    a.setName(attribute.getAttributeName());
-                    a.setExistence(attribute.getExistence());
-                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
-                    t.getAttributes().put(a.getName(), a);
-                }
-            }
-            result.getTypes().put(t.getName(), t);
-        }
-        return result;
+        ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
+        return builder.build(archetypeRepository.getRmModel());
+//        ReferenceModelData result = new ReferenceModelData();
+//        result.setName("openEHR");
+//        result.setVersion("1.0.2");
+//        result.setTypes(new LinkedHashMap<>());
+//        for (RmType type : types) {
+//            ReferenceModelData.Type t = new ReferenceModelData.Type();
+//            t.setName(type.getRmType());
+//            t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
+//            t.setFinalType(type.isFinalType());
+//            t.setRootType(type.isRootType());
+//            t.setDataAttribute(type.getDataAttribute());
+//            if (type.getDisplay()!=null) {
+//                t.setDisplay(type.getDisplay().toString());
+//            }
+//            if (!type.getAttributes().isEmpty()) {
+//                t.setAttributes(new LinkedHashMap<>());
+//                for (RmTypeAttribute attribute : type.getAttributes().values()) {
+//                    ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
+//                    a.setName(attribute.getAttributeName());
+//                    a.setExistence(attribute.getExistence());
+//                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
+//                    t.getAttributes().put(a.getName(), a);
+//                }
+//            }
+//            result.getTypes().put(t.getName(), t);
+//        }
+//        return result;
     }
 
     @RequestMapping(value = "/tom", method = RequestMethod.POST)
@@ -152,13 +155,13 @@ public class WtResourceImpl implements WtResource {
         return templateTom;
     }
 
-    @RequestMapping(value="/tom", method = RequestMethod.GET)
+    @RequestMapping(value = "/tom", method = RequestMethod.GET)
     @Override
     public List<TemplateInfo> listToms() {
         return templateRepository.listTemplates();
     }
 
-    @RequestMapping(value="/export/opt/14/{templateId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
     @Override
     public ResponseEntity<byte[]> exportOpt14(@PathVariable String templateId) {
         List<DifferentialArchetype> templateArchetypes = templateRepository.loadTemplate(templateId);
@@ -190,7 +193,25 @@ public class WtResourceImpl implements WtResource {
         return new ResponseEntity<>(adltContent, headers, HttpStatus.OK);
     }
 
-    @ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Bad argument")
+    @RequestMapping(value = "/display/adl/source", method = RequestMethod.POST)
+    @Override
+    public String displayArchetypeAdlSource(@RequestBody FlatArchetype archetype) {
+        FlatArchetype parentArchetype = null;
+        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
+            parentArchetype = archetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+        }
+
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);
+        return ArchetypeSerializer.serialize(differentialArchetype);
+    }
+
+    @RequestMapping(value = "/display/adl/flat", method = RequestMethod.POST)
+    @Override
+    public String displayArchetypeAdlFlat(@RequestBody FlatArchetype archetype) {
+        return ArchetypeSerializer.serialize(archetype);
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Bad argument")
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseBody
     public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
@@ -198,7 +219,7 @@ public class WtResourceImpl implements WtResource {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ErrorResponse handleIllegalArgumentException(Exception e) {

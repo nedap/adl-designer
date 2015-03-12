@@ -28,6 +28,7 @@ import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public interface WtResource {
 
     List<ArchetypeInfo> listArchetypeInfos();
 
-    ReferenceModelData getRmModel(String modelName, String modelVersion);
+    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 
     void saveTom(TemplateTom templateTom);
 
@@ -53,5 +54,8 @@ public interface WtResource {
     ResponseEntity<byte[]> exportOpt14(String templateId);
 
     ResponseEntity<byte[]> exportAdlt(String templateId);
+
+    String displayArchetypeAdlSource(FlatArchetype archetype);
+    String displayArchetypeAdlFlat(FlatArchetype archetype);
 
 }

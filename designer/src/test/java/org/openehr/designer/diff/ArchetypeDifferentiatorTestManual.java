@@ -60,6 +60,9 @@ public class ArchetypeDifferentiatorTestManual {
         FlatArchetype flatChild = archetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
         DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(parent, flatChild);
         String archetype = ArchetypeSerializer.serialize(diff);
-        Files.write(Paths.get("D:/temp/diff.adls"), archetype.getBytes(Charsets.UTF_8));
+
+        Path targetDir = Paths.get("target");
+        Files.createDirectories(targetDir);
+        Files.write(targetDir.resolve("diff.adls"), archetype.getBytes(Charsets.UTF_8));
     }
 }

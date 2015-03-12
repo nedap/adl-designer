@@ -97,7 +97,10 @@ var ArchetypeEditor = (function () {
                 rmTypeSelect.empty();
                 var types = [];
                 for (var type in my.referenceModel.model.types) {
-                    types.push(type);
+                    var rmType = my.referenceModel.model.types[type];
+                    if (rmType.rootType) {
+                        types.push(type);
+                    }
                 }
                 types.sort();
                 for (var i in types) {
@@ -335,6 +338,10 @@ var ArchetypeEditor = (function () {
             var targetElement = $('#archetype-editor-main-tabs-description');
             my.Description.show(archetypeModel, targetElement);
         }
+        function loadDisplay() {
+            var targetElement = $('#archetype-editor-main-tabs-display');
+            my.Display.show(archetypeModel, targetElement);
+        }
 
 
         my.archetypeModel = archetypeModel;
@@ -346,6 +353,10 @@ var ArchetypeEditor = (function () {
         $('a[href="#archetype-editor-main-tabs-terminology"]').on('show.bs.tab', loadTerminology);
         loadDescription();
         $('a[href="#archetype-editor-main-tabs-description"]').on('show.bs.tab', loadDescription);
+        loadDisplay();
+        $('a[href="#archetype-editor-main-tabs-display"]').on('show.bs.tab', loadDisplay);
+
+
     };
 
 

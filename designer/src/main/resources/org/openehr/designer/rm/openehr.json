@@ -1,0 +1,36 @@
+{
+  "CARE_ENTRY": {
+    "attributes": {
+      "guideline_id": {"ignore": true}
+    }
+  },
+  "COMPOSITION": {
+    "rootType": true
+  },
+  "ELEMENT": {
+    "finalType": true
+  },
+  "ENTRY": {
+    "rootType": true,
+    "attributes": {
+      "language": {"ignore": true},
+      "encoding": {"ignore": true},
+      "subject": {"ignore": true},
+      "provider": {"ignore": true},
+      "work_flow_id": {"ignore": true}
+    }
+  },
+  "ITEM": {
+    "rootType": true
+  },
+  "LOCATABLE": {
+    "attributes": {
+      "name": {"ignore": true},
+      "uid": {"ignore": true},
+      "links": {"ignore": true},
+      "archetype_details": {"ignore": true},
+      "feeder_audit": {"ignore": true},
+      "archetype_node_id": {"ignore": true}
+    }
+  }
+}
