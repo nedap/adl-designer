@@ -4,7 +4,14 @@
       "guideline_id": {"ignore": true}
     }
   },
+  "COMPOSITION": {
+    "rootType": true
+  },
+  "ELEMENT": {
+    "finalType": true
+  },
   "ENTRY": {
+    "rootType": true,
     "attributes": {
       "language": {"ignore": true},
       "encoding": {"ignore": true},
@@ -13,8 +20,12 @@
       "work_flow_id": {"ignore": true}
     }
   },
+  "ITEM": {
+    "rootType": true
+  },
   "LOCATABLE": {
     "attributes": {
+      "name": {"ignore": true},
       "uid": {"ignore": true},
       "links": {"ignore": true},
       "archetype_details": {"ignore": true},

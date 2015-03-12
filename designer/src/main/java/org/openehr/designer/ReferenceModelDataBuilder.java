@@ -27,10 +27,13 @@ import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.rm.RmTypeAttribute;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author markopi
@@ -46,6 +49,36 @@ public class ReferenceModelDataBuilder {
     }
 
 
+    @Nullable
+    private Type getTypeInfo(RmType type) {
+        while (type != null) {
+            Type t = typeMap.get(type.getRmType());
+            if (t != null) return t;
+            type = type.getParent();
+        }
+        return null;
+    }
+
+    private Optional<Object> getTypeInfoProperty(RmType type, String property) {
+        try {
+            Field f = Type.class.getDeclaredField(property);
+            f.setAccessible(true);
+            while (type != null) {
+                Type t = typeMap.get(type.getRmType());
+                if (t != null) {
+                    Object fieldValue = f.get(t);
+                    if (fieldValue != null) return Optional.of(fieldValue);
+                }
+                type = type.getParent();
+            }
+            return Optional.empty();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Nullable
     private Attribute getAttributeInfo(RmTypeAttribute rmAttribute) {
         RmType type = rmAttribute.getOwner();
         while (type != null) {
@@ -68,15 +101,18 @@ public class ReferenceModelDataBuilder {
         result.setTypes(new LinkedHashMap<>());
 
         for (RmType type : rmModel.getAllTypes()) {
+
             ReferenceModelData.Type t = new ReferenceModelData.Type();
             t.setName(type.getRmType());
             t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
-            t.setFinalType(type.isFinalType());
-            t.setRootType(type.isRootType());
+            getTypeInfoProperty(type, "rootType").ifPresent(f -> t.setRootType((Boolean) f));
+            getTypeInfoProperty(type, "finalType").ifPresent(f -> t.setFinalType((Boolean) f));
+//            t.setFinalType(type.isFinalType());
+//            t.setRootType(type.isRootType());
             t.setDataAttribute(type.getDataAttribute());
-            if (type.getDisplay() != null) {
-                t.setDisplay(type.getDisplay().toString());
-            }
+//            if (type.getDisplay() != null) {
+//                t.setDisplay(type.getDisplay().toString());
+//            }
             if (!type.getAttributes().isEmpty()) {
                 t.setAttributes(new LinkedHashMap<>());
                 for (RmTypeAttribute attribute : type.getAttributes().values()) {
@@ -85,7 +121,7 @@ public class ReferenceModelDataBuilder {
 
                     ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
                     a.setName(attribute.getAttributeName());
-                    a.setExistence(attribute.getExistence());
+                    a.setExistence(ReferenceModelData.Multiplicity.of(attribute.getExistence()));
                     a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
                     t.getAttributes().put(a.getName(), a);
                 }
@@ -96,6 +132,10 @@ public class ReferenceModelDataBuilder {
     }
 
     static class Type {
+        @JsonProperty
+        Boolean rootType;
+        @JsonProperty
+        Boolean finalType;
         @JsonProperty
         Map<String, Attribute> attributes;
     }

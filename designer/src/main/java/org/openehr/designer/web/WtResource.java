@@ -55,4 +55,7 @@ public interface WtResource {
 
     ResponseEntity<byte[]> exportAdlt(String templateId);
 
+    String displayArchetypeAdlSource(FlatArchetype archetype);
+    String displayArchetypeAdlFlat(FlatArchetype archetype);
+
 }

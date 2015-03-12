@@ -1004,7 +1004,7 @@ var AOM = (function () {
              * @param {string} code node_id of the term definition
              * @param {string|undefined} language language of the definition. If undefined, sets terms for all definitions
              * @param {string} text term definition text
-             * @param {string?}description term definition description
+             * @param {string?}description term definition description. If undefined, equals to text
              */
             self.setTermDefinition = function (code, language, text, description) {
                 function quickTranslate(value, sourceLanguage, targetLanguage) {
@@ -1014,6 +1014,7 @@ var AOM = (function () {
                 }
 
 
+                description = description || text;
                 if (!language) {
                     self.setTermDefinition(code, self.defaultLanguage, text, description);
                     for (var i in self.translations) {
@@ -1207,10 +1208,24 @@ var AOM = (function () {
                 var cEventsAny = AOM.newCComplexObject("EVENT", archetypeModel.generateSpecializedTermId("id"));
                 archetypeModel.addConstraint(aHistoryEvents, cEventsAny);
                 archetypeModel.setTermDefinition(cEventsAny.node_id, undefined, "Any event");
-                var aEventData = archetypeModel.addAttribute(cEventsAny, "data");
+                archetypeModel.addAttribute(cEventsAny, "data");
+            }
+
+            function fillComposition() {
+                var aCompositionCategory = archetypeModel.addAttribute(archetypeModel.data.definition, "category");
+                var cCategoryConstraint = AOM.newCComplexObject("DV_CODED_TEXT", archetypeModel.generateSpecializedTermId("id"));
+                archetypeModel.addConstraint(aCompositionCategory, cCategoryConstraint);
+                var aDefiningCode = archetypeModel.addAttribute(cCategoryConstraint, "defining_code");
+                var cCode = AOM.newCTerminologyCode();
+                cCode.terminology_id = "openehr";
+                cCode.code_list = ["433"];
+                archetypeModel.addConstraint(aDefiningCode, cCode);
             }
 
             switch (archetypeModel.data.definition.rm_type_name) {
+                case "COMPOSITION":
+                    fillComposition();
+                    break;
                 case "OBSERVATION":
                     fillObservation();
                     break;
@@ -1424,7 +1439,6 @@ var AOM = (function () {
                 }
                 return result;
             };
-
         };
 
         my.ArchetypeRepository = function (callback) {

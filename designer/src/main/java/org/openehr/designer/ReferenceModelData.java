@@ -64,7 +64,7 @@ public class ReferenceModelData {
         private boolean finalType;
         private boolean rootType;
         private String dataAttribute;
-        private String display;
+//        private String display;
 
         public String getName() {
             return name;
@@ -115,19 +115,19 @@ public class ReferenceModelData {
             this.dataAttribute = dataAttribute;
         }
 
-        public String getDisplay() {
-            return display;
-        }
-
-        public void setDisplay(String display) {
-            this.display = display;
-        }
+//        public String getDisplay() {
+//            return display;
+//        }
+//
+//        public void setDisplay(String display) {
+//            this.display = display;
+//        }
     }
 
     public static class Attribute {
         private String name;
         private String type;
-        private MultiplicityInterval existence;
+        private Multiplicity existence;
 
         public String getName() {
             return name;
@@ -145,12 +145,45 @@ public class ReferenceModelData {
             this.type = type;
         }
 
-        public MultiplicityInterval getExistence() {
+        public Multiplicity getExistence() {
             return existence;
         }
 
-        public void setExistence(MultiplicityInterval existence) {
+        public void setExistence(Multiplicity existence) {
             this.existence = existence;
+        }
+    }
+
+    public static class Multiplicity {
+        private Integer lower;
+        private Integer upper;
+
+        public Multiplicity() {
+        }
+
+        public Multiplicity(Integer lower, Integer upper) {
+            this.lower = lower;
+            this.upper = upper;
+        }
+
+        public static Multiplicity of(MultiplicityInterval mi) {
+            return new Multiplicity(mi.getLower() != null ? mi.getLower() : 0, mi.getUpper());
+        }
+
+        public Integer getLower() {
+            return lower;
+        }
+
+        public void setLower(Integer lower) {
+            this.lower = lower;
+        }
+
+        public Integer getUpper() {
+            return upper;
+        }
+
+        public void setUpper(Integer upper) {
+            this.upper = upper;
         }
     }
 }
