@@ -216,6 +216,7 @@
                 }
 
                 var languageSelect = html.find('#' + context.panel_id + '_language');
+                var lifecycleInput = html.find('#' + context.panel_id + '_lifecycle');
                 var purposeInput = html.find('#' + context.panel_id + '_purpose');
                 var useInput = html.find('#' + context.panel_id + '_use');
                 var misuseInput = html.find('#' + context.panel_id + '_misuse');
@@ -226,12 +227,16 @@
 
                 var resources, otherDetails;
 
-                purposeInput.blur(updateLanguageDetails);
-                useInput.blur(updateLanguageDetails);
-                misuseInput.blur(updateLanguageDetails);
-                copyrightInput.blur(updateLanguageDetails);
-                keywordsInput.blur(updateLanguageDetails);
+                purposeInput.change(updateLanguageDetails);
+                lifecycleInput.change(function () {
+                    archetypeModel.data.description.lifecycle_state = lifecycleInput.val();
+                });
+                useInput.change(updateLanguageDetails);
+                misuseInput.change(updateLanguageDetails);
+                copyrightInput.change(updateLanguageDetails);
+                keywordsInput.change(updateLanguageDetails);
 
+                lifecycleInput.val(archetypeModel.data.description.lifecycle_state);
 
                 populateLanguages();
                 populateLanguageDetails();

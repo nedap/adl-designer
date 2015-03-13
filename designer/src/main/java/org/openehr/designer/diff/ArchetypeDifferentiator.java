@@ -34,6 +34,7 @@ import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDe
 /**
  * @author markopi
  */
+// todo remove unspecialized value sets
 public class ArchetypeDifferentiator {
     private final FlatArchetype flatParent;
     private final FlatArchetype flatChild;
@@ -122,17 +123,6 @@ public class ArchetypeDifferentiator {
 
         }
     }
-
-    private boolean codePhraseEquals(CodePhrase c1, CodePhrase c2) {
-        if ((c1 == null) != (c2 == null)) return false;
-        if (c1 == null) return true;
-        if (!Objects.equals(c1.getCodeString(), c2.getCodeString())) return false;
-        if ((c1.getTerminologyId()==null) != (c2.getTerminologyId()==null)) return false;
-        if ((c1.getTerminologyId()==null)) return true;
-        if (!Objects.equals(c1.getTerminologyId().getValue(), c2.getTerminologyId().getValue())) return false;
-        return true;
-    }
-
 
     private void makeDifferentialPaths(CObject cobject) {
         if (!(cobject instanceof CComplexObject)) return;
