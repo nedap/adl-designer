@@ -82,12 +82,14 @@
 //                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
 //                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
 //                var archetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-                var archetypeId="openEHR-EHR-COMPOSITION.problem_list.v1.0.0"; // slots
-//                var parentArchetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-//                var specArchetypeId = "openEHR-EHR-OBSERVATION.demo-spec.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-//                ArchetypeEditor.createSpecializedArchetypeModel(parentArchetypeId, specArchetypeId, ArchetypeEditor.useArchetype);
+//                var archetypeId="openEHR-EHR-COMPOSITION.problem_list.v1.0.0"; // slots
+//                ArchetypeEditor.loadArchetype(archetypeId, ArchetypeEditor.useArchetype);
 
-                ArchetypeEditor.loadArchetype(archetypeId, ArchetypeEditor.useArchetype);
+
+                var parentArchetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
+                var specArchetypeId = "openEHR-EHR-OBSERVATION.demo-spec.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
+                ArchetypeEditor.createSpecializedArchetypeModel(parentArchetypeId, specArchetypeId, ArchetypeEditor.useArchetype);
+
 
             });
 

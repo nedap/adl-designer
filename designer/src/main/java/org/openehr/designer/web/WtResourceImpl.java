@@ -193,7 +193,8 @@ public class WtResourceImpl implements WtResource {
         return new ResponseEntity<>(adltContent, headers, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/display/adl/source", method = RequestMethod.POST)
+    @RequestMapping(value = "/display/adl/source", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
+    @ResponseBody
     @Override
     public String displayArchetypeAdlSource(@RequestBody FlatArchetype archetype) {
         FlatArchetype parentArchetype = null;
@@ -205,7 +206,8 @@ public class WtResourceImpl implements WtResource {
         return ArchetypeSerializer.serialize(differentialArchetype);
     }
 
-    @RequestMapping(value = "/display/adl/flat", method = RequestMethod.POST)
+    @RequestMapping(value = "/display/adl/flat", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
+    @ResponseBody
     @Override
     public String displayArchetypeAdlFlat(@RequestBody FlatArchetype archetype) {
         return ArchetypeSerializer.serialize(archetype);

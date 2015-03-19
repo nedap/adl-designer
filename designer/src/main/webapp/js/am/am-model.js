@@ -488,7 +488,7 @@ var AOM = (function () {
         };
 
         self.getAttribute = function (cons, attributeName) {
-            if (!cons.attribute) return undefined;
+            if (!cons.attributes) return undefined;
             return Stream(cons.attributes).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
         };
 
@@ -1135,6 +1135,86 @@ var AOM = (function () {
         };
 
 
+        self.removeConstraint = function (cons) {
+            function removeFromTermDefinitions(node_id) {
+                for (var lang in self.data.ontology.term_definitions) {
+                    var langDefs = self.data.ontology.term_definitions[lang];
+                    delete langDefs[node_id];
+                }
+            }
+
+            function removeFromTermBindings(node_id) {
+                for (var terminology in self.data.ontology.term_bindings) {
+                    var terminologyDefs = self.data.ontology.term_bindings[terminology];
+                    delete terminologyDefs[node_id];
+                }
+            }
+
+            function removeConstraintTerms(cons) {
+                if (cons.node_id) {
+                    removeFromTermDefinitions(cons.node_id);
+                    removeFromTermBindings(cons.node_id);
+                }
+                if (cons.attributes) {
+                    for (var i in cons.attributes) {
+                        var attr = cons.attributes[i];
+                        for (var j in attr.children || []) {
+                            removeConstraintTerms(attr.children[j]);
+                        }
+                    }
+                }
+            }
+
+            function removeAttribute(attr) {
+                var parentCons = attr[".parent"];
+                var parentParentCons = self.getParentConstraint(parentCons);
+                var parentAttr = parentParentCons ? self.getAttribute(parentParentCons, attr.rm_attribute_name) : undefined;
+                if (parentAttr) {
+                    // do nothing if parent attribute is present
+                    return attr;
+                } else {
+                    for (var i in parentCons.attributes) {
+                        var attrChild = parentCons.attributes[i];
+                        if (attrChild === attr) {
+                            parentCons.attributes.splice(i, 1);
+                            return undefined;
+                        }
+                    }
+                }
+            }
+
+            function removeConstraint(cons) {
+                var parentAttr = cons[".parent"];
+                var parentArchetypeCons = self.getParentConstraint(cons);
+                for (var i in parentAttr.children) {
+                    var consChild = parentAttr.children[i];
+                    if (consChild === cons) {
+                        removeConstraintTerms(cons);
+                        if (parentArchetypeCons) {
+                            var newCons = AOM.impoverishedClone(parentArchetypeCons);
+                            self.enrichReplacementConstraint(newCons, cons[".parent"]);
+                            parentAttr.children[i] = newCons;
+                            return newCons;
+                        } else {
+                            parentAttr.children.splice(i, 1);
+                            return undefined;
+                        }
+                    }
+                }
+            }
+
+
+            // never remove parent root from archetype
+            if (!cons[".parent"]) return cons;
+
+            if (cons["@type"] === "C_ATTRIBUTE") {
+                return removeAttribute(cons);
+            } else {
+                return removeConstraint(cons);
+            }
+        };
+
+
         /**
          * Updates annotations for a node.
          *
@@ -1206,7 +1286,7 @@ var AOM = (function () {
      * @param {object} cons Constraint object contained in the archetype.
      * @return {AOM.EditableArchetypeModel} archetype model containing the constraint
      */
-    my.EditableArchetypeModel.forConstraint = function (cons) {
+    my.archetypeModelForConstraint = function (cons) {
         while (cons[".parent"]) cons = cons[".parent"];
         return cons[".archetypeModel"];
     };
@@ -1435,7 +1515,7 @@ var AOM = (function () {
          * @return {boolean} True if childRmType is a subclass of parentRmType
          */
         self.isSubclass = function (parentRmType, childRmType, includeSelf) {
-            if (includeSelf===undefined) includeSelf=true;
+            if (includeSelf === undefined) includeSelf = true;
             var rmType = self.model.types[childRmType];
             if (rmType && !includeSelf) {
                 rmType = self.model.types[rmType.parent];

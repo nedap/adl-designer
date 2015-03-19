@@ -356,7 +356,7 @@
 
         my.DefinitionTree = function (archetypeModel, targetElement, info) {
             var self = this;
-            var treeIdPrefix = AmUtils.random4() + "_";
+            var treeIdPrefix = "dt_"+GuiUtils.generateId() + "_";
             var nextTreeIdIndex = 0;
 
             var treeData = {};
@@ -504,18 +504,19 @@
                 self.targetElement.jstree('redraw', true);
             };
 
-            function addAttributeTreeNode(parentNode, childCons) {
+            function addAttributeTreeNode(parentNode, childCons, pos) {
                 var attrJson = createAttrJson(childCons);
-                self.targetElement.jstree('create_node', parentNode, attrJson);
+                self.targetElement.jstree('create_node', parentNode, attrJson, pos);
                 self.styleNodes(parentNode.id);
             }
 
-            function addConstraintTreeNode(parentNode, childCons) {
+            function addConstraintTreeNode(parentNode, childCons, pos) {
                 var target = [];
                 buildTreeJson(target, childCons);
                 var childJson = target[0];
-                self.targetElement.jstree('create_node', parentNode, childJson);
+                var newTreeNodeId = self.targetElement.jstree('create_node', parentNode, childJson, pos);
                 self.styleNodes(parentNode.id);
+                return newTreeNodeId;
             }
 
             self.addChild = function () {
@@ -597,6 +598,42 @@
                 }
             };
 
+            self.removeConstraint = function() {
+
+                function getJsTreeNodeSiblingIndex(treeNode) {
+                    var parentNode = info.tree.targetElement.jstree('get_node', treeNode.parent);
+                    for (var i in parentNode.children) {
+                        var nodeId = parentNode.children[i];
+                        if (nodeId===treeNode.id) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                }
+
+                if (!self.current) return;
+                var cons = self.current.data.cons || self.current.data.attr;
+                if (!cons[".parent"]) return;
+
+                var archetypeModel = AOM.archetypeModelForConstraint(cons);
+                if (!archetypeModel.isSpecialized(cons)) return;
+                var newCons = archetypeModel.removeConstraint(cons);
+                //delete treeData[self.current.treeNode.id];
+
+                if (newCons) {
+                    if (newCons==cons) return; // no change
+                    var nodeIndex = getJsTreeNodeSiblingIndex(self.current.treeNode);
+                    var parentNode = info.tree.targetElement.jstree('get_node', self.current.treeNode.parent);
+
+                    info.tree.targetElement.jstree('delete_node', self.current.treeNode);
+                    var newNodeId = addConstraintTreeNode(parentNode, newCons, nodeIndex);
+                    info.tree.targetElement.jstree('select_node', newNodeId);
+                } else {
+                    info.tree.targetElement.jstree('delete_node', self.current.treeNode);
+                }
+
+            };
+
             function styleJson(list) {
                 for (var i in list) {
                     styleNodeJson(list[i]);
@@ -657,7 +694,8 @@
                 var info = {
                     referenceModel: referenceModel,
                     toolbar: {
-                        addChild: html.find('#' + context.panel_id + '_addChild')
+                        addChild: html.find('#' + context.panel_id + '_addChild'),
+                        removeConstraint: html.find('#' + context.panel_id + '_removeConstraint')
                     }
                 };
                 var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
@@ -668,6 +706,7 @@
 
 
                 info.toolbar.addChild.click(info.tree.addChild);
+                info.toolbar.removeConstraint.click(info.tree.removeConstraint);
 
                 targetElement.append(html);
             });
