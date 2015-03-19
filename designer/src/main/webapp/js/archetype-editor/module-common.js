@@ -37,7 +37,7 @@
                 "type": cons.rm_type_name
             };
             if (parentCons) {
-                var h = stage.archetypeEditor.getRmTypeHandler(parentCons.rm_type_name);
+                var h = stage.archetypeEditor.getRmTypeHandler(parentCons);
                 if (h) {
                     context.parent = h.createContext(stage, parentCons);
                 }
@@ -181,7 +181,8 @@
                 var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
                 context.type = "main";
                 context.top = topHandler.createContext(stage, cons, parentCons);
-                var constraintHandler = stage.archetypeEditor.getRmTypeHandler(cons.rm_type_name);
+                context.cons = AOM.impoverishedClone(cons);
+                var constraintHandler = stage.archetypeEditor.getRmTypeHandler(cons);
                 if (constraintHandler) {
                     context.constraint = constraintHandler.createContext(stage, cons, parentCons);
                 }
@@ -194,7 +195,15 @@
                     html = $(html);
                     targetElement.append(html);
 
-                    stage.archetypeEditor.applySubModules(stage, html, context);
+                    var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                    topHandler.show(stage, context.top, targetElement.find('#' + context.top.panel_id));
+
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.cons);
+                    if (constraintHandler) {
+                        constraintHandler.show(stage, context.constraint, targetElement.find('#' + context.constraint.panel_id));
+                    }
+
+//                    stage.archetypeEditor.applySubModules(stage, html, context);
 
                 });
             };
@@ -207,7 +216,7 @@
                 var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
                 topHandler.validate(stage, context.top, errors);
                 if (context.constraint) {
-                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.constraint.type);
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.cons);
                     constraintHandler.validate(stage, context.constraint, errors);
                 }
             };
@@ -216,18 +225,210 @@
                 var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
                 topHandler.updateConstraint(stage, context.top, cons);
                 if (context.constraint) {
-                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.constraint.type);
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.cons);
                     constraintHandler.updateConstraint(stage, context.constraint, cons);
                 }
             };
         };
         AmUtils.extend(MainCommonHandler, CommonRmHandler);
 
+        var ArchetypeSlotHandler = function () {
+            var handler = this;
+            CommonRmHandler.call(handler);
+
+
+            function toContextAssertions(assertions) {
+                var result = [];
+                for (var i in assertions) {
+                    var assertion = assertions[i];
+                    var startIndex = assertion.string_expression.indexOf("{/") + 2;
+                    var endIndex = assertion.string_expression.lastIndexOf("/}");
+                    var pattern = assertion.string_expression.substring(startIndex, endIndex);
+                    result.push(pattern);
+                }
+                return result;
+            }
+
+            function toConstraintsAssertions(assertions) {
+                var result = [];
+                for (var i in assertions) {
+                    var pattern = assertions[i];
+                    var consObj = {
+                        "@type": "ASSERTION",
+                        "string_expression": "",
+                        "expression": {
+                            "@type": "EXPR_BINARY_OPERATOR",
+                            "type": "CONSTRAINT"
+                        }
+                    };
+                    consObj.string_expression = "archetype_id/value matches {/" + pattern + "/}";
+                    result.push(consObj);
+                }
+                return result;
+            }
+
+            var AssertionList = function (targetElement, candidates, assertions) {
+                targetElement.empty();
+
+                var context = {
+                    panel_id: GuiUtils.generateId()
+                };
+
+                GuiUtils.applyTemplate("properties/constraint-common|ARCHETYPE_SLOT/assertionList", context, function (html) {
+                    html = $(html);
+                    targetElement.append(html);
+
+                    function populateAssertionsSelect() {
+                        assertionsSelect.empty();
+                        for (var i in assertions) {
+                            var assertion = assertions[i];
+                            var option = $("<option>").attr('value', assertion).text(assertion);
+                            assertionsSelect.append(option);
+                        }
+                    }
+
+                    function updateAssertionsFromSelect() {
+                        assertions.length = 0;
+                        assertionsSelect.find("option").each(function () {
+                            assertions.push($(this).val())
+                        });
+                    }
+
+                    function removeSelectedOptions() {
+                        assertionsSelect.find(":selected").remove();
+                        updateAssertionsFromSelect();
+                    }
+
+                    function quoteRegexp(str) {
+                        return (str + '').replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
+                    }
+
+                    function makePattern(archetypeId, useSpecializations) {
+                        if (useSpecializations) {
+                            var versionIndex = archetypeId.lastIndexOf('.v');
+                            return quoteRegexp(archetypeId.substring(0, versionIndex))
+                                + "(-[a-zA-Z0-9_]+)*"
+                                + quoteRegexp(archetypeId.substring(versionIndex));
+
+                        } else {
+                            return quoteRegexp(archetypeId);
+                        }
+
+                    }
+
+                    function addArchetypeAssertion() {
+
+                        var dialogContext = {
+                            panel_id: GuiUtils.generateId(),
+                            candidates: []
+                        };
+
+                        var existingPatterns = AmUtils.listToSet(assertions);
+                        for (var i in candidates) {
+                            var candidate = candidates[i];
+                            if (!existingPatterns[makePattern(candidate.archetypeId, true)]
+                                || !existingPatterns[makePattern(candidate.archetypeId, false)]) {
+                                dialogContext.candidates.push(candidate);
+                            }
+                        }
+
+                        if (dialogContext.candidates.length === 0) return; // nothing to add
+
+                        GuiUtils.applyTemplate("properties/constraint-common|ARCHETYPE_SLOT/addAssertionDialog", dialogContext, function (html) {
+                            html = $(html);
+
+                            var candidatesSelect = html.find('#' + dialogContext.panel_id + '_candidates');
+                            var useSpecializationsCheck = html.find('#' + dialogContext.panel_id + '_specializations');
+
+                            GuiUtils.openSimpleDialog(
+                                {
+                                    title: "Add assertions",
+                                    buttons: {"add": "Add"},
+                                    content: html,
+                                    callback: function () {
+                                        var checkedOptions = candidatesSelect.find(':selected');
+                                        var useSpecializations = useSpecializationsCheck.prop('checked');
+                                        for (var i = 0; i < checkedOptions.length; i++) {
+                                            var checkedOption = $(checkedOptions[i]);
+                                            var pattern = makePattern(checkedOption.val(), useSpecializations);
+                                            if (!existingPatterns[pattern]) {
+                                                assertions.push(pattern);
+                                                existingPatterns[pattern] = true;
+                                            }
+                                        }
+                                        populateAssertionsSelect();
+                                    }
+                                });
+                        });
+
+                    }
+
+                    var assertionsSelect = html.find('#' + context.panel_id + "_list");
+                    var addButton = html.find('#' + context.panel_id + "_add");
+                    var removeButton = html.find('#' + context.panel_id + "_remove");
+
+                    addButton.on('click', addArchetypeAssertion);
+                    removeButton.on('click', removeSelectedOptions);
+
+                    populateAssertionsSelect();
+                });
+            };
+
+            handler.createContext = function (stage, cons, parentCons) {
+                cons = cons || {};
+                var context = handler.createCommonContext(stage, cons);
+                context.includes = toContextAssertions(cons.includes);
+                context.excludes = toContextAssertions(cons.excludes);
+                context.candidateArchetypes = [];
+
+                var archetypeInfos = stage.archetypeEditor.archetypeRepository.infoList;
+                var referenceModel = stage.archetypeEditor.referenceModel;
+                for (var i in archetypeInfos) {
+                    var info = archetypeInfos[i];
+                    if (!cons.rm_type_name || referenceModel.isSubclass(cons.rm_type_name, info.rmType)) {
+                        context.candidateArchetypes.push(info)
+                    }
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+
+                GuiUtils.applyTemplate("properties/constraint-common|ARCHETYPE_SLOT", context, function (html) {
+                    html = $(html);
+                    targetElement.append(html);
+
+                    var includesContainer = html.find('#' + context.panel_id + '_includes');
+                    var excludesContainer = html.find('#' + context.panel_id + '_excludes');
+
+                    var includesComponent = new AssertionList(includesContainer, context.candidateArchetypes, context.includes);
+                    var excludesComponent = new AssertionList(excludesContainer, context.candidateArchetypes, context.excludes);
+
+                });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+            };
+
+            handler.validate = function (stage, context, errors) {
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                cons.includes = toConstraintsAssertions(context.includes);
+                cons.excludes = toConstraintsAssertions(context.excludes);
+            };
+        };
+        AmUtils.extend(ArchetypeSlotHandler, CommonRmHandler);
+
         self.handlers = {};
         self.handlers["top"] = new TopCommonHandler();
-        self.handlers["main"] = new MainCommonHandler()
+        self.handlers["main"] = new MainCommonHandler();
+        self.handlers["ARCHETYPE_SLOT"] = new ArchetypeSlotHandler();
 
     };
 
     ArchetypeEditor.addRmModule(new CommonModule());
-}(ArchetypeEditor));
+}(ArchetypeEditor)
+)
+;

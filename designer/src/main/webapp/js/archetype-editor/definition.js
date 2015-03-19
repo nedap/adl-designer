@@ -69,11 +69,12 @@
 
         /**
          * @param {string[]} childTypes list of valid rm types
-         * @param {object} options
-         * @param {true|false|undefined} options.named Whether a node is named. If undefined, a checkbox is displayed for that.
+         * @param {string[]} slotChildTypes list of valid rm types for ARCHETYPE_SLOT. Must be a subset of childTypes
+         * @param {object} options Dialog options
+         * @param {boolean} options.named Whether a node is named. If undefined, a checkbox is displayed for that.
          * @param {function} callback with data about the constraint to add
          */
-        function openAddConstraintDialog(childTypes, options, callback) {
+        function openAddConstraintDialog(childTypes, slotChildTypes, options, callback) {
             var defaultOptions = {named: undefined};
 
             options = $.extend({}, defaultOptions, options);
@@ -86,6 +87,25 @@
             };
 
             GuiUtils.applyTemplate("definition|addConstraintDialog", context, function (content) {
+
+                function populateTypeSelect() {
+                    var isSlot = slotCheck.prop('checked');
+                    var types = isSlot ? slotChildTypes : childTypes;
+                    var oldVal = typeSelect.val();
+                    var hasOldVal = false;
+                    var first=undefined;
+                    typeSelect.empty();
+                    for (var i in types) {
+                        var type = types[i];
+                        typeSelect.append($('<option>').attr('value', type).text(type));
+                        first = first || type;
+                        if (type === oldVal) hasOldVal = true;
+                    }
+                    typeSelect.val(hasOldVal ? oldVal : first);
+
+
+                }
+
                 content = $(content);
 
                 if (context.namedCheckShow) {
@@ -96,13 +116,21 @@
                             namedCheck.prop('checked'));
                     });
                 }
+                var slotCheck = content.find('#' + context.panel_id + '_slot');
+                var typeSelect = content.find('#' + context.panel_id + '_types');
+
+                slotCheck.prop('checked', false);
+                if (!slotChildTypes || slotChildTypes.length === 0) {
+                    slotCheck.prop('disabled', true);
+                }
+                slotCheck.on('change', populateTypeSelect);
 
                 GuiUtils.openSimpleDialog({
                     title: "Add Child Constraint",
                     buttons: {'add': 'Add'},
                     content: content,
                     callback: function (content) {
-                        var named, text, description;
+                        var named, text, description, isSlot;
                         if (options.named === true) {
                             named = true;
                         } else if (options.named === false) {
@@ -110,7 +138,8 @@
                         } else {
                             named = content.find('#' + context.panel_id + '_named').prop('checked');
                         }
-                        var type = content.find('#' + context.panel_id + '_types').val();
+                        var type = typeSelect.val();
+                        isSlot = slotCheck.prop('checked');
 
                         if (named) {
                             text = content.find('#' + context.panel_id + '_text').val().trim();
@@ -127,12 +156,14 @@
                                 named: true,
                                 text: text,
                                 description: description,
-                                type: type
+                                isSlot: isSlot,
+                                rmType: type
                             });
                         } else {
                             callback({
                                 named: false,
-                                type: type
+                                isSlot: isSlot,
+                                rmType: type
                             });
                         }
                     }
@@ -414,7 +445,7 @@
                     }
 
                     // only add attributes if no custom handler for this type
-                    if (!ArchetypeEditor.getRmTypeHandler(cons.rm_type_name)) {
+                    if (!ArchetypeEditor.getRmTypeHandler(cons)) {
 
                         if (cons.attributes && cons.attributes.length > 0) {
                             consJson.children = [];
@@ -526,17 +557,25 @@
                     }
 
                     var subtypes = self.info.referenceModel.getSubclassTypes(rmAttr.type, true);
-                    openAddConstraintDialog(subtypes, {}, function (data) {
-                        var cConstraint = AOM.newConstraint(data.type);
-                        cConstraint.node_id = archetypeModel.generateSpecializedTermId("id");
-                        attr.children = attr.children || [];
-                        attr.children.push(cConstraint);
+                    if (subtypes.length === 0) return;
+                    var slotSubtypes = Stream(subtypes).filter(function (type) {
+                        return self.info.referenceModel.getType(type).rootType;
+                    }).toArray();
+
+                    openAddConstraintDialog(subtypes, slotSubtypes, {}, function (data) {
+                        var cConstraint;
+                        if (data.isSlot) {
+                            cConstraint = AOM.newArchetypeSlot(data.rmType, archetypeModel.generateSpecializedTermId("id"));
+                        } else {
+                            cConstraint = AOM.newConstraint(data.rmType, archetypeModel.generateSpecializedTermId("id"));
+                        }
+                        archetypeModel.addConstraint(attr, cConstraint);
 
                         if (data.named) {
                             archetypeModel.setTermDefinition(cConstraint.node_id, undefined, data.text, data.description);
                         }
 
-                        archetypeModel.enrichReplacementConstraint(cConstraint, attr);
+//                        archetypeModel.enrichReplacementConstraint(cConstraint, attr);
                         addConstraintTreeNode(self.current.treeNode, cConstraint);
                     });
 
@@ -546,7 +585,7 @@
                 if (self.current.data.cons) {
                     if (!archetypeModel.isSpecialized(self.current.data.cons)) return;
                     // do not add attributes if there is a custom handler
-                    if (ArchetypeEditor.getRmTypeHandler(self.current.data.cons.rm_type_name)) return;
+                    if (ArchetypeEditor.getRmTypeHandler(self.current.data.cons)) return;
                     addAttribute(self.current.data.cons);
                 }
                 else if (self.current.data.attr) {

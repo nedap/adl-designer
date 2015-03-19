@@ -177,14 +177,26 @@ AOM = (function (AOM) {
         return result;
     };
 
-    my.newConstraint = function (rm_type) {
+    my.newConstraint = function (rm_type, node_id) {
         var result = {
             "@type": my.amTypes[rm_type] ? rm_type : "C_COMPLEX_OBJECT",
             rm_type_name: rm_type,
+            node_id: node_id,
             occurrences: AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
+
+    my.newArchetypeSlot = function (rm_type, node_id) {
+        var result = {
+            "@type": "ARCHETYPE_SLOT",
+            rm_type_name: rm_type,
+            node_id: node_id,
+            occurrences: AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL")
+        };
+        return result;
+    };
+
 
     return my;
 }(AOM));

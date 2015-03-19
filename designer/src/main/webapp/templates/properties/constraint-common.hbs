@@ -52,3 +52,56 @@
         <li>{{location}}: {{error}}</li>
     {{/each}}
 </ul>
+
+{>ARCHETYPE_SLOT}
+<div class="row">
+    <div class="row">
+        <div class="col-sm-12">
+            <label>Include</label>
+        </div>
+
+        <div id="{{panel_id}}_includes" class="col-sm-12"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <label>Exclude</label>
+        </div>
+        <div id="{{panel_id}}_excludes" class="col-sm-12"></div>
+    </div>
+</div>
+
+{>ARCHETYPE_SLOT/assertionList}
+<div class="row">
+    <div class="col-sm-10">
+        <select id="{{panel_id}}_list" size="10" style="width:100%" multiple>
+        </select>
+    </div>
+    <div class="col-sm-2">
+        <div class="btn-group-vertical" role="group">
+            <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+            <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
+                <span class="glyphicon glyphicon-minus"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+{>ARCHETYPE_SLOT/addAssertionDialog}
+<div class="row">
+    <div class="col-sm-12">
+        <select id="{{panel_id}}_candidates" class="form-control" size="10" multiple>
+            {{#each candidates}}
+                <option value="{{archetypeId}}" title="{{name}}">{{archetypeId}}</option>
+            {{/each}}
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="checkbox">
+        <label>
+            <input id="{{panel_id}}_specializations" type="checkbox">Match specializations
+        </label>
+    </div>
+</div>

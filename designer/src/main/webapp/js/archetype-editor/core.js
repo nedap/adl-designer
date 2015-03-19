@@ -248,8 +248,15 @@ var ArchetypeEditor = (function () {
         });
     };
 
-
     my.getRmTypeHandler = function (rm_type, referenceModel) {
+        if (typeof rm_type==="object") {
+            if (rm_type["@type"]==="ARCHETYPE_SLOT") {
+                return rmModules["@common"].handlers["ARCHETYPE_SLOT"];
+            } else {
+                rm_type=rm_type.rm_type_name;
+            }
+        }
+
         referenceModel = referenceModel || my.referenceModel.name();
         var rmModule = rmModules[referenceModel];
         if (rmModule && rmModule.handlers[rm_type]) {

@@ -453,7 +453,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
         var excludesPredicate = buildAssertionPredicate(modelNode.data.excludes);
 
         return candidateArchetypes.filter(function (candidate) {
-            if (!TemplateBuilder.referenceModel.isDescendantOf(candidate.rmType, modelNode.rmType)) return false;
+            if (!TemplateBuilder.referenceModel.isSubclass(modelNode.rmType, candidate.rmType)) return false;
             if (excludesPredicate(candidate)) return false;
             if (!includesPredicate(candidate)) return false;
             return true;
@@ -536,7 +536,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             var result = [];
             for (var i in TemplateBuilder.archetypeRepository.infoList) {
                 var candidate = TemplateBuilder.archetypeRepository.infoList[i];
-                if (!TemplateBuilder.referenceModel.isDescendantOf(candidate.rmType, modelNode.rmType))  continue;
+                if (!TemplateBuilder.referenceModel.isSubclass(modelNode.rmType, candidate.rmType))  continue;
 
                 result.push(candidate);
             }
