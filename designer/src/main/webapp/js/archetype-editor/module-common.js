@@ -136,6 +136,8 @@
                 context.node_id = cons.node_id;
                 context.type = "top";
                 context.occurrences = (cons.occurrences) ? AmInterval.toContainedString(cons.occurrences) : "(*..*)";
+                context.rmPath = stage.archetypeModel.getRmPath(cons).toString();
+
                 if (parentCons) {
                     context.parent = handler.createContext(stage, parentCons);
                 }
@@ -421,10 +423,46 @@
         };
         AmUtils.extend(ArchetypeSlotHandler, CommonRmHandler);
 
+
+        var ArchetypeInternalRefHandler = function () {
+            var handler = this;
+            CommonRmHandler.call(handler);
+
+
+
+
+            handler.createContext = function (stage, cons, parentCons) {
+                cons = cons || {};
+                var context = handler.createCommonContext(stage, cons);
+                context.target_path = cons.target_path;
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate("properties/constraint-common|ARCHETYPE_INTERNAL_REF", context, function (html) {
+                    html = $(html);
+                    targetElement.append(html);
+                });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+            };
+
+            handler.validate = function (stage, context, errors) {
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                // read only, so no update allowed
+            };
+        };
+        AmUtils.extend(ArchetypeInternalRefHandler, CommonRmHandler);
+
+
         self.handlers = {};
         self.handlers["top"] = new TopCommonHandler();
         self.handlers["main"] = new MainCommonHandler();
         self.handlers["ARCHETYPE_SLOT"] = new ArchetypeSlotHandler();
+        self.handlers["ARCHETYPE_INTERNAL_REF"] = new ArchetypeInternalRefHandler();
 
     };
 

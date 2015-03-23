@@ -19,12 +19,16 @@
   -->
 {>top}
 <div class="row">
-    <div class="col-sm-6"><label>Node Id</label></div>
-    <div class="col-sm-6 data">{{node_id}}</div>
+    <div class="col-sm-3"><label>Node Id</label></div>
+    <div class="col-sm-9 data">{{node_id}}</div>
 </div>
 <div class="row">
-    <div class="col-sm-6"><label for="occurrences">Occurrences</label></div>
-    <div class="col-sm-6">
+    <div class="col-sm-3"><label>Path</label></div>
+    <div class="col-sm-9 data">{{rmPath}}</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"><label for="occurrences">Occurrences</label></div>
+    <div class="col-sm-9">
         <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data"
                value="{{occurrences}}"/>
     </div>
@@ -87,6 +91,16 @@
         </div>
     </div>
 </div>
+
+{>ARCHETYPE_INTERNAL_REF}
+<div class="row">
+    <div class="col-sm-3">
+        <label>Target Path</label>
+    </div>
+    <div class="col-sm-9">{{target_path}}
+    </div>
+</div>
+
 
 {>ARCHETYPE_SLOT/addAssertionDialog}
 <div class="row">

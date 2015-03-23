@@ -74,13 +74,14 @@
         }
 
         /**
+         * @param {AOM.EditableArchetypeModel} archetypeModel Archetype model
          * @param {string[]} childTypes list of valid rm types
          * @param {string[]} slotChildTypes list of valid rm types for ARCHETYPE_SLOT. Must be a subset of childTypes
          * @param {object} options Dialog options
          * @param {boolean} options.named Whether a node is named. If undefined, a checkbox is displayed for that.
          * @param {function} callback with data about the constraint to add
          */
-        function openAddConstraintDialog(childTypes, slotChildTypes, options, callback) {
+        function openAddConstraintDialog(archetypeModel, childTypes, slotChildTypes, options, callback) {
             var defaultOptions = {named: undefined};
 
             options = $.extend({}, defaultOptions, options);
@@ -89,17 +90,23 @@
                 panel_id: GuiUtils.generateId(),
                 namedCheckShow: options.named === undefined,
                 nameShow: options.named !== false,
-                types: childTypes
+                types: childTypes,
+                amTypes: {}
             };
+            context.amTypes["C_DEFINED_OBJECT"] = "Constraint";
+            if (slotChildTypes && slotChildTypes.length > 0) {
+                context.amTypes["ARCHETYPE_SLOT"] = "Archetype Slot";
+            }
+            context.amTypes["ARCHETYPE_INTERNAL_REF"] = "Internal Reference";
 
             GuiUtils.applyTemplate("definition|addConstraintDialog", context, function (content) {
 
-                function populateTypeSelect() {
-                    var isSlot = slotCheck.prop('checked');
+                function populateRmTypeSelect() {
+                    var isSlot = amTypeSelect.val() === "ARCHETYPE_SLOT";
                     var types = isSlot ? slotChildTypes : childTypes;
                     var oldVal = typeSelect.val();
                     var hasOldVal = false;
-                    var first=undefined;
+                    var first = undefined;
                     typeSelect.empty();
                     for (var i in types) {
                         var type = types[i];
@@ -108,8 +115,13 @@
                         if (type === oldVal) hasOldVal = true;
                     }
                     typeSelect.val(hasOldVal ? oldVal : first);
+                }
 
-
+                function amTypeSelectChange() {
+                    var amType = amTypeSelect.val();
+                    GuiUtils.setVisible(rmTypePanel, amType !== "ARCHETYPE_INTERNAL_REF");
+                    GuiUtils.setVisible(targetPathPanel, amType === "ARCHETYPE_INTERNAL_REF");
+                    populateRmTypeSelect();
                 }
 
                 content = $(content);
@@ -122,21 +134,24 @@
                             namedCheck.prop('checked'));
                     });
                 }
-                var slotCheck = content.find('#' + context.panel_id + '_slot');
+                var amTypeSelect = content.find('#' + context.panel_id + '_amType');
                 var typeSelect = content.find('#' + context.panel_id + '_types');
+                var rmTypePanel = content.find('#' + context.panel_id + '_rmTypePanel');
+                var targetPathPanel = content.find('#' + context.panel_id + '_targetPathPanel');
+                var targetPath = content.find('#' + context.panel_id + '_targetPath');
 
-                slotCheck.prop('checked', false);
-                if (!slotChildTypes || slotChildTypes.length === 0) {
-                    slotCheck.prop('disabled', true);
-                }
-                slotCheck.on('change', populateTypeSelect);
+                amTypeSelectChange();
+                amTypeSelect.on('change', amTypeSelectChange);
 
                 GuiUtils.openSimpleDialog({
                     title: "Add Child Constraint",
                     buttons: {'add': 'Add'},
                     content: content,
                     callback: function (content) {
-                        var named, text, description, isSlot;
+                        var named, targetPathVal;
+                        var result = {};
+
+                        // add name
                         if (options.named === true) {
                             named = true;
                         } else if (options.named === false) {
@@ -144,34 +159,36 @@
                         } else {
                             named = content.find('#' + context.panel_id + '_named').prop('checked');
                         }
-                        var type = typeSelect.val();
-                        isSlot = slotCheck.prop('checked');
-
+                        result.named = named;
                         if (named) {
-                            text = content.find('#' + context.panel_id + '_text').val().trim();
-                            description = content.find('#' + context.panel_id + '_description').val().trim();
+                            result.text = content.find('#' + context.panel_id + '_text').val().trim();
+                            result.description = content.find('#' + context.panel_id + '_description').val().trim();
 
-                            if (text.length === 0) {
+                            if (result.text.length === 0) {
                                 return "text is required";
                             }
-                            if (description.length == 0) {
-                                description = text;
+                            if (result.description.length == 0) {
+                                result.description = result.text;
                             }
-
-                            callback({
-                                named: true,
-                                text: text,
-                                description: description,
-                                isSlot: isSlot,
-                                rmType: type
-                            });
-                        } else {
-                            callback({
-                                named: false,
-                                isSlot: isSlot,
-                                rmType: type
-                            });
                         }
+
+                        var amType = amTypeSelect.val();
+                        result.amType = amType;
+                        if (amType === "ARCHETYPE_INTERNAL_REF") {
+                            targetPathVal = targetPath.val();
+                            var targetCons = AOM.AmQuery.get(archetypeModel.data.definition, targetPathVal);
+                            if (!targetCons) {
+                                return "No constraint node at path " + targetPathVal;
+                            }
+                            result.targetPath= targetPathVal;
+                            result.rmType = targetCons.rm_type_name;
+                        } else if (amType === "ARCHETYPE_SLOT") {
+                            result.rmType = typeSelect.val();
+                        } else {
+                            result.rmType = typeSelect.val();
+                        }
+
+                        callback(result);
                     }
                 })
             })
@@ -362,7 +379,7 @@
 
         my.DefinitionTree = function (archetypeModel, targetElement, info) {
             var self = this;
-            var treeIdPrefix = "dt_"+GuiUtils.generateId() + "_";
+            var treeIdPrefix = "dt_" + GuiUtils.generateId() + "_";
             var nextTreeIdIndex = 0;
 
             var treeData = {};
@@ -569,12 +586,17 @@
                         return self.info.referenceModel.getType(type).rootType;
                     }).toArray();
 
-                    openAddConstraintDialog(subtypes, slotSubtypes, {}, function (data) {
+                    openAddConstraintDialog(archetypeModel, subtypes, slotSubtypes, {}, function (data) {
                         var cConstraint;
-                        if (data.isSlot) {
-                            cConstraint = AOM.newArchetypeSlot(data.rmType, archetypeModel.generateSpecializedTermId("id"));
+                        var newNodeId = archetypeModel.generateSpecializedTermId("id");
+                        if (data.amType==="ARCHETYPE_SLOT") {
+                            cConstraint = AOM.newArchetypeSlot(data.rmType, newNodeId);
+                        } else if (data.amType==="ARCHETYPE_INTERNAL_REF"){
+                            cConstraint = AOM.newArchetypeInternalReference(data.rmType, newNodeId);
+                            cConstraint.target_path = data.targetPath;
                         } else {
-                            cConstraint = AOM.newConstraint(data.rmType, archetypeModel.generateSpecializedTermId("id"));
+                            cConstraint = AOM.newConstraint(data.rmType, newNodeId);
+                            cConstraint.target_path = data.targetPath;
                         }
                         archetypeModel.addConstraint(attr, cConstraint);
 
@@ -596,21 +618,21 @@
                     addAttribute(self.current.data.cons);
                 }
                 else if (self.current.data.attr) {
-                    if (!archetypeModel.isSpecialized(self.current.data.attr)) {
-                        return;
-                    }
+                    //if (!archetypeModel.isSpecialized(self.current.data.attr)) {
+                    //    return;
+                    //}
                     addConstraint(self.current.data.attr)
 
                 }
             };
 
-            self.removeConstraint = function() {
+            self.removeConstraint = function () {
 
                 function getJsTreeNodeSiblingIndex(treeNode) {
                     var parentNode = info.tree.targetElement.jstree('get_node', treeNode.parent);
                     for (var i in parentNode.children) {
                         var nodeId = parentNode.children[i];
-                        if (nodeId===treeNode.id) {
+                        if (nodeId === treeNode.id) {
                             return i;
                         }
                     }
@@ -627,7 +649,7 @@
                 //delete treeData[self.current.treeNode.id];
 
                 if (newCons) {
-                    if (newCons==cons) return; // no change
+                    if (newCons == cons) return; // no change
                     var nodeIndex = getJsTreeNodeSiblingIndex(self.current.treeNode);
                     var parentNode = info.tree.targetElement.jstree('get_node', self.current.treeNode.parent);
 

@@ -197,6 +197,17 @@ AOM = (function (AOM) {
         return result;
     };
 
+    my.newArchetypeInternalReference = function (rm_type, node_id, target_path) {
+        var result = {
+            "@type": "ARCHETYPE_INTERNAL_REF",
+            rm_type_name: rm_type,
+            node_id: node_id,
+            occurrences: AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL"),
+            target_path: target_path
+
+        };
+        return result;
+    };
 
     return my;
 }(AOM));

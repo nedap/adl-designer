@@ -550,7 +550,7 @@ var AOM = (function () {
          * Gets a rm path to a constraint, optionally from a given origin
          * @param {{}} cons - constraint for which to get rm path. Must be part of the archetype model
          * @param {{}?} originCons - from what constraint should path be build. If undefined, assumes root. If defined, must be a parent of cons
-         * @return {RmPath} rmPath
+         * @return {AOM.RmPath} rmPath
          */
         self.getRmPath = function (cons, originCons) {
 
@@ -734,7 +734,6 @@ var AOM = (function () {
                 existingTerms[term.toString()] = true;
                 return term.toString();
             } else {
-                // todo do not assume 1 for nodes parents
                 term = my.NodeId.of(parentTermOrPrefix);
                 while (term.ids.length < self.specializationDepth - 1) {
                     term.ids.push(0);

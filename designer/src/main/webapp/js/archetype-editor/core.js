@@ -252,6 +252,8 @@ var ArchetypeEditor = (function () {
         if (typeof rm_type==="object") {
             if (rm_type["@type"]==="ARCHETYPE_SLOT") {
                 return rmModules["@common"].handlers["ARCHETYPE_SLOT"];
+            } else if (rm_type["@type"]==="ARCHETYPE_INTERNAL_REF") {
+                return rmModules["@common"].handlers["ARCHETYPE_INTERNAL_REF"];
             } else {
                 rm_type=rm_type.rm_type_name;
             }
