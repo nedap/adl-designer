@@ -924,7 +924,7 @@
             };
 
             handler.validate = function (stage, context, errors) {
-                var kindsType = getKindsType();
+                var kindsType = getKindsType(context);
                 if (kindsType === 'none') {
                     errors.add('At least one proportion kind is required', 'kinds');
                 }
@@ -942,9 +942,9 @@
 
                 stage.archetypeModel.removeAttribute(cons, ['type', 'is_integral', 'numerator', 'denominator']);
 
-                var kindsType = getKindsType();
+                var kindsType = getKindsType(context);
                 if (kindsType === 'some') {
-                    addAttributeConstraint(cons, 'type', AOM.newCInteger(getKindsList()));
+                    addAttributeConstraint(cons, 'type', AOM.newCInteger(getKindsList(context)));
                 }
 
                 var cNumerator = addAttributeConstraint(cons, 'numerator', AOM.newCReal());
@@ -1041,6 +1041,271 @@
         };
         AmUtils.extend(DvIntervalHandler, CComplexObjectHandler);
 
+        var ElementHandler = function () {
+            var handler = this;
+            CComplexObjectHandler.call(handler);
+
+
+            var dataValues = {
+                data: {
+                    "DV_TEXT": "Text",
+                    "DV_BOOLEAN": "Boolean",
+                    "DV_ORDINAL": "Ordinal",
+                    "DV_COUNT": "Count",
+                    "DV_QUANTITY": "Quantity",
+                    "DV_DATE_TIME": "DateTime",
+                    "DV_DURATION": "Duration",
+                    "DV_MULTIMEDIA": "Multimedia",
+                    "DV_URI": "Uri",
+                    "DV_PROPORTION": "Proportion",
+                    "DV_IDENTIFIER": "Identifier",
+                    "DV_PARSABLE": "Parsable",
+
+                    "DV_INTERVAL<DV_COUNT>": "Interval: Count",
+                    "DV_INTERVAL<DV_QUANTITY>": "Interval: Quantity",
+                    "DV_INTERVAL<DV_DATE_TIME>": "Interval: DateTime"
+                },
+
+                aliases: {
+                    "DV_CODED_TEXT": "DV_TEXT",
+                    "DV_DATE": "DV_DATE_TIME",
+                    "DV_TIME": "DV_DATE_TIME",
+                    "DV_INTERVAL<DV_DATE>": "DV_INTERVAL<DV_DATE_TIME>",
+                    "DV_INTERVAL<DV_TIME>": "DV_INTERVAL<DV_DATE_TIME>"
+                },
+
+                getText: function (rmType) {
+                    var text = this.data[rmType];
+                    if (text) return text;
+                    var dataType = this.aliases[rmType];
+                    if (!dataType) return rmType;
+                    text = this.data[dataType];
+                    if (text) return text;
+                    return rmType;
+                }
+            };
+
+
+            handler.createContext = function (stage, cons, parentCons) {
+                var valueConses = AOM.AmQuery.findAll(cons, "value");
+
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'ELEMENT';
+                context.values = [];
+
+                for (var i in valueConses) {
+                    var valueCons = valueConses[i];
+                    var valueHandler = stage.archetypeEditor.getRmTypeHandler(valueCons.rm_type_name);
+                    if (valueHandler) {
+                        context.values.push({
+                            rmType: valueCons.rm_type_name,
+                            cons: valueCons,
+                            context: valueHandler.createContext(stage, valueCons, undefined)
+                        });
+                    } else {
+                        context.values.push({
+                            rmType: valueCons.rm_type_name,
+                            cons: valueCons,
+                            context: undefined
+                        });
+
+                    }
+                }
+
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate(
+                    "properties/constraint-openehr|ELEMENT", context, function (generatedDom) {
+                        generatedDom = $(generatedDom);
+
+                        function createValueDiv(val) {
+                            var valueHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
+                            var div = $("<div>");
+                            if (valueHandler) {
+                                valueHandler.show(stage, val.context, div);
+                            }
+                            return div;
+                        }
+
+                        function showSelectedDiv() {
+                            var selectedIndex = Number(typeSelect.val());
+                            for (var i in context.values) {
+//                                var val = context.values[i];
+                                GuiUtils.setVisible(valueDivs[i], Number(i) === selectedIndex);
+                            }
+                        }
+
+                        function populateTypeSelect() {
+                            var oldVal = typeSelect.val();
+                            var hasOldVal = false, first = undefined;
+                            typeSelect.empty();
+                            for (var i in context.values) {
+                                var val = context.values[i];
+                                typeSelect.append($("<option>").attr("value", i).text(dataValues.getText(val.rmType)));
+                                if (oldVal === i) hasOldVal = true;
+                                if (first === undefined) first = val.rmType;
+                            }
+                            typeSelect.val(hasOldVal ? oldVal : first);
+                        }
+
+                        function addDataValue(rmType) {
+                            var valueHandler = stage.archetypeEditor.getRmTypeHandler(rmType);
+
+                            var val = {};
+                            val.rmType = rmType;
+                            val.cons = {rm_type_name: rmType};
+                            val.context = valueHandler.createContext(stage, val.cons, undefined);
+                            context.values.push(val);
+                            var valueDiv = createValueDiv(val);
+                            valueDivs.push(valueDiv);
+                            valueContainer.append(valueDiv);
+
+                            populateTypeSelect();
+                            typeSelect.val(context.values.length - 1);
+                            showSelectedDiv();
+                        }
+
+                        function openAddDataValueDialog() {
+                            var dialogContext = {
+                                panel_id: GuiUtils.generateId()
+                            };
+                            GuiUtils.applyTemplate("properties/constraint-openehr|ELEMENT/addDataValue", dialogContext, function (dialogContent) {
+
+                                function populateDataValuesSelect() {
+                                    dataValuesSelect.empty();
+                                    var first;
+                                    for (var rmType in dataValues.data) {
+                                        if (!first) first = rmType;
+                                        dataValuesSelect.append($("<option>").attr("value", rmType).text(dataValues.getText(rmType)));
+                                    }
+                                    dataValuesSelect.val(first);
+                                }
+
+                                dialogContent = $(dialogContent);
+                                var dataValuesSelect = dialogContent.find('#' + dialogContext.panel_id + '_dataValues');
+                                populateDataValuesSelect();
+
+                                GuiUtils.openSimpleDialog(
+                                    {
+                                        title: "Add Data Value",
+                                        buttons: {"add": "Add"},
+                                        content: dialogContent,
+                                        callback: function () {
+                                            var rmType = dataValuesSelect.val();
+                                            addDataValue(rmType);
+                                        }
+                                    });
+
+                            });
+                        }
+
+                        function removeSelectedDataType() {
+                            var selected = typeSelect.val();
+                            if (selected === null) return;
+                            selected = Number(selected);
+                            context.values.splice(selected, 1);
+                            var valueDiv = valueDivs[selected];
+                            valueDiv.remove();
+                            valueDivs.splice(selected, 1);
+
+                            populateTypeSelect();
+                            showSelectedDiv();
+                        }
+
+
+                        var typeSelect = generatedDom.find('#' + context.panel_id + '_type');
+                        var addTypeButton = generatedDom.find('#' + context.panel_id + '_addType');
+                        var removeTypeButton = generatedDom.find('#' + context.panel_id + '_removeType');
+
+                        var valueContainer = generatedDom.find('#' + context.panel_id + '_valueContainer');
+                        var valueDivs = [];
+
+
+                        for (var i in context.values) {
+                            var val = context.values[i];
+                            var valueDiv = createValueDiv(val);
+                            valueDivs.push(valueDiv);
+                            valueContainer.append(valueDiv);
+                        }
+                        populateTypeSelect();
+                        showSelectedDiv();
+                        typeSelect.on('change', showSelectedDiv);
+
+                        addTypeButton.on('click', openAddDataValueDialog);
+                        removeTypeButton.on('click', removeSelectedDataType);
+
+                        targetElement.append(generatedDom);
+                    });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                var valueContainer = targetElement.find('#' + context.panel_id + '_valueContainer');
+
+                for (var i in context.values) {
+                    var val = context.values[i];
+                    var typeHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
+                    if (typeHandler) {
+                        typeHandler.updateContext(stage, val.context, valueContainer);
+                    }
+                }
+
+            };
+
+            handler.validate = function (stage, context, errors) {
+                for (var i in context.values) {
+                    var val = context.values[i];
+                    var typeHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
+                    if (typeHandler) {
+                        typeHandler.validate(stage, val.context, errors.sub(val.rmType + "[" + i + "]"));
+                    }
+                }
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+
+                // remove value constraints that have been removed from value
+                var retainedNodeIds = AmUtils.listToSet(Stream(context.values)
+                    .filter(function (v) {
+                        return v.cons && v.cons.node_id
+                    })
+                    .map("cons.node_id").toArray());
+
+                var valueAttr = stage.archetypeModel.getAttribute(cons, "value");
+                if (valueAttr) {
+                    var toRemove = Stream(valueAttr.children).filter(function (c) {
+                        return !retainedNodeIds[c.node_id]
+                    }).toArray();
+                    for (var i in toRemove) {
+                        stage.archetypeModel.removeConstraint(toRemove[i], true);
+                    }
+                }
+
+
+                // add/update constraints
+                for (var i in context.values) {
+                    var val = context.values[i];
+                    var typeHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
+                    if (typeHandler) {
+                        if (!val.cons.node_id) {
+                            // create new constraint if added on context
+                            val.cons = AOM.newCComplexObject(val.rmType, stage.archetypeModel.generateSpecializedTermId("id"));
+                            var valueAttr = stage.archetypeModel.getAttribute(cons, "value");
+                            if (!valueAttr) {
+                                valueAttr = stage.archetypeModel.addAttribute(cons, "value");
+                            }
+                            stage.archetypeModel.addConstraint(valueAttr, val.cons);
+                        }
+                        typeHandler.updateConstraint(stage, val.context, val.cons);
+                    }
+                }
+
+            };
+        };
+
+
         self.handlers["DV_QUANTITY"] = new DvQuantityHandler();
         self.handlers["DV_CODED_TEXT"] = new DvTextHandler();
         self.handlers["DV_TEXT"] = self.handlers["DV_CODED_TEXT"];
@@ -1054,6 +1319,7 @@
         self.handlers["DV_TIME"] = self.handlers["DV_DATE_TIME"];
         self.handlers["DV_PROPORTION"] = new DvProportionHandler();
         self.handlers["DV_INTERVAL"] = new DvIntervalHandler();
+        self.handlers["ELEMENT"] = new ElementHandler();
     };
 
 

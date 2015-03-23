@@ -228,3 +228,44 @@
     </div>
 
 </div>
+
+{>ELEMENT}
+<div>
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label for="{{panel_id}}_type" class="col-sm-2 control-label">Type</label>
+
+            <div class="col-sm-10 input-group">
+                <select id="{{panel_id}}_type" class="form-control input-sm">
+                </select>
+            <span class="input-group-btn">
+                <button id="{{panel_id}}_addType" type="button" class="btn btn-default data"
+                        title="add new value">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </span>
+            <span class="input-group-btn">
+                <button id="{{panel_id}}_removeType" type="button" class="btn btn-default data"
+                        title="removes current type">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>
+            </span>
+            </div>
+
+        </div>
+    </div>
+    <div id="{{panel_id}}_valueContainer" class="row">
+    </div>
+</div>
+
+{>ELEMENT/addDataValue}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label for="{{panel_id}}_dataValues" class="col-sm-4 control-label">Type</label>
+
+        <div class="col-sm-8">
+            <select id="{{panel_id}}_dataValues" class="form-control input-sm data"></select>
+        </div>
+    </div>
+</div>
+

@@ -499,7 +499,7 @@ var AOM = (function () {
          * @returns {Array} array of name->constraint objects for each tuple
          */
         self.getAttributesTuple = function (cons, attributeNames) {
-            var commonAttributes = {};
+            var commonAttributes = {}, hasCommonAttributes=false;
             var result = [];
 
             for (var i in attributeNames) {
@@ -507,6 +507,7 @@ var AOM = (function () {
                 var attribute = self.getAttribute(cons, attributeName);
                 if (attribute) {
                     commonAttributes[attributeName] = attribute;
+                    hasCommonAttributes=true;
                 }
             }
 
@@ -538,7 +539,7 @@ var AOM = (function () {
                     break; // only allow one tuple
                 }
             }
-            if (result.length == 0) {
+            if (result.length == 0 && hasCommonAttributes) {
                 result.push(commonAttributes); // just use common attributes, if no tuples are defined
             }
             return result;
@@ -637,6 +638,11 @@ var AOM = (function () {
                     maxTermIdsByPrefix[termId.prefix] = lastTermIdSegment;
                 }
             }
+        }
+
+        function removeTermId(termId) {
+            if (!termId) return;
+            delete existingTerms[termId];
         }
 
 
@@ -990,13 +996,6 @@ var AOM = (function () {
             }
         };
 
-
-        self.validateReplacementConstraint = function (cons, replacementCons) {
-            // todo check with parent, rm_model?, use AmUtils.Errors
-            return true;
-        };
-
-
         /**
          * Sets a term definition to ontology term_definitions. Will override existing definition or add a new one
          * <p>When adding you must always make sure that you add terms to all languages
@@ -1079,6 +1078,8 @@ var AOM = (function () {
 
         self.specializeConstraint = function (cons) {
             if (self.isSpecialized(cons)) return;
+            if (my.mixin(cons).isPrimitive()) return; // do not specialize primitive nodes
+
             var originalNodeId = cons.node_id;
             var specializedNodeId = self.generateSpecializedTermId(cons.node_id || "id");
             cons.node_id = specializedNodeId;
@@ -1092,6 +1093,13 @@ var AOM = (function () {
                     self.setTermDefinition(specializedNodeId, lang, term.text, term.description);
                 }
             }
+        };
+
+        self.specializeConstraintSubTree = function (cons) {
+            self.specializeConstraint(cons);
+            Stream(cons.attributes || []).flatMap("children").forEach(function (c) {
+                self.specializeConstraintSubTree(c);
+            });
         };
 
 
@@ -1135,7 +1143,13 @@ var AOM = (function () {
         };
 
 
-        self.removeConstraint = function (cons) {
+        /**
+         *
+         * @param cons Constraint or attribute to remove
+         * @param {boolean?} forceRemove Forcefully removes the node even if it is present in parent. Useful in custom handlers. Default is false
+         * @return {*}
+         */
+        self.removeConstraint = function (cons, forceRemove) {
             function removeFromTermDefinitions(node_id) {
                 for (var lang in self.data.ontology.term_definitions) {
                     var langDefs = self.data.ontology.term_definitions[lang];
@@ -1151,9 +1165,10 @@ var AOM = (function () {
             }
 
             function removeConstraintTerms(cons) {
-                if (cons.node_id) {
+                if (cons.node_id && self.isSpecialized(cons.node_id)) {
                     removeFromTermDefinitions(cons.node_id);
                     removeFromTermBindings(cons.node_id);
+                    removeTermId(cons.node_id);
                 }
                 if (cons.attributes) {
                     for (var i in cons.attributes) {
@@ -1190,7 +1205,7 @@ var AOM = (function () {
                     var consChild = parentAttr.children[i];
                     if (consChild === cons) {
                         removeConstraintTerms(cons);
-                        if (parentArchetypeCons) {
+                        if (parentArchetypeCons && !forceRemove) {
                             var newCons = AOM.impoverishedClone(parentArchetypeCons);
                             self.enrichReplacementConstraint(newCons, cons[".parent"]);
                             parentAttr.children[i] = newCons;

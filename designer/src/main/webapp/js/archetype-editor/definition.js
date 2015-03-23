@@ -31,7 +31,13 @@
          * @param {object} definitionTreeNode treeNode of the definition tree
          */
         function specializeConstraint(archetypeModel, cons, info, definitionTreeNode) {
-            archetypeModel.specializeConstraint(cons);
+            var rmTypeHandler = ArchetypeEditor.getRmTypeHandler(cons.rm_type_name);
+            if (rmTypeHandler) {
+                // specialize whole tree when using a custom rm type handler
+                archetypeModel.specializeConstraintSubTree(cons);
+            } else {
+                archetypeModel.specializeConstraint(cons);
+            }
             // did not work, so remove node_id from name
 //            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
             info.tree.styleNodes(definitionTreeNode.id, 1);
