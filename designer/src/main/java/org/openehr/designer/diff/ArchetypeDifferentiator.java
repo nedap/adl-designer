@@ -23,7 +23,6 @@ package org.openehr.designer.diff;
 import org.openehr.adl.util.AdlUtils;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.jaxb.am.*;
-import org.openehr.jaxb.rm.CodePhrase;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -34,7 +33,6 @@ import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDe
 /**
  * @author markopi
  */
-// todo remove unspecialized value sets
 public class ArchetypeDifferentiator {
     private final FlatArchetype flatParent;
     private final FlatArchetype flatChild;
@@ -44,7 +42,7 @@ public class ArchetypeDifferentiator {
     private ArchetypeDifferentiator(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
         this.flatParent = flatParent;
         this.flatChild = flatChild;
-        this.flatParentWrapper = flatParent!=null?new ArchetypeWrapper(flatParent):null;
+        this.flatParentWrapper = flatParent != null ? new ArchetypeWrapper(flatParent) : null;
         this.archetypeSpecializationDepth = getSpecializationDepth(flatChild.getDefinition().getNodeId());
     }
 
@@ -59,8 +57,21 @@ public class ArchetypeDifferentiator {
 
         removeUnspecializedTermDefinitions(diffChild);
         removeUnspecializedTermBindings(diffChild);
+        removeUnspecializedValueSets(diffChild);
 
         return diffChild;
+    }
+
+    private void removeUnspecializedValueSets(DifferentialArchetype diffChild) {
+
+        for (Iterator<ValueSetItem> iterator = diffChild.getOntology().getValueSets().iterator(); iterator.hasNext(); ) {
+            ValueSetItem valueSetItem = iterator.next();
+            List<String> parentMembers = flatParentWrapper.getValueSet(valueSetItem.getId());
+            if (parentMembers != null && parentMembers.equals(valueSetItem.getMembers())) {
+                iterator.remove();
+            }
+        }
+
     }
 
 

@@ -767,6 +767,12 @@
             };
 
             handler.updateConstraint = function (stage, context, cons) {
+                var primitiveToDvMap = {
+                    "C_DATE": "DV_DATE",
+                    "C_DATE_TIME": "DV_DATE_TIME",
+                    "C_TIME": "DV_TIME"
+                };
+
                 var cValue = AOM.AmQuery.get(cons, "value");
                 if (!cValue) {
                     cValue = AOM.newCDateTime();
@@ -778,6 +784,7 @@
 
                 stage.archetypeEditor.getRmTypeHandler("C_DATE_TIME").updateConstraint(
                     stage, context.value, cValue);
+                cons.rm_type_name = primitiveToDvMap[cValue.rm_type_name];
             };
         };
         AmUtils.extend(DvDateTimeHandler, CComplexObjectHandler);
