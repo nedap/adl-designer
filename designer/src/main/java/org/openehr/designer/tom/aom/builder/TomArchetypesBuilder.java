@@ -21,9 +21,9 @@
 package org.openehr.designer.tom.aom.builder;
 
 import com.google.common.base.Joiner;
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.am.mixin.AmMixins;
-import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.tom.*;
 import org.openehr.designer.tom.constraint.CComplexObjectTom;
 import org.openehr.jaxb.am.*;
@@ -43,7 +43,7 @@ import static org.openehr.designer.WtUtils.overrideNodeId;
  * @author Marko Pipan
  */
 class TomArchetypesBuilder {
-    private final ArchetypeRepository archetypeRepository;
+    private final FlatArchetypeProvider flatArchetypeProvider;
     private final List<DifferentialArchetype> targetArchetypes;
     private FlatArchetype archetypeParent;
     private DifferentialArchetype archetype;
@@ -54,9 +54,9 @@ class TomArchetypesBuilder {
     private int specializationDepth;
     private int nextNodeId = 1;
 
-    public TomArchetypesBuilder(ArchetypeRepository archetypeRepository,
-            List<DifferentialArchetype> targetArchetypes) {
-        this.archetypeRepository = archetypeRepository;
+    public TomArchetypesBuilder(FlatArchetypeProvider flatArchetypeProvider,
+                                List<DifferentialArchetype> targetArchetypes) {
+        this.flatArchetypeProvider = flatArchetypeProvider;
         this.targetArchetypes = targetArchetypes;
     }
 
@@ -64,7 +64,7 @@ class TomArchetypesBuilder {
         boolean isTemplate = archetypeTom instanceof TemplateTom;
         specializationDepth = archetypeTom.getNodeId().split("\\.").length;
 
-        archetypeParent = archetypeRepository.getFlatArchetype(archetypeTom.getParentArchetypeId());
+        archetypeParent = flatArchetypeProvider.getFlatArchetype(archetypeTom.getParentArchetypeId());
 
         archetype = new DifferentialArchetype();
         archetype.setIsTemplate(isTemplate);
@@ -262,7 +262,7 @@ class TomArchetypesBuilder {
     private CArchetypeRoot parseArchetypeTom(ArchetypeRootTom tom) {
         CArchetypeRoot result = new CArchetypeRoot();
 
-        DifferentialArchetype overlayArchetype = new TomArchetypesBuilder(archetypeRepository, targetArchetypes).build(tom);
+        DifferentialArchetype overlayArchetype = new TomArchetypesBuilder(flatArchetypeProvider, targetArchetypes).build(tom);
 
         result.setArchetypeRef(overlayArchetype.getArchetypeId().getValue());
         result.setRmTypeName(tom.getRmType());

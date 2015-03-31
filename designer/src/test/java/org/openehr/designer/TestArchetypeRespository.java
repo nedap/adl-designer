@@ -20,6 +20,11 @@
 
 package org.openehr.designer;
 
+import org.openehr.adl.rm.OpenEhrRmModel;
+import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.FlatArchetypeRepository;
+import org.openehr.designer.repository.file.FileArchetypeRepository;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -28,13 +33,14 @@ import java.util.Properties;
  * @author Marko Pipan
  */
 public class TestArchetypeRespository {
-    private static ArchetypeRepositoryImpl archetypeRepository;
+    private static FileArchetypeRepository archetypeRepository;
+    private static FlatArchetypeRepository flatArchetypeRepository;
     private static final String TEST_REPO_KEY = "test.repo";
 
     public static synchronized ArchetypeRepository getInstance() {
         if (archetypeRepository == null) {
             try {
-                ArchetypeRepositoryImpl repo = new ArchetypeRepositoryImpl();
+                FileArchetypeRepository repo = new FileArchetypeRepository();
                 repo.setRepositoryLocation(getPathFromRepoProperties());
                 repo.init();
                 archetypeRepository = repo;
@@ -43,6 +49,14 @@ public class TestArchetypeRespository {
             }
         }
         return archetypeRepository;
+
+    }
+
+    public static synchronized FlatArchetypeRepository getFlatInstance() {
+        if (flatArchetypeRepository == null) {
+            flatArchetypeRepository = new FlatArchetypeRepository(getInstance(), new OpenEhrRmModel());
+        }
+        return flatArchetypeRepository;
 
     }
 

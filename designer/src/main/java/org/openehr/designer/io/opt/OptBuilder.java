@@ -20,8 +20,7 @@
 
 package org.openehr.designer.io.opt;
 
-import org.openehr.adl.FlatArchetypeProvider;
-import org.openehr.designer.ArchetypeRepository;
+import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**

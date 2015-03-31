@@ -20,8 +20,11 @@
 
 package org.openehr.designer;
 
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.flattener.ArchetypeFlattener;
+import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.adl.rm.RmModel;
+import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 
@@ -32,15 +35,17 @@ import java.util.Map;
 /**
  * @author Marko Pipan
  */
-public class ArchetypeRepositoryOverlay implements ArchetypeRepository {
-    private final ArchetypeRepository delegate;
+public class FlatArchetypeProviderOverlay implements FlatArchetypeProvider {
+    private final FlatArchetypeProvider delegate;
     private final Map<String, DifferentialArchetype> overlayArchetypeMap;
     private final ArchetypeFlattener flattener;
+    private final RmModel rmModel;
 
 
-    public ArchetypeRepositoryOverlay(ArchetypeRepository delegate, List<DifferentialArchetype> archetypes) {
+    public FlatArchetypeProviderOverlay(FlatArchetypeProvider delegate, RmModel rmModel, List<DifferentialArchetype> archetypes) {
         this.delegate = delegate;
-        flattener = new ArchetypeFlattener(delegate.getRmModel());
+        this.rmModel=rmModel;
+        flattener = new ArchetypeFlattener(rmModel);
 
         overlayArchetypeMap = new LinkedHashMap<>();
         for (DifferentialArchetype archetype : archetypes) {
@@ -48,9 +53,8 @@ public class ArchetypeRepositoryOverlay implements ArchetypeRepository {
         }
     }
 
-    @Override
     public RmModel getRmModel() {
-        return delegate.getRmModel();
+        return rmModel;
     }
 
     @Override
@@ -61,11 +65,6 @@ public class ArchetypeRepositoryOverlay implements ArchetypeRepository {
     }
 
     @Override
-    public void saveDifferentialArchetype(DifferentialArchetype archetype) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public FlatArchetype getFlatArchetype(String archetypeId) {
         DifferentialArchetype source = getDifferentialArchetype(archetypeId);
         FlatArchetype parent = null;
@@ -73,10 +72,5 @@ public class ArchetypeRepositoryOverlay implements ArchetypeRepository {
             parent = getFlatArchetype(source.getParentArchetypeId().getValue());
         }
         return flattener.flatten(parent, source);
-    }
-
-    @Override
-    public List<ArchetypeInfo> getArchetypeInfos() {
-        throw new UnsupportedOperationException();
     }
 }

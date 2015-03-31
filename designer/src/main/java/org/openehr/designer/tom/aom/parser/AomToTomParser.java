@@ -21,12 +21,13 @@
 package org.openehr.designer.tom.aom.parser;
 
 import com.google.common.collect.Lists;
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.ArchetypeRepository;
-import org.openehr.designer.ArchetypeRepositoryOverlay;
+import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.FlatArchetypeProviderOverlay;
 import org.openehr.designer.tom.*;
 import org.openehr.designer.tom.constraint.*;
 import org.openehr.jaxb.am.*;
@@ -43,12 +44,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
  */
 public class AomToTomParser {
     private final RmModel rmModel;
-    private final ArchetypeRepository archetypeRepository;
+    private final FlatArchetypeProvider flatArchetypeProvider;
     private final List<DifferentialArchetype> archetypes;
 
-    public AomToTomParser(RmModel rmModel, ArchetypeRepository archetypeRepository, List<DifferentialArchetype> archetypes) {
+    public AomToTomParser(RmModel rmModel, FlatArchetypeProvider flatArchetypeProvider, List<DifferentialArchetype> archetypes) {
         this.rmModel = rmModel;
-        this.archetypeRepository = new ArchetypeRepositoryOverlay(archetypeRepository, archetypes);
+        this.flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeProvider, rmModel, archetypes);
 
         this.archetypes = archetypes;
     }
@@ -75,8 +76,8 @@ public class AomToTomParser {
 
     private void parseArchetype(ArchetypeRootTom target, AomToTomContext context, DifferentialArchetype overlayArchetype) {
 
-        FlatArchetype parentArchetype = archetypeRepository.getFlatArchetype(overlayArchetype.getParentArchetypeId().getValue());
-        FlatArchetype flatOverlayArchetype = archetypeRepository.getFlatArchetype(overlayArchetype.getArchetypeId().getValue());
+        FlatArchetype parentArchetype = flatArchetypeProvider.getFlatArchetype(overlayArchetype.getParentArchetypeId().getValue());
+        FlatArchetype flatOverlayArchetype = flatArchetypeProvider.getFlatArchetype(overlayArchetype.getArchetypeId().getValue());
 
 
         AomToTomContext.Node node = new AomToTomContext.Node();

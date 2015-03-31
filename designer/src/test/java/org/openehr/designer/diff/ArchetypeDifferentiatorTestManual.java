@@ -22,9 +22,9 @@ package org.openehr.designer.diff;
 
 import com.google.common.base.Charsets;
 import org.openehr.adl.rm.OpenEhrRmModel;
-import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.designer.ArchetypeRepositoryImpl;
+import org.openehr.designer.repository.FlatArchetypeRepository;
+import org.openehr.designer.repository.file.FileArchetypeRepository;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.testng.annotations.BeforeClass;
@@ -35,11 +35,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.testng.Assert.*;
-
 public class ArchetypeDifferentiatorTestManual {
 //    private final RmModel rmModel = new OpenEhrRmModel();
-    private ArchetypeRepositoryImpl archetypeRepository;
+    private FileArchetypeRepository archetypeRepository;
+    private FlatArchetypeRepository flatArchetypeRepository;
 
 
     @BeforeClass
@@ -48,16 +47,17 @@ public class ArchetypeDifferentiatorTestManual {
         URL myTestURL = ClassLoader.getSystemResource("differentiator/openEHR-EHR-OBSERVATION.bodily_output.v1.adls");
         Path repositoryPath = Paths.get(myTestURL.toURI()).getParent();
 
-        archetypeRepository = new ArchetypeRepositoryImpl();
+        archetypeRepository = new FileArchetypeRepository();
         archetypeRepository.setRepositoryLocation(repositoryPath.toString());
         archetypeRepository.init();
+        flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, new OpenEhrRmModel());
 
     }
 
     @Test
     public void testBuild() throws Exception {
-        FlatArchetype parent = archetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
-        FlatArchetype flatChild = archetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
+        FlatArchetype parent = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
+        FlatArchetype flatChild = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
         DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(parent, flatChild);
         String archetype = ArchetypeSerializer.serialize(diff);
 

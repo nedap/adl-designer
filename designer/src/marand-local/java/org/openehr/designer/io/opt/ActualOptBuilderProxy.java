@@ -22,7 +22,7 @@ package org.openehr.designer.io.opt;
 
 import com.google.common.base.Charsets;
 import org.openehr.adl.flattener.ArchetypeFlattener;
-import org.openehr.designer.ArchetypeRepository;
+import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am14.Template;
 import org.openehr.optexporter14.Opt14TemplateBuilder;

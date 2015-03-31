@@ -130,16 +130,6 @@
 
             <!-- apache -->
             <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxrs</artifactId>
-                <version>${resteasy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-spring</artifactId>
-                <version>${resteasy.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.4</version>
@@ -156,23 +146,6 @@
                 <version>2.6</version>
             </dependency>
 
-            <!-- swagger -->
-            <dependency>
-                <groupId>com.wordnik</groupId>
-                <artifactId>swagger-jaxrs_2.10</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wordnik</groupId>
-                <artifactId>swagger-core_2.10</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wordnik</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-
 
             <!-- Logging -->
             <dependency>
@@ -186,10 +159,18 @@
                 <version>1.7.2</version>
             </dependency>
 
+            <!-- Git -->
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>3.7.0.201502260915-r</version>
+            </dependency>
+
+            <!-- Web -->
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
+                <version>3.0</version>
             </dependency>
 
 

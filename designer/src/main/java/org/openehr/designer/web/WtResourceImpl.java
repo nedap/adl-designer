@@ -26,12 +26,13 @@ import org.openehr.adl.rm.RmType;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
-import org.openehr.designer.ArchetypeRepository;
 import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
+import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.FlatArchetypeRepository;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.tom.TemplateTom;
@@ -46,6 +47,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
@@ -60,12 +62,21 @@ public class WtResourceImpl implements WtResource {
 
     @Resource
     private ArchetypeRepository archetypeRepository;
+
     @Resource
     private TemplateRepository templateRepository;
     @Resource
     private RmModel rmModel;
     @Resource
     private OptBuilder optBuilder;
+
+    private FlatArchetypeRepository flatArchetypeRepository;
+
+
+    @PostConstruct
+    public void init() {
+        this.flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, rmModel);
+    }
 
     @RequestMapping(value = "/archetype/{archetypeId}/source")
     @Override
@@ -77,7 +88,7 @@ public class WtResourceImpl implements WtResource {
     @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.GET)
     @Override
     public FlatArchetype getFlatArchetype(@PathVariable("archetypeId") String archetypeId) {
-        return archetypeRepository.getFlatArchetype(archetypeId);
+        return flatArchetypeRepository.getFlatArchetype(archetypeId);
     }
 
     @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.PUT)
@@ -88,7 +99,7 @@ public class WtResourceImpl implements WtResource {
         }
         FlatArchetype parentArchetype = null;
         if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
-            parentArchetype = archetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
         }
 
         DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);
@@ -105,43 +116,16 @@ public class WtResourceImpl implements WtResource {
     @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
     @Override
     public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
-        List<RmType> types = archetypeRepository.getRmModel().getAllTypes();
+        List<RmType> types = rmModel.getAllTypes();
 
         ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
-        return builder.build(archetypeRepository.getRmModel());
-//        ReferenceModelData result = new ReferenceModelData();
-//        result.setName("openEHR");
-//        result.setVersion("1.0.2");
-//        result.setTypes(new LinkedHashMap<>());
-//        for (RmType type : types) {
-//            ReferenceModelData.Type t = new ReferenceModelData.Type();
-//            t.setName(type.getRmType());
-//            t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
-//            t.setFinalType(type.isFinalType());
-//            t.setRootType(type.isRootType());
-//            t.setDataAttribute(type.getDataAttribute());
-//            if (type.getDisplay()!=null) {
-//                t.setDisplay(type.getDisplay().toString());
-//            }
-//            if (!type.getAttributes().isEmpty()) {
-//                t.setAttributes(new LinkedHashMap<>());
-//                for (RmTypeAttribute attribute : type.getAttributes().values()) {
-//                    ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
-//                    a.setName(attribute.getAttributeName());
-//                    a.setExistence(attribute.getExistence());
-//                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
-//                    t.getAttributes().put(a.getName(), a);
-//                }
-//            }
-//            result.getTypes().put(t.getName(), t);
-//        }
-//        return result;
+        return builder.build(rmModel);
     }
 
     @RequestMapping(value = "/tom", method = RequestMethod.POST)
     @Override
     public void saveTom(@RequestBody TemplateTom templateTom) {
-        List<DifferentialArchetype> templateArchetypes = new TomTemplateBuilder(archetypeRepository).build(templateTom);
+        List<DifferentialArchetype> templateArchetypes = new TomTemplateBuilder(flatArchetypeRepository).build(templateTom);
         templateRepository.saveTemplate(templateArchetypes);
         // try to reload template to see if it's stored ok
         templateRepository.loadTemplate(templateTom.getArchetypeId());
@@ -151,7 +135,7 @@ public class WtResourceImpl implements WtResource {
     @Override
     public TemplateTom loadTom(@PathVariable String templateId) {
         List<DifferentialArchetype> templateArchetypes = templateRepository.loadTemplate(templateId);
-        TemplateTom templateTom = new AomToTomParser(rmModel, archetypeRepository, templateArchetypes).parse();
+        TemplateTom templateTom = new AomToTomParser(rmModel, flatArchetypeRepository, templateArchetypes).parse();
         return templateTom;
     }
 
@@ -199,7 +183,7 @@ public class WtResourceImpl implements WtResource {
     public String displayArchetypeAdlSource(@RequestBody FlatArchetype archetype) {
         FlatArchetype parentArchetype = null;
         if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
-            parentArchetype = archetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
         }
 
         DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);

@@ -49,7 +49,7 @@ public class TomArchetypesBuilderTest {
         TemplateTom tom = objectMapper.readValue(new InputStreamReader(is, Charsets.UTF_8), TemplateTom.class);
 
         final ArrayList<DifferentialArchetype> createdArchetypes = new ArrayList<>();
-        new TomArchetypesBuilder(TestArchetypeRespository.getInstance(), createdArchetypes).build(tom);
+        new TomArchetypesBuilder(TestArchetypeRespository.getFlatInstance(), createdArchetypes).build(tom);
 
         String templateAdls = TemplateSerializer.serialize(createdArchetypes);
 //        Files.write(Paths.get("c:/temp/template.adlt"), templateAdls.getBytes(Charsets.UTF_8));
@@ -61,7 +61,7 @@ public class TomArchetypesBuilderTest {
 
         TemplateTom tom = objectMapper.readValue(new InputStreamReader(is, Charsets.UTF_8), TemplateTom.class);
         final ArrayList<DifferentialArchetype> createdArchetypes = new ArrayList<>();
-        new TomArchetypesBuilder(TestArchetypeRespository.getInstance(), createdArchetypes).build(tom);
+        new TomArchetypesBuilder(TestArchetypeRespository.getFlatInstance(), createdArchetypes).build(tom);
 
 
         String templateAdls = TemplateSerializer.serialize(createdArchetypes);

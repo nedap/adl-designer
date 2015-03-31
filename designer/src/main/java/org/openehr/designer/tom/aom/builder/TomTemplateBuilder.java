@@ -20,7 +20,8 @@
 
 package org.openehr.designer.tom.aom.builder;
 
-import org.openehr.designer.ArchetypeRepository;
+import org.openehr.adl.FlatArchetypeProvider;
+import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.designer.tom.TemplateTom;
 import org.openehr.jaxb.am.DifferentialArchetype;
 
@@ -31,16 +32,16 @@ import java.util.List;
  * @author Marko Pipan
  */
 public class TomTemplateBuilder {
-    private final ArchetypeRepository archetypeRepository;
+    private final FlatArchetypeProvider flatArchetypeProvider;
 
-    public TomTemplateBuilder(ArchetypeRepository archetypeRepository) {
-        this.archetypeRepository = archetypeRepository;
+    public TomTemplateBuilder(FlatArchetypeProvider flatArchetypeProvider) {
+        this.flatArchetypeProvider=flatArchetypeProvider;
     }
 
 
     public List<DifferentialArchetype> build(TemplateTom templateTom) {
         List<DifferentialArchetype> result = new ArrayList<>();
-        new TomArchetypesBuilder(archetypeRepository, result).build(templateTom);
+        new TomArchetypesBuilder(flatArchetypeProvider, result).build(templateTom);
         return result;
 
     }
