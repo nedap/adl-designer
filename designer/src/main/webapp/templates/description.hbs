@@ -97,7 +97,11 @@
             <label for="{{panel_id}}_lifecycle" class="col-sm-4 control-label">Lifecycle</label>
 
             <div class="col-sm-8">
-                <input id="{{panel_id}}_lifecycle" class="form-control input">
+                <select id="{{panel_id}}_lifecycle" class="form-control input">
+                    {{#each lifecycleOptions}}
+                        <option value="{{this}}">{{this}}</option>
+                    {{/each}}
+                </select>
             </div>
         </div>
     </div>

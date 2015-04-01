@@ -58,7 +58,7 @@
             targetElement.empty();
             var context = {
                 panel_id: GuiUtils.generateId(),
-                original_language: archetypeModel.data.original_language.code_string
+                original_language: archetypeModel.data.original_language.code_string,
             };
 
             GuiUtils.applyTemplate('description|language', context, function (html) {
@@ -146,7 +146,17 @@
         function showDetails(archetypeModel, targetElement) {
             targetElement.empty();
             var context = {
-                panel_id: GuiUtils.generateId()
+                panel_id: GuiUtils.generateId(),
+                lifecycleOptions: [
+                    "unmanaged",
+                    "draft",
+                    "in_review",
+                    "suspended",
+                    "rejected",
+                    "release_candidate",
+                    "published",
+                    "deprecated"
+                ]
             };
 
             GuiUtils.applyTemplate('description|details', context, function (html) {
@@ -176,7 +186,7 @@
                     useInput.val(details.use);
                     misuseInput.val(details.misuse);
                     copyrightInput.val(details.copyright);
-                    keywordsInput.val(details.keywords.join(", "));
+                    keywordsInput.val((details.keywords || []).join(", "));
 
                     resourcesDiv.empty();
                     resources = new GuiUtils.TableMap(details.original_resource_uri, resourcesDiv);
@@ -216,7 +226,7 @@
                 }
 
                 var languageSelect = html.find('#' + context.panel_id + '_language');
-                var lifecycleInput = html.find('#' + context.panel_id + '_lifecycle');
+                var lifecycleSelect = html.find('#' + context.panel_id + '_lifecycle');
                 var purposeInput = html.find('#' + context.panel_id + '_purpose');
                 var useInput = html.find('#' + context.panel_id + '_use');
                 var misuseInput = html.find('#' + context.panel_id + '_misuse');
@@ -228,15 +238,15 @@
                 var resources, otherDetails;
 
                 purposeInput.change(updateLanguageDetails);
-                lifecycleInput.change(function () {
-                    archetypeModel.data.description.lifecycle_state = lifecycleInput.val();
+                lifecycleSelect.change(function () {
+                    archetypeModel.data.description.lifecycle_state = lifecycleSelect.val();
                 });
                 useInput.change(updateLanguageDetails);
                 misuseInput.change(updateLanguageDetails);
                 copyrightInput.change(updateLanguageDetails);
                 keywordsInput.change(updateLanguageDetails);
 
-                lifecycleInput.val(archetypeModel.data.description.lifecycle_state);
+                lifecycleSelect.val(archetypeModel.data.description.lifecycle_state);
 
                 populateLanguages();
                 populateLanguageDetails();
