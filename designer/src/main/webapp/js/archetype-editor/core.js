@@ -249,13 +249,13 @@ var ArchetypeEditor = (function () {
     };
 
     my.getRmTypeHandler = function (rm_type, referenceModel) {
-        if (typeof rm_type==="object") {
-            if (rm_type["@type"]==="ARCHETYPE_SLOT") {
+        if (typeof rm_type === "object") {
+            if (rm_type["@type"] === "ARCHETYPE_SLOT") {
                 return rmModules["@common"].handlers["ARCHETYPE_SLOT"];
-            } else if (rm_type["@type"]==="ARCHETYPE_INTERNAL_REF") {
+            } else if (rm_type["@type"] === "ARCHETYPE_INTERNAL_REF") {
                 return rmModules["@common"].handlers["ARCHETYPE_INTERNAL_REF"];
             } else {
-                rm_type=rm_type.rm_type_name;
+                rm_type = rm_type.rm_type_name;
             }
         }
 
@@ -347,6 +347,7 @@ var ArchetypeEditor = (function () {
             var targetElement = $('#archetype-editor-main-tabs-description');
             my.Description.show(archetypeModel, targetElement);
         }
+
         function loadDisplay() {
             var targetElement = $('#archetype-editor-main-tabs-display');
             my.Display.show(archetypeModel, targetElement);
@@ -434,6 +435,36 @@ var ArchetypeEditor = (function () {
                         }
                     });
             });
+    };
+
+    my.commitRepository = function () {
+        GuiUtils.openSingleTextInputDialog({
+            title: "Commit repository",
+            inputLabel: "Commit message",
+            inputValue: "",
+            callback: function (content) {
+                var commitMessage = content.find("input").val().trim();
+                if (commitMessage.length === 0) {
+                    return "Commit message is required";
+                }
+
+                var commitJson = {
+                    message: commitMessage
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "rest/repo/commit",
+                    data: JSON.stringify(commitJson),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "text"
+                }).done(function (data) {
+                    // reload list of archetypes
+                    alert("Commit successful");
+                }).fail(function (errMsg) {
+                    alert("Error committing repository: " + errMsg.status + " " + errMsg.statusText);
+                });
+            }
+        })
     };
 
     my.initialize = function (callback) {

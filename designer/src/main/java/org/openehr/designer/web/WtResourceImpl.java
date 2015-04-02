@@ -31,10 +31,7 @@ import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
-import org.openehr.designer.repository.ArchetypeRepository;
-import org.openehr.designer.repository.FlatArchetypeRepository;
-import org.openehr.designer.repository.TemplateInfo;
-import org.openehr.designer.repository.TemplateRepository;
+import org.openehr.designer.repository.*;
 import org.openehr.designer.tom.TemplateTom;
 import org.openehr.designer.tom.aom.builder.TomTemplateBuilder;
 import org.openehr.designer.tom.aom.parser.AomToTomParser;
@@ -197,10 +194,21 @@ public class WtResourceImpl implements WtResource {
         return ArchetypeSerializer.serialize(archetype);
     }
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Bad argument")
-    @ExceptionHandler(IllegalArgumentException.class)
+    @RequestMapping(value = "/commit", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
+    @Override
+    public void commit(@RequestBody CommitRequest commitRequest) {
+        if (archetypeRepository instanceof ScmEnabled) {
+            ScmEnabled scm = (ScmEnabled) archetypeRepository;
+            scm.commit(commitRequest.getMessage());
+        } else {
+            throw new RuntimeException("Repository does not support commit");
+        }
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "No such archetype")
+    @ExceptionHandler(ArchetypeNotFoundException.class)
     @ResponseBody
-    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
+    public ErrorResponse handleArchetypeNotFoundException(IllegalArgumentException e) {
         LOG.error("Bad Request", e);
         return new ErrorResponse(e.getMessage());
     }
@@ -208,7 +216,7 @@ public class WtResourceImpl implements WtResource {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ErrorResponse handleIllegalArgumentException(Exception e) {
+    public ErrorResponse handleException(Exception e) {
         LOG.error("Internal server error", e);
         return new ErrorResponse(e.getMessage());
     }

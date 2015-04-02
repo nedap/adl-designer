@@ -34,8 +34,7 @@
     <bean id="optBuilder" class="org.openehr.designer.io.opt.OptBuilder"
             />
 
-    <bean id="archetypeRepository" class="org.openehr.designer.repository.file.FileArchetypeRepository"
-          p:repositoryLocation="${archetype.repository.location}"
+    <bean id="archetypeRepository" class="org.openehr.designer.repository.ArchetypeRepositoryFactoryBean"
             />
 
     <bean id="templateRepository" class="org.openehr.designer.repository.file.FileTemplateRepository"

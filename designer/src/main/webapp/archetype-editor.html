@@ -105,17 +105,22 @@
         <button class="btn" onclick="ArchetypeEditor.openLoadArchetypeDialog()">Load</button>
         <button class="btn" onclick="ArchetypeEditor.saveCurrentArchetype()">Save</button>
         <button class="btn" onclick="ArchetypeEditor.openSpecializeArchetypeDialog()">Specialize</button>
+        <div class="btn-toolbar pull-right" role="toolbar">
+            <div class="btn-group" role="group">
+                <button onclick="ArchetypeEditor.commitRepository()" class="btn">Commit</button>
+            </div>
+        </div>
     </div>
     <div id="archetype-editor-archetype-id-main"></div>
     <div id="archetype-editor-archetype-tabs">
         <ul class="nav nav-tabs">
-            <li role="presentation"><a href="#archetype-editor-main-tabs-description">Description</a></li>
+            <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-terminology">Terminology</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-display">Display</a></li>
         </ul>
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-description">
+            <div role="tabpanel" class="tab-pane active container-fluid" id="archetype-editor-main-tabs-description">
                 Description placeholder
             </div>
             <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
