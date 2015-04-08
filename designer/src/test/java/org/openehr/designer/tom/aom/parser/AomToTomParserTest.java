@@ -44,7 +44,7 @@ import java.util.List;
 
 public class AomToTomParserTest {
 
-    private final RmModel rmModel = new OpenEhrRmModel();
+    private final RmModel rmModel = OpenEhrRmModel.getInstance();
     private FileArchetypeRepository archetypeRepository;
     private FlatArchetypeRepository flatArchetypeRepository;
 

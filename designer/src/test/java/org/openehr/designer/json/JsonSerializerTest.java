@@ -55,8 +55,7 @@ public class JsonSerializerTest {
         objectMapper.registerModule(jaxbModule);
         objectMapper.registerModule(new AmMixinModule());
 
-        final OpenEhrRmModel rmModel = new OpenEhrRmModel();
-        deserializer = new AdlDeserializer(rmModel);
+        deserializer = new AdlDeserializer();
 
         differentialAlert = deserializer.parse(readArchetype("repository/openEHR-EHR-EVALUATION.alert.v1.adls"));
         differentialAlertZn = deserializer.parse(readArchetype("repository/openEHR-EHR-EVALUATION.alert-zn.v1.adls"));

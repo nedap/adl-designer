@@ -50,7 +50,7 @@ public class ArchetypeDifferentiatorTestManual {
         archetypeRepository = new FileArchetypeRepository();
         archetypeRepository.setRepositoryLocation(repositoryPath.toString());
         archetypeRepository.init();
-        flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, new OpenEhrRmModel());
+        flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, OpenEhrRmModel.getInstance());
 
     }
 

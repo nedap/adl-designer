@@ -51,7 +51,7 @@ public class TemplateDeserializer {
         Iterable<String> adls = Splitter.on(Pattern.compile("(\r|\n)+ *\\-{2,} *(\r|\n)+")).split(adltContent);
 
         List<DifferentialArchetype> result = new ArrayList<>();
-        AdlDeserializer deserializer = new AdlDeserializer(rmModel);
+        AdlDeserializer deserializer = new AdlDeserializer();
         for (String adl : adls) {
             result.add(deserializer.parse(adl));
         }

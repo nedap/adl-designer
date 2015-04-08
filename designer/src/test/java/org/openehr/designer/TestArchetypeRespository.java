@@ -54,7 +54,7 @@ public class TestArchetypeRespository {
 
     public static synchronized FlatArchetypeRepository getFlatInstance() {
         if (flatArchetypeRepository == null) {
-            flatArchetypeRepository = new FlatArchetypeRepository(getInstance(), new OpenEhrRmModel());
+            flatArchetypeRepository = new FlatArchetypeRepository(getInstance(), OpenEhrRmModel.getInstance());
         }
         return flatArchetypeRepository;
 

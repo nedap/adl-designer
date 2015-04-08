@@ -37,6 +37,6 @@ public class TemplateDeserializerTestManual {
 
         String templateAdlt = new String(Files.readAllBytes(Paths.get("c:/temp/template.adlt")), Charsets.UTF_8);
 
-        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(new OpenEhrRmModel(), templateAdlt);
+        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(OpenEhrRmModel.getInstance(), templateAdlt);
     }
 }

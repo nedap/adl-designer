@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * @author Marko Pipan
  */
-public class AttributeNodeTom extends AbstractNodeTom {
+public class AttributeNode2Tom extends AbstractNodeTom {
     private String attribute;
     private List<ConstraintNodeTom> children;
 

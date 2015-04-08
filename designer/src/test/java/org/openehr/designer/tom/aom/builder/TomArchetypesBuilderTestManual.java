@@ -34,7 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class TomArchetypesBuilderTest {
+public class TomArchetypesBuilderTestManual {
     ObjectMapper objectMapper;
     @BeforeClass
     public void setUp() throws Exception {

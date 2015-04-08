@@ -30,7 +30,7 @@ import java.util.Map;
 public class ConstraintNodeTom extends AbstractNodeTom {
     private String rmType;
     // lang->key->value
-    private Map<String, AttributeNodeTom> attributes;
+    private Map<String, AttributeNode2Tom> attributes;
     private Map<String, Map<String, String>> annotations;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -43,11 +43,11 @@ public class ConstraintNodeTom extends AbstractNodeTom {
     }
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Map<String, AttributeNodeTom> getAttributes() {
+    public Map<String, AttributeNode2Tom> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, AttributeNodeTom> attributes) {
+    public void setAttributes(Map<String, AttributeNode2Tom> attributes) {
         this.attributes = attributes;
     }
 }
