@@ -439,7 +439,7 @@ var ArchetypeEditor = (function () {
 
     my.commitRepository = function () {
         GuiUtils.openSingleTextInputDialog({
-            title: "Commit repository",
+            title: "Commit changes to repository",
             inputLabel: "Commit message",
             inputValue: "",
             callback: function (content) {
