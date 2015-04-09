@@ -1331,4 +1331,4 @@
 
 
     ArchetypeEditor.addRmModule(new OpenEhrModule());
-}(ArchetypeEditor) );
+}(ArchetypeEditor || {}) );

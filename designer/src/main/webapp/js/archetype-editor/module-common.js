@@ -467,6 +467,4 @@
     };
 
     ArchetypeEditor.addRmModule(new CommonModule());
-}(ArchetypeEditor)
-)
-;
+}(ArchetypeEditor || {}) ) ;

@@ -285,4 +285,4 @@
         return my;
     }();
 
-}(ArchetypeEditor));
+}(ArchetypeEditor || {}));
