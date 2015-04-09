@@ -20,20 +20,19 @@
 
 package org.openehr.designer.repository.git;
 
-import org.eclipse.jgit.api.CloneCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.openehr.designer.repository.AbstractFileBasedArchetypeRepository;
@@ -130,11 +129,26 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
     @Override
     public void update() {
         try {
-            PullCommand pull = git.pull();
-            pull.setProgressMonitor(new TextProgressMonitor());
-            PullResult pullResult = pull.call();
-            LOG.debug("PULL: {}", pullResult);
-        } catch (GitAPIException e) {
+//            PullResult pull = git.pull()
+//                    .setProgressMonitor(new TextProgressMonitor())
+//                    .setStrategy(MergeStrategy.OURS)
+//                    .call();
+            FetchResult fetch = git.fetch().call();
+
+
+            LOG.debug("PULL fetch: {}", fetch.getTrackingRefUpdates());
+
+
+            MergeResult merge = git.merge()
+                    .include(git.getRepository().getRef("origin/master"))
+                    .setStrategy(MergeStrategy.OURS)
+                    .setMessage("Merged with ours")
+                    .call();
+
+            LOG.debug("MERGE status: {}", merge.getMergeStatus());
+
+            LOG.debug("New repository status: " + git.getRepository().getRepositoryState());
+        } catch (GitAPIException | IOException e) {
             throw new ArchetypeRepositoryScmException("Could not update from remote repository", e);
         }
     }

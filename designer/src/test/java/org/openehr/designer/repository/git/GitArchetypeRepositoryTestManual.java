@@ -48,4 +48,9 @@ public class GitArchetypeRepositoryTestManual {
             System.out.println(item);
         }
     }
+
+    @Test
+    public void testUpdate() throws Exception {
+        repository.update();
+    }
 }
