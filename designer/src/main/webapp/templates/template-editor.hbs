@@ -26,5 +26,37 @@
             <p id="{{panel_id}}_template_id" class="form-control-static"></p>
         </div>
     </div>
+</div>
 
+
+{>definition}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="row">
+                <div class="btn-toolbar pull-right" role="toolbar">
+                    <div class="btn-group" role="group">
+                        <button id="{{panel_id}}_addArchetype" type="button" class="btn btn-primary">Add Archetype</button>
+                        <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-primary">Remove</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="{{panel_id}}_tree" class="definition-tree"></div>
+            </div>
+        </div>
+        <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
+        </div>
+    </div>
+</div>
+
+
+{>addArchetypeDialog}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label for="{{panel_id}}_archetype_id" class="control-label col-sm-6">Archetype Id</label>
+        <div class="col-sm-6">
+            <select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select>
+        </div>
+    </div>
 </div>

@@ -369,7 +369,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
         }
 
         function createNewOverrideArchetypeId(parentArchetypeModel) {
-            var pid = parentArchetypeModel.archetypeId;
+            var pid = parentArchetypeModel.getArchetypeId();
             var start = pid.indexOf('.');
             var end = pid.indexOf('.', start + 1);
             var name = pid.substring(start, end);
@@ -1492,7 +1492,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                 var result = {};
                 result.type = "template";
                 result.rmType = model.archetypeModel.data.definition.rm_type_name;
-                result.parentArchetypeId = model.archetypeModel.archetypeId;
+                result.parentArchetypeId = model.archetypeModel.getArchetypeId();
                 result.archetypeId = model.archetypeId;
                 fillCommonItemFields(result, model);
 
@@ -1504,7 +1504,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
             function buildArchetypeTom(target, model) {
                 var result = {};
                 result.type = "archetype";
-                result.parentArchetypeId = model.archetypeModel.archetypeId;
+                result.parentArchetypeId = model.archetypeModel.getArchetypeId();
                 result.archetypeId = model.archetypeId;
                 result.rmType = model.archetypeModel.data.definition.rm_type_name;
                 fillCommonItemFields(result, model);

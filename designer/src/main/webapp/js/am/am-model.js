@@ -317,7 +317,7 @@ var AOM = (function () {
         /**
          * Exports all term definitions for a single node_id. Target term nodes are in format
          * result[language] = {text:..., description=...}. Changes to the result do not result in changes to the
-         * archetype. For this, EditableArchetypeModel.importTermDefinitions(node_id, result) must be called
+         * archetype. For this, ArchetypeModel.importTermDefinitions(node_id, result) must be called
          *
          * @param node_id
          * @returns {{}} term definitions for node_id, for each language
@@ -499,7 +499,7 @@ var AOM = (function () {
          * @returns {Array} array of name->constraint objects for each tuple
          */
         self.getAttributesTuple = function (cons, attributeNames) {
-            var commonAttributes = {}, hasCommonAttributes=false;
+            var commonAttributes = {}, hasCommonAttributes = false;
             var result = [];
 
             for (var i in attributeNames) {
@@ -507,7 +507,7 @@ var AOM = (function () {
                 var attribute = self.getAttribute(cons, attributeName);
                 if (attribute) {
                     commonAttributes[attributeName] = attribute;
-                    hasCommonAttributes=true;
+                    hasCommonAttributes = true;
                 }
             }
 
@@ -597,26 +597,6 @@ var AOM = (function () {
             var rmPath = self.getRmPath(cons);
             return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
         };
-
-
-        self.parentArchetypeModel = parentArchetypeModel;
-        self.data = data;
-        self.archetypeId = data.archetype_id.value;
-        self.defaultLanguage = defaultLanguage;
-        self.translations = extractTranslations();
-        self.specializationDepth = new my.NodeId(data.definition.node_id).getSpecializationDepth();
-    };
-
-    /**
-     * Creates a new EditableArchetypeModel
-     * @param {{}} flatArchetypeData json form of the AOM Archetype object
-     * @param {AOM.ArchetypeModel?} parentArchetypeModel archetypeModel of the parent archetype
-     * @constructor
-     * @extends AOM.ArchetypeModel
-     */
-    my.EditableArchetypeModel = function (flatArchetypeData, parentArchetypeModel) {
-        var self = this;
-        my.ArchetypeModel.call(self, flatArchetypeData, parentArchetypeModel);
 
 
         var maxTermIdsByPrefix = {};
@@ -1012,7 +992,6 @@ var AOM = (function () {
             }
 
 
-            description = description || text;
             if (!language) {
                 self.setTermDefinition(code, self.defaultLanguage, text, description);
                 for (var i in self.translations) {
@@ -1029,6 +1008,11 @@ var AOM = (function () {
             if (!term_definitions[language]) {
                 term_definitions[language] = {};
             }
+            var old = term_definitions[language][code];
+            if (!description && old) {
+                description = old.description;
+            }
+            description = description || text;
             term_definitions[language][code] = {
                 text: text,
                 description: description
@@ -1103,7 +1087,7 @@ var AOM = (function () {
 
 
         /**
-         * Enriches constraint with additional attributes form the EditableArchetypeModel. Intended to allow adding attributes on a
+         * Enriches constraint with additional attributes form the ArchetypeModel. Intended to allow adding attributes on a
          * C_COMPLEX_OBJECT
          *
          * @param {object} cons Constraint to enrich. If parent===undefined, must already have [".parent"] attribute
@@ -1283,14 +1267,22 @@ var AOM = (function () {
             }
         };
 
+        self.getArchetypeId = function () {
+            return data.archetype_id.value;
+        };
 
-        enrichConstraintData(flatArchetypeData.definition, undefined);
-        flatArchetypeData.definition[".archetypeModel"] = self;
-        processOntology(flatArchetypeData.ontology);
+        self.parentArchetypeModel = parentArchetypeModel;
+        self.data = data;
+        self.defaultLanguage = defaultLanguage;
+        self.translations = extractTranslations();
+        self.specializationDepth = new my.NodeId(data.definition.node_id).getSpecializationDepth();
 
-    }; // EditableArchetypeModel
-    my.EditableArchetypeModel.prototype = Object.create(my.ArchetypeModel.prototype);
-    my.EditableArchetypeModel.prototype.constructor = my.EditableArchetypeModel;
+
+        enrichConstraintData(data.definition, undefined);
+        data.definition[".archetypeModel"] = self;
+        processOntology(data.ontology);
+
+    }; // ArchetypeModel
 
 
     /**
@@ -1298,11 +1290,41 @@ var AOM = (function () {
      * archetypeModel.data.definition structure.
      *
      * @param {object} cons Constraint object contained in the archetype.
-     * @return {AOM.EditableArchetypeModel} archetype model containing the constraint
+     * @return {AOM.ArchetypeModel} archetype model containing the constraint
      */
-    my.archetypeModelForConstraint = function (cons) {
+    my.ArchetypeModel.from = function (cons) {
         while (cons[".parent"]) cons = cons[".parent"];
         return cons[".archetypeModel"];
+    };
+
+
+    /**
+     * Creates an archetype model for a given archetype. Uses the provided archetype repository to load archetypes.
+     *
+     * @param {string|object} archetype Archetype to generate. Can be either an archetype id or a loaded flatArchetypeData object
+     *
+     * @param {AOM.ArchetypeRepository} archetypeRepository
+     * @param {function(AOM.ArchetypeModel)} callback Function to call when the archetype model is created
+     */
+    my.ArchetypeModel.create = function (archetype, archetypeRepository, callback) {
+        function createFromData(data) {
+            if (data.parent_archetype_id) {
+                archetypeRepository.loadArchetype(data.parent_archetype_id, function (parentData) {
+                    var parentArchetypeModel = new my.ArchetypeModel(parentData);
+                    var archetypeModel = new my.ArchetypeModel(data, parentArchetypeModel);
+                    callback(archetypeModel);
+                });
+            } else {
+                var archetypeModel = new my.ArchetypeModel(data);
+                callback(archetypeModel);
+            }
+        }
+
+        if (typeof archetype === "string") {
+            archetypeRepository.loadArchetype(archetype, createFromData);
+        } else {
+            createFromData(archetype);
+        }
     };
 
 
@@ -1351,7 +1373,7 @@ var AOM = (function () {
      * @param {object} options.definition_text Text of the main definition, e.g. Blood Pressure
      * @param {string} options.definition_description Description of the main definition, e.g.
      *              "Blood Pressure Measurement".
-     * @return {AOM.EditableArchetypeModel} editable model of the new archetype
+     * @return {AOM.ArchetypeModel} editable model of the new archetype
      */
     my.createNewArchetype = function (options) {
         var defaultOptions = {version: "1.0.0"};
@@ -1439,7 +1461,7 @@ var AOM = (function () {
             }
         };
 
-        var archetypeModel = new my.EditableArchetypeModel(newArchetypeJson);
+        var archetypeModel = new my.ArchetypeModel(newArchetypeJson);
         fillNewArchetypeDefinition(archetypeModel);
         return archetypeModel;
     };
@@ -1450,7 +1472,7 @@ var AOM = (function () {
      * @param {object} options specialization options
      * @param {string} options.archetypeId archetypeId of the new archetype
      * @param {AOM.ArchetypeModel} options.parent Archetype model of the parent archetype
-     * @return (AOM.EditableArchetypeModel) archetype model of the new specialized archetype
+     * @return (AOM.ArchetypeModel) archetype model of the new specialized archetype
      */
     my.createSpecializedArchetype = function (options) {
         var data = my.impoverishedClone(options.parent.data);
@@ -1468,20 +1490,35 @@ var AOM = (function () {
         for (var lang in td) {
             td[lang][specializedNodeId] = AmUtils.clone(td[lang][originalNodeId]);
         }
-        return new AOM.EditableArchetypeModel(data, options.parent);
+        return new AOM.ArchetypeModel(data, options.parent);
 
 
     };
 
     my.ArchetypeRepository = function (callback) {
         var self = this;
+        self.state = undefined;
 
-
-        self.reload = function (successCallback) {
+        self.reload = function (callback) {
             $.getJSON("rest/repo/list").success(function (data) {
+                self.state = "ok";
                 self.infoList = data;
-                if (successCallback) successCallback(self);
+                if (callback) callback(self);
+            }).error(function () {
+                self.state = "error";
             });
+        };
+
+        /**
+         * @param {String} archetypeId Archetype id of the archetype to load
+         * @param {function} callback Callback function to call with archetype data on successful load
+         */
+        self.loadArchetype = function (archetypeId, callback) {
+            $.getJSON("rest/repo/archetype/" + encodeURIComponent(archetypeId) + "/flat").success(
+                function (data) {
+                    callback(data);
+                }
+            );
         };
 
         self.reload(callback);
@@ -1562,21 +1599,6 @@ var AOM = (function () {
         };
     };
 
-    my.ArchetypeRepository = function (callback) {
-        var self = this;
-        self.state = undefined;
-
-        self.reload = function (callback) {
-            $.getJSON("rest/repo/list").success(function (data) {
-                self.state = "ok";
-                self.infoList = data;
-                if (callback) callback(self);
-            }).error(function () {
-                self.state = "error";
-            });
-        };
-        self.reload(callback);
-    };
 
     my.makeEmptyConstrainsClone = function (cons) {
         if (typeof cons === "string") {

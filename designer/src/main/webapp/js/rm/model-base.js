@@ -130,7 +130,7 @@ var ReferenceModels = (function () {
 
         /**
          * Creates context (a gui model from existing or new constrains)
-         * @param {AOM.EditableArchetypeModel} archetypeModel model of the archetype
+         * @param {AOM.ArchetypeModel} archetypeModel model of the archetype
          * @param {object} cons Object for which to create the context. undefined if it does not exist yet
          * @returns {object} guiModel
          */
@@ -151,7 +151,7 @@ var ReferenceModels = (function () {
 
         /**
          * Validates a gui model
-         * @param {AOM.EditableArchetypeModel} archetypeModel model of the archetype
+         * @param {AOM.ArchetypeModel} archetypeModel model of the archetype
          * @param {object} gui to validate
          * @param {object} cons constraint object
          * @param {AmUtils.Errors} errors Target for any validation errors

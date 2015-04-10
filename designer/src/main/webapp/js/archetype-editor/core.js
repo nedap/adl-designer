@@ -211,14 +211,14 @@ var ArchetypeEditor = (function () {
                     $.getJSON("rest/repo/archetype/" + encodeURIComponent(data.parent_archetype_id.value) + "/flat").success(
                         function (parentData) {
                             var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
-                            var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
+                            var archetypeModel = new AOM.ArchetypeModel(data, parentArchetypeModel);
                             if (callback) {
                                 callback(archetypeModel);
                             }
                         }
                     );
                 } else {
-                    var archetypeModel = new AOM.EditableArchetypeModel(data);
+                    var archetypeModel = new AOM.ArchetypeModel(data);
                     if (callback) {
                         callback(archetypeModel);
                     }
@@ -376,7 +376,7 @@ var ArchetypeEditor = (function () {
 
     /**
      * Opens a dialog that enables creation of new terms
-     * @param {EditableArchetypeModel} archetypeModel
+     * @param {ArchetypeModel} archetypeModel
      * @param {function?} callback calback to call once the term is created. First callback parameter is the generated term_id
      */
     my.openAddNewTermDefinitionDialog = function (archetypeModel, callback) {

@@ -21,7 +21,7 @@
 var TemplateEditor = (function () {
     var my = {};
 
-    my.createNewTemplateDialog = function() {
+    my.openCreateNewTemplateDialog = function () {
         var context = {
             panel_id: GuiUtils.generateId()
         };
@@ -31,7 +31,7 @@ var TemplateEditor = (function () {
                 var ids = [];
                 for (var i in my.archetypeRepository.infoList) {
                     var info = my.archetypeRepository.infoList[i];
-                    if (info.rmType==="COMPOSITION") {
+                    if (info.rmType === "COMPOSITION") {
                         ids.push(info.archetypeId);
 
                     }
@@ -99,31 +99,41 @@ var TemplateEditor = (function () {
 
                         var templateId = createTemplateId();
 
-                        //var existing = Stream(my.archetypeRepository.infoList)
-                        //    .anyMatch({archetypeId: archetypeId});
-                        //if (existing) {
-                        //    return "New archetype id already exists";
-                        //}
+                        AOM.TemplateModel.createNew({
+                            archetypeRepository: my.archetypeRepository,
+                            referenceModel: my.referenceModel,
+                            templateId: templateId,
+                            parentArchetypeId: parentArchetypeIdSelect.val(),
+                            callback: function (templateModel) {
+                                console.log("Template model", templateModel);
+                                my.useTemplate(templateModel);
+                            }
 
-                        //var newArchetypeModel = AOM.createNewArchetype({
-                        //    rm_type: rmTypeSelect.val(),
-                        //    concept: sanitizedConcept,
-                        //    version: version,
-                        //    language: language,
-                        //    definition_text: rawConcept,
-                        //    definition_description: rawConcept
-                        //});
-                        alert ('Creating new archetype: ' + templateId);
-                        //my.useArchetype(newArchetypeModel);
+                        });
                     }
                 });
         });
 
     };
 
+    my.useTemplate = function (templateModel) {
+
+        function loadDescription() {
+            var targetElement = $('#archetype-editor-main-tabs-description');
+            ArchetypeEditor.Description.show(templateModel.getRootArchetypeModel(), targetElement);
+        }
+
+//        my.templateModel=templateModel;
+
+        var targetElement = $('#archetype-editor-main-tabs-definition');
+        my.Definition.show(templateModel, my.referenceModel, targetElement);
+
+        loadDescription();
+        $('a[href="#archetype-editor-main-tabs-description"]').on('show.bs.tab', loadDescription);
+    };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(3);
+        var latch = new CountdownLatch(4);
         my.referenceModel = new AOM.ReferenceModel(latch.countDown);
         my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
 
@@ -134,6 +144,9 @@ var TemplateEditor = (function () {
                 "terminology/terms"
             ],
             latch.countDown);
+
+
+        ArchetypeEditor.initialize(latch.countDown);
 
         latch.execute(callback);
     };

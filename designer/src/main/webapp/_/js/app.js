@@ -133,14 +133,14 @@ angular.module('ArchetypeEditor', ['angularModalService','RecursionHelper'])
 					$http.get("/rest/repo/archetype/" + encodeURIComponent(data.parent_archetype_id.value) + "/flat").success(
 						function (parentData) {
 							var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
-							var archetypeModel = new AOM.EditableArchetypeModel(data, parentArchetypeModel);
+							var archetypeModel = new AOM.ArchetypeModel(data, parentArchetypeModel);
 							if (callback) {
 								callback(archetypeModel);
 							}
 						}
 					);
 				} else {
-					var archetypeModel = new AOM.EditableArchetypeModel(data);
+					var archetypeModel = new AOM.ArchetypeModel(data);
 					if (callback) {
 						callback(archetypeModel);
 					}

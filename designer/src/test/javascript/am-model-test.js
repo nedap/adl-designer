@@ -1191,8 +1191,8 @@ describe("ArchetypeModel", function () {
     });
 });
 
-describe("EditableArchetypeModel.getRmPath", function () {
-    var am = new AOM.EditableArchetypeModel(AmUtils.clone(res.bodyWeight));
+describe("ArchetypeModel.getRmPath", function () {
+    var am = new AOM.ArchetypeModel(AmUtils.clone(res.bodyWeight));
     it("gets regular rm path", function () {
         var cons = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/data[id2]/items[id5]/value[id30]");
 
@@ -1220,8 +1220,8 @@ describe("EditableArchetypeModel.getRmPath", function () {
     });
 
 });
-describe("EditableArchetypeModel.generateSpecializedTermId", function () {
-    var am = new AOM.EditableArchetypeModel(AmUtils.clone(res.bodyWeight));
+describe("ArchetypeModel.generateSpecializedTermId", function () {
+    var am = new AOM.ArchetypeModel(AmUtils.clone(res.bodyWeight));
     it("generates new specialized node by prefix", function () {
         expect(am.generateSpecializedTermId("id")).toEqual("id38");
         expect(am.generateSpecializedTermId("at")).toEqual("at20");
@@ -1229,8 +1229,8 @@ describe("EditableArchetypeModel.generateSpecializedTermId", function () {
 
 });
 
-describe("EditableArchetypeModel.addUnconstrainedAttributes", function () {
-    var am = new AOM.EditableArchetypeModel(AmUtils.clone(res.bodyWeight));
+describe("ArchetypeModel.addUnconstrainedAttributes", function () {
+    var am = new AOM.ArchetypeModel(AmUtils.clone(res.bodyWeight));
     it("adds simple attribute", function () {
         var cons = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/data[id2]/items[id25]");
 

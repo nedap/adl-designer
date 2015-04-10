@@ -296,10 +296,17 @@ AOM = (function (AOM) {
     var AmObjectMixin = function () {
         var self = this;
 
+        self.isAttribute = function() {
+            return false;
+        };
+
+        self.isSlot = function() {
+            return false;
+        };
+
         self.isPrimitive = function () {
             return false;
         }
-
     };
 
     var CObjectMixin = function () {
@@ -311,6 +318,20 @@ AOM = (function (AOM) {
         }
     };
     extend(CObjectMixin, AmObjectMixin);
+
+    var CAttributeMixin = function () {
+        var self = this;
+        AmObjectMixin.call(self);
+
+        self.isAttribute = function () {
+            return true;
+        };
+        self.isPrimitive = function () {
+            return false;
+        }
+    };
+    extend(CAttributeMixin, AmObjectMixin);
+
 
     var CDefinedObjectMixin = function () {
         var self = this;
@@ -352,6 +373,67 @@ AOM = (function (AOM) {
     };
     extend(CTerminologyCodeMixin, CPrimitiveObjectMixin);
 
+    var ArchetypeSlotMixin = function () {
+        var self = this;
+        CObjectMixin.call(self);
+
+        self.isSlot = function() {
+            return true;
+        };
+
+        function buildAssertionPredicate(assertionList, defaultValue) {
+            if (!assertionList || assertionList.length==0) {
+                return function (archetypeId) {
+                    return defaultValue;
+                }
+            }
+            var regularExpressions = [];
+            for (var i in assertionList) {
+                var ass = assertionList[i];
+                var start = ass.string_expression.indexOf("{");
+                var end = ass.string_expression.lastIndexOf("}");
+                if (start >= 0 && end >= 0) {
+                    var expr = ass.string_expression.substring(start + 1, end);
+                    start = expr.indexOf("/");
+                    end = expr.lastIndexOf("/");
+                    if (start >= 0 && end >= 0) {
+                        expr = expr.substring(start + 1, end);
+                        regularExpressions.push(new RegExp(expr))
+                    }
+                }
+            }
+
+            return function (archetypeId) {
+                for (var re in regularExpressions) {
+                    if (regularExpressions[re].test(archetypeId)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        /**
+         * Builds a function than matches archetype ids for compatibility with include/exclude patterns
+         *
+         * @param {object} cons constraint of the archetyoe slot
+         * @return {function(archetypeId): boolean} a function that tests a given archetype id
+         */
+        self.buildArchetypeMatcher = function(cons) {
+            var includesPredicate = buildAssertionPredicate(cons.includes, false);
+            var excludesPredicate = buildAssertionPredicate(cons.excludes, true);
+
+            return function(archetypeId) {
+                if (includesPredicate(archetypeId)) return true;
+                if (excludesPredicate(archetypeId)) return false;
+                return true;
+            }
+        }
+
+    };
+    extend(ArchetypeSlotMixin, CObjectMixin);
+
+
 
 
     var mixinClasses = {
@@ -361,7 +443,9 @@ AOM = (function (AOM) {
         "C_PRIMITIVE_OBJECT": new CPrimitiveObjectMixin(),
         "C_ORDERED": new COrderedMixin(),
         "C_STRING": new CStringMixin(),
-        "C_TERMINOLOGY_CODE": new CTerminologyCodeMixin()
+        "C_TERMINOLOGY_CODE": new CTerminologyCodeMixin(),
+        "C_ATTRIBUTE": new CAttributeMixin(),
+        "ARCHETYPE_SLOT": new ArchetypeSlotMixin()
     };
 
 

@@ -216,7 +216,7 @@ var ArchetypeEditorTerminology = (function () {
         /**
          * Opens an Update/Create/Specialize valueSet dialog.
          *
-         * @param {AOM.EditableArchetypeModel} archetypeModel
+         * @param {AOM.ArchetypeModel} archetypeModel
          * @param {string|undefined} valueSetId Id of the valueSet to be updated. If undefined, allows creation of new value set
          * @param options Dialog options.
          * @param {function(string, boolean)} updateCallback Called when the action is confirmed.
