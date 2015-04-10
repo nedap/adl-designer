@@ -47,6 +47,11 @@ a.definition-tree-node.specialized {
     color: black !important;
 }
 
+pre.display {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+}
 /* marks the field that represent actual model data (used in constraint properties, to enable save button) */
 .data {}
 

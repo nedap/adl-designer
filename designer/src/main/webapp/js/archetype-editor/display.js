@@ -34,8 +34,12 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "text"
             }).done(function (data) {
-                var textArea = $("<textarea>").prop("disabled", true).attr("style", "width:100%; height:100%").val(data);
-                targetElement.append(textArea);
+                var adlContainer = $("<pre>")
+                        .attr("style", "width:100%; height:100%")
+                        .attr("class", "display cm-s-adl")
+                    ;
+                CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                targetElement.append(adlContainer);
             }).fail(function (errMsg) {
                 var errDiv = $("<div>").attr("class", "error");
                 errDiv.text("" + errMsg.status + " " + errMsg.statusText);
@@ -54,8 +58,12 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "text"
             }).done(function (data) {
-                var textArea = $("<textarea>").prop("disabled", true).attr("style", "width:100%; height:100%").val(data);
-                targetElement.append(textArea);
+                var adlContainer = $("<pre>")
+                        .attr("style", "width:100%; height:100%")
+                        .attr("class", "display cm-s-adl")
+                    ;
+                CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                targetElement.append(adlContainer);
             }).fail(function (errMsg) {
                 var errDiv = $("<div>").attr("class", "error");
                 errDiv.text("" + errMsg.status + " " + errMsg.statusText);

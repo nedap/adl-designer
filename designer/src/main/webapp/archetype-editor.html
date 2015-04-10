@@ -44,6 +44,17 @@
     <!-- Handlebars -->
     <script src="lib/handlebars-v2.0.0.js"></script>
 
+    <!-- CodeMirror -->
+    <!-- does not use full editor for adl syntax highlight, uses runmode-standalone instead -->
+    <!--<link href="lib/codemirror-5.1/lib/codemirror.css" rel="stylesheet" type="text/css"/>-->
+    <!--<script src="lib/codemirror-5.1/lib/codemirror.js"></script>-->
+    <!--<script src="lib/codemirror-5.1/addon/runmode/runmode.js"></script>-->
+    <script src="lib/codemirror-5.1/addon/runmode/runmode-standalone.js"></script>
+    <!-- CodeMirror ADL mode -->
+    <link href="lib/codemirror-5.1/theme/adl.css" rel="stylesheet" type="text/css"/>
+    <script src="lib/codemirror-5.1/mode/adl/adl.js"></script>
+
+
     <!-- Archetype editor -->
     <script src="js/util.js"></script>
     <script src="js/util-gui.js"></script>
