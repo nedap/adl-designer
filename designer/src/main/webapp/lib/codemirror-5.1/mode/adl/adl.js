@@ -37,7 +37,8 @@
     function tokenizeString(stream, state) {
         var ch;
         while ((ch = stream.next()) != null) {
-            if (ch === '\\') {
+            if (ch == '\\') {
+                ch = stream.next();
                 ch = stream.next();
             }
             if (ch === state.stringQuote) {
@@ -46,11 +47,15 @@
                 break;
             }
         }
-        return "string";
+        if (state.lastOpenBrace==='[') {
+            return "string-2";
+        } else {
+            return "string";
+        }
     }
 
 
-    var keywords = set("archetype template adl_version generated concept language original_language translations author description original_author details purpose use misuse copyright lifecycle_state other_contributors other_details definition ontology term_definitions text matches terminology term_bindings value_sets occurrences unordered annotations include exclude allow_archetype cardinality use_node use_archetype");
+    var keywords = set("archetype template adl_version generated concept language original_language translations author description original_author details purpose use misuse copyright lifecycle_state other_contributors other_details definition ontology term_definitions text matches terminology term_bindings value_sets occurrences unordered annotations include exclude allow_archetype cardinality use_node use_archetype accreditation keywords");
     var rmTypes = set("AUDIT_DETAILS TERMINOLOGY_ID DV_TIME RESOURCE_ANNOTATION_NODE_ITEMS REVISION_HISTORY_ITEM DV_PARSABLE DV_COUNT DV_DATE_TIME DV_DURATION CLUSTER PARTY_RELATED INSTRUCTION RESOURCE_DESCRIPTION RESOURCE_ANNOTATIONS GENERIC_ID EVALUATION DV_AMOUNT ITEM ARCHETYPED FEEDER_AUDIT_DETAILS ORIGINAL_VERSION PARTY_PROXY POINT_EVENT CODE_PHRASE INSTRUCTION_DETAILS FEEDER_AUDIT DV_TIME_SPECIFICATION EVENT_CONTEXT ITEM_SINGLE DV_PROPORTION DV_ORDERED DV_QUANTITY CONTENT_ITEM DATA_VALUE RESOURCE_ANNOTATION_NODES DV_ORDINAL OBJECT_ID UID_BASED_ID DV_MULTIMEDIA PARTY_SELF RM_OBJECT DV_PARAGRAPH REFERENCE_RANGE CARE_ENTRY ITEM_TREE ELEMENT DV_GENERAL_TIME_SPECIFICATION VERSION DV_DATE DV_STATE ITEM_LIST DURATION HISTORY DV_PERIODIC_TIME_SPECIFICATION RESOURCE_DESCRIPTION_ITEM TERM_MAPPING EVENT OBSERVATION LOCATABLE DV_TEMPORAL ISM_TRANSITION PARTICIPATION FOLDER ENTRY OBJECT_VERSION_ID DV_INTERVAL DV_ENCAPSULATED INTERVAL_EVENT ITEM_TABLE ATTESTATION REVISION_HISTORY DV_IDENTIFIER DV_CODED_TEXT DATE_TIME ISO8601_DATE LOCATABLE_REF DV_EHR_URI ARCHETYPE_ID LIST PARTY_REF TEMPLATE_ID ADMIN_ENTRY PARTY_IDENTIFIED COMPOSITION LINK TRANSLATION_DETAILS ACCESS_GROUP_REF OBJECT_REF GENERIC_ENTRY DV_QUANTIFIED IMPORTED_VERSION DV_URI DV_BOOLEAN DV_TEXT ACTION ITEM_STRUCTURE HIER_OBJECT_ID SECTION ACTIVITY");
 
     CodeMirror.defineMode("adl", function () {
@@ -83,10 +88,18 @@
                     return "comment";
                 }
 
+                if (ch==='[' && stream.match(/\[[^\]:]*::[^\]:]*]/)) {
+                    return "atom"
+                }
+
+                if (stream.match(/[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9/%\-_\.=?~:#\[\]@!$@'()*+,;]+/)) {
+                    return "link";
+                }
+
+
                 if (stream.match(/[0-9]+(\.[0-9]+)?/)) {
                     return "number";
                 }
-
 
 
                 ///* references */
@@ -110,6 +123,11 @@
                         return "meta";
                     }
                 }
+                if (ch === '<' || ch === '{' || ch === '[') {
+                    state.lastOpenBrace = ch
+                }  else if (ch === '>' || ch === '}' || ch === ']') {
+                    state.lastOpenBrace = null;
+                }
 
                 /* nothing found, continue */
                 stream.next();
@@ -118,7 +136,8 @@
             startState: function () {
                 return {
                     tokenize: null,
-                    stringQuote: null
+                    stringQuote: null,
+                    lastOpenBrace: null
                 };
             }
         };
