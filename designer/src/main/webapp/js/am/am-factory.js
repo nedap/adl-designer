@@ -30,7 +30,7 @@ AOM = (function (AOM) {
         return {
             "@type": "C_ATTRIBUTE",
             rm_attribute_name: name,
-            existence: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL"),
+            //existence: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL"),
             children:[]
         };
     };

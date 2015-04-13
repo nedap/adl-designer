@@ -52,8 +52,8 @@
             }
         }
 
-        function openAddArchetypeDialog(targetCons, callback) {
-            var templateModel = AOM.TemplateModel.from(targetCons);
+
+        function getCandidateArchetypesToAdd(cons) {
 
             function getCandidateArchetypesMatchingRmType(rmType) {
                 var result = [];
@@ -79,20 +79,28 @@
                 return result;
             }
 
-
             var candidateArchetypes;
-            if (AOM.mixin(targetCons).isAttribute()) {
-                var attributeParentRmType = targetCons[".parent"].rm_type_name;
+            if (AOM.mixin(cons).isAttribute()) {
+                var attributeParentRmType = cons[".parent"].rm_type_name;
                 var referenceType = TemplateEditor.referenceModel.getType(attributeParentRmType);
-                var attributeRmType = referenceType.attributes[targetCons.rm_attribute_name].type;
+                var attributeRmType = referenceType.attributes[cons.rm_attribute_name].type;
                 candidateArchetypes = getCandidateArchetypesMatchingRmType(attributeRmType);
-            } else if (AOM.mixin(targetCons).isSlot()) {
-                candidateArchetypes = getCandidateArchetypesMatchingRmType(targetCons.rm_type_name);
-                candidateArchetypes = filterCandidateArchetypesForSlot(candidateArchetypes, targetCons);
+            } else if (AOM.mixin(cons).isSlot()) {
+                candidateArchetypes = getCandidateArchetypesMatchingRmType(cons.rm_type_name);
+                candidateArchetypes = filterCandidateArchetypesForSlot(candidateArchetypes, cons);
             } else {
                 // archetypes can only be added on attributes or slots
-                return;
+                return [];
             }
+
+            return candidateArchetypes;
+        }
+
+        function openAddArchetypeDialog(targetCons, callback) {
+            var templateModel = AOM.TemplateModel.from(targetCons);
+
+
+            var candidateArchetypes = getCandidateArchetypesToAdd(targetCons);
 
             // no matching archetypes found
             if (candidateArchetypes.length === 0) {
@@ -457,12 +465,48 @@
                 self.targetElement.jstree('redraw', true);
             };
 
-            self.addChild = function () {
+            self.addArchetype = function () {
                 var targetCons = self.current.data.cons || self.current.data.attr;
+                var templateModel = AOM.TemplateModel.from(targetCons);
+                if (!templateModel.canAddArchetype(targetCons)) {
+                    return;
+                }
                 openAddArchetypeDialog(targetCons, function (newCons) {
                     addConstraintTreeNode(self.current.treeNode, newCons);
                 });
             };
+
+
+            //self.getAttributeChildOccurrences = function (attrCons) {
+            //    if (attrCons.cardinality && attrCons.cardinality.interval) {
+            //        return attrCons.cardinality.interval;
+            //    }
+            //    var rmTypeName = attrCons[".parent"].rm_type_name;
+            //    var rmAttribute = TemplateEditor.referenceModel.getType(rmTypeName).attributes[attrCons.rm_attribute_name];
+            //    return AmInterval.of(rmAttribute.existence.lower, rmAttribute.existence.upper);
+            //};
+            //
+            //self.canAddArchetype = function () {
+            //    var targetCons = self.current.data.cons || self.current.data.attr;
+            //    var targetConsMixin = AOM.mixin(targetCons);
+            //    var children;
+            //
+            //    if (targetConsMixin.isAttribute()) {
+            //        // is there place for one more child ?
+            //        var childOccurrences = self.getAttributeChildOccurrences(targetCons);
+            //        children = AOM.TemplateModel.from(targetCons).getConstraintChildren(targetCons);
+            //        return typeof childOccurrences.upper !== "number" || childOccurrences.upper > children.length;
+            //    } else if (targetConsMixin.isSlot()) {
+            //        children = AOM.TemplateModel.from(targetCons).getConstraintChildren(targetCons);
+            //        if (targetCons.occurrences) {
+            //            return typeof targetCons.occurrences.upper !== "number" || targetCons.occurrences.upper > children.length;
+            //        } else {
+            //            return true;
+            //        }
+            //    } else {
+            //        return false;
+            //    }
+            //};
 
             self.removeConstraint = function () {
 
@@ -476,7 +520,6 @@
                     }
                     return -1;
                 }
-
 
 
                 if (!self.current) return;
@@ -516,7 +559,6 @@
                 self.styleNodes(parentNode.id);
                 return newTreeNodeId;
             }
-
 
 
             function styleJson(list) {
@@ -590,7 +632,7 @@
                 info.tree = new my.DefinitionTree(templateModel, definitionTreeElement, info);
 
 
-                info.toolbar.addArchetype.click(info.tree.addChild);
+                info.toolbar.addArchetype.click(info.tree.addArchetype);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);
 
                 targetElement.append(html);

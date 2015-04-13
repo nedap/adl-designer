@@ -2001,7 +2001,7 @@ TemplateBuilder.TemplateModel = function (rootArchetypeModel) {
                         $.getJSON("rest/repo/archetype/" + encodeURIComponent(addedArchetypeId) + "/flat").success(function (data) {
                             var archetypeModel = new AOM.ArchetypeModel(data);
                             var childModel = TemplateBuilder.templateModel.buildModelDefinition(archetypeModel);
-                            TemplateBuilder.templateModel.addChild(modelNode, childModel);
+                            TemplateBuilder.templateModel.addArchetype(modelNode, childModel);
                             var rowsStr = TemplateBuilder.templateModel.buildTableRows(childModel);
                             $("#templateTreeTable").treetable("loadBranch", ttNode, rowsStr);
                             $("#templateTreeTable").treetable("expandNode", ttNode.id);

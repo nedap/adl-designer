@@ -184,7 +184,7 @@
       }
       this.parentId = node.id;
       this.row.data(this.settings.parentIdAttr, node.id);
-      return node.addChild(this);
+      return node.addArchetype(this);
     };
 
     Node.prototype.show = function() {
@@ -304,7 +304,7 @@
             this.tree[node.id] = node;
 
             if (node.parentId != null && this.tree[node.parentId]) {
-              this.tree[node.parentId].addChild(node);
+              this.tree[node.parentId].addArchetype(node);
             } else {
               this.roots.push(node);
             }

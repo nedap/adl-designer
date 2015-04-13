@@ -83,6 +83,9 @@ AOM = (function (AOM) {
                 var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
                 refArchetypeModel.data.definition[".templateArchetypeRoot"] = cons;
             }
+            if (cons["@type"] === "ARCHETYPE_SLOT") {
+                return; // do not add any attributes on slots
+            }
             var existingAttributes = {};
             for (var i in cons.attributes || []) {
                 existingAttributes[cons.attributes[i].rm_attribute_name] = true;
@@ -96,7 +99,7 @@ AOM = (function (AOM) {
                     if (!existingAttributes[attrName]) {
                         var attr = referenceType.attributes[attrName];
                         if (rmTypesForArchetypesSet[attr.type]) {
-                            AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
+                            var attrCons = AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
                             existingAttributes[attrName] = true;
                         }
                     }
@@ -126,12 +129,31 @@ AOM = (function (AOM) {
             return archetypeModels[0];
         };
 
-        // todo set template parent to be a slot instead of attribute if it has a slot_node_id
         self.getConstraintParent = function (cons) {
-            return cons[".parent"] || cons[".templateArchetypeRoot"];
+            function findArchetypeSlot(archetypeRoot) {
+                if (!archetypeRoot.slot_node_id) return null;
+
+                var parentAttr = archetypeRoot[".parent"];
+                for (var i in parentAttr.children) {
+                    var consChild = parentAttr.children[i];
+                    if (consChild["@type"] === "ARCHETYPE_SLOT") {
+                        if (my.nodeIdMatches(archetypeRoot.slot_node_id, consChild.node_id, {matchParent: true})) {
+                            return consChild;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            if (cons[".templateArchetypeRoot"]) {
+                var archetypeRoot = cons[".templateArchetypeRoot"];
+                var parentSlot = findArchetypeSlot(archetypeRoot);
+                return parentSlot || cons[".parent"];
+            } else {
+                return cons[".parent"];
+            }
         };
 
-        // todo put C_ARCHETYPE_ROOT nodes under slot, if available
         self.getConstraintChildren = function (cons) {
             function constraintChildren(children) {
                 var result = [];
@@ -139,7 +161,10 @@ AOM = (function (AOM) {
                     var consChild = children[i];
                     var amType = consChild["@type"];
                     if (amType === "C_ARCHETYPE_ROOT") {
-                        result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+                        if (consChild.slot_node_id === undefined) {
+                            // only show the archetype_root if it is directly under attribute, instead of under slot
+                            result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+                        }
                     } else {
                         result.push(consChild);
                     }
@@ -147,9 +172,27 @@ AOM = (function (AOM) {
                 return result;
             }
 
+            function slotChildren(cons) {
 
-            if (AOM.mixin(cons).isAttribute()) {
+                var result = [];
+                var parentAttrCons = cons[".parent"];
+                for (var i in parentAttrCons.children) {
+                    var consChild = parentAttrCons.children[i];
+                    if (consChild["@type"] === "C_ARCHETYPE_ROOT") {
+                        if (my.nodeIdMatches(consChild.slot_node_id, cons.node_id, {matchSpecialized: true})) {
+                            result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+                        }
+                    }
+                }
+                return result;
+            }
+
+
+            var consMixin = AOM.mixin(cons);
+            if (consMixin.isAttribute()) {
                 return constraintChildren(cons.children || []);
+            } else if (consMixin.isSlot()) {
+                return slotChildren(cons);
             } else {
                 return cons.attributes || [];
             }
@@ -194,7 +237,8 @@ AOM = (function (AOM) {
 
             var newConstraint = AOM.newCArchetypeRoot(
                 newArchetypeModel.data.definition.rm_type_name,
-                newArchetypeModel.getArchetypeId());
+                newArchetypeModel.getArchetypeId(),
+                mixin.isSlot() ? targetCons.node_id : undefined);
 
             newArchetypeModel.data.definition[".templateArchetypeRoot"] = newConstraint;
 
@@ -206,6 +250,36 @@ AOM = (function (AOM) {
             return newArchetypeModel.data.definition;
         };
 
+        self.getAttributeChildOccurrences = function (attrCons) {
+            if (attrCons.cardinality && attrCons.cardinality.interval) {
+                return attrCons.cardinality.interval;
+            }
+            var rmTypeName = attrCons[".parent"].rm_type_name;
+            var rmAttribute = referenceModel.getType(rmTypeName).attributes[attrCons.rm_attribute_name];
+            return AmInterval.of(rmAttribute.existence.lower, rmAttribute.existence.upper);
+        };
+
+        self.canAddArchetype = function (cons) {
+            var targetConsMixin = AOM.mixin(cons);
+            var children;
+
+            if (targetConsMixin.isAttribute()) {
+                // is there place for one more child ?
+                var childOccurrences = self.getAttributeChildOccurrences(cons);
+                children = self.getConstraintChildren(cons);
+                return typeof childOccurrences.upper !== "number" || childOccurrences.upper > children.length;
+            } else if (targetConsMixin.isSlot()) {
+                children = self.getConstraintChildren(cons);
+                if (cons.occurrences) {
+                    return typeof cons.occurrences.upper !== "number" || cons.occurrences.upper > children.length;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        };
+
         self.removeConstraint = function (cons) {
             function removeArchetypeModel(archetypeModel) {
                 for (var i in archetypeModels) {
@@ -215,6 +289,7 @@ AOM = (function (AOM) {
                     }
                 }
             }
+
             if (AOM.mixin(cons).isAttribute()) return;
             var consArchetypeModel = AOM.ArchetypeModel.from(cons);
             if (cons[".parent"]) {

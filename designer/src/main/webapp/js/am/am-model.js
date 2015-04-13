@@ -142,35 +142,44 @@ var AOM = (function () {
     };
 
 
+    //  depending on context:
+    //  candidate       match       options.matchParent     options.matchSpecialized    result
+    //  id1             undefined   any                     any                         true
+    //  id1             id1         any                     any                         true
+    //  id1.1           id1         any                     any                         options.matchSpecialized
+    //  id1             id1.1       any                     any                         options.matchParent
+    //  id2             id1         any                     any                         false
+    /**
+     * @param {string} candidate candidate node to check
+     * @param {string} match node_id to check the candidate against
+     * @param {object?} options match options
+     * @param {boolean|undefined} options.matchSpecialized can candidate be a specialization of match
+     * @param {boolean|undefined} options.matchParent can candidate be a parent of match
+     * @return {boolean} true if candidate matches match with given options
+     */
+    my.nodeIdMatches = function (candidate, match, options) {
+        options = options || {};
+        if (match === undefined) return true;
+        if (candidate === undefined) return false;
+        if (candidate === match) return true;
+        if (options.matchSpecialized) {
+            if (candidate.length > match.length && candidate.substring(0, match.length + 1) === match + ".") return true;
+        }
+        if (options.matchParent) {
+            if (candidate.length < match.length && match.substring(0, candidate.length + 1) === candidate + ".") return true;
+        }
+        return false;
+
+    };
     my.AmQuery = function () {
         var self = this;
-
-        //  depending on context:
-        //  candidate       match       context.matchParent     context.matchSpecialized    result
-        //  id1             undefined   any                     any                         true
-        //  id1             id1         any                     any                         true
-        //  id1.1           id1         any                     any                         context.matchSpecialized
-        //  id1             id1.1       any                     any                         context.matchParent
-        //  id2             id1         any                     any                         false
-        function nodeIdMatches(candidate, match, context) {
-            if (match === undefined) return true;
-            if (candidate === undefined) return false;
-            if (candidate === match) return true;
-            if (context.matchSpecialized) {
-                if (candidate.length > match.length && candidate.substring(0, match.length + 1) === match + ".") return true;
-            }
-            if (context.matchParent) {
-                if (candidate.length < match.length && match.substring(0, candidate.length + 1) === candidate + ".") return true;
-            }
-            return false;
-        }
 
         function attributeMatches(attribute, segment) {
             return attribute.rm_attribute_name === segment.attribute;
         }
 
         function constraintMatches(cons, segment, context) {
-            return nodeIdMatches(cons.node_id, segment.node_id, context);
+            return my.nodeIdMatches(cons.node_id, segment.node_id, context);
         }
 
         function findChildConstrains(cons, segment, context) {
