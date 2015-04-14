@@ -92,15 +92,17 @@ AOM = (function (AOM) {
             }
 
             // add attributes that can be filled by archetypes
-            var rmType = cons.rm_type_name;
-            var referenceType = referenceModel.getType(rmType);
-            if (referenceType) {
-                for (var attrName in referenceType.attributes) {
-                    if (!existingAttributes[attrName]) {
-                        var attr = referenceType.attributes[attrName];
-                        if (rmTypesForArchetypesSet[attr.type]) {
-                            var attrCons = AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
-                            existingAttributes[attrName] = true;
+            if (cons["@type"]==="C_COMPLEX_OBJECT" || cons["@type"]==="C_ARCHETYPE_ROOT") {
+                var rmType = cons.rm_type_name;
+                var referenceType = referenceModel.getType(rmType);
+                if (referenceType) {
+                    for (var attrName in referenceType.attributes) {
+                        if (!existingAttributes[attrName]) {
+                            var attr = referenceType.attributes[attrName];
+                            if (rmTypesForArchetypesSet[attr.type]) {
+                                var attrCons = AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
+                                existingAttributes[attrName] = true;
+                            }
                         }
                     }
                 }
@@ -148,7 +150,7 @@ AOM = (function (AOM) {
             if (cons[".templateArchetypeRoot"]) {
                 var archetypeRoot = cons[".templateArchetypeRoot"];
                 var parentSlot = findArchetypeSlot(archetypeRoot);
-                return parentSlot || cons[".parent"];
+                return parentSlot || archetypeRoot[".parent"];
             } else {
                 return cons[".parent"];
             }
@@ -326,6 +328,20 @@ AOM = (function (AOM) {
                 if (!archetypeModel.isSpecialized(cons)) return;
                 archetypeModel.setTermDefinition(cons.node_id, language, text);
             }
+        };
+
+
+        /**
+         * Creates a json representation of the template than can be stored via rest call to /rest/repo/template
+         * @return {object[]} list of archetype data, in serializable form.
+         */
+        self.toSerializableForm = function() {
+            var result = [];
+            for (var i in archetypeModels) {
+                var archetypeModel = archetypeModels[i];
+                result.push(AOM.impoverishedClone(archetypeModel.data));
+            }
+            return result;
         };
 
         function createRmTypesForArchetypesSet() {

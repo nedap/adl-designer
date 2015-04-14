@@ -116,6 +116,25 @@ var TemplateEditor = (function () {
 
     };
 
+    my.saveCurrentTemplate = function () {
+        if (!my.templateModel) return;
+
+        jQuery.ajax({
+            'type': 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'url': "rest/repo/template",
+            'contentType': 'application/json',
+            'data': JSON.stringify(my.templateModel.toSerializableForm())/*,
+             'dataType': 'text'*/
+        }).success(function () {
+            alert('Template saved');
+        });
+
+    };
+
     my.useTemplate = function (templateModel) {
 
         function loadDescription() {
@@ -123,7 +142,7 @@ var TemplateEditor = (function () {
             ArchetypeEditor.Description.show(templateModel.getRootArchetypeModel(), targetElement);
         }
 
-//        my.templateModel=templateModel;
+        my.templateModel=templateModel;
 
         var targetElement = $('#archetype-editor-main-tabs-definition');
         my.Definition.show(templateModel, my.referenceModel, targetElement);

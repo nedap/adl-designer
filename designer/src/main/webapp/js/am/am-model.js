@@ -1489,7 +1489,7 @@ var AOM = (function () {
         data.archetype_id.value = options.archetypeId;
         data.parent_archetype_id = {
             "@type": "ARCHETYPE_ID",
-            value: options.parent.archetypeId
+            value: options.parent.getArchetypeId()
         };
 
         var originalNodeId = data.definition.node_id;

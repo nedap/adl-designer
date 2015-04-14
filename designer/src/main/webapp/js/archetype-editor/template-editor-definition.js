@@ -477,37 +477,6 @@
             };
 
 
-            //self.getAttributeChildOccurrences = function (attrCons) {
-            //    if (attrCons.cardinality && attrCons.cardinality.interval) {
-            //        return attrCons.cardinality.interval;
-            //    }
-            //    var rmTypeName = attrCons[".parent"].rm_type_name;
-            //    var rmAttribute = TemplateEditor.referenceModel.getType(rmTypeName).attributes[attrCons.rm_attribute_name];
-            //    return AmInterval.of(rmAttribute.existence.lower, rmAttribute.existence.upper);
-            //};
-            //
-            //self.canAddArchetype = function () {
-            //    var targetCons = self.current.data.cons || self.current.data.attr;
-            //    var targetConsMixin = AOM.mixin(targetCons);
-            //    var children;
-            //
-            //    if (targetConsMixin.isAttribute()) {
-            //        // is there place for one more child ?
-            //        var childOccurrences = self.getAttributeChildOccurrences(targetCons);
-            //        children = AOM.TemplateModel.from(targetCons).getConstraintChildren(targetCons);
-            //        return typeof childOccurrences.upper !== "number" || childOccurrences.upper > children.length;
-            //    } else if (targetConsMixin.isSlot()) {
-            //        children = AOM.TemplateModel.from(targetCons).getConstraintChildren(targetCons);
-            //        if (targetCons.occurrences) {
-            //            return typeof targetCons.occurrences.upper !== "number" || targetCons.occurrences.upper > children.length;
-            //        } else {
-            //            return true;
-            //        }
-            //    } else {
-            //        return false;
-            //    }
-            //};
-
             self.removeConstraint = function () {
 
                 function getJsTreeNodeSiblingIndex(treeNode) {

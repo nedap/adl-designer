@@ -46,6 +46,10 @@ public class ArchetypeDifferentiator {
         this.archetypeSpecializationDepth = getSpecializationDepth(flatChild.getDefinition().getNodeId());
     }
 
+    public static DifferentialArchetype differentiate(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+        return new ArchetypeDifferentiator(flatParent, flatChild).build();
+    }
+
     private DifferentialArchetype build() {
         DifferentialArchetype diffChild = AdlUtils.createDifferentialArchetypeClone(flatChild);
         if (flatParent == null) {
@@ -73,7 +77,6 @@ public class ArchetypeDifferentiator {
         }
 
     }
-
 
     private void removeUnspecializedTermDefinitions(DifferentialArchetype diffChild) {
         ArchetypeWrapper diffChildWrapper = new ArchetypeWrapper(diffChild);
@@ -142,7 +145,6 @@ public class ArchetypeDifferentiator {
             makeDifferentialPaths(cAttribute);
         }
     }
-
 
     private void makeDifferentialPaths(CAttribute cattr) {
         cattr.getChildren().forEach(this::makeDifferentialPaths);
@@ -214,18 +216,18 @@ public class ArchetypeDifferentiator {
         }
 
         if (cobj.getNodeId() != null) {
-            int nodeSpecializationDepth = getSpecializationDepth(cobj.getNodeId());
-            if (nodeSpecializationDepth < archetypeSpecializationDepth) {
-                result = Prune.prune;
-            } else {
+            if (cobj.getNodeId().startsWith("openEHR-")) {
                 result = Prune.keep;
+            } else {
+                int nodeSpecializationDepth = getSpecializationDepth(cobj.getNodeId());
+                if (nodeSpecializationDepth < archetypeSpecializationDepth) {
+                    result = Prune.prune;
+                } else {
+                    result = Prune.keep;
+                }
             }
         }
         return result;
-    }
-
-    public static DifferentialArchetype differentiate(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
-        return new ArchetypeDifferentiator(flatParent, flatChild).build();
     }
 
     private enum Prune {

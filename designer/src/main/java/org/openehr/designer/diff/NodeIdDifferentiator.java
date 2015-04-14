@@ -32,6 +32,9 @@ public class NodeIdDifferentiator {
     private static final Pattern PREFIX_PATTER = Pattern.compile("([a-zA-Z]+)([\\d\\.]+)");
 
     public static int getSpecializationDepth(String nodeId) {
+        if (nodeId.startsWith("openEHR-")) {
+            return 0;
+        }
         return NodeId.parse(nodeId).codes.length;
     }
 

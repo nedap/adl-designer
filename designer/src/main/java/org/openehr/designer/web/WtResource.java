@@ -49,6 +49,8 @@ public interface WtResource {
 
     TemplateTom loadTom(String templateId);
 
+    void saveTemplate(List<FlatArchetype> archetypeList);
+
     List<TemplateInfo> listToms();
 
     ResponseEntity<byte[]> exportOpt14(String templateId);

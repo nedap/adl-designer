@@ -29,6 +29,7 @@ import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
+import org.openehr.designer.diff.TemplateDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
@@ -136,6 +137,14 @@ public class WtResourceImpl implements WtResource {
         return templateTom;
     }
 
+    @RequestMapping(value = "/template", method = RequestMethod.POST)
+    @Override
+    public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
+        TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(archetypes);
+        templateRepository.saveTemplate(sourceArchetypes);
+    }
+
     @RequestMapping(value = "/tom", method = RequestMethod.GET)
     @Override
     public List<TemplateInfo> listToms() {
@@ -208,7 +217,7 @@ public class WtResourceImpl implements WtResource {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "No such archetype")
     @ExceptionHandler(ArchetypeNotFoundException.class)
     @ResponseBody
-    public ErrorResponse handleArchetypeNotFoundException(IllegalArgumentException e) {
+    public ErrorResponse handleArchetypeNotFoundException(ArchetypeNotFoundException e) {
         LOG.error("Bad Request", e);
         return new ErrorResponse(e.getMessage());
     }
