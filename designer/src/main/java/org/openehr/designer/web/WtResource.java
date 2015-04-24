@@ -50,6 +50,8 @@ public interface WtResource {
     TemplateTom loadTom(String templateId);
 
     void saveTemplate(List<FlatArchetype> archetypeList);
+    List<TemplateInfo> listTemplates();
+    List<FlatArchetype> loadTemplate(String templateId);
 
     List<TemplateInfo> listToms();
 

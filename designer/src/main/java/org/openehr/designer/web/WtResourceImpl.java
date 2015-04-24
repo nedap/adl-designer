@@ -21,11 +21,13 @@
 package org.openehr.designer.web;
 
 import com.google.common.base.Charsets;
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.FlatArchetypeProviderOverlay;
 import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
@@ -48,6 +50,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -143,6 +146,26 @@ public class WtResourceImpl implements WtResource {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
         List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(archetypes);
         templateRepository.saveTemplate(sourceArchetypes);
+    }
+
+    @RequestMapping(value = "/template", method = RequestMethod.GET)
+    @Override
+    public List<TemplateInfo> listTemplates() {
+        return templateRepository.listTemplates();
+    }
+
+    @RequestMapping(value = "/template/{templateId}", method = RequestMethod.GET)
+    @Override
+    public List<FlatArchetype> loadTemplate(@PathVariable String templateId) {
+        List<DifferentialArchetype> differentials = templateRepository.loadTemplate(templateId);
+        FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeRepository, rmModel, differentials);
+
+        List<FlatArchetype> result = new ArrayList<>();
+        for (DifferentialArchetype differential : differentials) {
+            result.add(flatArchetypeProvider.getFlatArchetype(differential.getArchetypeId().getValue()));
+        }
+
+        return result;
     }
 
     @RequestMapping(value = "/tom", method = RequestMethod.GET)

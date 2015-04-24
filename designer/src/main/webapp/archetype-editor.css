@@ -148,3 +148,45 @@ form .table-layout .table-cell {
 
 .external_terminology_row_actions {
 }
+
+
+
+
+/* ICONS */
+.openehr-rm-icon {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    background: url("images/icons/any.png") no-repeat !important;
+    padding-left: 20px !important;
+}
+
+.openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
+.openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }
+.openehr-rm-icon.admin_entry { background: url("images/icons/admin_entry.png") no-repeat !important; }
+.openehr-rm-icon.cluster { background: url("images/icons/cluster.png") no-repeat !important; }
+.openehr-rm-icon.composition { background: url("images/icons/composition.png") no-repeat !important; }
+.openehr-rm-icon.dv_boolean { background: url("images/icons/dv_boolean.png") no-repeat !important; }
+.openehr-rm-icon.dv_coded_text { background: url("images/icons/dv_coded_text.png") no-repeat !important; }
+.openehr-rm-icon.dv_count { background: url("images/icons/dv_count.png") no-repeat !important; }
+.openehr-rm-icon.dv_date { background: url("images/icons/dv_date.png") no-repeat !important; }
+.openehr-rm-icon.dv_date_time { background: url("images/icons/dv_date_time.png") no-repeat !important; }
+.openehr-rm-icon.dv_duration { background: url("images/icons/dv_duration.png") no-repeat !important; }
+.openehr-rm-icon.dv_identifier { background: url("images/icons/dv_identifier.png") no-repeat !important; }
+.openehr-rm-icon.dv_multimedia { background: url("images/icons/dv_multimedia.png") no-repeat !important; }
+.openehr-rm-icon.dv_ordinal { background: url("images/icons/dv_ordinal.png") no-repeat !important; }
+.openehr-rm-icon.dv_proportion { background: url("images/icons/dv_proportion.png") no-repeat !important; }
+.openehr-rm-icon.dv_quantity { background: url("images/icons/dv_quantity.png") no-repeat !important; }
+.openehr-rm-icon.dv_text { background: url("images/icons/dv_text.png") no-repeat !important; }
+.openehr-rm-icon.dv_time { background: url("images/icons/dv_time.png") no-repeat !important; }
+.openehr-rm-icon.dv_uri { background: url("images/icons/uri.png") no-repeat !important; }
+.openehr-rm-icon.element { background: url("images/icons/element.png") no-repeat !important; }
+.openehr-rm-icon.evaluation { background: url("images/icons/evaluation.png") no-repeat !important; }
+.openehr-rm-icon.event { background: url("images/icons/event.png") no-repeat !important; }
+.openehr-rm-icon.history { background: url("images/icons/history.png") no-repeat !important; }
+.openehr-rm-icon.instruction { background: url("images/icons/instruction.png") no-repeat !important; }
+.openehr-rm-icon.interval_event { background: url("images/icons/interval_event.png") no-repeat !important; }
+.openehr-rm-icon.item_tree { background: url("images/icons/item_tree.png") no-repeat !important; }
+.openehr-rm-icon.observation { background: url("images/icons/observation.png") no-repeat !important; }
+.openehr-rm-icon.item_list { background: url("images/icons/structure.png") no-repeat !important; }
+.openehr-rm-icon.item_single { background: url("images/icons/structure.png") no-repeat !important; }

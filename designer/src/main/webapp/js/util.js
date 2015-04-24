@@ -307,6 +307,16 @@ var AmUtils = function () {
         return result;
     };
 
+    my.intersectSet = function(set1, set2) {
+        var result={};
+        for (var key in set1) {
+            if (set2[key]) {
+                result[key]=true;
+            }
+        }
+        return result;
+    };
+
     my.keys = function (object) {
         var result = [];
         for (var key in object) {

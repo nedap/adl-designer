@@ -21,6 +21,53 @@
 var TemplateEditor = (function () {
     var my = {};
 
+    my.openLoadTemplateDialog = function() {
+        $.getJSON("rest/repo/template").success(function (templateInfoList) {
+
+            var context = {
+                panel_id: GuiUtils.generateId()
+            };
+            GuiUtils.applyTemplate("template-editor|loadTemplateDialog", context, function (htmlString) {
+
+                function populateTemplateIdSelect() {
+                    templateIdSelect.empty();
+                    for (var i in templateInfoList) {
+                        var templateInfo = templateInfoList[i];
+                        var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name +")");
+                        templateIdSelect.append(option);
+                    }
+                }
+
+                var content = $(htmlString);
+
+                var templateIdSelect = content.find('#'+context.panel_id+"_template_id");
+
+                populateTemplateIdSelect();
+
+
+                GuiUtils.openSimpleDialog(
+                    {
+                        title: "Create new template",
+                        buttons: {"load": "Load"},
+                        content: content,
+                        callback: function (content) {
+                            var templateId = templateIdSelect.val();
+                            $.getJSON("rest/repo/template/"+encodeURIComponent(templateId)).success(function(templateData) {
+                                //alert ("Loaded template: " + templateId);
+                                AOM.TemplateModel.createFromSerialized({
+                                    archetypeRepository: my.archetypeRepository,
+                                    referenceModel: my.referenceModel,
+                                    data: templateData,
+                                    callback: my.useTemplate
+                                });
+                            });
+                        }
+                    });
+            });
+
+        });
+    };
+
     my.openCreateNewTemplateDialog = function () {
         var context = {
             panel_id: GuiUtils.generateId()

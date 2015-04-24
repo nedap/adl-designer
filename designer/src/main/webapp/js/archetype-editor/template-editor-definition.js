@@ -140,13 +140,41 @@
                             var archetypeId = archetypeIdSelect.val();
 
                             TemplateEditor.archetypeRepository.loadArchetype(archetypeId, function (data) {
+                                var archetypeModel = new AOM.ArchetypeModel(data);
+                                var templateLanguages = templateModel.getArchetypeLanguageIntersection();
+                                var archetypeLanguages = archetypeModel.allLanguages();
+                                var joinedLanguages = AmUtils.intersectSet(AmUtils.listToSet(templateLanguages), AmUtils.listToSet(archetypeLanguages));
+                                if (AmUtils.keys(joinedLanguages).length == 0) {
+                                    alert('Archetype does not have any common languages with current template. Template languages: ' + templateLanguages + ", archetype languages: " + archetypeLanguages);
+                                    return;
+                                }
+
                                 var generatedCons = templateModel.addArchetype(targetCons, data);
                                 callback(generatedCons);
                             });
                         }
                     });
             });
+        }
 
+
+        function populateLanguageSelect(languageSelect, templateModel) {
+            var lastVal = languageSelect.val();
+            var lastValPresent = false;
+            languageSelect.empty();
+            var langs = templateModel.getArchetypeLanguageIntersection();
+            for (var i in langs) {
+                var lang = langs[i];
+                languageSelect.append($('<option>').attr('value', lang).text(lang));
+                if (lang == lastVal) {
+                    lastValPresent = true;
+                }
+            }
+            if (lastValPresent) {
+                languageSelect.val(lastVal);
+            } else {
+                languageSelect.val(langs[0]);
+            }
 
         }
 
@@ -344,6 +372,7 @@
             var self = this;
             var treeIdPrefix = "dt_" + GuiUtils.generateId() + "_";
             var nextTreeIdIndex = 0;
+            var currentLanguage;
 
             var treeData = {};
 
@@ -351,78 +380,100 @@
                 return treeIdPrefix + (nextTreeIdIndex++).toString();
             }
 
-            self.extractConstraintName = function (cons) {
-                return templateModel.getConstraintLabel(cons);
-                //var archetypeModel = AOM.ArchetypeModel.from(cons);
-                //var result = archetypeModel.getTermDefinitionText(cons.node_id);
-                //if (!result) {
-                //    result = cons.rm_type_name;
-                //}
-                //return result;
+            self.extractConstraintName = function (cons, language) {
+                return templateModel.getConstraintLabel(cons, language);
             };
 
-            function createAttrJson(attribute) {
-                var attrJson = {
-                    id: nextTreeId()
-                };
-                treeData[attrJson.id] = {
-                    attr: attribute
-                };
-                attrJson.text = attribute.rm_attribute_name;
-                if (attribute.children && attribute.children.length > 0) {
-                    attrJson.children = [];
 
-                    for (var j in attribute.children) {
-                        buildTreeJson(attrJson.children, attribute.children[j]);
-                    }
-                }
-                return attrJson;
-            }
+            self.setLanguage = function (language) {
 
-            function buildTreeJson(target, cons) {
-
-
-                function addFullAttributesAndConstrains() {
-                    var children = templateModel.getConstraintChildren(cons);
-                    for (var i in children) {
-                        var child = children[i];
-                        if (AOM.mixin(child).isAttribute()) {
-                            var attrJson = createAttrJson(child);
-                            consJson.children.push(attrJson);
-                        } else {
-                            buildTreeJson(consJson.children, child);
+                function renameSubtree(node) {
+                    var nodeData = treeData[node.id];
+                    var cons = nodeData.cons || nodeData.attr;
+                    var newName = self.extractConstraintName(cons, language);
+                    info.tree.targetElement.jstree('rename_node', node, newName);
+                    if (node.children) {
+                        for (var i in node.children) {
+                            var child = info.tree.targetElement.jstree('get_node', node.children[i]);
+                            renameSubtree(child)
                         }
                     }
                 }
 
+                var treeRoot = info.tree.targetElement.jstree('get_node', '#');
+                var node = info.tree.targetElement.jstree('get_node', treeRoot.children[0]);
+                renameSubtree(node);
 
-                // leave tree compactness for later
-                var rmType = undefined;
-                //var rmType = my.referenceModel.getType(cons.rm_type_name);
+                info.tree.targetElement.jstree('redraw', true);
 
-                if (rmType && rmType.display === 'none') return;
+                currentLanguage = language;
+            };
 
-                var consJson = {
-                    id: nextTreeId()
-                };
-                treeData[consJson.id] = {
-                    cons: cons
-                };
 
-                if (!consJson.text) {
-                    consJson.text = self.extractConstraintName(cons);
-                }
+            function buildTreeJson(cons) {
 
-                // only add attributes if no custom handler for this type
-                if (!ArchetypeEditor.getRmTypeHandler(cons)) {
-
-                    if (cons.attributes && cons.attributes.length > 0) {
-                        consJson.children = [];
+                function createJson(cons) {
+                    if (cons["@type"] === "C_ATTRIBUTE") {
+                        return createAttrJson(cons);
+                    } else {
+                        return createConsJson(cons);
                     }
-                    addFullAttributesAndConstrains();
                 }
 
-                target.push(consJson);
+                function createConsJson(cons) {
+                    var consJson = {
+                        id: nextTreeId()
+                    };
+                    treeData[consJson.id] = {
+                        cons: cons
+                    };
+                    if (!consJson.text) {
+                        consJson.text = self.extractConstraintName(cons);
+                    }
+                    if (cons["@type"] === "ARCHETYPE_SLOT" || !ArchetypeEditor.getRmTypeHandler(cons)) {
+                        consJson.children = createChildrenJson(cons);
+                    }
+                    return consJson;
+                }
+
+                function createAttrJson(cons) {
+                    var attrJson = {
+                        id: nextTreeId()
+                    };
+                    treeData[attrJson.id] = {
+                        attr: cons
+                    };
+                    attrJson.text = cons.rm_attribute_name;
+                    attrJson.children = createChildrenJson(cons);
+                    return attrJson;
+                }
+
+                function createChildrenJson(cons) {
+                    var result = [];
+                    var children = templateModel.getConstraintChildren(cons);
+                    for (var i in children) {
+                        var child = children[i];
+                        result.push(createJson(child));
+                    }
+                    return result;
+                }
+
+                return createJson(cons);
+
+                //function addFullAttributesAndConstrains() {
+                //    var children = templateModel.getConstraintChildren(cons);
+                //    for (var i in children) {
+                //        var child = children[i];
+                //        if (AOM.mixin(child).isAttribute()) {
+                //            var attrJson = createAttrJson(child);
+                //            consJson.children.push(attrJson);
+                //        } else {
+                //            buildTreeJson(consJson.children, child);
+                //        }
+                //    }
+                //}
+
+
             }
 
             function styleNodeJson(treeNodeJson) {
@@ -430,6 +481,27 @@
                 var isAttr = !treeData[treeNodeJson.id].cons;
                 var archetypeModel = AOM.ArchetypeModel.from(cons);
                 var isSpecialized = archetypeModel.isSpecialized(cons);
+
+                if (cons && cons.rm_type_name) {
+                    var rmType;
+                    if (cons.rm_type_name === "ELEMENT") {
+                        if (!cons.attributes || cons.attributes.length == 0) {
+                            rmType = ""
+                        }
+                        else {
+                            var attr = cons.attributes[0];
+                            if (!attr.children || attr.children.length==0) {
+                                rmType = ""
+                            } else if (attr.children.length==1){
+                                rmType = attr.children[0].rm_type_name;
+                            } else {
+                                rmType = "ELEMENT"; // no specific icon for choice
+                            }
+                        }
+                    }
+                    if (!rmType) rmType=cons.rm_type_name;
+                    treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
+                }
 
                 treeNodeJson.a_attr = treeNodeJson.a_attr || {};
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
@@ -465,6 +537,58 @@
                 self.targetElement.jstree('redraw', true);
             };
 
+            self.renameConstraint = function () {
+                var targetCons = self.current.data.cons;
+                if (!targetCons || !targetCons.node_id) {
+                    return;
+                }
+                var archetypeModel = AOM.ArchetypeModel.from(targetCons);
+                if (!archetypeModel.isSpecialized(targetCons)) {
+                    return;
+                }
+
+                var term = archetypeModel.getTermDefinition(targetCons.node_id, currentLanguage);
+                var context = {
+                    panel_id: GuiUtils.generateId(),
+                    language: currentLanguage
+
+                };
+                GuiUtils.applyTemplate("template-editor|renameConstraintDialog", context, function (htmlString) {
+
+                    var content = $(htmlString);
+
+                    var textInput = content.find('#' + context.panel_id + '_text');
+                    textInput.val(term.text);
+                    var descriptionInput = content.find('#' + context.panel_id + '_description');
+                    descriptionInput.val(term.description);
+
+
+                    GuiUtils.openSimpleDialog(
+                        {
+                            title: "Rename constraint",
+                            buttons: {"rename": "Rename"},
+                            content: content,
+                            callback: function (content) {
+                                var text = textInput.val();
+                                var description = descriptionInput.val();
+                                if (text.length == 0) {
+                                    return "text is required"
+                                }
+                                if (description.length == 0) {
+                                    return "description is required"
+                                }
+
+                                archetypeModel.setTermDefinition(targetCons.node_id, currentLanguage, text, description);
+
+                                info.tree.targetElement.jstree('rename_node', self.current.treeNode, text);
+                                info.tree.targetElement.jstree('redraw', true);
+                            }
+                        });
+                });
+
+            };
+
+
             self.addArchetype = function () {
                 var targetCons = self.current.data.cons || self.current.data.attr;
                 var templateModel = AOM.TemplateModel.from(targetCons);
@@ -473,6 +597,7 @@
                 }
                 openAddArchetypeDialog(targetCons, function (newCons) {
                     addConstraintTreeNode(self.current.treeNode, newCons);
+                    populateLanguageSelect(info.toolbar.languageSelect, templateModel);
                 });
             };
 
@@ -510,20 +635,13 @@
                     info.tree.targetElement.jstree('select_node', newNodeId);
                 } else {
                     info.tree.targetElement.jstree('delete_node', self.current.treeNode);
+                    populateLanguageSelect(info.toolbar.languageSelect, templateModel);
                 }
             };
 
 
-            function addAttributeTreeNode(parentNode, childCons, pos) {
-                var attrJson = createAttrJson(childCons);
-                self.targetElement.jstree('create_node', parentNode, attrJson, pos);
-                self.styleNodes(parentNode.id);
-            }
-
             function addConstraintTreeNode(parentNode, childCons, pos) {
-                var target = [];
-                buildTreeJson(target, childCons);
-                var childJson = target[0];
+                var childJson = buildTreeJson(childCons);
                 var newTreeNodeId = self.targetElement.jstree('create_node', parentNode, childJson, pos);
                 self.styleNodes(parentNode.id);
                 return newTreeNodeId;
@@ -541,8 +659,8 @@
 
             self.info = info;
 
-            var jsonTreeTarget = [];
-            buildTreeJson(jsonTreeTarget, templateModel.getRootArchetypeModel().data.definition);
+            var jsonTreeRoot = buildTreeJson(templateModel.getRootArchetypeModel().data.definition);
+            var jsonTreeTarget = [jsonTreeRoot];
             styleJson(jsonTreeTarget);
 
             targetElement.empty();
@@ -575,6 +693,8 @@
                 };
                 info.propertiesPanel.show(constraintData);
             });
+
+            currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
         };
 
         my.show = function (templateModel, referenceModel, targetElement) {
@@ -590,6 +710,8 @@
                 var info = {
                     referenceModel: referenceModel,
                     toolbar: {
+                        languageSelect: html.find('#' + context.panel_id + '_language'),
+                        renameConstraint: html.find('#' + context.panel_id + '_renameConstraint'),
                         addArchetype: html.find('#' + context.panel_id + '_addArchetype'),
                         removeConstraint: html.find('#' + context.panel_id + '_removeConstraint')
                     }
@@ -601,8 +723,15 @@
                 info.tree = new my.DefinitionTree(templateModel, definitionTreeElement, info);
 
 
+                info.toolbar.languageSelect.change(function () {
+                    info.tree.setLanguage(info.toolbar.languageSelect.val())
+                });
+                populateLanguageSelect(info.toolbar.languageSelect, templateModel);
+
+                info.toolbar.renameConstraint.click(info.tree.renameConstraint);
                 info.toolbar.addArchetype.click(info.tree.addArchetype);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);
+
 
                 targetElement.append(html);
             });

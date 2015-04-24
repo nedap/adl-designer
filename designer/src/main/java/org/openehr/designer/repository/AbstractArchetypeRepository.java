@@ -25,6 +25,9 @@ import org.openehr.jaxb.am.ArchetypeTerm;
 import org.openehr.jaxb.am.CodeDefinitionSet;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.rm.StringDictionaryItem;
+import org.openehr.jaxb.rm.TranslationDetails;
+
+import java.util.ArrayList;
 
 /**
  * @author markopi
@@ -42,6 +45,11 @@ abstract public class AbstractArchetypeRepository implements ArchetypeRepository
 
         String defaultLanguage = archetype.getOriginalLanguage().getCodeString();
         info.setName(findTermText(archetype, mainNodeId, defaultLanguage));
+        info.setLanguages(new ArrayList<>());
+        info.getLanguages().add(defaultLanguage);
+        for (TranslationDetails details : archetype.getTranslations()) {
+            info.getLanguages().add(details.getLanguage().getCodeString());
+        }
         return info;
     }
 

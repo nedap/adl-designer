@@ -20,6 +20,8 @@
 
 package org.openehr.designer;
 
+import java.util.List;
+
 /**
  * @author Marko Pipan
  */
@@ -27,6 +29,7 @@ public class ArchetypeInfo {
     private String archetypeId;
     private String rmType;
     private String name;
+    private List<String> languages;
 
 
     public ArchetypeInfo(String archetypeId, String rmType, String name) {
@@ -60,5 +63,13 @@ public class ArchetypeInfo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<String> getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
     }
 }

@@ -31,7 +31,7 @@ AOM = (function (AOM) {
     function buildArchetypeModels(archetypeDataList, archetypeRepository, callback) {
         function buildArchetypeModel(index) {
             var archetypeData = archetypeDataList[index];
-            archetypeRepository.loadArchetype(archetypeData.parent_archetype_id, function (parentArchetypeData) {
+            archetypeRepository.loadArchetype(archetypeData.parent_archetype_id.value, function (parentArchetypeData) {
                 var parentArchetypeModel = new AOM.ArchetypeModel(parentArchetypeData);
                 result[index] = new AOM.ArchetypeModel(archetypeDataList[index], parentArchetypeModel);
                 latch.countDown();
@@ -49,7 +49,9 @@ AOM = (function (AOM) {
                 latch.countDown();
             }
         }
-        latch.execute(callback(result));
+        latch.execute(function () {
+            callback(result);
+        });
 
     }
 
@@ -92,7 +94,7 @@ AOM = (function (AOM) {
             }
 
             // add attributes that can be filled by archetypes
-            if (cons["@type"]==="C_COMPLEX_OBJECT" || cons["@type"]==="C_ARCHETYPE_ROOT") {
+            if (cons["@type"] === "C_COMPLEX_OBJECT" || cons["@type"] === "C_ARCHETYPE_ROOT") {
                 var rmType = cons.rm_type_name;
                 var referenceType = referenceModel.getType(rmType);
                 if (referenceType) {
@@ -335,13 +337,21 @@ AOM = (function (AOM) {
          * Creates a json representation of the template than can be stored via rest call to /rest/repo/template
          * @return {object[]} list of archetype data, in serializable form.
          */
-        self.toSerializableForm = function() {
+        self.toSerializableForm = function () {
             var result = [];
             for (var i in archetypeModels) {
                 var archetypeModel = archetypeModels[i];
                 result.push(AOM.impoverishedClone(archetypeModel.data));
             }
             return result;
+        };
+
+        self.getArchetypeLanguageIntersection = function () {
+            var languageSet = AmUtils.listToSet(archetypeModels[0].allLanguages());
+            for (var i = 1; i < archetypeModels.length; i++) {
+                languageSet = AmUtils.intersectSet(languageSet, AmUtils.listToSet(archetypeModels[i].allLanguages()));
+            }
+            return AmUtils.keys(languageSet);
         };
 
         function createRmTypesForArchetypesSet() {
@@ -398,6 +408,23 @@ AOM = (function (AOM) {
             archetypeModel.data.is_template = true;
 
             var templateModel = new AOM.TemplateModel([archetypeModel], params.archetypeRepository, params.referenceModel);
+            params.callback(templateModel);
+        });
+    };
+
+    /**
+     * Creates a new template model from the serialized form (a list of archetypes). The serialized form is loaded
+     * from template repository or obtained by calling templateModel.toSerializedForm().
+     *
+     * @param params Load template params
+     * @param {AOM.ArchetypeRepository} params.archetypeRepository Archetype repository to use
+     * @param {AOM.ReferenceModel} params.referenceModel Reference model to use
+     * @param {object} params.data serialized form of the template (as loaded from repository)
+     * @param {function(AOM.TemplateModel)} params.callback callback called when the template model is created
+     */
+    my.TemplateModel.createFromSerialized = function (params) {
+        buildArchetypeModels(params.data, params.archetypeRepository, function (archetypeModels) {
+            var templateModel = new AOM.TemplateModel(archetypeModels, params.archetypeRepository, params.referenceModel);
             params.callback(templateModel);
         });
     };

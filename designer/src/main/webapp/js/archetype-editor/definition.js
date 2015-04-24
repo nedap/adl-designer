@@ -313,6 +313,9 @@
                     console.debug("save changes to:   ", cons);
 
                     archetypeModel.enrichReplacementConstraint(cons);
+                    constraintData.treeNode;
+                    constraintData.info.tree.styleNodes(constraintData.treeNode.id);
+
                 });
             } // showConstraintProperties
 
@@ -492,6 +495,28 @@
                 var cons = treeData[treeNodeJson.id].cons || treeData[treeNodeJson.id].attr;
                 var isAttr = !treeData[treeNodeJson.id].cons;
                 var isSpecialized = archetypeModel.isSpecialized(cons);
+
+                if (cons && cons.rm_type_name) {
+                    var rmType;
+                    if (cons.rm_type_name === "ELEMENT") {
+                        if (!cons.attributes || cons.attributes.length == 0) {
+                            rmType = ""
+                        }
+                        else {
+                            var attr = cons.attributes[0];
+                            if (!attr.children || attr.children.length==0) {
+                                rmType = ""
+                            } else if (attr.children.length==1){
+                                rmType = attr.children[0].rm_type_name;
+                            } else {
+                                rmType = "ELEMENT"; // no specific icon for choice
+                            }
+                        }
+                    }
+                    if (!rmType) rmType=cons.rm_type_name;
+                    treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
+                }
+
 
                 treeNodeJson.a_attr = treeNodeJson.a_attr || {};
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
