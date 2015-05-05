@@ -40,6 +40,7 @@
                 <div class="form-horizontal col-sm-3">
                     <div class="form-group">
                         <label for="{{panel_id}}_language" class="control-label col-sm-4">Language</label>
+
                         <div class="col-sm-8">
                             <select id="{{panel_id}}_language" class="form-control input-sm">
                                 <option value="en">en</option>
@@ -97,21 +98,47 @@
 <div class="form-horizontal">
     <div class="form-group">
         <label for="{{panel_id}}_language" class="control-label col-sm-3">Language</label>
+
         <div class="col-sm-9">
             <p id="{{panel_id}}_language" class="form-control form-control-static">{{language}}</p>
         </div>
     </div>
     <div class="form-group">
         <label for="{{panel_id}}_text" class="control-label col-sm-3">Text</label>
+
         <div class="col-sm-9">
             <input id="{{panel_id}}_text" class="form-control input-sm"/>
         </div>
     </div>
     <div class="form-group">
         <label for="{{panel_id}}_description" class="control-label col-sm-3">Description</label>
+
         <div class="col-sm-9">
             <input id="{{panel_id}}_description" class="form-control input-sm"/>
         </div>
     </div>
 </div>
+
+{>constraintTop}
+<div class="row">
+    <div class="col-sm-2"><label>Node Id</label></div>
+    <div class="col-sm-10 data">{{node_id}}</div>
+</div>
+<div class="row">
+    <div class="col-sm-2"><label>Path</label></div>
+    <div class="col-sm-10 data">{{rmPath}}</div>
+</div>
+<div class="row">
+    <div class="col-sm-2"><label for="occurrences">Occurrences</label></div>
+    <div class="col-sm-4">
+        <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
+    </div>
+    <div class="col-sm-4">
+        <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
+    </div>
+    <div class="col-sm-2">
+        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
+    </div>
+</div>
+
 

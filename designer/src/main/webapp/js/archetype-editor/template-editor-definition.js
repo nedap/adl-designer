@@ -187,7 +187,7 @@
             targetElement.empty();
             var self = this;
 
-            var stage, handler, context;
+            var stage, templateHandler, context, constraintHandler;
 
             function addPropertiesPanelToStage(stage, context, handler, targetElement) {
                 stage.propertiesPanel = {
@@ -207,9 +207,10 @@
             }
 
             function clearConstraints(targetElement) {
-                if (handler && handler.hide) {
-                    handler.hide(stage, context, targetElement);
-                    handler = undefined;
+                if (templateHandler && templateHandler.hide) {
+                    templateHandler.hide(stage, context, targetElement);
+                    templateHandler = undefined;
+                    constraintHandler = undefined;
                     stage = undefined;
                     context = undefined;
                 }
@@ -243,16 +244,21 @@
                 var topDiv = $('<div class="container-fluid">');
                 targetElement.append(topDiv);
 
-                handler = ArchetypeEditor.getRmTypeHandler('main', '@common');
+                constraintHandler = ArchetypeEditor.getRmTypeHandler('main', '@common');
+                templateHandler = ArchetypeEditor.getRmTypeHandler('main', '@template');
+
                 var customDiv = $('<div class="container-fluid">');
                 targetElement.append(customDiv);
 
                 stage = createEmptyStage();
                 stage.archetypeModel = archetypeModel;
                 stage.readOnly = !specialized;
-                context = handler.createContext(stage, cons, parentCons);
-                addPropertiesPanelToStage(stage, context, handler, customDiv);
-                handler.show(stage, context, customDiv);
+                stage.constraintHandler = constraintHandler;
+                stage.templateModel = AOM.TemplateModel.from(cons);
+
+                context = templateHandler.createContext(stage, cons, parentCons);
+                addPropertiesPanelToStage(stage, context, templateHandler, customDiv);
+                templateHandler.show(stage, context, customDiv);
 
                 var errorsDiv = $('<div class="errors">');
                 targetElement.append(errorsDiv);
@@ -284,8 +290,8 @@
                 saveButton.click(function () {
                     var errors = new AmUtils.Errors();
 
-                    handler.updateContext(stage, context, targetElement);
-                    handler.validate(stage, context, errors);
+                    templateHandler.updateContext(stage, context, targetElement);
+                    templateHandler.validate(stage, context, errors);
                     errorsDiv.empty();
                     if (errors.getErrors().length > 0) {
                         var errorsContext = {errors: errors.getErrors()};
@@ -295,7 +301,7 @@
                     }
 
                     console.debug("save changes from: ", cons);
-                    handler.updateConstraint(stage, context, cons, errors);
+                    templateHandler.updateConstraint(stage, context, cons, errors);
                     console.debug("save changes to:   ", cons);
 
                     archetypeModel.enrichReplacementConstraint(cons);
@@ -460,20 +466,6 @@
 
                 return createJson(cons);
 
-                //function addFullAttributesAndConstrains() {
-                //    var children = templateModel.getConstraintChildren(cons);
-                //    for (var i in children) {
-                //        var child = children[i];
-                //        if (AOM.mixin(child).isAttribute()) {
-                //            var attrJson = createAttrJson(child);
-                //            consJson.children.push(attrJson);
-                //        } else {
-                //            buildTreeJson(consJson.children, child);
-                //        }
-                //    }
-                //}
-
-
             }
 
             function styleNodeJson(treeNodeJson) {
@@ -490,16 +482,16 @@
                         }
                         else {
                             var attr = cons.attributes[0];
-                            if (!attr.children || attr.children.length==0) {
+                            if (!attr.children || attr.children.length == 0) {
                                 rmType = ""
-                            } else if (attr.children.length==1){
+                            } else if (attr.children.length == 1) {
                                 rmType = attr.children[0].rm_type_name;
                             } else {
                                 rmType = "ELEMENT"; // no specific icon for choice
                             }
                         }
                     }
-                    if (!rmType) rmType=cons.rm_type_name;
+                    if (!rmType) rmType = cons.rm_type_name;
                     treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
                 }
 
