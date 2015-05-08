@@ -71,6 +71,25 @@
 
                 //targetElement.empty();
                 GuiUtils.applyTemplate("template-editor|constraintTop", context, function (html) {
+
+                    function prefillInputValues() {
+                        if (occ.lower) {
+                            existenceSelect.val('mandatory');
+                        } else if (occ.upper === 0) {
+                            existenceSelect.val('prohibited');
+                        } else {
+                            existenceSelect.val('optional');
+                        }
+                        if (occ.upper === undefined) {
+                            multiplicitySelect.val('unbounded');
+                        } else if (occ.upper === 1) {
+                            multiplicitySelect.val('mandatory');
+                        } else {
+                            multiplicitySelect.val('bounded');
+                        }
+                        multiplicityBoundInput.val(String(occ.upper || 1));
+                    }
+
                     html = $(html);
                     var parentOcc = AmInterval.parseContainedString(context.parent.occurrences);
                     var occ = AmInterval.parseContainedString(context.occurrences);
@@ -85,24 +104,7 @@
                     fillSelectOptions(existenceSelect, existenceMap);
                     fillSelectOptions(multiplicitySelect, multiplicityMap);
 
-                    if (occ.lower) {
-                        existenceSelect.val('mandatory');
-                    } else if (occ.upper === 0) {
-                        existenceSelect.val('prohibited');
-                    } else {
-                        existenceSelect.val('optional');
-                    }
-
-                    if (occ.upper === undefined) {
-                        multiplicitySelect.val('unbounded');
-                    } else if (occ.upper === 1) {
-                        multiplicitySelect.val('mandatory');
-                    } else {
-                        multiplicitySelect.val('bounded');
-                    }
-                    multiplicityBoundInput.val(String(occ.upper || 1));
-
-
+                    prefillInputValues();
                     function updateVisibility() {
                         var multVisible = existenceSelect.val() !== 'prohibited';
                         GuiUtils.setVisible(multiplicitySelect, multVisible);

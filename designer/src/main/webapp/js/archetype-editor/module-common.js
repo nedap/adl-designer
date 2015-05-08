@@ -42,6 +42,10 @@
                     context.parent = h.createContext(stage, parentCons);
                 }
             }
+            if (stage.templateModel) {
+                context.isTemplate=true;
+            }
+            context.isParentConstrained = context.isTemplate && !!context.parent;
             return context;
         };
 
@@ -146,24 +150,133 @@
             };
 
             handler.show = function (stage, context, targetElement) {
-                GuiUtils.applyTemplate("properties/constraint-common|top", context, targetElement);
+
+                /**
+                 *
+                 * @param {object} select jquery select element
+                 * @param {object} mapOfOptions map of name/value options
+                 */
+                function fillSelectOptions(select, mapOfOptions) {
+                    select.empty();
+                    for (var key in mapOfOptions) {
+                        select.append($("<option>").attr('name', key).text(mapOfOptions[key]));
+
+                    }
+                }
+
+                function createExistenceMap(occ) {
+                    var result = {};
+                    if (!occ || !occ.lower) {
+                        result['prohibited'] = 'prohibited';
+                        if (!occ || occ.upper !== 0) {
+                            result['optional'] = 'optional';
+                        }
+                    }
+                    if (!occ || occ.upper !== 0) {
+                        result['mandatory'] = 'mandatory';
+                    }
+                    return result;
+                }
+
+                function createMultiplicityMap(occ) {
+                    var result = {};
+                    result['not_repeating'] = 'not repeating';
+                    if (!occ || occ.upper === undefined || occ.upper > 1) {
+                        result['bounded'] = 'bounded';
+                    }
+                    if (!occ || occ.upper === undefined) {
+                        result['unbounded'] = 'unbounded';
+                    }
+                    return result;
+                }
+
+                GuiUtils.applyTemplate("properties/constraint-common|top", context, function (html) {
+
+                    function prefillInputValues() {
+                        if (occ.lower) {
+                            existenceSelect.val('mandatory');
+                        } else if (occ.upper === 0) {
+                            existenceSelect.val('prohibited');
+                        } else {
+                            existenceSelect.val('optional');
+                        }
+                        if (occ.upper === undefined) {
+                            multiplicitySelect.val('unbounded');
+                        } else if (occ.upper === 1) {
+                            multiplicitySelect.val('mandatory');
+                        } else {
+                            multiplicitySelect.val('bounded');
+                        }
+                        multiplicityBoundInput.val(String(occ.upper || 1));
+                    }
+
+                    html = $(html);
+                    var parentOcc = stage.templateModel && AmInterval.parseContainedString(context.parent.occurrences);
+                    var occ = AmInterval.parseContainedString(context.occurrences);
+
+                    var existenceMap = createExistenceMap(parentOcc);
+                    var multiplicityMap = createMultiplicityMap(parentOcc);
+
+                    var existenceSelect = html.find('#' + context.panel_id + "_existence");
+                    var multiplicitySelect = html.find('#' + context.panel_id + "_multiplicity");
+                    var multiplicityBoundInput = html.find('#' + context.panel_id + "_multiplicity_bound");
+
+                    fillSelectOptions(existenceSelect, existenceMap);
+                    fillSelectOptions(multiplicitySelect, multiplicityMap);
+
+                    prefillInputValues();
+                    function updateVisibility() {
+                        var multVisible = existenceSelect.val() !== 'prohibited';
+                        GuiUtils.setVisible(multiplicitySelect, multVisible);
+                        GuiUtils.setVisible(multiplicityBoundInput, multVisible && multiplicitySelect.val() === 'bounded');
+                    }
+
+                    updateVisibility();
+
+                    existenceSelect.on('change', updateVisibility);
+                    multiplicitySelect.on('change', updateVisibility);
+
+
+                    targetElement.append(html);
+                });
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                var occStr = targetElement.find('#' + context.panel_id + "_occurrences").val();
-                context.occurrences = occStr;
+                var existenceSelect = targetElement.find('#' + context.panel_id + "_existence");
+                var multiplicitySelect = targetElement.find('#' + context.panel_id + "_multiplicity");
+                var multiplicityBoundInput = targetElement.find('#' + context.panel_id + "_multiplicity_bound");
+
+                var existence = existenceSelect.val();
+                if (existence === 'prohibited') {
+                    context.occurrences = '[0..0]';
+                } else {
+                    var low = existence === 'optional' ? '0' : '1';
+                    var high = '*';
+                    var multiplicity = multiplicitySelect.val();
+                    if (multiplicity === 'not repeating') {
+                        high = '1';
+                    } else if (multiplicity === 'bounded') {
+                        high = multiplicityBoundInput.val();
+                        if (isNaN(Number(high))) {
+                            high = '0';
+                        }
+                    } else {
+                        high = '*';
+                    }
+                    context.occurrences = '[' + low + '..' + high + ']';
+                }
             };
 
             handler.validate = function (stage, context, errors) {
-                var occ = errors.validate(
-                    AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL"),
-                    "Invalid occurrences format", "occurrences");
-                //if (occ) {
-                //    if (typeof occ.lower==="number" && typeof occ.upper==="number") {
-                //        errors.validate(occ.lower<=occ.upper, "Lower bound cannot be larger than upper bound", "occurrences");
-                //    }
-                //}
+                var occ = AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
 
+                if (!errors.validate(occ, "Invalid occurrences format", "occurrences")) return;
+                if (stage.templateModel) {
+                    var parentOcc = AmInterval.parseContainedString(context.parent.occurrences);
+                    if (!AmInterval.contains(parentOcc, occ)) {
+                        errors.add('Occurrences ' + AmInterval.toContainedString(occ) + ' do not conform to parent occurrences ' + AmInterval.toContainedString(parentOcc), 'occurrences');
+                    }
+                }
             };
 
             handler.updateConstraint = function (stage, context, cons) {
@@ -429,8 +542,6 @@
             CommonRmHandler.call(handler);
 
 
-
-
             handler.createContext = function (stage, cons, parentCons) {
                 cons = cons || {};
                 var context = handler.createCommonContext(stage, cons);
@@ -467,4 +578,4 @@
     };
 
     ArchetypeEditor.addRmModule(new CommonModule());
-}(ArchetypeEditor || {}) ) ;
+}(ArchetypeEditor || {}) );

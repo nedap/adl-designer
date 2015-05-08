@@ -57,6 +57,25 @@
             CComplexObjectHandler.call(handler);
 
             handler.createContext = function (stage, cons, parentCons) {
+
+                function createPanel(tupleConstraint, parentTupleConstraint) {
+                    var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL");
+                    var units = tupleConstraint.units.list[0];
+
+                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
+                    tupleConstraint.precision.list.length > 0);
+
+                    var panel = {
+                        panel_id: GuiUtils.generateId(),
+                        magnitude: magnitudeHandler.createContext(stage, tupleConstraint.magnitude,
+                            parentTupleConstraint && parentTupleConstraint.magnitude),
+                        units: units,
+                        precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
+                    };
+                    return panel;
+
+                }
+
                 var tupleConstraints = stage.archetypeModel.getAttributesTuple(cons, ["units", "magnitude", "precision"]);
                 var parentTupleConstraints = parentCons
                     ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["units", "magnitude", "precision"])
@@ -67,25 +86,38 @@
                 context.units_id = GuiUtils.generateId();
                 context.unit_panels = [];
 
-                for (var i in tupleConstraints) {
-                    var tupleConstraint = tupleConstraints[i];
-                    var parentTupleConstraint = parentTupleConstraints && parentTupleConstraints[i];
-                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
-                    tupleConstraint.precision.list.length > 0);
-                    var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
-                    if (units === undefined) continue;
 
+                if (context.isTemplate) {
+                    for (var i in parentTupleConstraints) {
+                        var parentTupleConstraint = parentTupleConstraints[i];
 
-                    var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL")
-                    var panel = {
-                        panel_id: GuiUtils.generateId(),
-                        magnitude: magnitudeHandler.createContext(stage, tupleConstraint.magnitude,
-                            parentTupleConstraint && parentTupleConstraint.magnitude),
-                        units: units,
-                        precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
-                    };
+                        var units = (parentTupleConstraint.units && parentTupleConstraint.units.list) ? parentTupleConstraint.units.list[0] : undefined;
+                        if (units === undefined) continue;
 
-                    context.unit_panels.push(panel);
+                        var tupleConstraint = Stream(tupleConstraints).filter(function (d) {
+                            return d.units.list && d.units.list.length === 1 && d.units.list[0] === units;
+                        }).findFirst().orElse();
+
+                        var panel = createPanel(tupleConstraint || parentTupleConstraint, parentTupleConstraint);
+                        panel.active = !!tupleConstraint;
+
+                        context.unit_panels.push(panel);
+                    }
+                } else {
+                    for (var i in tupleConstraints) {
+                        var tupleConstraint = tupleConstraints[i];
+                        var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
+                        if (units === undefined) continue;
+
+                        var parentTupleConstraint = undefined;
+                        if (parentTupleConstraints) {
+                            parentTupleConstraint = Stream(parentTupleConstraints).filter({units: units}).findFirst().orElse();
+                        }
+                        var panel = createPanel(tupleConstraint, parentTupleConstraint);
+                        panel.active = true;
+
+                        context.unit_panels.push(panel);
+                    }
                 }
                 return context;
             };
@@ -114,6 +146,24 @@
                                     break;
                                 }
                             }
+                        }
+
+                        function fillActiveUnitsSelect(unitsSelect) {
+                            var oldValue = unitsSelect.val(), hasOldValue;
+                            var first;
+                            unitsSelect.empty();
+
+                            for (var i in context.unit_panels) {
+                                var panel = context.unit_panels[i];
+                                if (panel.active) {
+                                    var option = $("<option>").attr("value", panel.panel_id).text(panel.units);
+                                    unitsSelect.append(option);
+                                    if (panel.panel_id === oldValue) hasOldValue = true;
+                                    if (!first) first = panel.panel_id;
+                                }
+                            }
+                            unitsSelect.val(hasOldValue ? oldValue : first);
+                            showUnitPanel(unitsSelect.val());
                         }
 
                         generatedDom = $(generatedDom);
@@ -163,10 +213,33 @@
                                 showUnitPanel(unitsSelect.find("option:selected").val());
                             });
 
-                        Stream(context.unit_panels).findFirst().ifPresent(
-                            function (u) {
-                                showUnitPanel(u.panel_id);
+                        if (context.isTemplate) {
+                            var activeUnitsOptions = {
+                                title: "Active units",
+                                items: [],
+                                targetElement: generatedDom.find("#" + context.panel_id + "_active_units_container")
+                            };
+                            for (var i in context.unit_panels) {
+                                var panel = context.unit_panels[i];
+                                activeUnitsOptions.items.push({
+                                    label: panel.units,
+                                    checked: panel.active,
+                                    code: panel.units
+                                });
+                            }
+                            var activeUnitsCheckboxList = new GuiUtils.DropDownCheckboxList(activeUnitsOptions);
+
+                            activeUnitsCheckboxList.onChange(function () {
+                                var items = activeUnitsCheckboxList.getItemSelectionList();
+                                for (var i in items) {
+                                    context.unit_panels[i].active = items[i];
+                                }
+                                fillActiveUnitsSelect(unitsSelect);
                             });
+                        }
+
+
+                        fillActiveUnitsSelect(unitsSelect);
                     });
             };
 
@@ -183,6 +256,7 @@
             };
 
             handler.validate = function (stage, context, errors) {
+                var activeCount = 0;
                 for (var panelIndex in context.unit_panels) {
                     var panel = context.unit_panels[panelIndex];
                     var unitErrors = errors.sub("[" + panel.units + "]");
@@ -194,17 +268,22 @@
                         var val = parseInt(panel.precision);
                         unitErrors.validate(AmUtils.isInt(val), "Not a valid integer", "precision");
                     }
+                    if (panel.active) activeCount++;
+                }
+                if (context.isTemplate && context.parent && context.parent.unit_panels.length > 0) {
+                    errors.validate(activeCount, "At least one unit must be selected");
                 }
             };
             handler.updateConstraint = function (stage, context, cons) {
                 stage.archetypeModel.removeAttribute(cons, ["units", "magnitude", "precision"]);
 
                 cons.attribute_tuples = cons.attribute_tuples || [];
-                if (context.unit_panels.length > 0) {
+                var panels = Stream(context.unit_panels).filter({active: true}).toArray();
+                if (panels.length > 0) {
                     var attributeTuple = AOM.newCAttributeTuple(["units", "magnitude", "precision"]);
 
-                    for (var panelIndex in context.unit_panels) {
-                        var panel = context.unit_panels[panelIndex];
+                    for (var panelIndex in panels) {
+                        var panel = panels[panelIndex];
 
                         var unitCons = AOM.newCString();
                         unitCons.list = [panel.units];
@@ -341,6 +420,7 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
+
                 stage.archetypeEditor.getRmTypeHandler("C_BOOLEAN")
                     .updateContext(stage, context.value, targetElement.find('#' + context.value.panel_id));
 
@@ -426,17 +506,37 @@
                 context.assumed_value = cons.assumed_value;
 
                 var tuples = stage.archetypeModel.getAttributesTuple(cons, ["value", "symbol"]);
-                //var parentTuples = parentCons ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["value", "symbol"]) : undefined;
-                for (var i in tuples) {
-                    var tuple = tuples[i];
-                    //var parentTuple = parentTuples && parentTuples[i];
-                    var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
-                    var value = {
-                        value: tuple["value"].list[0],
-                        term_id: tuple["symbol"].code_list[0],
-                        term: term
-                    };
-                    context.values.push(value);
+                var parentTuples = parentCons ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["value", "symbol"]) : undefined;
+                if (context.isParentConstrained) {
+                    for (var i in parentTuples) {
+                        var parentTuple = parentTuples[i];
+                        var specializedTuple = Stream(tuples).filter(function (d) {
+                            return d["value"].list[0] === parentTuple["value"].list[0];
+                        }).findFirst().orElse();
+                        var tuple = specializedTuple || parentTuple;
+                        //var parentTuple = parentTuples && parentTuples[i];
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var value = {
+                            active: !!specializedTuple,
+                            value: tuple ["value"].list[0],
+                            term_id: tuple["symbol"].code_list[0],
+                            term: term
+                        };
+                        context.values.push(value);
+                    }
+                } else {
+                    for (var i in tuples) {
+                        var tuple = tuples[i];
+                        //var parentTuple = parentTuples && parentTuples[i];
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var value = {
+                            active: true,
+                            value: tuple["value"].list[0],
+                            term_id: tuple["symbol"].code_list[0],
+                            term: term
+                        };
+                        context.values.push(value);
+                    }
                 }
 
                 return context;
@@ -479,8 +579,32 @@
 
                 GuiUtils.applyTemplate(
                     "properties/constraint-openehr|DV_ORDINAL", context, function (html) {
+                        html = $(html);
                         targetElement.append(html);
 
+
+                        if (context.isParentConstrained) {
+                            var activeValuesOptions = {
+                                title: "Active Values",
+                                items: [],
+                                targetElement: html.find("#" + context.panel_id + "_ordinal_checkbox_container")
+                            };
+                            for (var i in context.values) {
+                                var contextValue = context.values[i];
+                                activeValuesOptions.items.push({
+                                    label: contextValue.value + ": " + stage.archetypeModel.getTermDefinitionText(contextValue.term_id, stage.language),
+                                    checked: contextValue.active,
+                                    code: contextValue.term_id
+                                });
+                            }
+                            var activeValuesCheckboxList = new GuiUtils.DropDownCheckboxList(activeValuesOptions);
+                            activeValuesCheckboxList.onChange(function () {
+                                var checks = activeValuesCheckboxList.getItemSelectionList();
+                                for (var i in context.values) {
+                                    context.values[i].active = checks[i];
+                                }
+                            });
+                        }
                         var valuesSelect = targetElement.find("#" + context.panel_id + "_values");
                         populateValuesSelect(valuesSelect);
 
@@ -592,6 +716,7 @@
 
                     for (var i in context.values) {
                         var contextValue = context.values[i];
+                        if (!contextValue.active) continue;
 
                         var valueCons = AOM.newCInteger([contextValue.value]);
 
@@ -1099,26 +1224,56 @@
                 var context = handler.createCommonContext(stage, cons, parentCons);
                 context.type = 'ELEMENT';
                 context.values = [];
+                context.isTemplateChoice = context.isParentConstrained && context.parent.values.length !== 1;
+                if (context.isTemplateChoice) {
+                    var parentValueConses = AOM.AmQuery.findAll(parentCons, "value");
+                    if (parentValueConses.length > 0) {
+                        for (var i in parentValueConses) {
+                            var parentValueCons = parentValueConses[i];
+                            var specializedValueCons = AOM.AmQuery.get(cons, "value[" + parentValueCons.node_id + "]", {matchSpecialized: true});
+                            var valueCons = specializedValueCons || AOM.impoverishedClone(parentValueCons);
 
-                for (var i in valueConses) {
-                    var valueCons = valueConses[i];
-                    var valueHandler = stage.archetypeEditor.getRmTypeHandler(valueCons.rm_type_name);
-                    if (valueHandler) {
-                        context.values.push({
-                            rmType: valueCons.rm_type_name,
-                            cons: valueCons,
-                            context: valueHandler.createContext(stage, valueCons, undefined)
-                        });
+                            var valueHandler = stage.archetypeEditor.getRmTypeHandler(valueCons.rm_type_name);
+                            context.values.push({
+                                active: !!specializedValueCons,
+                                rmType: valueCons.rm_type_name,
+                                cons: specializedValueCons,
+                                parentCons: parentValueCons,
+                                context: valueHandler ? valueHandler.createContext(stage, valueCons, specializedValueCons ? parentValueCons : undefined) : undefined
+                            });
+                        }
                     } else {
-                        context.values.push({
-                            rmType: valueCons.rm_type_name,
-                            cons: valueCons,
-                            context: undefined
-                        });
+                        var types = AmUtils.keys(dataValues.data).concat(AmUtils.keys(dataValues.aliases)).sort();
+                        var noConstraints = AOM.AmQuery.findAll(cons, "value").length===0;
+                        for (var i in types) {
+                            var rmType = types[i];
 
+                            var specializedValueCons = Stream(valueConses).filter(function (d) {
+                                return d.rm_type_name === rmType;
+                            }).findFirst().orElse();
+
+                            context.values.push({
+                                active: noConstraints || !!specializedValueCons,
+                                rmType: rmType,
+                                cons: specializedValueCons
+                            });
+                        }
                     }
                 }
-
+                else {
+                    for (var i in valueConses) {
+                        var valueCons = valueConses[i];
+                        var valueHandler = stage.archetypeEditor.getRmTypeHandler(valueCons.rm_type_name);
+                        var parentValueCons = AOM.AmQuery.get(parentCons, "value[" + valueCons.node_id + "]", {matchParent: true});
+                        context.values.push({
+                            active: true,
+                            rmType: valueCons.rm_type_name,
+                            cons: valueCons,
+                            parentCons: parentValueCons,
+                            context: valueHandler ? valueHandler.createContext(stage, valueCons, parentValueCons) : undefined
+                        });
+                    }
+                }
 
                 return context;
             };
@@ -1222,6 +1377,31 @@
                             showSelectedDiv();
                         }
 
+                        if (context.isTemplateChoice) {
+                            var activeDvsOptions = {
+                                title: "Active DVs",
+                                items: [],
+                                targetElement: generatedDom.find("#" + context.panel_id + "_active_dv_container")
+                            };
+                            for (var i in context.values) {
+                                var contextValue = context.values[i];
+                                activeDvsOptions.items.push({
+                                    label: contextValue.rmType,
+                                    checked: contextValue.active,
+                                    code: contextValue.cons ? contextValue.cons.node_id : undefined
+                                });
+                            }
+                            var activeDvsCheckboxList = new GuiUtils.DropDownCheckboxList(activeDvsOptions);
+                            activeDvsCheckboxList.onChange(function () {
+                                var checks = activeDvsCheckboxList.getItemSelectionList();
+                                for (var i in context.values) {
+                                    context.values[i].active = checks[i];
+                                }
+                            });
+                            targetElement.append(generatedDom);
+                            return;
+                        }
+
 
                         var typeSelect = generatedDom.find('#' + context.panel_id + '_type');
                         var addTypeButton = generatedDom.find('#' + context.panel_id + '_addType');
@@ -1249,6 +1429,8 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
+                if (context.isTemplateChoice) return;
+
                 var valueContainer = targetElement.find('#' + context.panel_id + '_valueContainer');
 
                 for (var i in context.values) {
@@ -1262,6 +1444,8 @@
             };
 
             handler.validate = function (stage, context, errors) {
+                if (context.isTemplateChoice) return;
+
                 for (var i in context.values) {
                     var val = context.values[i];
                     var typeHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
@@ -1272,7 +1456,34 @@
             };
 
             handler.updateConstraint = function (stage, context, cons) {
+                if (context.isTemplateChoice) {
+                    var allMatch = Stream(context.values).allMatch({active:true});
 
+                    var valueAttr = stage.archetypeModel.getAttribute(cons, "value")
+                        || stage.archetypeModel.addAttribute(cons, "value");
+
+                    for (var i in context.values) {
+                        var value = context.values[i];
+                        if (!allMatch && value.active) {
+                            if (!value.cons) {
+                                if (value.parentCons) {
+                                    value.cons = AOM.impoverishedClone(value.parentCons);
+                                    value.cons.node_id = stage.archetypeModel.generateSpecializedTermId(value.parentCons.node_id);
+                                    stage.archetypeModel.addConstraint(valueAttr, value.cons);
+                                } else {
+                                    value.cons = AOM.newConstraint(value.rmType, stage.archetypeModel.generateSpecializedTermId("id"));
+                                    stage.archetypeModel.addConstraint(valueAttr, value.cons);
+                                }
+                            }
+                        } else {
+                            if (value.cons) {
+                                stage.archetypeModel.removeConstraint(value.cons, true);
+                                value.cons = undefined;
+                            }
+                        }
+                    }
+                    return;
+                }
                 // remove value constraints that have been removed from value
                 var retainedNodeIds = AmUtils.listToSet(Stream(context.values)
                     .filter(function (v) {

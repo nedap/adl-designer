@@ -57,18 +57,22 @@
     <div>
         <label for="{{panel_id}}_value_set">Value Set</label>
 
-        <div class="input-group">
-            <select id="{{panel_id}}_value_set" class="form-control input-sm data">
-            </select>
-            <span class="input-group-btn">
-                <button id="{{panel_id}}_value_set_edit" type="button" class="btn btn-default">
-                    <span class="glyphicon glyphicon-edit"></span>
-                </button>
-                <button id="{{panel_id}}_value_set_new" type="button" class="btn btn-default data">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
-            </span>
-        </div>
+            {{#if isParentConstrained}}
+                <div id="{{panel_id}}_value_set_items_container"></div>
+            {{else}}
+            <div class="input-group">
+                <select id="{{panel_id}}_value_set" class="form-control input-sm data">
+                </select>
+                <span class="input-group-btn">
+                    <button id="{{panel_id}}_value_set_edit" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-edit"></span>
+                    </button>
+                    <button id="{{panel_id}}_value_set_new" type="button" class="btn btn-default data">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </span>
+            </div>
+            {{/if}}
         <label for="{{panel_id}}_assumed_value">Assumed Value</label>
 
         <div class="input-group">
@@ -82,15 +86,19 @@
         <label for="{{panel_id}}_external_select">External Terminology</label>
 
         <div class="input-group">
-            <select id="{{panel_id}}_external_select" class="form-control input-sm data">
+            <select id="{{panel_id}}_external_select" class="form-control input-sm data"
+                    {{#if isParentConstrained}}disabled="disabled"{{/if}}
+Ł                    >
             </select>
             <span class="input-group-btn">
-                <button id="{{panel_id}}_external_edit" type="button" class="btn btn-default">
-                    <span class="glyphicon glyphicon-edit"></span>
-                </button>
-                <button id="{{panel_id}}_external_new" type="button" class="btn btn-default data">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
+                {{#unless isParentConstrained}}
+                    <button id="{{panel_id}}_external_edit" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-edit"></span>
+                    </button>
+                    <button id="{{panel_id}}_external_new" type="button" class="btn btn-default data">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                {{/unless}}
             </span>
         </div>
     </div>
@@ -103,17 +111,17 @@
         <label class="col-sm-6 control-label">Allowed values</label>
 
         <div class="col-sm-3">
-            <input type="checkbox" id="{{panel_id}}_true_valid" class="data">True
+            <input type="checkbox" id="{{panel_id}}_true_valid" class="data archetype-only">True
         </div>
         <div class="col-sm-3">
-            <input type="checkbox" id="{{panel_id}}_false_valid" class="data">False
+            <input type="checkbox" id="{{panel_id}}_false_valid" class="data archetype-only">False
         </div>
     </div>
     <div class="form-group">
         <label for="{{panel_id}}_assumed_value" class="col-sm-6 control-label">Assumed value</label>
 
         <div class="col-sm-6">
-            <select id="{{panel_id}}_assumed_value" class="form-control data">
+            <select id="{{panel_id}}_assumed_value" class="form-control data archetype-only">
             </select>
         </div>
     </div>
@@ -210,5 +218,12 @@
 
 {>C_DATE_TIME}
 <div>
-    <div id="{{panel_id}}_pattern" class="date_time_pattern"></div>
+    {{#if isTemplate}}
+        <div class="row">
+            <div class="col-sm-2"><label>Pattern</label></div>
+            <div class="col-sm-10"><p id="{{panel_id}}_pattern" class="form-control-static"></p></div>
+        </div>
+    {{else}}
+        <div id="{{panel_id}}_pattern" class="date_time_pattern"></div>
+    {{/if}}
 </div>

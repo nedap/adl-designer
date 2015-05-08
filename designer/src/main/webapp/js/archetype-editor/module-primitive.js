@@ -60,13 +60,30 @@
 
 
             handler.validate = function (stage, context, errors) {
+                var range = context.range && AmInterval.parseContainedString(context.range, "INTERVAL_OF_REAL");
+
                 if (typeof context.assumed_value === "string" && context.assumed_value.length > 0) {
                     var assumed_value = parseFloat(context.assumed_value);
                     errors.validate(!isNaN(assumed_value), "Invalid number", "assumed_value");
+                    if (range) {
+                        errors.validate(AmInterval.contains(range, assumed_value), "Out of range", "assumed_value");
+                    }
                 }
                 if (context.range && context.range.length > 0) {
-                    var range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_REAL");
                     errors.validate(range, "Invalid interval", "range");
+                }
+
+                if (stage.templateModel) {
+                    var parentRange = AmInterval.parseContainedString(context.parent.range, "INTERVAL_OF_REAL");
+                    if (parentRange) {
+                        if (!AmInterval.contains(parentRange, range)) {
+                            errors.add("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
+                        }
+                    }
+
+                    if (context.parent.assumed_value !== undefined && context.assumed_value !== context.assumed_value) {
+                        errors.add("Assumed value does not match parent assumed value", "assumed_value");
+                    }
                 }
             };
 
@@ -109,16 +126,33 @@
             };
 
             handler.validate = function (stage, context, errors) {
+                var range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
+
                 if (context.assumed_value && context.assumed_value.length > 0) {
                     var num = parseInt(context.assumed_value);
                     errors.validate(AmUtils.isInt(num), "Invalid integer", "assumed_value");
+                    if (range) {
+                        errors.validate(AmInterval.contains(range, num), "Out of range", "assumed_value");
+                    }
+
                 }
                 if ((context.range) && context.range.length > 0 && context.range !== "(*..*)") {
-                    var range = AmInterval.parseContainedString(context.range, "INTERVAL_OF_INTEGER");
                     errors.validate(range, "Invalid interval", "range");
-                    errors.validate(range.lower === undefined || AmUtils.isInt(range.lower), "Invalid integer", "range.lower");
-                    errors.validate(range.upper === undefined || AmUtils.isInt(range.upper), "Invalid integer", "range.upper");
                 }
+
+                if (stage.templateModel) {
+                    var parentRange = AmInterval.parseContainedString(context.parent.range, "INTERVAL_OF_INTEGER");
+                    if (parentRange) {
+                        if (!AmInterval.contains(parentRange, range)) {
+                            errors.add("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
+                        }
+                    }
+
+                    if (context.parent.assumed_value !== undefined && context.assumed_value !== context.assumed_value) {
+                        errors.add("Assumed value does not match parent assumed value", "assumed_value");
+                    }
+                }
+
 
             };
 
@@ -224,7 +258,29 @@
                 } else {
                     context.external_term_code = terminologyData.code;
                 }
+                context.isParentConstrained = !!(stage.templateModel && (context.parent && !context.parent.any));
+                if (context.isParentConstrained && context.value_set_code) {
+                    if (stage.archetypeModel.isSpecialized(context.value_set_code)) {
+                        context.parent_value_set_code = new AOM.NodeId(context.value_set_code).getParent().toString();
+                    } else {
+                        context.parent_value_set_code = context.value_set_code; // code is taken from parent
+                    }
+                    var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
+                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+                    context.valueSetItems = [];
+                    for (var pvi in parentValueSet.members) {
+                        var code = parentValueSet.members[pvi];
+                        context.valueSetItems.push({
+                            code: code,
+                            label: stage.archetypeModel.getTermDefinitionText(code, stage.language),
+                            checked: Stream(valueSet.members).anyMatch(function (d) {
+                                return d === code;
+                            })
+                        })
+                    }
 
+
+                }
                 return context;
             };
 
@@ -273,6 +329,35 @@
                     }
                 }
 
+                function updateInternalAssumedValueFromCheckboxList(assumedValueSelect, valueSetItemsCheckboxList) {
+                    assumedValueSelect.empty();
+                    var noAssumedValueOption = $("<option>").attr("value", "");
+                    assumedValueSelect.append(noAssumedValueOption);
+                    var found = false;
+                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
+                    if (valueSet) {
+                        var items = valueSetItemsCheckboxList.getItemSelectionList();
+                        for (var i in valueSet.members) {
+                            var memberId = valueSet.members[i];
+                            var term = stage.archetypeModel.getTermDefinition(memberId);
+                            if (items[i]) {
+                                var option = $("<option>").attr("value", memberId).text(term.text);
+                                if (memberId === context.assumed_value) {
+                                    option.prop("selected", true);
+                                    found = true;
+                                }
+                                assumedValueSelect.append(option);
+                            }
+                        }
+                    }
+                    if (!found) {
+                        noAssumedValueOption.prop('selected', true);
+                        context.assumed_value = undefined;
+                    }
+
+                }
+
+
                 function updateExternalSelect(externalSelect) {
                     externalSelect.empty();
                     var nodeIds = stage.archetypeModel.getExternalTerminologyCodes();
@@ -300,6 +385,44 @@
                     var radioExternal = targetElement.find("#" + context.panel_id + "_external");
                     var valueSetSelect = targetElement.find('#' + context.panel_id + "_value_set");
                     var assumedValueSelect = targetElement.find('#' + context.panel_id + "_assumed_value");
+                    var valueSetItemsCheckboxList;
+
+                    if (context.isParentConstrained) {
+                        radioInternal.prop('disabled', true);
+                        radioExternal.prop('disabled', true);
+                        var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
+                        var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+
+                        if (context.value_set_code) {
+                            var valueSetItemsOptions = {
+                                title: stage.archetypeModel.getTermDefinitionText(context.value_set_code, stage.language),
+                                items: [],
+                                targetElement: targetElement.find('#' + context.panel_id + "_value_set_items_container")
+                            };
+
+                            for (var pvi in parentValueSet.members) {
+                                var code = parentValueSet.members[pvi];
+                                valueSetItemsOptions.items.push({
+                                    code: code,
+                                    label: stage.archetypeModel.getTermDefinitionText(code, stage.language),
+                                    checked: Stream(valueSet.members).anyMatch(function (d) {
+                                        return d === code;
+                                    })
+                                })
+                            }
+                            valueSetItemsCheckboxList = new GuiUtils.DropDownCheckboxList(valueSetItemsOptions);
+
+                            valueSetItemsCheckboxList.onChange(function () {
+                                updateInternalAssumedValueFromCheckboxList(assumedValueSelect, valueSetItemsCheckboxList);
+                                var items = valueSetItemsCheckboxList.getItemSelectionList();
+                                for (var i in items) {
+                                    context.valueSetItems[i].checked = items[i];
+                                }
+
+                            })
+                        }
+
+                    }
 
                     var externalSelect = targetElement.find('#' + context.panel_id + '_external_select');
 
@@ -382,17 +505,39 @@
 
                 delete cons.assumed_value;
                 if (context.type_internal) {
-                    if (context.value_set_code && context.value_set_code.length > 0) {
-                        cons.code_list = [context.value_set_code];
+                    if (context.isParentConstrained) {
+                        if (stage.archetypeModel.isSpecialized(context.value_set_code)) {
+                            stage.archetypeModel.removeValueSet(context.value_set_code);
+                            context.value_set_code = context.parent_value_set_code;
+                        }
+                        if (Stream(context.valueSetItems).allMatch({checked: true})) {
+                            cons.code_list = [context.value_set_code];
+                        } else {
+                            //var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
+                            var members = Stream(context.valueSetItems).filter({checked: true}).map('code').toArray();
+
+                            context.value_set_code = stage.archetypeModel.specializeTermDefinition(context.parent_value_set_code);
+                            stage.archetypeModel.data.ontology.value_sets[context.value_set_code] = {
+                                id: context.value_set_code,
+                                members: members
+                            };
+                            cons.code_list = [context.value_set_code];
+                        }
                         cons.assumed_value = AmUtils.undefinedIfEmpty(context.assumed_value);
+
                     } else {
-                        cons.code_list=[];
+                        if (context.value_set_code && context.value_set_code.length > 0) {
+                            cons.code_list = [context.value_set_code];
+                            cons.assumed_value = AmUtils.undefinedIfEmpty(context.assumed_value);
+                        } else {
+                            cons.code_list = [];
+                        }
                     }
                 } else {
-                    if (context.external_term_code && context.external_term_code.length>0) {
-                        cons.code_list=[context.external_term_code];
+                    if (context.external_term_code && context.external_term_code.length > 0) {
+                        cons.code_list = [context.external_term_code];
                     } else {
-                        cons.code_list=[];
+                        cons.code_list = [];
                     }
                 }
 
@@ -510,13 +655,13 @@
                             result.years = true;
                             break;
                         case 'M':
-                            if (timePart) result.months = true; else result.minutes = true;
+                            if (timePart) result.minutes = true; else result.months = true;
                             break;
                         case 'W':
                             result.weeks = true;
                             break;
                         case 'D':
-                            res.days = true;
+                            result.days = true;
                             break;
                         case 'T':
                             timePart = true;
@@ -585,10 +730,18 @@
             };
 
             handler.show = function (stage, context, targetElement) {
-
+                function walkPatternCheckboxes(containerElement, callback) {
+                    var unitStrings = ['all', 'years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
+                    for (var i in unitStrings) {
+                        var unit = unitStrings[i];
+                        var element = containerElement.find('#' + context.panel_id + '_pattern_' + unit);
+                        callback(unit, element);
+                    }
+                }
 
                 GuiUtils.applyTemplate("properties/constraint-primitive|C_DURATION", context, function (html) {
                     targetElement.append(html);
+
 
                     var units = targetElement.find('#' + context.panel_id + '_units');
 
@@ -604,6 +757,20 @@
                     patternAll.change(function () {
                         GuiUtils.setVisible(patternCustomPanel, !patternAll.prop('checked'));
                     });
+
+                    context.pattern = {};
+                    walkPatternCheckboxes(targetElement, function (unit, checkbox) {
+                        context.pattern[unit] = checkbox.prop('checked');
+                        if (context.isParentConstrained) {
+                            checkbox.prop('disabled', !context.pattern[unit]);
+                        }
+                    });
+                    //var unitStrings = ['all', 'years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
+                    //for (var i in unitStrings) {
+                    //    var unit = unitStrings[i];
+                    //    var element = targetElement.find('#' + context.panel_id + '_pattern_' + unit);
+                    //    context.pattern[unit] = element.prop('checked');
+                    //}
 
 
                     units.val(context.units);
@@ -677,17 +844,21 @@
 
             // separate list of id to data as jstree doesn't allow additional data on nodes
             var formatPatterns = {
-                "allow_all": {type: "C_DATE_TIME", pattern: undefined},
-                "date_and_time": {type: "C_DATE_TIME", pattern: "yyyy-mm-ddTHH:MM:SS"},
-                "date_and_partial_time": {type: "C_DATE_TIME", pattern: "yyyy-mm-ddTHH:??:??}"},
-                "date_only": {type: "C_DATE", pattern: undefined},
-                "full_date": {type: "C_DATE", pattern: "yyyy-mm-dd"},
-                "partial_date": {type: "C_DATE", pattern: "yyyy-??-XX"},
-                "partial_date_with_month": {type: "C_DATE", pattern: "yyyy-mm-??"},
-                "time_only": {type: "C_TIME", pattern: undefined},
-                "full_time": {type: "C_TIME", pattern: "HH:MM:SS"},
-                "partial_time": {type: "C_TIME", pattern: "HH:??:XX"},
-                "partial_time_with_minutes": {type: "C_TIME", pattern: "HH:MM:??"}
+                "allow_all": {type: "C_DATE_TIME", pattern: undefined, label: "Allow all"},
+                "date_and_time": {type: "C_DATE_TIME", pattern: "yyyy-mm-ddTHH:MM:SS", label: "Date and time"},
+                "date_and_partial_time": {
+                    type: "C_DATE_TIME",
+                    pattern: "yyyy-mm-ddTHH:??:??}",
+                    label: "Date and partial time"
+                },
+                "date_only": {type: "C_DATE", pattern: undefined, label: "Date only"},
+                "full_date": {type: "C_DATE", pattern: "yyyy-mm-dd", label: "Full date"},
+                "partial_date": {type: "C_DATE", pattern: "yyyy-??-XX", label: "Partial date"},
+                "partial_date_with_month": {type: "C_DATE", pattern: "yyyy-mm-??", label: "Partial date with month"},
+                "time_only": {type: "C_TIME", pattern: undefined, label: "Time only"},
+                "full_time": {type: "C_TIME", pattern: "HH:MM:SS", label: "Full time"},
+                "partial_time": {type: "C_TIME", pattern: "HH:??:XX", label: "Partial time"},
+                "partial_time_with_minutes": {type: "C_TIME", pattern: "HH:MM:??", label: "Partial time with minutes"}
             };
 
 
@@ -786,25 +957,29 @@
                     targetElement.append(html);
 
                     var patternElement = targetElement.find('#' + context.panel_id + '_pattern');
-
-                    patternElement.jstree(
-                        {
-                            'core': {
-                                'data': buildPatternTree(),
-                                'multiple': false
-                            }
+                    if (context.isTemplate) {
+                        var patternId = findIdFromPattern(context.pattern, context.type);
+                        patternElement.text(formatPatterns[patternId].label)
+                    } else {
+                        patternElement.jstree(
+                            {
+                                'core': {
+                                    'data': buildPatternTree(),
+                                    'multiple': false
+                                }
+                            });
+                        var patternId = findIdFromPattern(context.pattern, context.type);
+                        patternElement.on('ready.jstree', function () {
+                            patternElement.jstree('select_node', patternId);
                         });
 
-                    var patternId = findIdFromPattern(context.pattern, context.type);
-                    patternElement.on('ready.jstree', function () {
-                        patternElement.jstree('select_node', patternId);
-                    });
+                        patternElement.on('select_node.jstree', function (event, treeEvent) {
+                            var formatPattern = formatPatterns[treeEvent.node.id];
+                            context.type = formatPattern.type;
+                            context.pattern = formatPattern.pattern;
+                        });
+                    }
 
-                    patternElement.on('select_node.jstree', function (event, treeEvent) {
-                        var formatPattern = formatPatterns[treeEvent.node.id];
-                        context.type = formatPattern.type;
-                        context.pattern = formatPattern.pattern;
-                    });
 
                 });
             };

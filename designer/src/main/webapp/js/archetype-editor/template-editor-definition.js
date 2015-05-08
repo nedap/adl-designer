@@ -228,9 +228,11 @@
                     // add global handlers
                     if (!specialized) {
                         var dataElements = targetElement.find(".data");
-                        dataElements.prop("disabled", true);
-                        saveButton.prop('disabled', true);
+                        dataElements.prop("disabled", !specialized);
+                        saveButton.prop('disabled', !specialized);
                     }
+                    var archetypeOnlyElements = targetElement.find(".archetype-only");
+                    archetypeOnlyElements.prop("disabled", true);
                 }
 
                 clearConstraints(targetElement);
@@ -245,7 +247,7 @@
                 targetElement.append(topDiv);
 
                 constraintHandler = ArchetypeEditor.getRmTypeHandler('main', '@common');
-                templateHandler = ArchetypeEditor.getRmTypeHandler('main', '@template');
+                templateHandler = constraintHandler;
 
                 var customDiv = $('<div class="container-fluid">');
                 targetElement.append(customDiv);

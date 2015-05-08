@@ -67,7 +67,7 @@ var GuiUtils = (function () {
         }
     };
 
-    my.preloadTemplates = function(paths, callback) {
+    my.preloadTemplates = function (paths, callback) {
         var latch = new CountdownLatch(paths.length);
         for (var i in paths) {
             my.loadTemplates(paths[i], true, latch.countDown)
@@ -223,7 +223,7 @@ var GuiUtils = (function () {
                     self.onBlur(blurHandler);
                 });
 
-                for (var key in map ||{}) {
+                for (var key in map || {}) {
                     self.addRow(key, map[key]);
                 }
                 targetElement.append(tableElement);
@@ -265,7 +265,7 @@ var GuiUtils = (function () {
 
         var blurHandler;
         self.onBlur = function (handler) {
-            blurHandler=handler;
+            blurHandler = handler;
             if (handler) {
                 tableElement.find('input').blur(function (e) {
                     handler(e, self);
@@ -358,8 +358,9 @@ var GuiUtils = (function () {
                     }
                 });
 
+
                 targetElement.append(html);
-            });
+            })
         }
 
         var changeHandler = undefined;
@@ -376,11 +377,69 @@ var GuiUtils = (function () {
             return result;
         };
 
+        self.onChange = function (handler) {
+            changeHandler = handler;
+        };
+
 
         createElement();
         return self;
     };
 
+    /**
+     * @param {object} options checkbox list options
+     * @param {string} options.title Title of the checkbox
+     * @param {object[]} options.items checkbox items, format; {code: string, label: string, checked: boolean}
+     * @param {object} options.targetElement container for the dropdown element
+     * @constructor
+     */
+    my.DropDownCheckboxList = function (options) {
+        var self = this;
+
+        self.panel_id = my.generateId();
+
+        var changeHandler;
+        var context = {
+            panel_id: self.panel_id,
+            title: options.title,
+            items: AmUtils.clone(options.items)
+        };
+
+        GuiUtils.applyTemplate("util|dropdownCheckboxList", context, function (html) {
+
+            html = $(html);
+
+            html.find('#' + context.panel_id + '_menu').on('click', function (e) {
+                if ($(this).hasClass('dropdown-menu-form')) {
+                    e.stopPropagation();
+                }
+            });
+
+            html.find('input').on('change', function () {
+                if (changeHandler) {
+                    changeHandler(self);
+                }
+            });
+
+            options.targetElement.append(html);
+        });
+
+        self.getItemSelectionList = function () {
+            var result = [];
+            for (var index in options.items) {
+                var checked = options.targetElement.find('#' + self.panel_id + '_check_' + index).prop('checked');
+                result.push(checked);
+            }
+            return result;
+        };
+
+        self.onChange = function (handler) {
+            changeHandler = handler;
+        };
+
+    };
+
+
     return my;
-}());
+}() );
 

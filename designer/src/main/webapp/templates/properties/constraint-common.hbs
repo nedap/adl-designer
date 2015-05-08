@@ -19,18 +19,23 @@
   -->
 {>top}
 <div class="row">
-    <div class="col-sm-3"><label>Node Id</label></div>
-    <div class="col-sm-9 data">{{node_id}}</div>
+    <div class="col-sm-2"><label>Node Id</label></div>
+    <div class="col-sm-10 data">{{node_id}}</div>
 </div>
 <div class="row">
-    <div class="col-sm-3"><label>Path</label></div>
-    <div class="col-sm-9 data">{{rmPath}}</div>
+    <div class="col-sm-2"><label>Path</label></div>
+    <div class="col-sm-10 data">{{rmPath}}</div>
 </div>
 <div class="row">
-    <div class="col-sm-3"><label for="occurrences">Occurrences</label></div>
-    <div class="col-sm-9">
-        <input id="{{panel_id}}_occurrences" type="text" class="form-control input-sm data"
-               value="{{occurrences}}"/>
+    <div class="col-sm-2"><label for="occurrences">Occurrences</label></div>
+    <div class="col-sm-4">
+        <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
+    </div>
+    <div class="col-sm-4">
+        <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
+    </div>
+    <div class="col-sm-2">
+        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
     </div>
 </div>
 

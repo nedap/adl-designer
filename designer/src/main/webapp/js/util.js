@@ -307,11 +307,11 @@ var AmUtils = function () {
         return result;
     };
 
-    my.intersectSet = function(set1, set2) {
-        var result={};
+    my.intersectSet = function (set1, set2) {
+        var result = {};
         for (var key in set1) {
             if (set2[key]) {
-                result[key]=true;
+                result[key] = true;
             }
         }
         return result;
@@ -351,6 +351,12 @@ var AmUtils = function () {
             str = str.trim();
         }
         return str && str.length > 0 ? str : undefined;
+    };
+
+    my.Predicates = {
+        isTruthy: function (d) {
+            return d;
+        }
     };
 
 

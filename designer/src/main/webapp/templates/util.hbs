@@ -49,3 +49,23 @@
         </td>
     </tr>
 </table>
+
+
+{>dropdownCheckboxList}
+<div id="{{panel_id}}" class="dropdown">
+    <a class="dropdown-toggle btn btn-default" data-toggle="dropdown" href="#">
+        {{title}}
+        <b class="caret"></b>
+    </a>
+    <ul id="{{panel_id}}_menu" class="dropdown-menu dropdown-menu-form" role="menu">
+        {{#each items}}
+            <li id="{{panel_id}}_item_{{@key}}">
+                <span class="checkbox">
+                    <input id="{{../panel_id}}_check_{{@index}}" class="data" type="checkbox" {{#if checked}}checked="checked"{{/if}}>
+                    {{label}}
+                </span>
+            </li>
+        {{/each}}
+    </ul>
+</div>
+

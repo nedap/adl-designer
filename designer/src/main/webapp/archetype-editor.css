@@ -54,6 +54,7 @@ pre.display {
 }
 /* marks the field that represent actual model data (used in constraint properties, to enable save button) */
 .data {}
+.archetype-only {}
 
 .vertical-button-column {
     vertical-align: top
@@ -150,6 +151,11 @@ form .table-layout .table-cell {
 }
 
 
+ul.dropdown-menu-form {
+    padding: 5px 30px 0;
+    max-height: 300px;
+    overflow-y: scroll;
+}
 
 
 /* ICONS */
