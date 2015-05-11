@@ -29,7 +29,7 @@ var ArchetypeEditorTerminology = (function () {
             GuiUtils.applyTemplate("terminology/terms|terms", context, function (html) {
                 html = $(html);
 
-                archetypeModel.data.ontology.term_definitions = archetypeModel.data.ontology.term_definitions || {};
+                archetypeModel.data.terminology.term_definitions = archetypeModel.data.terminology.term_definitions || {};
                 var language = archetypeModel.defaultLanguage;
 
                 var defaultTermDefinitions = archetypeModel.getAllTerminologyDefinitionsWithPrefix(prefix);
@@ -74,7 +74,7 @@ var ArchetypeEditorTerminology = (function () {
 
                 function loadData() {
                     var language = archetypeModel.defaultLanguage;
-                    var value_sets = archetypeModel.data.ontology.value_sets;
+                    var value_sets = archetypeModel.data.terminology.value_sets;
                     var data = [];
                     for (var nodeId in value_sets) {
                         var term = archetypeModel.getTermDefinition(nodeId, language);
@@ -143,7 +143,7 @@ var ArchetypeEditorTerminology = (function () {
                     var data = [];
                     for (var i in nodeIds) {
                         var nodeId = nodeIds[i];
-                        if (!archetypeModel.data.ontology.value_sets[nodeId]) {
+                        if (!archetypeModel.data.terminology.value_sets[nodeId]) {
                             var term = archetypeModel.getTermDefinition(nodeId);
                             data.push({
                                 code: nodeId,
@@ -231,7 +231,7 @@ var ArchetypeEditorTerminology = (function () {
             };
             context.members = {};
             if (valueSetId) {
-                Stream(archetypeModel.data.ontology.value_sets[valueSetId].members).forEach(function (member_id) {
+                Stream(archetypeModel.data.terminology.value_sets[valueSetId].members).forEach(function (member_id) {
                     context.members[member_id] = archetypeModel.getTermDefinition(member_id);
                 });
             }
@@ -354,7 +354,7 @@ var ArchetypeEditorTerminology = (function () {
                             }
 
                             archetypeModel.setTermDefinition(valueSetId, undefined, text, description);
-                            archetypeModel.data.ontology.value_sets[valueSetId] = {
+                            archetypeModel.data.terminology.value_sets[valueSetId] = {
                                 id: valueSetId,
                                 members: AmUtils.keys(context.members)
                             };
@@ -382,7 +382,7 @@ var ArchetypeEditorTerminology = (function () {
                 term: archetypeModel.getTermDefinition(termId),
                 bindings: {}
             };
-            var tbs = archetypeModel.data.ontology.term_bindings;
+            var tbs = archetypeModel.data.terminology.term_bindings;
             for (var terminology in tbs) {
                 if (tbs[terminology][termId]) {
                     context.bindings[terminology] = tbs[terminology][termId];
@@ -400,7 +400,7 @@ var ArchetypeEditorTerminology = (function () {
                         url: ''
                     };
                     if (create) {
-                        var ontology = archetypeModel.data.ontology;
+                        var ontology = archetypeModel.data.terminology;
                         if (ontology.term_bindings) {
                             for (var term in ontology.term_bindings) {
                                 if (!context.bindings[term]) {
@@ -583,7 +583,7 @@ var ArchetypeEditorTerminology = (function () {
                     tableBody.empty();
                     var terminology = terminologySelect.val();
 
-                    var bindings = archetypeModel.data.ontology.term_bindings[terminology] || {};
+                    var bindings = archetypeModel.data.terminology.term_bindings[terminology] || {};
                     for (var termId in bindings) {
 
                         if (termId.substring(0, 2) === 'at') {
@@ -606,7 +606,7 @@ var ArchetypeEditorTerminology = (function () {
                                     });
                                     rowHtml.find("button[data-action='remove']").click(function () {
                                         var termId = $(this).data('term');
-                                        var term_bindings = archetypeModel.data.ontology.term_bindings[terminology];
+                                        var term_bindings = archetypeModel.data.terminology.term_bindings[terminology];
                                         delete term_bindings[termId];
                                         rowHtml.remove();
                                     });
@@ -620,7 +620,7 @@ var ArchetypeEditorTerminology = (function () {
                     tableBody.empty();
                     var terminology = terminologySelect.val();
 
-                    var bindings = archetypeModel.data.ontology.term_bindings[terminology] || {};
+                    var bindings = archetypeModel.data.terminology.term_bindings[terminology] || {};
                     for (var termId in bindings) {
 
                         if (termId.substring(0, 2) === 'id') {
@@ -643,7 +643,7 @@ var ArchetypeEditorTerminology = (function () {
                                     });
                                     rowHtml.find("button[data-action='remove']").click(function () {
                                         var termId = $(this).data('term');
-                                        var term_bindings = archetypeModel.data.ontology.term_bindings[terminology];
+                                        var term_bindings = archetypeModel.data.terminology.term_bindings[terminology];
                                         delete term_bindings[termId];
                                         rowHtml.remove();
                                     });
@@ -698,7 +698,7 @@ var ArchetypeEditorTerminology = (function () {
 
         my.updateTermBindingDialog = function (archetypeModel, terminology, termId, callback) {
 
-            var term_bindings = archetypeModel.data.ontology.term_bindings;
+            var term_bindings = archetypeModel.data.terminology.term_bindings;
             if (!term_bindings[terminology]) term_bindings[terminology] = {};
             var terminologyBindings = term_bindings[terminology];
 
@@ -770,7 +770,7 @@ var ArchetypeEditorTerminology = (function () {
 
         my.updateNodeBindingDialog = function (archetypeModel, terminology, termId, callback) {
 
-            var term_bindings = archetypeModel.data.ontology.term_bindings;
+            var term_bindings = archetypeModel.data.terminology.term_bindings;
             if (!term_bindings[terminology]) term_bindings[terminology] = {};
             var terminologyBindings = term_bindings[terminology];
 

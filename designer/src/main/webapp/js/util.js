@@ -444,7 +444,7 @@ var AmInterval = {
     toString: function (self) {
         if (!self) return "";
         if (self.lower === undefined && self.upper === undefined) return "";
-        return (self.lower ? String(self.lower) : "*") + ".." +
+        return (self.lower !== undefined ? String(self.lower) : "*") + ".." +
             (self.upper != undefined ? String(self.upper) : "*");
     },
 

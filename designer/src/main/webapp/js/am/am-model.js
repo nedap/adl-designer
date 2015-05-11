@@ -306,9 +306,9 @@ var AOM = (function () {
                 language = language || defaultLanguage;
 
                 if (!node_id) return undefined;
-                var term = getTermDefinitionFrom(data.ontology.term_definitions);
+                var term = getTermDefinitionFrom(data.terminology.term_definitions);
                 if (term) return term;
-                term = getTermDefinitionFrom(data.ontology.constraint_definitions);
+                term = getTermDefinitionFrom(data.terminology.constraint_definitions);
                 if (term) return term;
 
                 return undefined;
@@ -344,7 +344,7 @@ var AOM = (function () {
             self.exportTermDefinitions = function (node_id) {
                 var result = {};
                 var allLanguages = self.allLanguages();
-                var term_definitions = self.data.ontology && self.data.ontology.term_definitions || {};
+                var term_definitions = self.data.terminology && self.data.terminology.term_definitions || {};
                 for (var i in allLanguages) {
                     var lang = allLanguages[i];
                     var langTerms = term_definitions[lang];
@@ -366,8 +366,8 @@ var AOM = (function () {
                 var result = {};
 
                 function explode(code) {
-                    if (data.ontology.value_sets) {
-                        var valueSet = data.ontology.value_sets[code];
+                    if (data.terminology.value_sets) {
+                        var valueSet = data.terminology.value_sets[code];
                         if (valueSet) {
                             for (var i in valueSet.members || []) {
                                 explode(valueSet.members[i])
@@ -456,7 +456,7 @@ var AOM = (function () {
              * @returns {string[]}
              */
             self.getAvailableTerminologies = function () {
-                return AmUtils.keys(self.data.ontology.term_bindings);
+                return AmUtils.keys(self.data.terminology.term_bindings);
             };
 
             /**
@@ -468,7 +468,7 @@ var AOM = (function () {
              */
             self.getAllTerminologyDefinitionsWithPrefix = function (prefix) {
                 var result = {};
-                var defaultTermDefinitions = self.data.ontology.term_definitions[self.defaultLanguage];
+                var defaultTermDefinitions = self.data.terminology.term_definitions[self.defaultLanguage];
                 for (var code in defaultTermDefinitions) {
                     if (AOM.NodeId.of(code).prefix === prefix) {
                         result[code] = defaultTermDefinitions[code]
@@ -486,7 +486,7 @@ var AOM = (function () {
                 var result = [];
                 var termCandidates = self.getAllTerminologyDefinitionsWithPrefix("ac");
                 for (var nodeId in termCandidates) {
-                    if (!self.data.ontology.value_sets[nodeId]) {
+                    if (!self.data.terminology.value_sets[nodeId]) {
                         result.push(nodeId)
                     }
                 }
@@ -654,8 +654,8 @@ var AOM = (function () {
             }
 
             function removeTermDefinition(node_id) {
-                for (var lang in self.data.ontology.term_definitions) {
-                    var langTerms = self.data.ontology.term_definitions[lang];
+                for (var lang in self.data.terminology.term_definitions) {
+                    var langTerms = self.data.terminology.term_definitions[lang];
                     delete langTerms[node_id];
                 }
                 removeTermId(node_id);
@@ -790,21 +790,21 @@ var AOM = (function () {
             };
 
             self.specializeValueSet = function (valueSetId) {
-                var value_set = self.data.ontology.value_sets[valueSetId];
+                var value_set = self.data.terminology.value_sets[valueSetId];
                 if (!value_set) return undefined;
 
                 var newValueSetId = self.specializeTermDefinition(valueSetId);
 
                 value_set = AmUtils.clone(value_set);
                 value_set.id = newValueSetId;
-                self.data.ontology.value_sets[newValueSetId] = value_set;
+                self.data.terminology.value_sets[newValueSetId] = value_set;
                 return newValueSetId;
             };
 
             self.removeValueSet = function (node_id) {
-                if (!self.data.ontology.value_sets[node_id]) return false;
+                if (!self.data.terminology.value_sets[node_id]) return false;
 
-                delete self.data.ontology.value_sets[node_id];
+                delete self.data.terminology.value_sets[node_id];
                 removeTermDefinition(node_id);
 
                 return true;
@@ -955,9 +955,9 @@ var AOM = (function () {
                 }
 
                 function addTermDefinitions() {
-                    var orig = self.data.ontology.term_definitions[self.data.original_language.code_string];
+                    var orig = self.data.terminology.term_definitions[self.data.original_language.code_string];
                     var tds = {};
-                    self.data.ontology.term_definitions[langCode] = tds;
+                    self.data.terminology.term_definitions[langCode] = tds;
                     for (var nodeId in orig) {
                         var term = orig[nodeId];
                         tds[nodeId] = {
@@ -995,7 +995,7 @@ var AOM = (function () {
              * @param {{terminology:url}} bindings of terminology to query url
              */
             self.setExternalTerminologyBinding = function (termId, bindings) {
-                var tds = self.data.ontology.term_bindings;
+                var tds = self.data.terminology.term_bindings;
 
                 for (var bt in bindings) {
                     if (!tds[bt]) {
@@ -1040,7 +1040,7 @@ var AOM = (function () {
                     return;
                 }
 
-                var term_definitions = self.data.ontology.term_definitions;
+                var term_definitions = self.data.terminology.term_definitions;
 
                 if (!term_definitions[language]) {
                     term_definitions[language] = {};
@@ -1060,8 +1060,8 @@ var AOM = (function () {
             self.specializeTermDefinition = function (term_id) {
                 var newTermId = self.generateSpecializedTermId(term_id);
 
-                for (var lang in self.data.ontology.term_definitions) {
-                    var langTerms = self.data.ontology.term_definitions[lang];
+                for (var lang in self.data.terminology.term_definitions) {
+                    var langTerms = self.data.terminology.term_definitions[lang];
                     langTerms[newTermId] = AmUtils.clone(langTerms[term_id]);
                 }
                 return newTermId;
@@ -1093,7 +1093,7 @@ var AOM = (function () {
              * @param {{}} termsPerLanguage terms per language, in format {language: {text:..., description:...}}
              */
             self.importTermDefinitions = function (node_id, termsPerLanguage) {
-                var ontology = self.data.ontology;
+                var ontology = self.data.terminology;
                 var term_definitions = (ontology.term_definitions = ontology.term_definitions || {});
                 for (var language in termsPerLanguage) {
                     var term = termsPerLanguage[language];
@@ -1181,15 +1181,15 @@ var AOM = (function () {
              */
             self.removeConstraint = function (cons, forceRemove) {
                 function removeFromTermDefinitions(node_id) {
-                    for (var lang in self.data.ontology.term_definitions) {
-                        var langDefs = self.data.ontology.term_definitions[lang];
+                    for (var lang in self.data.terminology.term_definitions) {
+                        var langDefs = self.data.terminology.term_definitions[lang];
                         delete langDefs[node_id];
                     }
                 }
 
                 function removeFromTermBindings(node_id) {
-                    for (var terminology in self.data.ontology.term_bindings) {
-                        var terminologyDefs = self.data.ontology.term_bindings[terminology];
+                    for (var terminology in self.data.terminology.term_bindings) {
+                        var terminologyDefs = self.data.terminology.term_bindings[terminology];
                         delete terminologyDefs[node_id];
                     }
                 }
@@ -1211,7 +1211,7 @@ var AOM = (function () {
                     if (cons["@type"] === "C_TERMINOLOGY_CODE") {
                         if (cons.code_list && cons.code_list.length === 1) {
                             // currently does not support sharing of value sets and terminology
-                            var valueSet = self.data.ontology.value_sets[cons.code_list[0]];
+                            var valueSet = self.data.terminology.value_sets[cons.code_list[0]];
                             if (valueSet && self.isSpecialized(cons.code_list[0])) {
                                 // does not support common value sets
                                 self.removeValueSet(cons.code_list[0]);
@@ -1338,7 +1338,7 @@ var AOM = (function () {
 
             enrichConstraintData(data.definition, undefined);
             data.definition[".archetypeModel"] = self;
-            processOntology(data.ontology);
+            processOntology(data.terminology);
 
         }; // ArchetypeModel
 
@@ -1479,8 +1479,8 @@ var AOM = (function () {
                     "node_id": "id1"
                 },
                 "invariants": [],
-                "ontology": {
-                    "@type": "ARCHETYPE_ONTOLOGY",
+                "terminology": {
+                    "@type": "ARCHETYPE_TERMINOLOGY",
                     "term_definitions": {},
                     "constraint_definitions": {},
                     "term_bindings": {},
@@ -1512,7 +1512,7 @@ var AOM = (function () {
 
             newArchetypeJson.archetype_id.value = "openEHR-EHR-" + options.rm_type + "." + options.concept + ".v" + options.version;
 
-            newArchetypeJson.ontology.term_definitions[options.language] = {
+            newArchetypeJson.terminology.term_definitions[options.language] = {
                 "id1": {
                     "text": options.definition_text,
                     "description": options.definition_description
@@ -1544,7 +1544,7 @@ var AOM = (function () {
             var originalNodeId = data.definition.node_id;
             var specializedNodeId = data.definition.node_id + ".1";
             data.definition.node_id = specializedNodeId;
-            var td = data.ontology.term_definitions;
+            var td = data.terminology.term_definitions;
             for (var lang in td) {
                 td[lang][specializedNodeId] = AmUtils.clone(td[lang][originalNodeId]);
             }

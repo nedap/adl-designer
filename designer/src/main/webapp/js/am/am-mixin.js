@@ -300,6 +300,11 @@ AOM = (function (AOM) {
             return false;
         };
 
+        self.isConstraint = function() {
+            return false;
+        };
+
+
         self.isSlot = function() {
             return false;
         };
@@ -312,6 +317,10 @@ AOM = (function (AOM) {
     var CObjectMixin = function () {
         var self = this;
         AmObjectMixin.call(self);
+
+        self.isConstraint = function() {
+            return true;
+        };
 
         self.isPrimitive = function () {
             return false;

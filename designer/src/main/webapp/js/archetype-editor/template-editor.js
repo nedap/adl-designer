@@ -189,6 +189,12 @@ var TemplateEditor = (function () {
             ArchetypeEditor.Description.show(templateModel.getRootArchetypeModel(), targetElement);
         }
 
+        function loadDisplay() {
+            var targetElement = $('#archetype-editor-main-tabs-display');
+            my.Display.show(templateModel, targetElement);
+        }
+
+
         my.templateModel=templateModel;
 
         var targetElement = $('#archetype-editor-main-tabs-definition');
@@ -196,6 +202,9 @@ var TemplateEditor = (function () {
 
         loadDescription();
         $('a[href="#archetype-editor-main-tabs-description"]').on('show.bs.tab', loadDescription);
+        loadDisplay();
+        $('a[href="#archetype-editor-main-tabs-display"]').on('show.bs.tab', loadDisplay);
+
     };
 
     my.initialize = function (callback) {

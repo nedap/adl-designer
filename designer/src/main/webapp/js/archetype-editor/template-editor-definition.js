@@ -307,6 +307,8 @@
                     console.debug("save changes to:   ", cons);
 
                     archetypeModel.enrichReplacementConstraint(cons);
+                    constraintData.info.tree.styleNodes(constraintData.treeNode.id, 1);
+
                 });
             } // showConstraintProperties
 
@@ -389,7 +391,39 @@
             }
 
             self.extractConstraintName = function (cons, language) {
-                return templateModel.getConstraintLabel(cons, language);
+                var label = templateModel.getConstraintLabel(cons, language);
+                var deltas = [];
+
+                if (!AOM.mixin(cons).isConstraint()) {
+                    return label;
+                }
+
+                var archetypeModel = AOM.ArchetypeModel.from(cons);
+                if (!archetypeModel.isSpecialized(cons)) return label;
+
+                if (cons.occurrences && cons.occurrences.upper===0) {
+                    return label;
+                }
+
+                var parentCons = archetypeModel.getParentConstraint(cons);
+                if (!parentCons) {
+                    return label;
+                }
+
+
+                var term = archetypeModel.getTermDefinitionText(cons.node_id);
+                var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id);
+                if (term !== parentTerm) {
+                    deltas.push("NAME: from '"+parentTerm+'"');
+                }
+                if (AmInterval.toString(cons.occurrences)!==AmInterval.toString(parentCons.occurrences)) {
+                    deltas.push("occ: " + AmInterval.toString(parentCons.occurrences) + " to " + AmInterval.toString(cons.occurrences))
+                }
+                if (deltas.length>0) {
+                    label = label + " <-- " +  deltas.join(", ");
+                }
+
+                return label;
             };
 
 
@@ -501,7 +535,14 @@
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
                 if (isSpecialized) {
                     treeNodeJson.a_attr.class += ' specialized';
+                    if (cons.occurrences && cons.occurrences.upper===0) {
+                        treeNodeJson.a_attr.class += ' specialized prohibited';
+                    }
                 }
+                if (cons) {
+                    treeNodeJson.text = self.extractConstraintName(cons);
+                }
+
             }
 
             /**
@@ -573,9 +614,8 @@
                                 }
 
                                 archetypeModel.setTermDefinition(targetCons.node_id, currentLanguage, text, description);
+                                info.tree.styleNodes(self.current.treeNode.id, 1);
 
-                                info.tree.targetElement.jstree('rename_node', self.current.treeNode, text);
-                                info.tree.targetElement.jstree('redraw', true);
                             }
                         });
                 });

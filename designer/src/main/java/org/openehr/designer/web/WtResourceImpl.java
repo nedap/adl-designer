@@ -226,6 +226,15 @@ public class WtResourceImpl implements WtResource {
         return ArchetypeSerializer.serialize(archetype);
     }
 
+    @RequestMapping(value = "/display/adl/template", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
+    @ResponseBody
+    @Override
+    public String displayTemplateAdl(@RequestBody List<FlatArchetype> flatArchetypeList) {
+        TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(flatArchetypeList);
+        return TemplateSerializer.serialize(sourceArchetypes);
+    }
+
     @RequestMapping(value = "/commit", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
     @Override
     public void commit(@RequestBody CommitRequest commitRequest) {

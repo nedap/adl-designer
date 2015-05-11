@@ -73,7 +73,7 @@
                     errors.validate(range, "Invalid interval", "range");
                 }
 
-                if (stage.templateModel) {
+                if (context.isParentConstrained) {
                     var parentRange = AmInterval.parseContainedString(context.parent.range, "INTERVAL_OF_REAL");
                     if (parentRange) {
                         if (!AmInterval.contains(parentRange, range)) {
@@ -140,7 +140,7 @@
                     errors.validate(range, "Invalid interval", "range");
                 }
 
-                if (stage.templateModel) {
+                if (context.isParentConstrained) {
                     var parentRange = AmInterval.parseContainedString(context.parent.range, "INTERVAL_OF_INTEGER");
                     if (parentRange) {
                         if (!AmInterval.contains(parentRange, range)) {
@@ -180,15 +180,15 @@
 
             function getTerminologyData(archetypeModel, cons) {
                 function getValueSet(node_id) {
-                    return archetypeModel.data.ontology.value_sets &&
-                        archetypeModel.data.ontology.value_sets[node_id]
+                    return archetypeModel.data.terminology.value_sets &&
+                        archetypeModel.data.terminology.value_sets[node_id]
                 }
 
                 function getExternalBinding(node_id) {
-                    if (!archetypeModel.data.ontology.term_bindings) return undefined;
+                    if (!archetypeModel.data.terminology.term_bindings) return undefined;
                     var bindings = {};
-                    for (var terminology in archetypeModel.data.ontology.term_bindings) {
-                        var binding = archetypeModel.data.ontology.term_bindings[terminology][node_id];
+                    for (var terminology in archetypeModel.data.terminology.term_bindings) {
+                        var binding = archetypeModel.data.terminology.term_bindings[terminology][node_id];
                         if (binding) {
                             bindings[terminology] = binding;
                         }
@@ -258,15 +258,15 @@
                 } else {
                     context.external_term_code = terminologyData.code;
                 }
-                context.isParentConstrained = !!(stage.templateModel && (context.parent && !context.parent.any));
+                context.isParentConstrained = !!(context.isTemplate && (context.parent && !context.parent.any));
                 if (context.isParentConstrained && context.value_set_code) {
                     if (stage.archetypeModel.isSpecialized(context.value_set_code)) {
                         context.parent_value_set_code = new AOM.NodeId(context.value_set_code).getParent().toString();
                     } else {
                         context.parent_value_set_code = context.value_set_code; // code is taken from parent
                     }
-                    var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
-                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+                    var parentValueSet = stage.archetypeModel.data.terminology.value_sets[context.parent_value_set_code];
+                    var valueSet = stage.archetypeModel.data.terminology.value_sets[context.value_set_code];
                     context.valueSetItems = [];
                     for (var pvi in parentValueSet.members) {
                         var code = parentValueSet.members[pvi];
@@ -294,7 +294,7 @@
 
                 function updateInternalValueSet(valueSetSelect) {
                     valueSetSelect.empty();
-                    var valueSets = stage.archetypeModel.data.ontology.value_sets;
+                    var valueSets = stage.archetypeModel.data.terminology.value_sets;
                     for (var valueSetId in valueSets) {
                         var term = stage.archetypeModel.getTermDefinition(valueSetId);
                         var option = $("<option>").attr("value", valueSetId).text(term.text);
@@ -310,7 +310,7 @@
                     var noAssumedValueOption = $("<option>").attr("value", "");
                     assumedValueSelect.append(noAssumedValueOption);
                     var found = false;
-                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+                    var valueSet = stage.archetypeModel.data.terminology.value_sets[context.value_set_code];
                     if (valueSet) {
                         for (var i in valueSet.members) {
                             var memberId = valueSet.members[i];
@@ -334,7 +334,7 @@
                     var noAssumedValueOption = $("<option>").attr("value", "");
                     assumedValueSelect.append(noAssumedValueOption);
                     var found = false;
-                    var valueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
+                    var valueSet = stage.archetypeModel.data.terminology.value_sets[context.parent_value_set_code];
                     if (valueSet) {
                         var items = valueSetItemsCheckboxList.getItemSelectionList();
                         for (var i in valueSet.members) {
@@ -390,8 +390,8 @@
                     if (context.isParentConstrained) {
                         radioInternal.prop('disabled', true);
                         radioExternal.prop('disabled', true);
-                        var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
-                        var valueSet = stage.archetypeModel.data.ontology.value_sets[context.value_set_code];
+                        var parentValueSet = stage.archetypeModel.data.terminology.value_sets[context.parent_value_set_code];
+                        var valueSet = stage.archetypeModel.data.terminology.value_sets[context.value_set_code];
 
                         if (context.value_set_code) {
                             var valueSetItemsOptions = {
@@ -517,7 +517,7 @@
                             var members = Stream(context.valueSetItems).filter({checked: true}).map('code').toArray();
 
                             context.value_set_code = stage.archetypeModel.specializeTermDefinition(context.parent_value_set_code);
-                            stage.archetypeModel.data.ontology.value_sets[context.value_set_code] = {
+                            stage.archetypeModel.data.terminology.value_sets[context.value_set_code] = {
                                 id: context.value_set_code,
                                 members: members
                             };

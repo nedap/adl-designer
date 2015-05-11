@@ -20,6 +20,8 @@
 
 package org.openehr.designer.diff;
 
+import org.openehr.adl.ArchetypeProvider;
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.util.AdlUtils;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.jaxb.am.*;
@@ -46,6 +48,14 @@ public class ArchetypeDifferentiator {
         this.archetypeSpecializationDepth = getSpecializationDepth(flatChild.getDefinition().getNodeId());
     }
 
+    public static DifferentialArchetype differentiate(FlatArchetypeProvider flatArchetypeProvider, FlatArchetype flatChild) {
+        FlatArchetype flatParent = null;
+        if (flatChild.getParentArchetypeId() != null && flatChild.getParentArchetypeId().getValue() != null) {
+            flatParent = flatArchetypeProvider.getFlatArchetype(flatChild.getParentArchetypeId().getValue());
+        }
+        return differentiate(flatParent, flatChild);
+    }
+
     public static DifferentialArchetype differentiate(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
         return new ArchetypeDifferentiator(flatParent, flatChild).build();
     }
@@ -68,7 +78,7 @@ public class ArchetypeDifferentiator {
 
     private void removeUnspecializedValueSets(DifferentialArchetype diffChild) {
 
-        for (Iterator<ValueSetItem> iterator = diffChild.getOntology().getValueSets().iterator(); iterator.hasNext(); ) {
+        for (Iterator<ValueSetItem> iterator = diffChild.getTerminology().getValueSets().iterator(); iterator.hasNext(); ) {
             ValueSetItem valueSetItem = iterator.next();
             List<String> parentMembers = flatParentWrapper.getValueSet(valueSetItem.getId());
             if (parentMembers != null && parentMembers.equals(valueSetItem.getMembers())) {
@@ -80,12 +90,12 @@ public class ArchetypeDifferentiator {
 
     private void removeUnspecializedTermDefinitions(DifferentialArchetype diffChild) {
         ArchetypeWrapper diffChildWrapper = new ArchetypeWrapper(diffChild);
-        List<String> languages = diffChild.getOntology().getTermDefinitions().stream()
+        List<String> languages = diffChild.getTerminology().getTermDefinitions().stream()
                 .map(CodeDefinitionSet::getLanguage)
                 .collect(Collectors.toList());
 
-        if (diffChild.getOntology().getTermDefinitions().isEmpty()) return;
-        List<String> termIds = diffChild.getOntology().getTermDefinitions().get(0).getItems().stream()
+        if (diffChild.getTerminology().getTermDefinitions().isEmpty()) return;
+        List<String> termIds = diffChild.getTerminology().getTermDefinitions().get(0).getItems().stream()
                 .map(ArchetypeTerm::getCode)
                 .collect(Collectors.toList());
 
@@ -107,7 +117,7 @@ public class ArchetypeDifferentiator {
             }
         }
 
-        for (CodeDefinitionSet codeDefinitionSet : diffChild.getOntology().getTermDefinitions()) {
+        for (CodeDefinitionSet codeDefinitionSet : diffChild.getTerminology().getTermDefinitions()) {
             for (Iterator<ArchetypeTerm> iterator = codeDefinitionSet.getItems().iterator(); iterator.hasNext(); ) {
                 ArchetypeTerm at = iterator.next();
                 if (!termsToKeep.contains(at.getCode())) {
@@ -118,9 +128,9 @@ public class ArchetypeDifferentiator {
     }
 
     private void removeUnspecializedTermBindings(DifferentialArchetype diffChild) {
-        if (diffChild.getOntology().getTermBindings().isEmpty()) return;
+        if (diffChild.getTerminology().getTermBindings().isEmpty()) return;
 
-        for (Iterator<TermBindingSet> tbsIterator = diffChild.getOntology().getTermBindings().iterator(); tbsIterator.hasNext(); ) {
+        for (Iterator<TermBindingSet> tbsIterator = diffChild.getTerminology().getTermBindings().iterator(); tbsIterator.hasNext(); ) {
             TermBindingSet termBindingSet = tbsIterator.next();
             for (Iterator<TermBindingItem> tbiIterator = termBindingSet.getItems().iterator(); tbiIterator.hasNext(); ) {
                 TermBindingItem termBindingItem = tbiIterator.next();

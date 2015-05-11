@@ -62,6 +62,8 @@ public interface WtResource {
     String displayArchetypeAdlSource(FlatArchetype archetype);
     String displayArchetypeAdlFlat(FlatArchetype archetype);
 
+    String displayTemplateAdl(List<FlatArchetype> archetypeList);
+
     void commit(CommitRequest commitRequest);
 
 }

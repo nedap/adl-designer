@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Marko Pipan
  */
-public class ArchetypeOntologyMixin extends ArchetypeOntology {
+public class ArchetypeTerminologyMixin extends ArchetypeTerminology {
 
     @JsonDeserialize(converter = CodeDefinitionMapToListConverter.class)
     @JsonSerialize(converter = CodeDefinitionListToMapConverter.class)

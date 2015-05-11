@@ -54,8 +54,8 @@ abstract public class AbstractArchetypeRepository implements ArchetypeRepository
     }
 
     private String findTermText(DifferentialArchetype archetype, String concept, String defaultLanguage) {
-        if (archetype.getOntology() == null || archetype.getOntology().getTermDefinitions() == null) return null;
-        CodeDefinitionSet cds = archetype.getOntology()
+        if (archetype.getTerminology() == null || archetype.getTerminology().getTermDefinitions() == null) return null;
+        CodeDefinitionSet cds = archetype.getTerminology()
                 .getTermDefinitions()
                 .stream()
                 .filter((t) -> t.getLanguage().equals(defaultLanguage))

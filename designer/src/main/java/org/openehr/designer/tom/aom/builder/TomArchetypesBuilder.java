@@ -75,7 +75,7 @@ class TomArchetypesBuilder {
         archetype.getTranslations().addAll(archetypeParent.getTranslations());
         archetype.setParentArchetypeId(newArchetypeId(archetypeTom.getParentArchetypeId()));
         archetype.setArchetypeId(newArchetypeId(archetypeTom.getArchetypeId()));
-        archetype.setOntology(new ArchetypeOntology());
+        archetype.setTerminology(new ArchetypeTerminology());
 
         targetArchetypes.add(archetype);
 
@@ -142,12 +142,12 @@ class TomArchetypesBuilder {
     }
 
     private CodeDefinitionSet getCodeDefinitionSetForLanguage(String language) {
-        for (CodeDefinitionSet cds : archetype.getOntology().getTermDefinitions()) {
+        for (CodeDefinitionSet cds : archetype.getTerminology().getTermDefinitions()) {
             if (cds.getLanguage().equals(language)) return cds;
         }
         CodeDefinitionSet cds = new CodeDefinitionSet();
         cds.setLanguage(language);
-        archetype.getOntology().getTermDefinitions().add(cds);
+        archetype.getTerminology().getTermDefinitions().add(cds);
         return cds;
     }
 

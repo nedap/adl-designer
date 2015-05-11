@@ -47,6 +47,11 @@ a.definition-tree-node.specialized {
     color: black !important;
 }
 
+a.definition-tree-node.specialized.prohibited {
+    color: black !important;
+    text-decoration: line-through;
+}
+
 pre.display {
     width: 100%;
     height: 100%;

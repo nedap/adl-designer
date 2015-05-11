@@ -252,7 +252,7 @@ public class TomConstraintsBuilder {
 
         boolean valueSetAdded = false;
         if (parent.getCodeList().size() == 1) {
-            for (ValueSetItem valueSetItem : archetypeParent.getOntology().getValueSets()) {
+            for (ValueSetItem valueSetItem : archetypeParent.getTerminology().getValueSets()) {
                 if (valueSetItem.getId().equals(parent.getCodeList().get(0))) {
                     String parentId = parent.getCodeList().get(0);
                     String newId = overrideNodeId(parentId);
@@ -260,7 +260,7 @@ public class TomConstraintsBuilder {
                     ValueSetItem vsi = new ValueSetItem();
                     vsi.setId(newId);
                     vsi.getMembers().addAll(newCodeList);
-                    archetype.getOntology().getValueSets().add(vsi);
+                    archetype.getTerminology().getValueSets().add(vsi);
                     valueSetAdded = true;
                     result.getCodeList().add(newId);
                     break;
