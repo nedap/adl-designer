@@ -39,6 +39,7 @@ import java.util.Optional;
  * @author markopi
  */
 public class ReferenceModelDataBuilder {
+    public static final String RM_VERSION="1.0.2";
 
     private final Map<String, Type> typeMap;
 
@@ -97,7 +98,7 @@ public class ReferenceModelDataBuilder {
     public ReferenceModelData build(RmModel rmModel) {
         ReferenceModelData result = new ReferenceModelData();
         result.setName("openEHR");
-        result.setVersion("1.0.2");
+        result.setVersion(RM_VERSION);
         result.setTypes(new LinkedHashMap<>());
 
         for (RmType type : rmModel.getAllTypes()) {

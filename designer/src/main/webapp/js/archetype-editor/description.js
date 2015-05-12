@@ -185,7 +185,6 @@
                     purposeInput.val(details.purpose);
                     useInput.val(details.use);
                     misuseInput.val(details.misuse);
-                    copyrightInput.val(details.copyright);
                     keywordsInput.val((details.keywords || []).join(", "));
 
                     resourcesDiv.empty();
@@ -211,7 +210,6 @@
                     details.purpose = purposeInput.val();
                     details.use = useInput.val();
                     details.misuse = misuseInput.val();
-                    details.copyright = copyrightInput.val();
                     details.keywords = [];
                     var keywords = keywordsInput.val().split(",");
                     for (var i in keywords) {
@@ -235,6 +233,8 @@
                 var resourcesDiv = html.find('#' + context.panel_id + '_resources');
                 var otherDetailsDiv = html.find('#' + context.panel_id + '_other_details');
 
+                copyrightInput.val(archetypeModel.data.description.copyright);
+
                 var resources, otherDetails;
 
                 purposeInput.change(updateLanguageDetails);
@@ -243,7 +243,6 @@
                 });
                 useInput.change(updateLanguageDetails);
                 misuseInput.change(updateLanguageDetails);
-                copyrightInput.change(updateLanguageDetails);
                 keywordsInput.change(updateLanguageDetails);
 
                 lifecycleSelect.val(archetypeModel.data.description.lifecycle_state);
@@ -251,6 +250,9 @@
                 populateLanguages();
                 populateLanguageDetails();
                 languageSelect.change(populateLanguageDetails);
+                copyrightInput.change(function () {
+                    archetypeModel.data.description.copyright = copyrightInput.val();
+                });
 
 
                 targetElement.append(html);

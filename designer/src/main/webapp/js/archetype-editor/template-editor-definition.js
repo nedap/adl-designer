@@ -596,6 +596,8 @@
                     textInput.val(term.text);
                     var descriptionInput = content.find('#' + context.panel_id + '_description');
                     descriptionInput.val(term.description);
+                    var commentInput = content.find('#' + context.panel_id + '_comment');
+                    commentInput.val(term.comment);
 
 
                     GuiUtils.openSimpleDialog(
@@ -606,6 +608,10 @@
                             callback: function (content) {
                                 var text = textInput.val();
                                 var description = descriptionInput.val();
+                                var comment = commentInput.val();
+                                if (comment && commentInput.length===0) {
+                                    comment=undefined;
+                                }
                                 if (text.length == 0) {
                                     return "text is required"
                                 }
@@ -613,7 +619,7 @@
                                     return "description is required"
                                 }
 
-                                archetypeModel.setTermDefinition(targetCons.node_id, currentLanguage, text, description);
+                                archetypeModel.setTermDefinition(targetCons.node_id, currentLanguage, text, description, comment);
                                 info.tree.styleNodes(self.current.treeNode.id, 1);
 
                             }

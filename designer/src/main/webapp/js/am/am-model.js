@@ -1021,7 +1021,7 @@ var AOM = (function () {
              * @param {string} text term definition text
              * @param {string?}description term definition description. If undefined, equals to text
              */
-            self.setTermDefinition = function (code, language, text, description) {
+            self.setTermDefinition = function (code, language, text, description, comment) {
                 function quickTranslate(value, sourceLanguage, targetLanguage) {
                     if (!value) return undefined;
                     value = value + " (" + sourceLanguage + ")";
@@ -1030,7 +1030,7 @@ var AOM = (function () {
 
 
                 if (!language) {
-                    self.setTermDefinition(code, self.defaultLanguage, text, description);
+                    self.setTermDefinition(code, self.defaultLanguage, text, description, comment);
                     for (var i in self.translations) {
                         var lang = self.translations[i];
                         self.setTermDefinition(code, lang,
@@ -1052,7 +1052,8 @@ var AOM = (function () {
                 description = description || text;
                 term_definitions[language][code] = {
                     text: text,
-                    description: description
+                    description: description,
+                    comment: comment
                 };
                 AmUtils.cleanObjectProperties(term_definitions[language][code]);
             };
@@ -1506,6 +1507,7 @@ var AOM = (function () {
                     "value": ""
                 },
                 "adl_version": "2.0.4",
+                "rm_release": "1.0.2",
                 "is_template": false,
                 "is_overlay": false
             };

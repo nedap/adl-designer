@@ -20,8 +20,12 @@
 
 package org.openehr.designer.diff;
 
-import org.openehr.adl.ArchetypeProvider;
 import org.openehr.adl.FlatArchetypeProvider;
+import org.openehr.adl.am.mixin.AmMixins;
+import org.openehr.adl.am.mixin.MultiplicityIntervalMixin;
+import org.openehr.adl.rm.RmModel;
+import org.openehr.adl.rm.RmModelException;
+import org.openehr.adl.rm.RmTypeAttribute;
 import org.openehr.adl.util.AdlUtils;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.jaxb.am.*;
@@ -36,32 +40,36 @@ import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDe
  * @author markopi
  */
 public class ArchetypeDifferentiator {
+    private final RmModel rmModel;
     private final FlatArchetype flatParent;
     private final FlatArchetype flatChild;
     private final ArchetypeWrapper flatParentWrapper;
     private final int archetypeSpecializationDepth;
 
-    private ArchetypeDifferentiator(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+    private ArchetypeDifferentiator(RmModel rmModel, @Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+        this.rmModel = rmModel;
         this.flatParent = flatParent;
         this.flatChild = flatChild;
         this.flatParentWrapper = flatParent != null ? new ArchetypeWrapper(flatParent) : null;
         this.archetypeSpecializationDepth = getSpecializationDepth(flatChild.getDefinition().getNodeId());
     }
 
-    public static DifferentialArchetype differentiate(FlatArchetypeProvider flatArchetypeProvider, FlatArchetype flatChild) {
+    public static DifferentialArchetype differentiate(RmModel rmModel, FlatArchetypeProvider flatArchetypeProvider, FlatArchetype flatChild) {
         FlatArchetype flatParent = null;
         if (flatChild.getParentArchetypeId() != null && flatChild.getParentArchetypeId().getValue() != null) {
             flatParent = flatArchetypeProvider.getFlatArchetype(flatChild.getParentArchetypeId().getValue());
         }
-        return differentiate(flatParent, flatChild);
+        return differentiate(rmModel, flatParent, flatChild);
     }
 
-    public static DifferentialArchetype differentiate(@Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
-        return new ArchetypeDifferentiator(flatParent, flatChild).build();
+    public static DifferentialArchetype differentiate(RmModel rmModel, @Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+        return new ArchetypeDifferentiator(rmModel, flatParent, flatChild).build();
     }
 
     private DifferentialArchetype build() {
         DifferentialArchetype diffChild = AdlUtils.createDifferentialArchetypeClone(flatChild);
+        removeUnspecializedOccurrences(null, diffChild.getDefinition());
+
         if (flatParent == null) {
             return diffChild; // no differentiation needed
         }
@@ -73,7 +81,51 @@ public class ArchetypeDifferentiator {
         removeUnspecializedTermBindings(diffChild);
         removeUnspecializedValueSets(diffChild);
 
+
+
         return diffChild;
+    }
+
+    private void removeUnspecializedOccurrences(@Nullable CAttribute parentCAttr, CComplexObject specialized) {
+        if (specialized.getOccurrences() != null) {
+            MultiplicityIntervalMixin specializedMixin = AmMixins.of(specialized.getOccurrences());
+            if (parentCAttr == null) {
+                specialized.setOccurrences(null);
+            } else {
+                if (parentCAttr.getCardinality() == null) {
+                    if (specializedMixin.isEqualTo(parentCAttr.getExistence())) {
+                        specialized.setOccurrences(null);
+                    }
+                } else {
+                    if (specializedMixin.isEqualTo(parentCAttr.getCardinality().getInterval())) {
+                        specialized.setOccurrences(null);
+                    }
+                }
+            }
+        }
+
+        for (CAttribute cAttribute : specialized.getAttributes()) {
+            cAttribute.getChildren().stream()
+                    .filter(cObject -> cObject instanceof CComplexObject)
+                    .forEach(cObject -> removeUnspecializedOccurrences(cAttribute, (CComplexObject) cObject));
+
+            RmTypeAttribute rmAttribute;
+            try {
+                rmAttribute = rmModel.getRmAttribute(specialized.getRmTypeName(), cAttribute.getRmAttributeName());
+            } catch (RmModelException e) {
+                // no attribute, do nothing
+                continue;
+            }
+            if (cAttribute.getExistence() != null && !Objects.equals(cAttribute.getExistence().getLower(), rmAttribute.getExistence().getLower())) {
+                cAttribute.setExistence(null);
+            }
+            if (cAttribute.getCardinality() != null) {
+                if (!AmMixins.of(cAttribute.getCardinality()).isEqualTo(rmAttribute.getCardinality())) {
+                    cAttribute.setCardinality(null);
+                }
+            }
+        }
+
     }
 
     private void removeUnspecializedValueSets(DifferentialArchetype diffChild) {

@@ -26,10 +26,7 @@ import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.ArchetypeInfo;
-import org.openehr.designer.FlatArchetypeProviderOverlay;
-import org.openehr.designer.ReferenceModelData;
-import org.openehr.designer.ReferenceModelDataBuilder;
+import org.openehr.designer.*;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.diff.TemplateDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
@@ -98,12 +95,13 @@ public class WtResourceImpl implements WtResource {
         if (!archetypeId.equals(archetype.getArchetypeId().getValue())) {
             throw new IllegalArgumentException("Archetype id in path does not match archetype id in body");
         }
-        FlatArchetype parentArchetype = null;
-        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
-            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
-        }
+//        FlatArchetype parentArchetype = null;
+//        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
+//            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+//        }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeRepository, archetype);
+        differentialArchetype.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
         archetypeRepository.saveDifferentialArchetype(differentialArchetype);
     }
 
@@ -144,7 +142,8 @@ public class WtResourceImpl implements WtResource {
     @Override
     public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(archetypes);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(rmModel, archetypes);
+        sourceArchetypes.get(0).setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
         templateRepository.saveTemplate(sourceArchetypes);
     }
 
@@ -210,12 +209,12 @@ public class WtResourceImpl implements WtResource {
     @ResponseBody
     @Override
     public String displayArchetypeAdlSource(@RequestBody FlatArchetype archetype) {
-        FlatArchetype parentArchetype = null;
-        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
-            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
-        }
+//        FlatArchetype parentArchetype = null;
+//        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
+//            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+//        }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(parentArchetype, archetype);
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeRepository, archetype);
         return ArchetypeSerializer.serialize(differentialArchetype);
     }
 
@@ -231,7 +230,7 @@ public class WtResourceImpl implements WtResource {
     @Override
     public String displayTemplateAdl(@RequestBody List<FlatArchetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(flatArchetypeList);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(rmModel, flatArchetypeList);
         return TemplateSerializer.serialize(sourceArchetypes);
     }
 

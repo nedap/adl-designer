@@ -36,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ArchetypeDifferentiatorTestManual {
-//    private final RmModel rmModel = new OpenEhrRmModel();
     private FileArchetypeRepository archetypeRepository;
     private FlatArchetypeRepository flatArchetypeRepository;
 
@@ -58,7 +57,7 @@ public class ArchetypeDifferentiatorTestManual {
     public void testBuild() throws Exception {
         FlatArchetype parent = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
         FlatArchetype flatChild = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
-        DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(parent, flatChild);
+        DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(OpenEhrRmModel.getInstance(), parent, flatChild);
         String archetype = ArchetypeSerializer.serialize(diff);
 
         Path targetDir = Paths.get("target");

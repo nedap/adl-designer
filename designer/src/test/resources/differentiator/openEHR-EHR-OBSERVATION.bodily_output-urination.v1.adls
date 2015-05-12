@@ -40,7 +40,7 @@ definition
 				include
 					archetype_id/value matches {/openEHR-EHR-CLUSTER\.fluid(-a-zA-Z0-9_]+)*\.v1/}
 			}
-			CLUSTER[id33] matches {
+			CLUSTER[id33.1] matches {
 				items matches {
 					ELEMENT[id34.1] 	-- Passed urine
 					ELEMENT[id35.1] 	-- Datetime urine last passed
@@ -50,7 +50,7 @@ definition
 			}
 			CLUSTER[id0.40] occurrences matches {0..1} matches {	-- Continence
 				items matches {
-					ELEMENT[id0.41] occurrences matches {0..1} matches {	-- Description
+					ELEMENT[id0.41] matches {	-- Description
 						value matches {
 							DV_TEXT[id0.42] 
 						}

@@ -21,6 +21,7 @@
 package org.openehr.designer.diff;
 
 import org.openehr.adl.FlatArchetypeProvider;
+import org.openehr.adl.rm.RmModel;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 
@@ -37,14 +38,14 @@ public class TemplateDifferentiator {
         this.flatArchetypeProvider = flatArchetypeProvider;
     }
 
-    public List<DifferentialArchetype> differentiate(List<FlatArchetype> flatTemplateArchetypes) {
+    public List<DifferentialArchetype> differentiate(RmModel rmModel, List<FlatArchetype> flatTemplateArchetypes) {
         List<DifferentialArchetype> result = new ArrayList<>();
         for (FlatArchetype flatArchetype : flatTemplateArchetypes) {
             FlatArchetype flatArchetypeParent = null;
             if (flatArchetype.getParentArchetypeId() != null) {
                 flatArchetypeParent = flatArchetypeProvider.getFlatArchetype(flatArchetype.getParentArchetypeId().getValue());
             }
-            DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(flatArchetypeParent, flatArchetype);
+            DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeParent, flatArchetype);
             result.add(differentialArchetype);
         }
         return result;
