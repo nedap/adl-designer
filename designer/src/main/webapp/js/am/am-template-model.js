@@ -210,13 +210,38 @@ AOM = (function (AOM) {
          */
         self.addArchetype = function (targetCons, flatParentArchetypeData) {
             function createNewOverlayArchetypeId(parentArchetypeModel) {
-                var pid = parentArchetypeModel.getArchetypeId();
-                var start = pid.indexOf('.');
-                var end = pid.indexOf('.', start + 1);
-                var name = pid.substring(start, end);
+                function extractNamePart(pid) {
+                    var start = pid.indexOf('.');
+                    var end = pid.indexOf('.', start + 1);
+                    return pid.substring(start + 1, end);
+                }
 
-                var newId = pid.substring(0, start) + name + "_" + AmUtils.random4() + pid.substring(end);
-                return newId;
+
+                function pad(num, size) {
+                    var s = "000000000" + num;
+                    return s.substr(s.length - size);
+                }
+
+                var parentId = parentArchetypeModel.getArchetypeId();
+                var start = parentId.indexOf('.');
+                var end = parentId.indexOf('.', start + 1);
+
+                var parentName = extractNamePart(parentArchetypeModel.getArchetypeId());
+                var templateName = extractNamePart(self.getRootArchetypeModel().getArchetypeId());
+
+                var num = 1;
+                while (true) {
+                    var newArchetypeId = parentId.substring(0, start) + ".ovl-"
+                        + templateName + "-" + parentName + "-" + pad(num, 3)
+                        + parentId.substring(end);
+
+                    if (Stream(archetypeModels).noneMatch(function (d) {
+                            return d.getArchetypeId() === newArchetypeId
+                        })) {
+                        return newArchetypeId;
+                    }
+                    num++;
+                }
             }
 
             function createNewOverlayArchetypeModel(flatParentArchetypeData) {

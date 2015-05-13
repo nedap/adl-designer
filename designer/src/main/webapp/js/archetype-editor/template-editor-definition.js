@@ -609,7 +609,7 @@
                                 var text = textInput.val();
                                 var description = descriptionInput.val();
                                 var comment = commentInput.val();
-                                if (comment && commentInput.length===0) {
+                                if (comment.length===0) {
                                     comment=undefined;
                                 }
                                 if (text.length == 0) {

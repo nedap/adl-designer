@@ -26,7 +26,10 @@ import org.openehr.adl.rm.RmModel;
 import org.openehr.adl.rm.RmType;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.*;
+import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.FlatArchetypeProviderOverlay;
+import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.diff.TemplateDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
@@ -143,7 +146,11 @@ public class WtResourceImpl implements WtResource {
     public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
         List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(rmModel, archetypes);
-        sourceArchetypes.get(0).setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
+        sourceArchetypes.forEach(a -> {
+            if (a.getRmRelease() == null) {
+                a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
+            }
+        });
         templateRepository.saveTemplate(sourceArchetypes);
     }
 

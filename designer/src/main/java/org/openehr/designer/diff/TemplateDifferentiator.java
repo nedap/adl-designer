@@ -22,11 +22,21 @@ package org.openehr.designer.diff;
 
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.rm.RmModel;
+import org.openehr.adl.util.AdlUtils;
+import org.openehr.adl.util.ArchetypeWrapper;
+import org.openehr.adl.util.walker.AmConstraintContext;
+import org.openehr.adl.util.walker.AmVisitors;
+import org.openehr.adl.util.walker.ArchetypeWalker;
+import org.openehr.adl.util.walker.ConstraintAmVisitor;
+import org.openehr.jaxb.am.CArchetypeRoot;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.rm.TranslationDetails;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author markopi
@@ -48,6 +58,74 @@ public class TemplateDifferentiator {
             DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeParent, flatArchetype);
             result.add(differentialArchetype);
         }
+//        removeUnchangedArchetypes(result);
         return result;
     }
+
+//    private void removeUnchangedArchetypes(List<DifferentialArchetype> archetypes) {
+//        int archetypeIndex = 0;
+//        while (archetypeIndex < archetypes.size()) {
+//            DifferentialArchetype archetype = archetypes.get(archetypeIndex);
+//
+//            if (archetype.isIsOverlay() && !isArchetypeChanged(archetype)) {
+//                archetypes.remove(archetypeIndex);
+//                removeReferencesToArchetype(archetypes, archetype.getArchetypeId().getValue(), archetype.getParentArchetypeId().getValue());
+//            } else {
+//                archetypeIndex++;
+//            }
+//        }
+//
+//    }
+//
+//    private boolean isArchetypeChanged(DifferentialArchetype archetype) {
+//        if (!archetype.getDefinition().getAttributes().isEmpty()) return true;
+//        if (!archetype.getTerminology().getValueSets().isEmpty()) return true;
+//
+//        FlatArchetype parent = flatArchetypeProvider.getFlatArchetype(archetype.getParentArchetypeId().getValue());
+//
+//
+//        ArchetypeWrapper wrapper = new ArchetypeWrapper(archetype);
+//        ArchetypeWrapper parentWrapper = new ArchetypeWrapper(parent);
+//
+//        if (isTermRedefinedForLanguage(
+//                wrapper, parentWrapper, parent.getOriginalLanguage().getCodeString())) {
+//            return true;
+//        }
+//        for (TranslationDetails translation : parent.getTranslations()) {
+//            if (isTermRedefinedForLanguage(
+//                    wrapper, parentWrapper, translation.getLanguage().getCodeString())) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+//
+//    private boolean isTermRedefinedForLanguage(ArchetypeWrapper wrapper, ArchetypeWrapper parentWrapper, String language) {
+//        String mainNodeId = wrapper.getArchetype().getDefinition().getNodeId();
+//        String parentNodeId = parentWrapper.getArchetype().getDefinition().getNodeId();
+//
+//        Map<String, String> specializedTerm = wrapper.getTerm(language, mainNodeId);
+//        Map<String, String> parentTerm = parentWrapper.getTerm(language, parentNodeId);
+//        if (specializedTerm != null && !specializedTerm.equals(parentTerm)) return true;
+//        return false;
+//    }
+//
+//    private void removeReferencesToArchetype(List<DifferentialArchetype> archetypes, String overlayArchetypeId, String parentArchetypeId) {
+//        for (DifferentialArchetype archetype : archetypes) {
+//            ArchetypeWalker.walkConstraints(new ConstraintAmVisitor<>()
+//                            .add(CArchetypeRoot.class, AmVisitors.preorder((item, AmVisitContext) -> {
+//                                if (overlayArchetypeId.equals(item.getArchetypeRef())) {
+//                                    item.setArchetypeRef(parentArchetypeId);
+//                                }
+//                                if (overlayArchetypeId.equals(item.getNodeId())) {
+//                                    item.setNodeId(parentArchetypeId);
+//                                }
+//                                return ArchetypeWalker.Action.next();
+//                            })),
+//                    archetype, new AmConstraintContext());
+//        }
+//    }
+
+
 }

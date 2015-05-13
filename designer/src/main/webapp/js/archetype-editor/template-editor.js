@@ -152,7 +152,6 @@ var TemplateEditor = (function () {
                             templateId: templateId,
                             parentArchetypeId: parentArchetypeIdSelect.val(),
                             callback: function (templateModel) {
-                                console.log("Template model", templateModel);
                                 my.useTemplate(templateModel);
                             }
 
