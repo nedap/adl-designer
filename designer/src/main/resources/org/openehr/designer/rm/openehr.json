@@ -4,6 +4,12 @@
       "guideline_id": {"ignore": true}
     }
   },
+  "CLUSTER": {
+    "rootType": true,
+    "attributes": {
+      "items": {"transparent": true}
+    }
+  },
   "COMPOSITION": {
     "rootType": true
   },
@@ -20,8 +26,21 @@
       "work_flow_id": {"ignore": true}
     }
   },
+  "HISTORY": {
+    "transparent": true,
+    "attributes": {
+      "events": {"transparent": true},
+      "summary": {"transparent": true}
+    }
+  },
   "ITEM": {
     "rootType": true
+  },
+  "ITEM_STRUCTURE": {
+    "transparent": true,
+    "attributes": {
+      "items": {"transparent": true}
+    }
   },
   "LOCATABLE": {
     "attributes": {

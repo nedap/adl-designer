@@ -401,7 +401,7 @@
                 var archetypeModel = AOM.ArchetypeModel.from(cons);
                 if (!archetypeModel.isSpecialized(cons)) return label;
 
-                if (cons.occurrences && cons.occurrences.upper===0) {
+                if (cons.occurrences && cons.occurrences.upper === 0) {
                     return label;
                 }
 
@@ -414,13 +414,13 @@
                 var term = archetypeModel.getTermDefinitionText(cons.node_id);
                 var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id);
                 if (term !== parentTerm) {
-                    deltas.push("NAME: from '"+parentTerm+'"');
+                    deltas.push("NAME: from '" + parentTerm + '"');
                 }
-                if (AmInterval.toString(cons.occurrences)!==AmInterval.toString(parentCons.occurrences)) {
+                if (AmInterval.toString(cons.occurrences) !== AmInterval.toString(parentCons.occurrences)) {
                     deltas.push("occ: " + AmInterval.toString(parentCons.occurrences) + " to " + AmInterval.toString(cons.occurrences))
                 }
-                if (deltas.length>0) {
-                    label = label + " <-- " +  deltas.join(", ");
+                if (deltas.length > 0) {
+                    label = label + " <-- " + deltas.join(", ");
                 }
 
                 return label;
@@ -452,17 +452,22 @@
             };
 
 
-            function buildTreeJson(cons) {
+            function buildTreeJson(cons, showStructure) {
 
-                function createJson(cons) {
+                function createJson(target, cons) {
                     if (cons["@type"] === "C_ATTRIBUTE") {
-                        return createAttrJson(cons);
+                        createAttrJson(target, cons);
                     } else {
-                        return createConsJson(cons);
+                        createConsJson(target, cons);
                     }
                 }
 
-                function createConsJson(cons) {
+                function createConsJson(target, cons) {
+                    var rmType = info.referenceModel.getType(cons.rm_type_name);
+                    if (!showStructure && rmType && rmType.display.transparent) {
+                        createChildrenJson(target, cons);
+                        return;
+                    }
                     var consJson = {
                         id: nextTreeId()
                     };
@@ -473,12 +478,22 @@
                         consJson.text = self.extractConstraintName(cons);
                     }
                     if (cons["@type"] === "ARCHETYPE_SLOT" || !ArchetypeEditor.getRmTypeHandler(cons)) {
-                        consJson.children = createChildrenJson(cons);
+                        consJson.children = [];
+                        createChildrenJson(consJson.children, cons);
                     }
-                    return consJson;
+                    target.push(consJson);
                 }
 
-                function createAttrJson(cons) {
+                function createAttrJson(target, cons) {
+                    var rmType = info.referenceModel.getType(cons[".parent"].rm_type_name);
+                    if (!showStructure && rmType) {
+                        var rmAttribute = rmType.attributes[cons.rm_attribute_name];
+                        if (rmAttribute && rmAttribute.display.transparent) {
+                            createChildrenJson(target, cons);
+                            return;
+                        }
+                    }
+
                     var attrJson = {
                         id: nextTreeId()
                     };
@@ -486,21 +501,23 @@
                         attr: cons
                     };
                     attrJson.text = cons.rm_attribute_name;
-                    attrJson.children = createChildrenJson(cons);
-                    return attrJson;
+                    attrJson.children = [];
+                    createChildrenJson(attrJson.children, cons);
+                    target.push(attrJson);
                 }
 
-                function createChildrenJson(cons) {
-                    var result = [];
+                function createChildrenJson(target, cons) {
                     var children = templateModel.getConstraintChildren(cons);
                     for (var i in children) {
                         var child = children[i];
-                        result.push(createJson(child));
+                        createJson(target, child);
                     }
-                    return result;
                 }
 
-                return createJson(cons);
+
+                var resultTarget = [];
+                createJson(resultTarget, cons);
+                return resultTarget[0];
 
             }
 
@@ -535,7 +552,7 @@
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
                 if (isSpecialized) {
                     treeNodeJson.a_attr.class += ' specialized';
-                    if (cons.occurrences && cons.occurrences.upper===0) {
+                    if (cons.occurrences && cons.occurrences.upper === 0) {
                         treeNodeJson.a_attr.class += ' specialized prohibited';
                     }
                 }
@@ -609,8 +626,8 @@
                                 var text = textInput.val();
                                 var description = descriptionInput.val();
                                 var comment = commentInput.val();
-                                if (comment.length===0) {
-                                    comment=undefined;
+                                if (comment.length === 0) {
+                                    comment = undefined;
                                 }
                                 if (text.length == 0) {
                                     return "text is required"
@@ -699,40 +716,84 @@
 
             self.info = info;
 
-            var jsonTreeRoot = buildTreeJson(templateModel.getRootArchetypeModel().data.definition);
-            var jsonTreeTarget = [jsonTreeRoot];
-            styleJson(jsonTreeTarget);
+            self.createTree = function (showStructure, callback) {
+                treeData = {};
 
-            targetElement.empty();
-            targetElement.jstree("destroy");
-            targetElement.jstree(
-                {
-                    'core': {
-                        'data': jsonTreeTarget,
-                        'multiple': false,
-                        'check_callback': true
+                var jsonTreeRoot = buildTreeJson(templateModel.getRootArchetypeModel().data.definition, showStructure);
+                var jsonTreeTarget = [jsonTreeRoot];
+                styleJson(jsonTreeTarget);
 
+                targetElement.empty();
+                targetElement.jstree("destroy");
+                targetElement.jstree(
+                    {
+                        'core': {
+                            'data': jsonTreeTarget,
+                            'multiple': false,
+                            'check_callback': true
+
+                        }
+                    })
+                    .on('loaded.jstree', function () {
+                        targetElement.jstree('open_all');
+                        if (callback) {
+                            callback();
+                        }
+                    });
+
+                self.jstree = targetElement.jstree(true);
+                self.targetElement = targetElement;
+
+
+                targetElement.on('select_node.jstree', function (event, treeEvent) {
+                    var data = treeData[treeEvent.node.id];
+                    self.current = {
+                        treeNode: treeEvent.node,
+                        data: data
+                    };
+
+                    var constraintData = {
+                        info: info,
+                        treeNode: treeEvent.node,
+                        cons: data.cons
+                    };
+                    info.propertiesPanel.show(constraintData);
+                });
+            };
+
+            self.changeShowStructure = function (showStructure) {
+
+                function findTreeNode(cons) {
+                    function findInSubtree(treeNodeId) {
+                        var actualCons = treeData[treeNodeId].cons || treeData[treeNodeId].attr;
+                        if (actualCons === cons) return treeNodeId;
+                        var treeNode = self.targetElement.jstree('get_node', treeNodeId);
+                        for (var i in treeNode.children) {
+                            var d = findInSubtree(treeNode.children[i]);
+                            if (d) return d;
+                        }
+                        return null;
+                    }
+
+                    var treeRoot = info.tree.targetElement.jstree('get_node', '#');
+//                    var node = info.tree.targetElement.jstree('get_node', treeRoot.children[0]);
+                    return findInSubtree(treeRoot.children[0]);
+                }
+
+                var oldCurrentCons = self.current && (self.current.data.cons || self.current.data.attr);
+                self.createTree(showStructure, function () {
+                    while (oldCurrentCons) {
+                        var newTreeNodeId = findTreeNode(oldCurrentCons);
+                        if (newTreeNodeId) {
+                            info.tree.targetElement.jstree('select_node', newTreeNodeId);
+                            break;
+                        }
+                        oldCurrentCons = oldCurrentCons[".parent"];
                     }
                 });
+            };
 
-            self.jstree = targetElement.jstree(true);
-            self.targetElement = targetElement;
-
-
-            targetElement.on('select_node.jstree', function (event, treeEvent) {
-                var data = treeData[treeEvent.node.id];
-                self.current = {
-                    treeNode: treeEvent.node,
-                    data: data
-                };
-
-                var constraintData = {
-                    info: info,
-                    treeNode: treeEvent.node,
-                    cons: data.cons
-                };
-                info.propertiesPanel.show(constraintData);
-            });
+            self.createTree();
 
             currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
         };
@@ -753,7 +814,8 @@
                         languageSelect: html.find('#' + context.panel_id + '_language'),
                         renameConstraint: html.find('#' + context.panel_id + '_renameConstraint'),
                         addArchetype: html.find('#' + context.panel_id + '_addArchetype'),
-                        removeConstraint: html.find('#' + context.panel_id + '_removeConstraint')
+                        removeConstraint: html.find('#' + context.panel_id + '_removeConstraint'),
+                        showStructure: html.find('#' + context.panel_id + '_structure')
                     }
                 };
                 var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
@@ -771,6 +833,9 @@
                 info.toolbar.renameConstraint.click(info.tree.renameConstraint);
                 info.toolbar.addArchetype.click(info.tree.addArchetype);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);
+                info.toolbar.showStructure.on('change', function () {
+                    info.tree.changeShowStructure(info.toolbar.showStructure.prop('checked'));
+                });
 
 
                 targetElement.append(html);

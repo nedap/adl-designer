@@ -64,7 +64,8 @@ public class ReferenceModelData {
         private boolean finalType;
         private boolean rootType;
         private String dataAttribute;
-//        private String display;
+        private Display display = new Display();
+
 
         public String getName() {
             return name;
@@ -115,19 +116,28 @@ public class ReferenceModelData {
             this.dataAttribute = dataAttribute;
         }
 
-//        public String getDisplay() {
-//            return display;
-//        }
-//
-//        public void setDisplay(String display) {
-//            this.display = display;
-//        }
+        public Display getDisplay() {
+            return display;
+        }
+
+        public  static class Display {
+            private boolean transparent = false;
+
+            public boolean isTransparent() {
+                return transparent;
+            }
+
+            public void setTransparent(boolean transparent) {
+                this.transparent = transparent;
+            }
+        }
     }
 
     public static class Attribute {
         private String name;
         private String type;
         private Multiplicity existence;
+        private Display display = new Display();
 
         public String getName() {
             return name;
@@ -152,6 +162,23 @@ public class ReferenceModelData {
         public void setExistence(Multiplicity existence) {
             this.existence = existence;
         }
+
+        public Display getDisplay() {
+            return display;
+        }
+
+        public  static class Display {
+            private boolean transparent = false;
+
+            public boolean isTransparent() {
+                return transparent;
+            }
+
+            public void setTransparent(boolean transparent) {
+                this.transparent = transparent;
+            }
+        }
+
     }
 
     public static class Multiplicity {

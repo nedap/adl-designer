@@ -20,6 +20,7 @@
 
 package org.openehr.designer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,12 +109,9 @@ public class ReferenceModelDataBuilder {
             t.setParent(type.getParent() != null ? type.getParent().getRmType() : null);
             getTypeInfoProperty(type, "rootType").ifPresent(f -> t.setRootType((Boolean) f));
             getTypeInfoProperty(type, "finalType").ifPresent(f -> t.setFinalType((Boolean) f));
-//            t.setFinalType(type.isFinalType());
-//            t.setRootType(type.isRootType());
+            getTypeInfoProperty(type, "transparent").ifPresent(f -> t.getDisplay().setTransparent((Boolean)f));
+
             t.setDataAttribute(type.getDataAttribute());
-//            if (type.getDisplay() != null) {
-//                t.setDisplay(type.getDisplay().toString());
-//            }
             if (!type.getAttributes().isEmpty()) {
                 t.setAttributes(new LinkedHashMap<>());
                 for (RmTypeAttribute attribute : type.getAttributes().values()) {
@@ -124,6 +122,9 @@ public class ReferenceModelDataBuilder {
                     a.setName(attribute.getAttributeName());
                     a.setExistence(ReferenceModelData.Multiplicity.of(attribute.getExistence()));
                     a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
+                    if (attrInfo!=null) {
+                        a.getDisplay().setTransparent(attrInfo.transparent);
+                    }
                     t.getAttributes().put(a.getName(), a);
                 }
             }
@@ -132,17 +133,24 @@ public class ReferenceModelDataBuilder {
         return result;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     static class Type {
         @JsonProperty
         Boolean rootType;
         @JsonProperty
         Boolean finalType;
         @JsonProperty
+        boolean transparent;
+        @JsonProperty
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         Map<String, Attribute> attributes;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     static class Attribute {
         @JsonProperty
         boolean ignore;
+        @JsonProperty
+        boolean transparent;
     }
 }
