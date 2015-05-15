@@ -154,7 +154,6 @@ var TemplateEditor = (function () {
                             callback: function (templateModel) {
                                 my.useTemplate(templateModel);
                             }
-
                         });
                     }
                 });
@@ -203,6 +202,10 @@ var TemplateEditor = (function () {
         $('a[href="#archetype-editor-main-tabs-description"]').on('show.bs.tab', loadDescription);
         loadDisplay();
         $('a[href="#archetype-editor-main-tabs-display"]').on('show.bs.tab', loadDisplay);
+
+        var am = templateModel.getRootArchetypeModel();
+        var templateName = am.getTermDefinitionText(am.data.definition.node_id);
+        document.title = templateName  + ' - Template Editor';
 
     };
 

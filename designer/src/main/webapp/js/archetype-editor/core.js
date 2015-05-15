@@ -366,7 +366,8 @@ var ArchetypeEditor = (function () {
         loadDisplay();
         $('a[href="#archetype-editor-main-tabs-display"]').on('show.bs.tab', loadDisplay);
 
-
+        var archetypeName = my.archetypeModel.getTermDefinitionText(my.archetypeModel.data.definition.node_id);
+        document.title = archetypeName  + ' - Archetype Editor';
     };
 
 

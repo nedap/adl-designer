@@ -812,6 +812,7 @@
                     referenceModel: referenceModel,
                     toolbar: {
                         languageSelect: html.find('#' + context.panel_id + '_language'),
+                        editArchetype: html.find('#' + context.panel_id + '_editArchetype'),
                         renameConstraint: html.find('#' + context.panel_id + '_renameConstraint'),
                         addArchetype: html.find('#' + context.panel_id + '_addArchetype'),
                         removeConstraint: html.find('#' + context.panel_id + '_removeConstraint'),
@@ -830,6 +831,17 @@
                 });
                 populateLanguageSelect(info.toolbar.languageSelect, templateModel);
 
+                info.toolbar.editArchetype.on('click', function () {
+                    if (info.tree.current) {
+                        var cons = info.tree.current.data.cons || info.tree.current.data.attr;
+                        if (cons) {
+                            var archetypeModelRoot = AOM.ArchetypeModel.from(cons);
+                            var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
+                            window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
+                        }
+
+                    }
+                });
                 info.toolbar.renameConstraint.click(info.tree.renameConstraint);
                 info.toolbar.addArchetype.click(info.tree.addArchetype);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);

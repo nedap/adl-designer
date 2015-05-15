@@ -86,7 +86,10 @@
             });
 
             ArchetypeEditor.initialize(function () {
-
+                var params = AmUtils.extractParametersFromUrl(location.search);
+                if (params.archetypeId) {
+                    ArchetypeEditor.loadArchetype(params.archetypeId, ArchetypeEditor.useArchetype);
+                }
                 // TODO: remove for production
                 // preloads a given archetype into the interface. Just for testing
 //                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";

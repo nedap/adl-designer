@@ -180,7 +180,7 @@
                             if (!targetCons) {
                                 return "No constraint node at path " + targetPathVal;
                             }
-                            result.targetPath= targetPathVal;
+                            result.targetPath = targetPathVal;
                             result.rmType = targetCons.rm_type_name;
                         } else if (amType === "ARCHETYPE_SLOT") {
                             result.rmType = typeSelect.val();
@@ -504,16 +504,16 @@
                         }
                         else {
                             var attr = cons.attributes[0];
-                            if (!attr.children || attr.children.length==0) {
+                            if (!attr.children || attr.children.length == 0) {
                                 rmType = ""
-                            } else if (attr.children.length==1){
+                            } else if (attr.children.length == 1) {
                                 rmType = attr.children[0].rm_type_name;
                             } else {
                                 rmType = "ELEMENT"; // no specific icon for choice
                             }
                         }
                     }
-                    if (!rmType) rmType=cons.rm_type_name;
+                    if (!rmType) rmType = cons.rm_type_name;
                     treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
                 }
 
@@ -614,9 +614,9 @@
                     openAddConstraintDialog(archetypeModel, subtypes, slotSubtypes, {}, function (data) {
                         var cConstraint;
                         var newNodeId = archetypeModel.generateSpecializedTermId("id");
-                        if (data.amType==="ARCHETYPE_SLOT") {
+                        if (data.amType === "ARCHETYPE_SLOT") {
                             cConstraint = AOM.newArchetypeSlot(data.rmType, newNodeId);
-                        } else if (data.amType==="ARCHETYPE_INTERNAL_REF"){
+                        } else if (data.amType === "ARCHETYPE_INTERNAL_REF") {
                             cConstraint = AOM.newArchetypeInternalReference(data.rmType, newNodeId);
                             cConstraint.target_path = data.targetPath;
                         } else {
@@ -712,6 +712,8 @@
                         'check_callback': true
 
                     }
+                }).on('loaded.jstree', function () {
+                    targetElement.jstree('open_all');
                 });
 
             self.jstree = targetElement.jstree(true);

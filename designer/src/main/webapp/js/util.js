@@ -359,6 +359,27 @@ var AmUtils = function () {
         }
     };
 
+    my.extractParametersFromUrl = function(url) {
+        var queryStringIndex = url.indexOf('?');
+        if (queryStringIndex < 0) {
+            return {};
+        }
+        var queryString = url.substring(queryStringIndex + 1);
+
+        var params = {};
+        var parts = queryString.split('&');
+
+        parts.forEach(function (part) {
+            var pair = part.split('=');
+            pair[0] = decodeURIComponent(pair[0]);
+            pair[1] = decodeURIComponent(pair[1]);
+            params[pair[0]] = (pair[1] !== 'undefined') ?
+                pair[1] : true;
+        });
+        return params;
+    };
+
+
 
     return my;
 }();
