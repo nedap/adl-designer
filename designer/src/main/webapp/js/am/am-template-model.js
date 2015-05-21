@@ -310,13 +310,40 @@ AOM = (function (AOM) {
         };
 
         self.removeConstraint = function (cons) {
+            function removeOrphanArchetypeModels() {
+                do {
+                    var referencedArchetypes = {};
+                    for (var i in archetypeModels) {
+                        my.visitDefinition(archetypeModels[i].data.definition, function (cons) {
+                            if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                                referencedArchetypes[cons.archetype_ref] = true;
+                            }
+                        });
+                    }
+
+                    var removedCount = 0;
+                    var index = 1;
+                    while (index < archetypeModels.length) {
+                        if (!referencedArchetypes[archetypeModels[index].getArchetypeId()]) {
+                            archetypeModels.splice(index, 1);
+                            removedCount++;
+                        } else {
+                            index++;
+                        }
+                    }
+                } while (removedCount > 0);
+
+            }
+
             function removeArchetypeModel(archetypeModel) {
+
                 for (var i in archetypeModels) {
                     var candidate = archetypeModels[i];
                     if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
                         archetypeModels.splice(Number(i), 1);
                     }
                 }
+                removeOrphanArchetypeModels();
             }
 
             if (AOM.mixin(cons).isAttribute()) return;
@@ -326,8 +353,10 @@ AOM = (function (AOM) {
             } else if (cons[".templateArchetypeRoot"]) {
                 var parentArchetypeRoot = cons[".templateArchetypeRoot"];
                 var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
-                removeArchetypeModel(consArchetypeModel);
-                return parentArchetypeModel.removeConstraint(parentArchetypeRoot);
+                //removeArchetypeModel(consArchetypeModel);
+                var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot);
+                removeOrphanArchetypeModels();
+                return result;
             }
         };
 

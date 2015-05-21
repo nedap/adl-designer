@@ -104,6 +104,8 @@ public class FileTemplateRepository implements TemplateRepository {
     public void saveTemplate(List<DifferentialArchetype> archetypes) {
         String templateId = archetypes.get(0).getArchetypeId().getValue();
         String adltContent = TemplateSerializer.serialize(archetypes);
+        // Check to see if the template can still be deserialized
+        TemplateDeserializer.deserialize(rmModel, adltContent);
         try {
             try (Writer w = new OutputStreamWriter(new FileOutputStream(repositoryLocation.resolve(templateId + ".adlt").toFile()),
                     Charsets.UTF_8)) {

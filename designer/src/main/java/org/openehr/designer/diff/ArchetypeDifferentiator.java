@@ -120,7 +120,7 @@ public class ArchetypeDifferentiator {
                 cAttribute.setExistence(null);
             }
             if (cAttribute.getCardinality() != null) {
-                if (!AmMixins.of(cAttribute.getCardinality()).isEqualTo(rmAttribute.getCardinality())) {
+                if (AmMixins.of(cAttribute.getCardinality()).isEqualTo(rmAttribute.getCardinality())) {
                     cAttribute.setCardinality(null);
                 }
             }

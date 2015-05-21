@@ -465,7 +465,7 @@ AOM = (function (AOM) {
      * @param {object|string} type A constraint object or an AM type name (such as "C_STRING")
      * @return {AmObjectMixin} Returns the best matching mixin for this am object
      */
-    AOM.mixin = function (type) {
+    my.mixin = function (type) {
         var amTypeName = type;
         if (typeof amTypeName === "object") {
             amTypeName = type["@type"];

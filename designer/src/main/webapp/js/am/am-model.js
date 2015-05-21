@@ -1329,6 +1329,8 @@ var AOM = (function () {
                 return data.archetype_id.value;
             };
 
+
+
             self.parentArchetypeModel = parentArchetypeModel;
             self.data = data;
             self.defaultLanguage = defaultLanguage;
@@ -1713,6 +1715,18 @@ var AOM = (function () {
             }
         };
 
+        my.visitDefinition = function (rootCons, callback) {
+            function walkChildren(children) {
+                if (!children) return;
+                for (var i = 0; i < children.length; i++) {
+                    my.visitDefinition(children[i], callback);
+                }
+            }
+
+            if (!rootCons) return;
+            callback(rootCons);
+            walkChildren(rootCons.children || rootCons.attributes);
+        };
 
         return my;
     }()
