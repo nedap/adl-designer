@@ -161,7 +161,7 @@ var TemplateEditor = (function () {
 
     };
 
-    my.saveCurrentTemplate = function () {
+    my.saveCurrentTemplate = function (successCallback) {
         if (!my.templateModel) return;
 
         jQuery.ajax({
@@ -175,10 +175,24 @@ var TemplateEditor = (function () {
             'data': JSON.stringify(my.templateModel.toSerializableForm())/*,
              'dataType': 'text'*/
         }).success(function () {
-            alert('Template saved');
+            if (successCallback) {
+                successCallback();
+            }
         });
 
     };
+
+    my.exportToOpt14 = function () {
+
+        my.saveCurrentTemplate(function() {
+            var templateId = my.templateModel.getRootArchetypeModel().getArchetypeId();
+            var url = "rest/repo/export/opt/14/" + encodeURIComponent(templateId);
+
+            document.location = url;
+
+        });
+    };
+
 
     my.useTemplate = function (templateModel) {
 

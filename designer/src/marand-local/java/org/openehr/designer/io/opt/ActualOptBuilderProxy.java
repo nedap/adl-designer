@@ -21,8 +21,11 @@
 package org.openehr.designer.io.opt;
 
 import com.google.common.base.Charsets;
+import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.flattener.ArchetypeFlattener;
+import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.FlatArchetypeRepository;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am14.Template;
 import org.openehr.optexporter14.Opt14TemplateBuilder;
@@ -39,7 +42,8 @@ class ActualOptBuilderProxy extends OptBuilderProxy {
     private final Opt14TemplateBuilder builder;
 
     public ActualOptBuilderProxy(ArchetypeRepository repository) {
-        this.builder = new Opt14TemplateBuilder(repository, new ArchetypeFlattener(repository.getRmModel()));
+        FlatArchetypeProvider archetypeProvider = new FlatArchetypeRepository(repository, OpenEhrRmModel.getInstance());
+        this.builder = new Opt14TemplateBuilder(archetypeProvider, new ArchetypeFlattener(OpenEhrRmModel.getInstance()));
         this.serializer = new Template14Serializer();
     }
 

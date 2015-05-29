@@ -27,6 +27,7 @@ import org.openehr.designer.tom.TemplateTom;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,9 +56,11 @@ public interface WtResource {
 
     List<TemplateInfo> listToms();
 
-    ResponseEntity<byte[]> exportOpt14(String templateId);
+    ResponseEntity<byte[]> exportSavedOpt14(String templateId);
+    ResponseEntity<byte[]> exportProvidedOpt14(List<FlatArchetype> flatArchetypeList);
 
-    ResponseEntity<byte[]> exportAdlt(String templateId);
+
+        ResponseEntity<byte[]> exportAdlt(String templateId);
 
     String displayArchetypeAdlSource(FlatArchetype archetype);
     String displayArchetypeAdlFlat(FlatArchetype archetype);

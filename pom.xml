@@ -31,7 +31,7 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <adl2-code.version>1.0.0-SNAPSHOT</adl2-code.version>
+        <adl2-core.version>1.0.1-SNAPSHOT</adl2-core.version>
 
         <guava.version>18.0</guava.version>
         <testng.version>6.8.8</testng.version>
@@ -56,7 +56,7 @@
             <dependency>
                 <groupId>org.openehr.adl2-core</groupId>
                 <artifactId>adl-parser</artifactId>
-                <version>${adl2-code.version}</version>
+                <version>${adl2-core.version}</version>
             </dependency>
 
 

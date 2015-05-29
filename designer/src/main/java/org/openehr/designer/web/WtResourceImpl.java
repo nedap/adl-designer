@@ -182,7 +182,7 @@ public class WtResourceImpl implements WtResource {
 
     @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
     @Override
-    public ResponseEntity<byte[]> exportOpt14(@PathVariable String templateId) {
+    public ResponseEntity<byte[]> exportSavedOpt14(@PathVariable String templateId) {
         List<DifferentialArchetype> templateArchetypes = templateRepository.loadTemplate(templateId);
 
         OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
@@ -194,6 +194,21 @@ public class WtResourceImpl implements WtResource {
         return new ResponseEntity<>(opt.getContent(), headers, HttpStatus.OK);
     }
 
+
+    @RequestMapping(value = "/export/opt/14", method = RequestMethod.POST)
+    @Override
+    public ResponseEntity<byte[]> exportProvidedOpt14(@RequestBody List<FlatArchetype> flatArchetypeList) {
+        TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
+        List<DifferentialArchetype> templateArchetypes = differentiator.differentiate(rmModel, flatArchetypeList);
+
+        OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "text/xml; charset=utf-8");
+        headers.add("Content-Disposition", "attachment; filename=\"" + opt.getTemplateId() + ".opt\"");
+        headers.add("Content-Length", Integer.toString(opt.getContent().length));
+        return new ResponseEntity<>(opt.getContent(), headers, HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/export/adlt/{templateId}", method = RequestMethod.GET)
     @Override
@@ -265,6 +280,14 @@ public class WtResourceImpl implements WtResource {
     @ResponseBody
     public ErrorResponse handleException(Exception e) {
         LOG.error("Internal server error", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED)
+    @ExceptionHandler(UnsupportedOperationException.class)
+    @ResponseBody
+    public ErrorResponse handleException(UnsupportedOperationException e) {
+        LOG.error("Unsupported operation", e);
         return new ErrorResponse(e.getMessage());
     }
 
