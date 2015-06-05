@@ -18,6 +18,127 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+label {
+  xpadding: 10px 5px;	
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #FFF;
+  background-image: none;
+  border: 1px solid #CCC;
+  border-radius: 0px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-transition: none;
+  -o-transition: none;
+  transition: none;
+}
+
+.align-top {
+	vertical-align: top;
+}
+
+.tab-pane {
+  padding-top: 10px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;  
+}
+
+.nav-tabs {
+	flex-grow: 0;
+  flex-shrink: 0;
+  padding-left: 10px;
+}
+
+.tab-content {
+	flex-grow: 1;
+	display: flex;
+	overflow: auto;
+}
+
+.no-padding {
+	  padding: 0px;
+}
+
+.left-space-small {
+	padding-left: 3px;
+}
+
+.bottom-space-medium {
+	padding-bottom: 10px;
+}
+
+.vertical-stretch {
+	flex-grow: 1;
+	display: flex;
+  align-content: stretch;
+}
+
+.horizontal-stretch {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-content: stretch;
+}
+
+select.big-lines {
+	padding: 0px;
+}
+
+select.big-lines > option {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.nav-tabs > li > a:hover {
+  border: 1px solid #DDD;
+  border-bottom: 2px solid #FFF;
+}
+
+.nav > li > a:hover, .nav > li > a:focus {
+  text-decoration: none;
+  background-color: #FFF;
+  color: #57A447;
+}
+
+.nav-tabs > li.active > a {
+  border: 1px solid #DDD;
+  border-bottom-color: #FFF;
+  cursor: default;
+  color: #808080;
+  outline: none;
+  border-top: 3px solid #57A447;
+  top: 1px;
+}
+
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+  color: #555;
+  cursor: default;
+  background-color: #FFF;
+  border-top: 3px solid #57A447;
+  border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.nav-tabs > li > a {
+	color: #000;
+	border: 1px solid #DDD;
+	border-bottom: 2px solid #FFF;
+}
+
+.tab-content > .active {
+  display: flex;
+  visibility: visible;
+}
+
 #archetype-editor-main {
     width: 100%;
     height: 100%;
@@ -27,6 +148,18 @@
     width: 100%;
     height: 85%;
 }
+
+pre.display {
+  border-radius: 0px;
+}
+
+.table > thead > tr > th {
+	font-size: 14px;
+} 
+
+
+
+
 
 .hidden {
     display: none
@@ -87,7 +220,9 @@ form .table-layout .table-cell {
 }
 
 #archetype-editor-main {
-    height: 600px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 #archetype-editor-main-tabs-definition .table-layout {
@@ -98,13 +233,16 @@ form .table-layout .table-cell {
 }
 
 .definition-tree {
-    border: solid 1px #ccc;
-    height: 600px;
+    xborder: solid 1px #ccc;
     overflow: auto;
+    flex-grow: 1;
+    padding: 10px;
 }
 
 .constraint-properties {
     font-size: 12px;
+    display: flex;
+  flex-direction: column;
 }
 
 .constraint-properties .footer {

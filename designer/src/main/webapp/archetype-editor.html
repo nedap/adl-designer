@@ -113,20 +113,34 @@
 </head>
 <body>
 <div id="archetype-editor-main">
-    <div>
-        <!-- main toolbar -->
-        <button class="btn" onclick="ArchetypeEditor.createNewArchetypeDialog()">New</button>
-        <button class="btn" onclick="ArchetypeEditor.openLoadArchetypeDialog()">Load</button>
-        <button class="btn" onclick="ArchetypeEditor.saveCurrentArchetype()">Save</button>
-        <button class="btn" onclick="ArchetypeEditor.openSpecializeArchetypeDialog()">Specialize</button>
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+      <!-- main toolbar -->
+        <ul class="nav navbar-nav">
+	        <li><a href="#" onclick="ArchetypeEditor.createNewArchetypeDialog()">New</a></li>
+	        <li><a href="#" onclick="ArchetypeEditor.openLoadArchetypeDialog()">Load</a></li>
+	        <li><a href="#" onclick="ArchetypeEditor.saveCurrentArchetype()">Save</a></li>
+	        <li><a href="#" onclick="ArchetypeEditor.openSpecializeArchetypeDialog()">Specialize</a></li>
+	       
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" onclick="ArchetypeEditor.commitRepository()">Commit</a></li>
+        </ul>
+        <!-- 
+        <button class="btn btn-default navbar-btn" onclick="ArchetypeEditor.createNewArchetypeDialog()">New</button>
+        <button class="btn btn-default navbar-btn" onclick="ArchetypeEditor.openLoadArchetypeDialog()">Load</button>
+        <button class="btn btn-default navbar-btn" onclick="ArchetypeEditor.saveCurrentArchetype()">Save</button>
+        <button class="btn btn-default navbar-btn" onclick="ArchetypeEditor.openSpecializeArchetypeDialog()">Specialize</button>
         <div class="btn-toolbar pull-right" role="toolbar">
             <div class="btn-group" role="group">
-                <button onclick="ArchetypeEditor.commitRepository()" class="btn">Commit</button>
+                <button onclick="ArchetypeEditor.commitRepository()" class="btn btn-default navbar-btn">Commit</button>
             </div>
         </div>
-    </div>
+        -->
+      </div>
+    </nav>
     <div id="archetype-editor-archetype-id-main"></div>
-    <div id="archetype-editor-archetype-tabs">
+    <div id="archetype-editor-archetype-tabs" class="tab-pane">
         <ul class="nav nav-tabs">
             <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>

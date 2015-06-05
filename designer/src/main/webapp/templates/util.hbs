@@ -6,7 +6,7 @@
         <th>Value</th>
         <th>
             <button id="{{panel_id}}_add" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
+                &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
             </button>
         </th>
     </tr>
@@ -21,7 +21,7 @@
     <td><input name="value" data-row="{{row_id}}" value="{{value}}" class="form-control input"></td>
     <td>
         <button id="{{panel_id}}_{{row_id}}_remove" data-row="{{row_id}}" type="button" class="btn btn-default">
-            <span class="glyphicon glyphicon-minus"></span>
+            &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
         </button>
     </td>
 </tr>
@@ -30,20 +30,20 @@
 <table>
     <tr>
         <td style="width:100%">
-            <select id="{{panel_id}}" class="form-control input" {{#if size}}size="{{size}}"{{/if}}>
+            <select id="{{panel_id}}" class="form-control input big-lines" {{#if size}}size="{{size}}"{{/if}}>
             </select>
         </td>
-        <td>
+        <td class="align-top left-space-small">
             <div class="btn-group-vertical" role="group">
                 <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
-                    <span class="glyphicon glyphicon-plus"></span>
+                    &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
                 </button>
                 <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
-                    <span class="glyphicon glyphicon-minus"></span>
+                    &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
                 </button>
 
                 <button id="{{panel_id}}_edit" type="button" class="btn btn-default data" title="edit">
-                    <span class="glyphicon glyphicon-edit"></span>
+                    &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
                 </button>
             </div>
         </td>

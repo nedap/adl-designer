@@ -21,29 +21,36 @@
 </div>
 
 {>authoring}
-<div class="row">
+<div class="xrow">
     <div class="col-sm-6">
-        <label>Original Author</label>
-
-        <div id="{{panel_id}}_original_author">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <label>Original Author</label>
         </div>
+        <div class="panel-body" id="{{panel_id}}_original_author">
+        </div>
+      </div>
     </div>
     <div class="col-sm-6">
-        <label>Contributors</label>
-
-        <div id="{{panel_id}}_contributors">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <label>Contributors</label>
         </div>
+        <div class="panel-body" id="{{panel_id}}_contributors">
+        </div>
+      </div>
     </div>
 </div>
 
 {>language}
-<div class="form-horizontal row">
+<div class="form-horizontal xrow">
     <div class="form-group col-sm-6">
-        <label class="col-sm-4 control-label">Original Language</label>
-
+        <label class="col-sm-4">Original Language: {{original_language}}</label>
+<!--
         <div class="col-sm-6">
             <p class="form-control-static" id="{{panel_id}}_original_language">{{original_language}}</p>
         </div>
+-->
     </div>
     <div class="form-group col-sm-6">
         <label for="{{panel_id}}_translations" class="col-sm-6 control-label">Translations</label>
@@ -53,18 +60,19 @@
                 <span class="input-group-btn">
                     <button id="{{panel_id}}_add_translation" type="button" class="btn btn-default"
                             title="add translation">
-                        <span class="glyphicon glyphicon-plus"></span>
+                        &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
                     </button>
                 </span>
         </div>
     </div>
 </div>
-<div class="row">
+<div class="xrow">
     <div class="col-sm-6">
-        <div class="row">
+        <div class="panel panel-default">
+          <div class="panel-heading">
             <label>Translator</label>
-
-            <div id="{{panel_id}}_translator">
+          </div>
+            <div class="panel-body" id="{{panel_id}}_translator">
             </div>
         </div>
         <div class="row">
@@ -74,16 +82,19 @@
         </div>
     </div>
     <div class="col-sm-6">
-        <label>Translator Other Details</label>
-
-        <div id="{{panel_id}}_other_details">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <label>Translator Other Details</label>
         </div>
+        <div class="panel-body" id="{{panel_id}}_other_details">
+        </div>
+      </div>
     </div>
 </div>
 
 {>details}
-<div class="container-fluid">
-    <div class="form-horizontal row">
+<div class="xcontainer-fluid">
+    <div class="form-horizontal xrow">
         <div class="form-group col-sm-4">
             <label for="{{panel_id}}_language" class="col-sm-4 control-label">Language</label>
 
@@ -105,7 +116,7 @@
             </div>
         </div>
     </div>
-    <div class="form-horizontal row">
+    <div class="form-horizontal xrow">
         <div class="form-group row">
             <label for="{{panel_id}}_purpose" class="col-sm-1 control-label">Purpose</label>
 
@@ -142,7 +153,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="xrow">
         <div class="col-sm-6">
             <label>Resources</label>
 
