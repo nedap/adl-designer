@@ -714,6 +714,8 @@
                     }
                 }).on('loaded.jstree', function () {
                     targetElement.jstree('open_all');
+                    var superRootNode = targetElement.jstree('get_node', '#');
+                    targetElement.jstree('select_node', superRootNode.children[0]);
                 });
 
             self.jstree = targetElement.jstree(true);
