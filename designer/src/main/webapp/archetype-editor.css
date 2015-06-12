@@ -82,8 +82,13 @@ label {
 	margin-right: 0px !important;
 }
 
+.navbar {
+	flex-shrink: 0;
+	margin-bottom: 10px;
+}
+
 .navbar-nav {
-  margin: 7.5px 0px;
+  margin: 5px 0px;
 }
 
 .nav-tabs {
