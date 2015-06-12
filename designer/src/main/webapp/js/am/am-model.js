@@ -245,7 +245,7 @@ var AOM = (function () {
                     var matchSegment = matchPath.segments[segment_index];
 
                     if (candidateSegment.attribute !== matchSegment.attribute) return false;
-                    if (!nodeIdMatches(candidateSegment.node_id, matchSegment.node_id, context)) return false;
+                    if (!my.nodeIdMatches(candidateSegment.node_id, matchSegment.node_id, context)) return false;
                 }
                 return true;
             };

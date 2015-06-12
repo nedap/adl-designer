@@ -23,11 +23,9 @@ package org.openehr.designer.web;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.repository.TemplateInfo;
-import org.openehr.designer.tom.TemplateTom;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,23 +44,21 @@ public interface WtResource {
 
     ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 
-    void saveTom(TemplateTom templateTom);
-
-    TemplateTom loadTom(String templateId);
-
     void saveTemplate(List<FlatArchetype> archetypeList);
+
     List<TemplateInfo> listTemplates();
+
     List<FlatArchetype> loadTemplate(String templateId);
 
-    List<TemplateInfo> listToms();
-
     ResponseEntity<byte[]> exportSavedOpt14(String templateId);
+
     ResponseEntity<byte[]> exportProvidedOpt14(List<FlatArchetype> flatArchetypeList);
 
 
-        ResponseEntity<byte[]> exportAdlt(String templateId);
+    ResponseEntity<byte[]> exportAdlt(String templateId);
 
     String displayArchetypeAdlSource(FlatArchetype archetype);
+
     String displayArchetypeAdlFlat(FlatArchetype archetype);
 
     String displayTemplateAdl(List<FlatArchetype> archetypeList);

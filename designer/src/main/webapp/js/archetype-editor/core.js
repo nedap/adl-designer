@@ -227,7 +227,15 @@ var ArchetypeEditor = (function () {
 
     };
 
-    my.saveCurrentArchetype = function () {
+    my.saveCurrentArchetypeWithNotification = function () {
+        my.saveCurrentArchetype(function () {
+            GuiUtils.alert({type: 'success', title: 'Archetype Saved'});
+        }, function (status) {
+            GuiUtils.alert({type: 'error', title: 'Error saving archetype', text: status.message})
+        })
+    };
+
+    my.saveCurrentArchetype = function (successCallback, errorCallback) {
         if (!my.archetypeModel) return;
         var archetypeId = my.archetypeModel.data.archetype_id.value;
         var archetypeJson = AOM.impoverishedClone(my.archetypeModel.data);
@@ -241,11 +249,11 @@ var ArchetypeEditor = (function () {
         }).done(function (data) {
             // reload list of archetypes
             my.archetypeRepository.reload(function () {
-                alert("Archetype saved");
+                if (successCallback) {
+                    successCallback();
+                }
             });
-        }).fail(function (errMsg) {
-            alert("Error saving archetype: " + errMsg.status + " " + errMsg.statusText);
-        });
+        }).error(function (jxhr) { GuiUtils.processAjaxError(jxhr, errorCallback)});
     };
 
     my.getRmTypeHandler = function (rm_type, referenceModel) {

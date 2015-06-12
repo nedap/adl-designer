@@ -35,9 +35,6 @@ import org.openehr.designer.diff.TemplateDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
-import org.openehr.designer.tom.TemplateTom;
-import org.openehr.designer.tom.aom.builder.TomTemplateBuilder;
-import org.openehr.designer.tom.aom.parser.AomToTomParser;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.slf4j.Logger;
@@ -124,23 +121,6 @@ public class WtResourceImpl implements WtResource {
         return builder.build(rmModel);
     }
 
-    @RequestMapping(value = "/tom", method = RequestMethod.POST)
-    @Override
-    public void saveTom(@RequestBody TemplateTom templateTom) {
-        List<DifferentialArchetype> templateArchetypes = new TomTemplateBuilder(flatArchetypeRepository).build(templateTom);
-        templateRepository.saveTemplate(templateArchetypes);
-        // try to reload template to see if it's stored ok
-        templateRepository.loadTemplate(templateTom.getArchetypeId());
-    }
-
-    @RequestMapping(value = "/tom/{templateId}", method = RequestMethod.GET)
-    @Override
-    public TemplateTom loadTom(@PathVariable String templateId) {
-        List<DifferentialArchetype> templateArchetypes = templateRepository.loadTemplate(templateId);
-        TemplateTom templateTom = new AomToTomParser(rmModel, flatArchetypeRepository, templateArchetypes).parse();
-        return templateTom;
-    }
-
     @RequestMapping(value = "/template", method = RequestMethod.POST)
     @Override
     public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
@@ -172,12 +152,6 @@ public class WtResourceImpl implements WtResource {
         }
 
         return result;
-    }
-
-    @RequestMapping(value = "/tom", method = RequestMethod.GET)
-    @Override
-    public List<TemplateInfo> listToms() {
-        return templateRepository.listTemplates();
     }
 
     @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
