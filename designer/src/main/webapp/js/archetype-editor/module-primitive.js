@@ -970,6 +970,7 @@
                             });
                         var patternId = findIdFromPattern(context.pattern, context.type);
                         patternElement.on('ready.jstree', function () {
+                            patternElement.jstree('open_all');
                             patternElement.jstree('select_node', patternId);
                         });
 

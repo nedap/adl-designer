@@ -1,6 +1,6 @@
 {>terms}
-<div>
-    <table id="{{table_id}}" data-height="600">
+<div class="col-sm-12 horizontal-stretch bottom-space-medium">
+    <table id="{{table_id}}" xdata-height="600">
         <thead>
         <tr>
             <th data-field="code">Code</th>
@@ -13,105 +13,85 @@
 
 {>updateTermDefinitionDialog}
 {{#each terms}}
-    <div class="form-group row">
-        <div><h2>{{@key}}</h2></div>
-        <div class="row">
-            <div class="col-sm-3"><label>Text</label></div>
-            <div class="col-sm-9">
-                <input data-lang="{{@key}}" data-field="text" class="form-control input-sm"
-                       value="{{text}}">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-3"><label>Description</label></div>
-            <div class="col-sm-9">
-                <input data-lang="{{@key}}" data-field="description" class="form-control input-sm"
-                       value="{{description}}">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-3"><label>Comment</label></div>
-            <div class="col-sm-9">
-                <input data-lang="{{@key}}" data-field="comment" class="form-control input-sm"
-                       value="{{comment}}">
-            </div>
-        </div>
+<div class="panel panel-default">
+    <div class="panel-heading"><h3 class="panel-title">{{@key}}</h3></div>
+    <div class="panel-body">
+      <div class="row properties-line no-border">
+          <div class="properties-label"><label>Text</label></div>
+          <div class="properties-value"><input data-lang="{{@key}}" data-field="text" class="form-control input-sm" value="{{text}}"></div>
+      </div>
+      <div class="row properties-line no-border">
+          <div class="properties-label"><label>Description</label></div>
+          <div class="properties-value"><input data-lang="{{@key}}" data-field="description" class="form-control input-sm" value="{{description}}"></div>
+      </div>
+      <div class="row properties-line no-border">
+          <div class="properties-label"><label>Comment</label></div>
+          <div class="properties-value"><input data-lang="{{@key}}" data-field="comment" class="form-control input-sm" value="{{comment}}"></div>
+      </div>    
     </div>
+</div>
 {{/each}}
 
 
 {>updateValueSetDialog}
-<div class="form-group row">
-    <div class="row">
-        <div class="col-sm-3"><label>Text</label></div>
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_text" class="form-control input-sm" value="{{term.text}}">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-3"><label>Description</label></div>
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_description" class="form-control input-sm" value="{{term.description}}">
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-3">
-        <div class="btn-group-vertical" role="group">
+<div class="horizontal-stretch">
+  <div class="row properties-line no-border">
+      <div class="properties-label"><label>Text</label></div>
+      <div class="properties-value"><input id="{{panel_id}}_text" class="form-control input-sm" value="{{term.text}}"></div>
+  </div>
+  <div class="row properties-line no-border">
+      <div class="properties-label"><label>Description</label></div>
+      <div class="properties-value"><input id="{{panel_id}}_description" class="form-control input-sm" value="{{term.description}}"></div>
+  </div>
+  <div class="row properties-line no-border">
+      <div class="properties-label align-top"><label>Values</label></div>
+      <div class="properties-value">
+        <select id="{{panel_id}}_members" class="form-control data" name="term" size="10">
+            {{#each members}}
+                <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
+            {{/each}}
+        </select>
+        <div class="btn-group-vertical left-space-small" role="group">
             <button id="{{panel_id}}_add_new_member" type="button" class="btn btn-default data">
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
             <button id="{{panel_id}}_remove_member" type="button" class="btn btn-default data">
                 <span class="glyphicon glyphicon-minus"></span>
             </button>
-
+    
             <button id="{{panel_id}}_add_existing_member" type="button" class="btn btn-default data">
                 <span class="glyphicon glyphicon-edit"></span>
             </button>
         </div>
-    </div>
-    <div class="col-sm-9">
-        <select id="{{panel_id}}_members" class="form-control data" name="term" size="10">
-            {{#each members}}
-                <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
-            {{/each}}
-        </select>
-    </div>
+      </div>
+  </div>
 </div>
 
 {>updateExternalTerminologyDialog}
-<div class="form-group row">
-    <div class="row">
-        <div class="col-sm-3"><label>Text</label></div>
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_text" class="form-control input-sm data" value="{{term.text}}">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-3"><label>Description</label></div>
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_description" class="form-control input-sm data" value="{{term.description}}">
-        </div>
-    </div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label>Text</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_text" class="form-control input-sm data" value="{{term.text}}"></div>
 </div>
-<div class="row">
-    <h4>Bindings</h4>
-    <table id="{{panel_id}}_terminologies" class="external_terminology_table">
-        <thead>
-        <tr>
-            <th>Terminology</th>
-            <th>Url</th>
-            <th class="external_terminology_row_actions">
-                <button id="{{panel_id}}_add_binding" class="btn btn-default data"
-                        title="add terminology binding">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label>Description</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_description" class="form-control input-sm data" value="{{term.description}}"></div>
+</div>
+<div class="horizontal-stretch">
+  <table id="{{panel_id}}_terminologies" class="table xtable-bordered external_terminology_table">
+    <thead>
+    <tr>
+        <th>Terminology</th>
+        <th>Url</th>
+        <th class="external_terminology_row_actions">
+            <button id="{{panel_id}}_add_binding" class="btn btn-sm btn-default data pull-right"
+                    title="add terminology binding">
+                &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+            </button>
+        </th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>    
 </div>
 
 {>updateExternalTerminologyDialog/bindingRow}
@@ -119,19 +99,21 @@
     <td>{{terminology}}</td>
     <td>{{url}}</td>
     <td class="external_terminology_row_actions">
-        <button type="button" name="edit" class="btn btn-default data" data-terminology='{{terminology}}' title="edit">
-            <span class="glyphicon glyphicon-edit"></span>
+      <div class="btn-group pull-right" role="group">
+        <button type="button" name="edit" class="btn btn-sm btn-default data" data-terminology='{{terminology}}' title="edit">
+            &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
         </button>
-        <button type="button" name="remove" class="btn btn-default data" data-terminology='{{terminology}}' title="remove">
-            <span class="glyphicon glyphicon-minus"></span>
+        <button type="button" name="remove" class="btn btn-sm btn-default data" data-terminology='{{terminology}}' title="remove">
+            &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
         </button>
+      </div>
     </td>
 </tr>
 
 {>updateExternalTerminologyDialog/addBinding}
-<div class="form-group">
-    <label for="{{id}}_terminology">Terminology</label>
-
+<div class="row properties-line no-border">
+  <div class="properties-label"><label for="{{id}}_terminology">Terminology</label></div>
+  <div class="properties-value">
     {{#if create}}
         <div class="input-group">
             <input id="{{id}}_terminology" class="form-control" value="{{terminology}}">
@@ -139,7 +121,7 @@
             <div class="input-group-btn">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                         aria-expanded="false">
-                    <span class="caret"></span>
+                    &nbsp;<span class="glyphicon glyphicon-triangle-bottom"></span>&nbsp;
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
@@ -152,16 +134,17 @@
     {{else}}
         <input id="{{id}}_terminology" class="form-control" value="{{terminology}}" disabled>
     {{/if}}
+  </div>
 </div>
-<div class="form-group">
-    <label for="{{id}}_url">Url</label>
-    <input id="{{id}}_url" class="form-control" value="{{url}}">
+<div class="row properties-line no-border">
+  <div class="properties-label"><label for="{{id}}_url">Url</label></div>
+  <div class="properties-value"><input id="{{id}}_url" class="form-control" value="{{url}}"></div>
 </div>
 
 
 {>valueSets}
-<div>
-    <table id="{{panel_id}}_table" data-height="600">
+<div class="col-sm-12 horizontal-stretch">
+    <table id="{{panel_id}}_table" xdata-height="600">
         <thead>
         <tr>
             <th data-field="code">Code</th>
@@ -170,14 +153,14 @@
         </tr>
         </thead>
     </table>
-    <div>
+    <div class="streched-table-footer">
         <button id="{{panel_id}}_new" class="btn btn-primary">New Value Set</button>
     </div>
 </div>
 
 {>externalTerminologies}
-<div>
-    <table id="{{panel_id}}_table" data-height="600">
+<div class="col-sm-12 horizontal-stretch">
+    <table id="{{panel_id}}_table" xdata-height="600">
         <thead>
         <tr>
             <th data-field="code">Code</th>
@@ -186,22 +169,19 @@
         </tr>
         </thead>
     </table>
-    <div>
+    <div class="streched-table-footer">
         <button id="{{panel_id}}_new" class="btn btn-primary">New External Terminology</button>
     </div>
 </div>
 
 
 {>bindings}
-<div>
+<div class="col-sm-12 horizontal-stretch">
     <div class="form-horizontal row">
-        <div class="form-group">
-            <label for="{{panel_id}}_terminology" class="col-sm-3 control-label">Terminology</label>
-
-            <div class="col-sm-9">
-                <select class="form-control" id="{{panel_id}}_terminology"></select>
-            </div>
-        </div>
+      <div class="row properties-line no-border">
+        <div class="properties-label"><label>Terminology</label></div>
+        <div class="properties-value"><select class="form-control" id="{{panel_id}}_terminology"></select></div>  
+      </div>
     </div>
     <div>
         <ul class="nav nav-tabs">
@@ -216,9 +196,9 @@
                         <th>Term</th>
                         <th>Binding</th>
                         <th>
-                            <button id="{{panel_id}}_newTermBinding" type="button" class="btn btn-default"
+                            <button id="{{panel_id}}_newTermBinding" type="button" class="btn btn-sm btn-default pull-right"
                                     title="Add binding">
-                                <span class="glyphicon glyphicon-plus"></span>
+                                &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
                             </button>
                         </th>
                     </tr>
@@ -234,9 +214,9 @@
                         <th>Term</th>
                         <th>Binding</th>
                         <th>
-                            <button id="{{panel_id}}_newNodeBinding" type="button" class="btn btn-default"
+                            <button id="{{panel_id}}_newNodeBinding" type="button" class="btn btn-sm btn-default pull-right"
                                     title="Add binding">
-                                <span class="glyphicon glyphicon-plus"></span>
+                                &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
                             </button>
                         </th>
                     </tr>
@@ -254,13 +234,13 @@
     <td>{{term.text}}</td>
     <td>{{binding}}</td>
     <td>
-        <div class="btn-group" role="group">
-            <button type="button" data-action='edit' data-term='{{termId}}' class="btn btn-default" title="edit">
-                <span class="glyphicon glyphicon-edit"></span>
+        <div class="btn-group pull-right" role="group">
+            <button type="button" data-action='edit' data-term='{{termId}}' class="btn btn-sm btn-default" title="edit">
+                &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
             </button>
-            <button type="button" data-action='remove' data-term='{{termId}}' class="btn btn-default"
+            <button type="button" data-action='remove' data-term='{{termId}}' class="btn btn-sm btn-default"
                     title="remove">
-                <span class="glyphicon glyphicon-minus"></span>
+                &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
             </button>
         </div>
     </td>

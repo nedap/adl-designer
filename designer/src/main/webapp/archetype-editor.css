@@ -42,6 +42,30 @@ label {
   transition: none;
 }
 
+.input-sm {
+	height: 30px;
+	padding: 1px 5px;
+}
+
+.container-fluid {
+  margin-right: 0;
+  margin-left: 0;
+  flex-grow: 1;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.row {
+  margin-right: 0px;
+  margin-left: 0px;
+  flex-shrink: 0;  
+}
+
+.form-horizontal .form-group {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
 .align-top {
 	vertical-align: top;
 }
@@ -50,7 +74,16 @@ label {
   padding-top: 10px;
   flex-grow: 1;
   display: flex;
-  flex-direction: column;  
+  flex-direction: column;
+  pading-left: 10px;
+}
+
+.navbar-right {
+	margin-right: 0px !important;
+}
+
+.navbar-nav {
+  margin: 7.5px 0px;
 }
 
 .nav-tabs {
@@ -65,12 +98,21 @@ label {
 	overflow: auto;
 }
 
+.tab-pane.padded {
+	padding-left: 10px;
+  padding-right: 10px;
+}
+
 .no-padding {
 	  padding: 0px;
 }
 
 .left-space-small {
 	padding-left: 3px;
+}
+
+.top-space-small {
+	padding-top: 3px;
 }
 
 .bottom-space-medium {
@@ -139,6 +181,12 @@ select.big-lines > option {
   visibility: visible;
 }
 
+.tab-pane.panel {
+	border-top: 0px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+}
+
 #archetype-editor-main {
     width: 100%;
     height: 100%;
@@ -157,9 +205,73 @@ pre.display {
 	font-size: 14px;
 } 
 
+.properties-line {
+  flex-grow: 1;
+  display: flex;
+  align-content: stretch;
+  border-bottom: 1px solid #DDD;
+  padding: 5px 0px;
+}
 
+.properties-label {
+  flex: 0 0 1;
+  padding-right: 20px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
 
+.properties-label.align-top {
+	margin-top: 0px;
+}
 
+.properties-label > label {
+  padding: 5px 5px;
+  margin-bottom: 0px;
+}
+
+.properties-value {
+	flex: 1 1;
+	margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  align-content: stretch;
+}
+
+.properties-value-item {
+	margin-right: 10px;
+	flex: 10 0;
+}
+
+.properties-value-item.small {
+	flex: 5 0;
+}
+
+.properties-sub-panel {
+	padding-left: 20px;
+}
+
+.properties-custom-panel .properties-line:last-child {
+	border-bottom: 0px solid #FFF;
+}
+
+.properties-line.no-border {
+	border-bottom: 0px solid #FFF;
+}
+
+.fixed-table-body {
+	height: auto;
+}
+
+.streched-table-footer {
+  flex: 1 0;
+  padding: 5px;
+  display: flex;
+  justify-content: flex-end;	
+}
+
+.panel-footer {
+	flex-shrink: 0;
+}
 
 .hidden {
     display: none
@@ -240,7 +352,7 @@ form .table-layout .table-cell {
 }
 
 .constraint-properties {
-    font-size: 12px;
+    xfont-size: 12px;
     display: flex;
   flex-direction: column;
 }
@@ -255,10 +367,11 @@ form .table-layout .table-cell {
 }
 
 .constraint-properties .date_time_pattern {
-    border: solid 1px black;
+    border: solid 1px #DDD;
     width: 100%;
-    height: 200px;
+    height: auto;
     overflow: auto;
+    padding: 5px;
 }
 
 .constraint-properties .custom-container {

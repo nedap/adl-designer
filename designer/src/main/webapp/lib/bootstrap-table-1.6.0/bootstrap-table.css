@@ -3,6 +3,13 @@
  * version: 1.6.0
  * https://github.com/wenzhixin/bootstrap-table/
  */
+
+.bootstrap-table {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-content: stretch;
+}
  
 .bootstrap-table .table {
     margin-bottom: 0 !important;
@@ -18,6 +25,7 @@
     border-radius: 4px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
+    height: 100% !important;
 }
 
 .fixed-table-header {

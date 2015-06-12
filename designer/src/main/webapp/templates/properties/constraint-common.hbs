@@ -18,32 +18,34 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 {>top}
-<div class="row">
-    <div class="col-sm-2"><label>Node Id</label></div>
-    <div class="col-sm-10 data">{{node_id}}</div>
+<div class="row properties-line">
+    <div class="properties-label"><label>Node Id</label></div>
+    <div class="properties-value data">{{node_id}}</div>
 </div>
-<div class="row">
-    <div class="col-sm-2"><label>Path</label></div>
-    <div class="col-sm-10 data">{{rmPath}}</div>
+<div class="row properties-line">
+    <div class="properties-label"><label>Path</label></div>
+    <div class="properties-value data">{{rmPath}}</div>
 </div>
-<div class="row">
-    <div class="col-sm-2"><label for="occurrences">Occurrences</label></div>
-    <div class="col-sm-4">
-        <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
-    </div>
-    <div class="col-sm-4">
-        <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
-    </div>
-    <div class="col-sm-2">
-        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
+<div class="row properties-line">
+    <div class="properties-label"><label for="occurrences">Occurrences</label></div>
+    <div class="properties-value">
+      <div class="properties-value-item">
+          <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
+      </div>
+      <div class="properties-value-item">
+          <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
+      </div>
+      <div class="properties-value-item small">
+          <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
+      </div>
     </div>
 </div>
 
 {>main}
 <div id="{{panel_id}}">
-    <div id="{{top.panel_id}}"></div>
+    <div id="{{top.panel_id}}" class="horizontal-stretch"></div>
     {{#if constraint}}
-        <div id="{{constraint.panel_id}}" class="custom-container"></div>
+        <div id="{{constraint.panel_id}}" class="horizontal-stretch"></div>
     {{/if}}
 </div>
 
@@ -63,64 +65,50 @@
 </ul>
 
 {>ARCHETYPE_SLOT}
-<div class="row">
-    <div class="row">
-        <div class="col-sm-12">
-            <label>Include</label>
-        </div>
-
-        <div id="{{panel_id}}_includes" class="col-sm-12"></div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <label>Exclude</label>
-        </div>
-        <div id="{{panel_id}}_excludes" class="col-sm-12"></div>
-    </div>
+<div class="row properties-line">
+  <div class="properties-label align-top"><label>Include</label></div>
+  <div id="{{panel_id}}_includes" class="properties-value"></div>
+</div>
+<div class="row properties-line">
+  <div class="properties-label align-top"><label>Exclude</label></div>
+  <div id="{{panel_id}}_excludes" class="properties-value"></div>
 </div>
 
 {>ARCHETYPE_SLOT/assertionList}
-<div class="row">
-    <div class="col-sm-10">
-        <select id="{{panel_id}}_list" size="10" style="width:100%" multiple>
-        </select>
+<div class="properties-line no-border">
+  <div class="properties-value">
+    <select id="{{panel_id}}_list" size="10" style="width:100%" multiple></select>
+    <div class="btn-group-vertical left-space-small" role="group">
+        <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+        <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
     </div>
-    <div class="col-sm-2">
-        <div class="btn-group-vertical" role="group">
-            <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
-                <span class="glyphicon glyphicon-plus"></span>
-            </button>
-            <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
-                <span class="glyphicon glyphicon-minus"></span>
-            </button>
-        </div>
-    </div>
+  </div>
 </div>
 
 {>ARCHETYPE_INTERNAL_REF}
-<div class="row">
-    <div class="col-sm-3">
-        <label>Target Path</label>
-    </div>
-    <div class="col-sm-9">{{target_path}}
-    </div>
+<div class="row properties-line">
+    <div class="properties-label"><label>Target Path</label></div>
+    <div class="properties-value">{{target_path}}</div>
 </div>
 
 
 {>ARCHETYPE_SLOT/addAssertionDialog}
-<div class="row">
-    <div class="col-sm-12">
-        <select id="{{panel_id}}_candidates" class="form-control" size="10" multiple>
-            {{#each candidates}}
-                <option value="{{archetypeId}}" title="{{name}}">{{archetypeId}}</option>
-            {{/each}}
-        </select>
-    </div>
+<div class="row properties-line no-border">
+  <div class="properties-value">
+    <select id="{{panel_id}}_candidates" class="form-control" size="10" multiple>
+        {{#each candidates}}
+            <option value="{{archetypeId}}" title="{{name}}">{{archetypeId}}</option>
+        {{/each}}
+    </select>
+  </div>
 </div>
-<div class="row">
-    <div class="checkbox">
-        <label>
-            <input id="{{panel_id}}_specializations" type="checkbox">Match specializations
-        </label>
-    </div>
+<div class="row properties-line no-border">
+  <div class="properties-label"><label>Match specializations</label></div>
+  <div class="properties-value">
+    <input id="{{panel_id}}_specializations" type="checkbox">
+  </div>
 </div>

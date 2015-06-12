@@ -1285,7 +1285,7 @@
 
                         function createValueDiv(val) {
                             var valueHandler = stage.archetypeEditor.getRmTypeHandler(val.rmType);
-                            var div = $("<div>");
+                            var div = $("<div class='horizontal-stretch'>");
                             if (valueHandler) {
                                 valueHandler.show(stage, val.context, div);
                             }

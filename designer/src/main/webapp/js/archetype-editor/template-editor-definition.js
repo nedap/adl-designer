@@ -243,13 +243,13 @@
                 var parentCons = archetypeModel.getParentConstraint(cons);
                 var specialized = archetypeModel.isSpecialized(cons);
 
-                var topDiv = $('<div class="container-fluid">');
-                targetElement.append(topDiv);
+//                var topDiv = $('<div class="container-fluid">');
+//                targetElement.append(topDiv);
 
                 constraintHandler = ArchetypeEditor.getRmTypeHandler('main', '@common');
                 templateHandler = constraintHandler;
 
-                var customDiv = $('<div class="container-fluid">');
+                var customDiv = $('<div class="container-fluid horizontal-stretch">');
                 targetElement.append(customDiv);
 
                 stage = createEmptyStage();

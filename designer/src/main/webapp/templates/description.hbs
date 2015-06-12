@@ -43,9 +43,9 @@
 </div>
 
 {>language}
-<div class="form-horizontal xrow">
+<div class="form-horizontal row">
     <div class="form-group col-sm-6">
-        <label class="col-sm-4">Original Language: {{original_language}}</label>
+        <label class="col-sm-12">Original Language: {{original_language}}</label>
 <!--
         <div class="col-sm-6">
             <p class="form-control-static" id="{{panel_id}}_original_language">{{original_language}}</p>
@@ -66,7 +66,7 @@
         </div>
     </div>
 </div>
-<div class="xrow">
+<div class="row">
     <div class="col-sm-6">
         <div class="panel panel-default">
           <div class="panel-heading">
@@ -75,7 +75,7 @@
             <div class="panel-body" id="{{panel_id}}_translator">
             </div>
         </div>
-        <div class="row">
+        <div class="xrow">
             <label for="{{panel_id}}_accreditation">Translator Accreditation</label>
 
             <input id="{{panel_id}}_accreditation" class="form-control input">
@@ -93,79 +93,94 @@
 </div>
 
 {>details}
-<div class="xcontainer-fluid">
-    <div class="form-horizontal xrow">
-        <div class="form-group col-sm-4">
-            <label for="{{panel_id}}_language" class="col-sm-4 control-label">Language</label>
-
-            <div class="col-sm-8">
-                <select id="{{panel_id}}_language" class="form-control input"></select>
+<div class="container-fluid vertical-stretch">
+  <div class="col-sm-8">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="form-horizontal row">
+            <div class="form-group col-sm-6">
+                <label for="{{panel_id}}_language" class="col-sm-4 control-label">Language</label>
+    
+                <div class="col-sm-8">
+                    <select id="{{panel_id}}_language" class="form-control input"></select>
+                </div>
+            </div>
+            <!-- <div class="form-group col-sm-4"></div> -->
+    
+            <div class="form-group col-sm-6 pull-right">
+                <label for="{{panel_id}}_lifecycle" class="col-sm-4 control-label">Lifecycle</label>
+    
+                <div class="col-sm-8">
+                    <select id="{{panel_id}}_lifecycle" class="form-control input">
+                        {{#each lifecycleOptions}}
+                            <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                </div>
             </div>
         </div>
-        <div class="form-group col-sm-4"></div>
-
-        <div class="form-group col-sm-4">
-            <label for="{{panel_id}}_lifecycle" class="col-sm-4 control-label">Lifecycle</label>
-
-            <div class="col-sm-8">
-                <select id="{{panel_id}}_lifecycle" class="form-control input">
-                    {{#each lifecycleOptions}}
-                        <option value="{{this}}">{{this}}</option>
-                    {{/each}}
-                </select>
+        <div class="form-horizontal row">
+            <div class="form-group row">
+                <label for="{{panel_id}}_purpose" class="col-sm-1 control-label">Purpose</label>
+    
+                <div class="col-sm-11">
+                    <textarea id="{{panel_id}}_purpose" class="form-control input" style="resize: none" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="{{panel_id}}_use" class="col-sm-1 control-label">Use</label>
+    
+                <div class="col-sm-11">
+                    <textarea id="{{panel_id}}_use" class="form-control input" style="resize: none" rows="6"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="{{panel_id}}_misuse" class="col-sm-1 control-label">Misuse</label>
+    
+                <div class="col-sm-11">
+                    <textarea id="{{panel_id}}_misuse" class="form-control input" style="resize: none" rows="6"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="{{panel_id}}_copyright" class="col-sm-1 control-label">Copyright</label>
+    
+                <div class="col-sm-11">
+                    <input id="{{panel_id}}_copyright" class="form-control input">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="{{panel_id}}_keywords" class="col-sm-1 control-label">Keywords</label>
+    
+                <div class="col-sm-11">
+                    <input id="{{panel_id}}_keywords" class="form-control input">
+                </div>
             </div>
         </div>
+      </div>
     </div>
-    <div class="form-horizontal xrow">
-        <div class="form-group row">
-            <label for="{{panel_id}}_purpose" class="col-sm-1 control-label">Purpose</label>
-
-            <div class="col-sm-11">
-                <textarea id="{{panel_id}}_purpose" class="form-control input" style="resize: none" rows="3"></textarea>
+  </div>
+  <div class="col-sm-4 horizontal-stretch">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="xrow">
+            <div class="col-sm-12">
+                <label>Resources</label>
+                <div id="{{panel_id}}_resources">
+                </div>
             </div>
         </div>
-        <div class="form-group row">
-            <label for="{{panel_id}}_use" class="col-sm-1 control-label">Use</label>
-
-            <div class="col-sm-11">
-                <textarea id="{{panel_id}}_use" class="form-control input" style="resize: none" rows="6"></textarea>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="{{panel_id}}_misuse" class="col-sm-1 control-label">Misuse</label>
-
-            <div class="col-sm-11">
-                <textarea id="{{panel_id}}_misuse" class="form-control input" style="resize: none" rows="6"></textarea>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="{{panel_id}}_copyright" class="col-sm-1 control-label">Copyright</label>
-
-            <div class="col-sm-11">
-                <input id="{{panel_id}}_copyright" class="form-control input">
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="{{panel_id}}_keywords" class="col-sm-1 control-label">Keywords</label>
-
-            <div class="col-sm-11">
-                <input id="{{panel_id}}_keywords" class="form-control input">
-            </div>
-        </div>
+      </div>
     </div>
-    <div class="xrow">
-        <div class="col-sm-6">
-            <label>Resources</label>
-
-            <div id="{{panel_id}}_resources">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="xrow">
+            <div class="col-sm-12">
+                <label>Other Details</label>
+                <div id="{{panel_id}}_other_details">
+                </div>
             </div>
         </div>
-        <div class="col-sm-6">
-            <label>Other Details</label>
-
-            <div id="{{panel_id}}_other_details">
-            </div>
-        </div>
-
-    </div>
+      </div>
+    </div>    
+  </div>
 </div>

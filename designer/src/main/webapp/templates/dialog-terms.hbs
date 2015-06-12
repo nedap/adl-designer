@@ -19,21 +19,23 @@
   -->
 
 {>addNew}
-<div class="form-group">
-    <label for="{{id}}_text">Text</label>
-    <input id="{{id}}_text" class="form-control" value="">
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{id}}_text">Text</label></div>
+    <div class="properties-value"><input id="{{id}}_text" class="form-control" value=""></div>
 </div>
-<div class="form-group">
-    <label for="{{id}}_description">Description</label>
-    <input id="{{id}}_description" class="form-control" value="">
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{id}}_description">Description</label></div>
+    <div class="properties-value"><input id="{{id}}_description" class="form-control" value=""></div>
 </div>
 
 {>addExistingTermsDialog}
-<div class="form-group">
-    <label for="selectExistingTerms">Select terms to add</label>
-    <select id="selectExistingTerms" class="form-control" size="10" multiple>
-        {{#each terms}}
-            <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
-        {{/each}}
+<div class="row properties-line no-border">
+  <div class="properties-label align-top"><label for="selectExistingTerms">Select terms to add</label></div>
+    <div class="properties-value">
+      <select id="selectExistingTerms" class="form-control" size="10" multiple>
+      {{#each terms}}
+          <option value="{{@key}}" title="{{@key}}: {{description}}">{{text}}</option>
+      {{/each}}
     </select>
+  </div>  
 </div>

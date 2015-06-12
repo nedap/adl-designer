@@ -104,15 +104,20 @@
 </head>
 <body>
 <div id="archetype-editor-main">
-    <div>
-        <!-- main toolbar -->
-        <button class="btn" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</button>
-        <button class="btn" onclick="TemplateEditor.openLoadTemplateDialog()">Load</button>
-        <button class="btn" onclick="TemplateEditor.saveCurrentTemplate(function() {alert ('Template saved');})">Save</button>
-        <button class="btn" onclick="TemplateEditor.exportToOpt14()">Export to Opt 1.4</button>
-    </div>
+	  <nav class="navbar navbar-default navbar-static-top">
+	    <div class="container-fluid">
+	      <ul class="nav navbar-nav">
+	        <li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>
+	        <li><a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">Load</a></li>
+	        <li><a href="#" onclick="TemplateEditor.saveCurrentTemplate(function() {alert ('Template saved');})">Save</a></li>
+	      </ul>
+		    <ul class="nav navbar-nav navbar-right">
+		      <li><a href="#" onclick="TemplateEditor.exportToOpt14()">Export to Opt 1.4</a></li>
+		    </ul>
+	    </div>
+	  </nav>
     <div id="archetype-editor-archetype-id-main"></div>
-    <div id="archetype-editor-archetype-tabs">
+    <div id="archetype-editor-archetype-tabs" class="tab-pane">
         <ul class="nav nav-tabs">
             <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
             <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>

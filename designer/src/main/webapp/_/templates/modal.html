@@ -6,11 +6,15 @@
 				<h4 class="modal-title">Load archetype</h4>
 			</div>
 			<div class="modal-body">
-				<p>Archetype Id</p>
-				<select class="form-control"
-				        ng-model="modal.selected"
-				        ng-options="option.archetypeId as option.archetypeId for option in modal.options">
-				</select>
+			  <div class="row properties-line no-border">
+			    <div class="properties-label"><label>Archetype Id</label></div>
+			    <div class="properties-value">
+						<select class="form-control"
+						        ng-model="modal.selected"
+						        ng-options="option.archetypeId as option.archetypeId for option in modal.options">
+						</select>
+				  </div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" ng-click="modal.close()" class="btn btn-default" data-dismiss="modal">Close</button>

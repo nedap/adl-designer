@@ -19,54 +19,48 @@
   -->
 
 {>DV_QUANTITY}
-<div class="row">
-    <label for="{{units_id}}">Units</label>
-
-    {{#if isTemplate}}
-        <div class="row">
-            <div class="col-sm-6">
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+      <div class="properties-label"><label for="{{units_id}}">Units</label></div>
+      <div class="properties-value">
+        {{#if isTemplate}}
+            <div class="properties-value-item">
+                <div class="col-sm-6">
+                    <select id="{{units_id}}" class="form-control input-sm">
+                    </select>
+                </div>
+                <div id="{{panel_id}}_active_units_container" class="col-sm-6"></div>
+            </div>
+        {{else}}
+            <div class="properties-value-item input-group">
                 <select id="{{units_id}}" class="form-control input-sm">
                 </select>
+                <span class="input-group-btn">
+                    <button id="{{units_id}}_remove" class="btn btn-sm btn-default data">-</button>
+                    <button id="{{units_id}}_add" class="btn btn-sm btn-default data">+</button>
+                </span>
             </div>
-            <div id="{{panel_id}}_active_units_container" class="col-sm-6"></div>
-        </div>
-    {{else}}
-        <div class="input-group">
-            <select id="{{units_id}}" class="form-control input-sm">
-            </select>
-            <span class="input-group-btn">
-                <button id="{{units_id}}_remove" class="btn btn-default data">-</button>
-            </span>
-            <span class="input-group-btn">
-                <button id="{{units_id}}_add" class="btn btn-default data">+</button>
-            </span>
-        </div>
-    {{/if}}
+        {{/if}}
+      </div>    
+    </div>
 </div>
 {{#each unit_panels}}
-    <div class="row unit_panel" id="{{panel_id}}">
-        <div id="{{magnitude.panel_id}}"></div>
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label for="{{panel_id}}_precision" class="col-sm-4 control-label">Limit decimal places</label>
-
-                <div class="col-sm-8">
-                    <input id="{{panel_id}}_precision" type="number" class="form-control input-sm data archetype-only"
-                           value="{{precision}}">
-                </div>
-            </div>
-        </div>
-    </div>
+  <div class="row unit_panel" id="{{panel_id}}">
+      <div id="{{magnitude.panel_id}}"></div>
+      <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_precision" class="control-label">Limit decimal places</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_precision" type="number" class="form-control input-sm data archetype-only" value="{{precision}}"></div>
+      </div>
+  </div>
 {{/each}}
 
 {>DV_CODED_TEXT}
-<div>
-    <div class="checkbox">
-        <label>
-            <input id="{{panel_id}}_coded_text" type="checkbox" class="data">Coded text
-        </label>
-    </div>
-    <div id="{{defining_code.panel_id}}"></div>
+<div class="horizontal-stretch">
+  <div class="row properties-line">
+    <div class="properties-label"><label>Coded text</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_coded_text" type="checkbox" class="data"></div>
+  </div>
+  <div id="{{defining_code.panel_id}}" class="properties-sub-panel"></div>
 </div>
 
 {>DV_BOOLEAN}
@@ -82,13 +76,15 @@
 </div>
 
 {>DV_ORDINAL}
-<div>
+<div class="horizontal-stretch">
     {{#if isParentConstrained}}
-        <div id="{{panel_id}}_ordinal_checkbox_container"></div>
+        <div id="{{panel_id}}_ordinal_checkbox_container" class="row properties-line"></div>
     {{else}}
-        <div class="table-layout">
-            <div class="table-cell vertical-button-column">
-                <div class="btn-group-vertical" role="group">
+        <div class="row properties-line">
+            <div class="properties-value">
+                <select id="{{panel_id}}_values" class="form-control data" size="10">
+                </select>
+                <div class="btn-group-vertical left-space-small" role="group">
                     <button id="{{panel_id}}_add_new_value" type="button" class="btn btn-default data archetype-only"
                             title="add new value">
                         <span class="glyphicon glyphicon-plus"></span>
@@ -109,32 +105,24 @@
                     </button>
                 </div>
             </div>
-            <div class="table-cell">
-                <select id="{{panel_id}}_values" class="form-control data" size="10">
-                </select>
-            </div>
         </div>
     {{/if}}
 </div>
 
 {>DV_ORDINAL/editValue}
-<div class="form-group">
-    <div class="col-sm-6">
-        <label for="{{id}}_value">Ordinal value</label>
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+      <div class="properties-label"><label for="{{id}}_value">Ordinal value</label></div>
+      <div class="properties-value"><input id="{{id}}_value" class="form-control" type="number" value="{{value.value}}"></div>
     </div>
-    <div class="col-sm-6">
-        <input id="{{id}}_value" class="form-control" type="number" value="{{value.value}}">
+    <div class="row properties-line">
+      <div class="properties-label"><label for="{{id}}_text">Text</label></div>
+      <div class="properties-value"><p id="{{id}}_text" class="form-control-static">{{value.term.text}}</p></div>
     </div>
-</div>
-<div class="form-group">
-    <label for="{{id}}_text">Text</label>
-
-    <p id="{{id}}_text" class="form-control-static">{{value.term.text}}</p>
-</div>
-<div class="form-group">
-    <label for="{{id}}_description">Description</label>
-
-    <p id="{{id}}_description" class="form-control-static">{{value.term.description}}</p>
+    <div class="row properties-line">
+      <div class="properties-label"><label for="{{id}}_description">Description</label></div>
+      <div class="properties-value"><p id="{{id}}_description" class="form-control-static">{{value.term.description}}</p></div>
+    </div>
 </div>
 
 {>DV_DURATION}
@@ -144,82 +132,76 @@
 </div>
 
 {>DV_IDENTIFIER}
-<div>
-    <div class="form-group">
-        <label for="{{panel_id}}_issuer">Issuer</label>
-        <input id="{{panel_id}}_issuer" type="text" class="form-control input-sm data archetype-only" value="{{issuerPattern}}"/>
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_issuer">Issuer</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_issuer" type="text" class="form-control input-sm data archetype-only" value="{{issuerPattern}}"/></div>
     </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_type">Type</label>
-        <input id="{{panel_id}}_type" type="text" class="form-control input-sm data archetype-only" value="{{typePattern}}"/>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_type">Type</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_type" type="text" class="form-control input-sm data archetype-only" value="{{typePattern}}"/></div>
     </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_assigner">Assigner</label>
-        <input id="{{panel_id}}_assigner" type="text" class="form-control input-sm data archetype-only" value="{{assignerPattern}}"/>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_assigner">Assigner</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_assigner" type="text" class="form-control input-sm data archetype-only" value="{{assignerPattern}}"/></div>
     </div>
 </div>
 
 {>DV_DATE_TIME}
 <div>
-    <div id="{{value.panel_id}}">
-    </div>
+    <div id="{{value.panel_id}}"></div>
 </div>
 
 {>DV_PROPORTION}
-<div>
-    <div class="row form-group">
-        <div class="col-sm-6">
-            <label for="{{panel_id}}_integral">As percent</label>
-        </div>
-        <div class="col-sm-6">
-            <select id="{{panel_id}}_integral" class="form-control input-sm data archetype-only">
-                <option value=""></option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-            </select>
-        </div>
+<div class="row properties-line">
+  <div class="properties-label"><label for="{{panel_id}}_integral">As percent</label></div>
+  <div class="properties-value">
+    <select id="{{panel_id}}_integral" class="form-control input-sm data archetype-only">
+        <option value=""></option>
+        <option value="true">True</option>
+        <option value="false">False</option>
+    </select>
+  </div>
+</div>
+<div class="row properties-line">
+    <div class="properties-label align-top"><label for="{{panel_id}}_kinds">Proportion kinds</label></div>
+    <div class="properties-value" id="{{panel_id}}_kinds_panel">
+      <div class="properties-value-item">
+          <div class="col-sm-12">
+              <input id="{{panel_id}}_kind_ratio" type="checkbox" class="data archetype-only"> Ratio
+          </div>
+          <div class="col-sm-12">
+              <input id="{{panel_id}}_kind_unitary" type="checkbox" class="data  archetype-only"> Unitary
+          </div>
+          <div class="col-sm-12">
+              <input id="{{panel_id}}_kind_percent" type="checkbox" class="data  archetype-only"> Percent
+          </div>
+      </div>
+      <div class="properties-value-item">
+          <div class="col-sm-12">
+              <input id="{{panel_id}}_kind_fraction" type="checkbox" class="data  archetype-only"> Fraction
+          </div>
+          <div class="col-sm-12">
+              <input id="{{panel_id}}_kind_integer_fraction" type="checkbox" class="data  archetype-only"> Integer
+              Fraction
+          </div>
+      </div>
     </div>
-    <div class="row form-group">
-        <div class="col-sm-6">
-            <label for="{{panel_id}}_kinds">Proportion kinds</label>
+</div>
+<div id="{{panel_id}}_tabs" role="tabpanel" class="top-space-small">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#{{numerator.panel_id}}" role="tab" data-toggle="tab">Numerator</a>
+        </li>
+        <li role="presentation"><a href="#{{denominator.panel_id}}" role="tab" data-toggle="tab">Denominator</a>
+        </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="{{numerator.panel_id}}">
         </div>
-        <div id="{{panel_id}}_kinds_panel" class="col-sm-6">
-            <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_ratio" type="checkbox" class="data archetype-only">Ratio
-            </div>
-            <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_unitary" type="checkbox" class="data  archetype-only">Unitary
-            </div>
-            <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_percent" type="checkbox" class="data  archetype-only">Percent
-            </div>
-            <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_fraction" type="checkbox" class="data  archetype-only">Fraction
-            </div>
-            <div class="col-sm-12">
-                <input id="{{panel_id}}_kind_integer_fraction" type="checkbox" class="data  archetype-only">Integer
-                Fraction
-            </div>
+        <div role="tabpanel" class="tab-pane" id="{{denominator.panel_id}}">
         </div>
-    </div>
-    <div id="{{panel_id}}_tabs" role="tabpanel">
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#{{numerator.panel_id}}" role="tab" data-toggle="tab">Numerator</a>
-            </li>
-            <li role="presentation"><a href="#{{denominator.panel_id}}" role="tab" data-toggle="tab">Denominator</a>
-            </li>
-        </ul>
-
-        <!-- Tab panes -->
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="{{numerator.panel_id}}">
-            </div>
-            <div role="tabpanel" class="tab-pane" id="{{denominator.panel_id}}">
-            </div>
-        </div>
-
     </div>
 </div>
 
@@ -245,38 +227,35 @@
 </div>
 
 {>ELEMENT}
-<div>
+<div class="properties-custom-panel">
     {{#if isTemplateChoice}}
-        <div id="{{panel_id}}_active_dv_container"></div>
+      <div id="{{panel_id}}_active_dv_container"></div>
     {{else}}
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label for="{{panel_id}}_type" class="col-sm-2 control-label">Type</label>
-
-                <div class="col-sm-10 input-group">
-                    <select id="{{panel_id}}_type" class="form-control input-sm">
-                    </select>
-                    {{#unless isTemplate}}
-                        <span class="input-group-btn">
-                            <button id="{{panel_id}}_addType" type="button" class="btn btn-default data"
-                                    title="add new value">
-                                <span class="glyphicon glyphicon-plus"></span>
-                            </button>
-                        </span>
-                        <span class="input-group-btn">
-                            <button id="{{panel_id}}_removeType" type="button" class="btn btn-default data"
-                                    title="removes current type">
-                                <span class="glyphicon glyphicon-minus"></span>
-                            </button>
-                        </span>
-                    {{/unless}}
-                </div>
-
+      <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_type" xclass="col-sm-2 control-label">Type</label></div>
+        <div class="properties-value">
+          <div class="properties-value-item">
+            <select id="{{panel_id}}_type" class="form-control input-sm"></select>
+          </div>
+          {{#unless isTemplate}}
+            <div class="properties-value-item small">
+              <span class="">
+                  <button id="{{panel_id}}_addType" type="button" class="btn btn-sm btn-default data"
+                          title="add new value">
+                      &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+                  </button>
+              </span>
+              <span class="">
+                  <button id="{{panel_id}}_removeType" type="button" class="btn btn-sm btn-default data"
+                          title="removes current type">
+                      &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
+                  </button>
+              </span>
             </div>
+          {{/unless}}
         </div>
-
-        <div id="{{panel_id}}_valueContainer" class="row">
-        </div>
+      </div>
+      <div id="{{panel_id}}_valueContainer" class="row properties-line"></div>
     {{/if}}
 
 </div>

@@ -255,8 +255,8 @@
                 var parentCons = archetypeModel.getParentConstraint(cons);
                 var specialized = archetypeModel.isSpecialized(cons);
 
-                var topDiv = $('<div class="container-fluid">');
-                targetElement.append(topDiv);
+//                var topDiv = $('<div class="container-fluid">');
+//                targetElement.append(topDiv);
 
                 handler = ArchetypeEditor.getRmTypeHandler('main', '@common');
                 var customDiv = $('<div class="container-fluid">');

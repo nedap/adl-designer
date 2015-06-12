@@ -1,137 +1,90 @@
 {>createNewTemplateDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label for="{{panel_id}}_archetype_id" class="control-label col-sm-6">Parent Archetype Id</label>
-
-        <div class="col-sm-6">
-            <select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_concept" class="control-label col-sm-6">Concept</label>
-
-        <div class="col-sm-6">
-            <input id="{{panel_id}}_concept" class="form-control input-sm" value="">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_version" class="control-label col-sm-6">Version</label>
-
-        <div class="col-sm-6">
-            <input id="{{panel_id}}_version" class="form-control input-sm" value="1.0.0">
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">Template Id</h3>
-        </div>
-        <div class="panel-body">
-            <p id="{{panel_id}}_template_id" class="form-control-static"></p>
-        </div>
-    </div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template Id</label></div>
+    <div class="properties-value"><p id="{{panel_id}}_template_id" class="form-control-static"></p></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Parent Archetype Id</label></div>
+    <div class="properties-value"><select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_concept" class="control-label">Concept</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_concept" class="form-control input-sm" value=""></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_version" class="control-label">Version</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_version" class="form-control input-sm" value="1.0.0"></div>
 </div>
 
 
 {>definition}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-8">
-            <div class="row">
-                <div class="form-horizontal col-sm-3">
-                    <div class="form-group">
-                        <label for="{{panel_id}}_language" class="control-label col-sm-4">Language</label>
-
-                        <div class="col-sm-8">
-                            <select id="{{panel_id}}_language" class="form-control input-sm">
-                                <option value="en">en</option>
-                                <option value="sl">sl</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="checkbox col-sm-4">
-                    <label>
-                        <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
-                    </label>
-                </div>
-                <div class="col-sm-5">
-
-                    <div class="btn-toolbar pull-right" role="toolbar">
-                        <div class="btn-group" role="group">
-                            <button id="{{panel_id}}_editArchetype" type="button" class="btn btn-primary">Edit Archetype
-                            </button>
-                            <button id="{{panel_id}}_renameConstraint" type="button" class="btn btn-primary">Rename
-                            </button>
-                            <button id="{{panel_id}}_addArchetype" type="button" class="btn btn-primary">Add Archetype
-                            </button>
-                            <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-primary">Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div id="{{panel_id}}_tree" class="definition-tree"></div>
-            </div>
+<div class="vertical-stretch">
+  <div class="horizontal-stretch col-sm-8">
+    <div class="panel panel-default horizontal-stretch">
+      <div class="panel-heading row">
+        <div class="col-sm-4 properties-line no-border">
+          <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+          <div class="properties-value">
+            <select id="{{panel_id}}_language" class="form-control input-sm">
+                <option value="en">en</option>
+                <option value="sl">sl</option>
+            </select>
+          </div>
         </div>
-        <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
+        <div class="col-sm-4 pull-right">
+          <div class="checkbox pull-right">
+            <label>
+                <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
+            </label>
+          </div>
+        </div>           
+      </div>
+      <div class="panel-body horizontal-stretch bottom-space-medium no-padding">
+        <div id="{{panel_id}}_tree" class="definition-tree"></div>
+      </div>
+      <div class="panel-footer">
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button id="{{panel_id}}_renameConstraint" type="button" class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span> Rename</button>
+          <button id="{{panel_id}}_editArchetype" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span>  Edit Archetype</button>
+          <button id="{{panel_id}}_addArchetype" type="button" class="btn btn-success"><span class="glyphicon glyphicon-plus-sign"></span> Add Archetype</button>
+          <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove-sign"></span> Remove</button>
         </div>
+      </div>
     </div>
+  </div>
+  <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
+  </div>
 </div>
 
 
 {>addArchetypeDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label for="{{panel_id}}_archetype_id" class="control-label col-sm-6">Archetype Id</label>
-
-        <div class="col-sm-6">
-            <select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select>
-        </div>
-    </div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Archetype Id</label></div>
+   <div class="properties-value"><select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select></div>
 </div>
 
 {>loadTemplateDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label for="{{panel_id}}_template_id" class="control-label col-sm-3">Template</label>
-
-        <div class="col-sm-9">
-            <select id="{{panel_id}}_template_id" class="form-control input-sm"></select>
-        </div>
-    </div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template</label></div>
+   <div class="properties-value"><select id="{{panel_id}}_template_id" class="form-control input-sm"></select></div>
 </div>
 
 {>renameConstraintDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label for="{{panel_id}}_language" class="control-label col-sm-3">Language</label>
-
-        <div class="col-sm-9">
-            <p id="{{panel_id}}_language" class="form-control form-control-static">{{language}}</p>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_text" class="control-label col-sm-3">Text</label>
-
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_text" class="form-control input-sm"/>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_description" class="control-label col-sm-3">Description</label>
-
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_description" class="form-control input-sm"/>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="{{panel_id}}_comment" class="control-label col-sm-3">Comment</label>
-
-        <div class="col-sm-9">
-            <input id="{{panel_id}}_comment" class="form-control input-sm"/>
-        </div>
-    </div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+   <div class="properties-value"><p id="{{panel_id}}_language" class="form-control form-control-static">{{language}}</p></div>
+</div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_text" class="control-label">Text</label></div>
+   <div class="properties-value"><input id="{{panel_id}}_text" class="form-control input-sm"/></div>
+</div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_description" class="control-label">Description</label></div>
+   <div class="properties-value"><input id="{{panel_id}}_description" class="form-control input-sm"/></div>
+</div>
+<div class="row properties-line no-border">
+   <div class="properties-label"><label for="{{panel_id}}_comment" class="control-label">Comment</label></div>
+   <div class="properties-value"><input id="{{panel_id}}_comment" class="form-control input-sm"/></div>
 </div>
 
 {>constraintTop}
@@ -163,7 +116,7 @@
         <a href="#{{panel_id}}_adl" data-toggle="tab">ADL</a></li>
 </ul>
 <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade active in"
+    <div role="tabpanel" class="tab-pane fade active in padded"
          id="{{panel_id}}_adl">
         Adl
     </div>
