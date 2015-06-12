@@ -172,7 +172,7 @@ var GuiUtils = (function () {
             dialogElement.on('hidden.bs.modal', function (e) {
                 dialogElement.remove();
             });
-            dialogElement.modal();
+            dialogElement.modal({backdrop: 'static'});
         });
     };
 

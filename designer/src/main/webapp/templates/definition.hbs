@@ -49,18 +49,15 @@
 
 
 {>addAttributeDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label for="{{panel_id}}_attributes" class="col-sm-4 control-label">Attribute</label>
-
-        <div class="col-sm-8">
-            <select id="{{panel_id}}_attributes" class="form-control">
-                {{#each attributes}}
-                    <option value="{{this}}">{{this}}</option>
-                {{/each}}
-            </select>
-        </div>
-    </div>
+<div class="row properties-line no-border">
+  <div class="properties-label"><label for="{{panel_id}}_attributes" class="control-label">Attribute</label></div>
+  <div class="properties-value">
+    <select id="{{panel_id}}_attributes" class="form-control">
+      {{#each attributes}}
+        <option value="{{this}}">{{this}}</option>
+      {{/each}}
+    </select>
+  </div>
 </div>
 
 

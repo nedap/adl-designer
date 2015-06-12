@@ -50,15 +50,21 @@ label {
 .container-fluid {
   margin-right: 0;
   margin-left: 0;
-  flex-grow: 1;
   padding-left: 0px;
   padding-right: 0px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-grow: 1;
+  -webkit-flex-shrink: 1;
 }
 
 .row {
   margin-right: 0px;
   margin-left: 0px;
-  flex-shrink: 0;  
+  flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-grow: 0;
+  -webkit-flex-shrink: 0;
 }
 
 .form-horizontal .form-group {
@@ -73,8 +79,11 @@ label {
 .tab-pane {
   padding-top: 10px;
   flex-grow: 1;
+  -webkit-flex-grow: 1;
   display: flex;
+  display: -webkit-flex;
   flex-direction: column;
+  -webkit-flex-direction: column;
   pading-left: 10px;
 }
 
@@ -84,6 +93,7 @@ label {
 
 .navbar {
 	flex-shrink: 0;
+	-webkit-flex-shrink: 0;
 	margin-bottom: 10px;
 }
 
@@ -94,12 +104,17 @@ label {
 .nav-tabs {
 	flex-grow: 0;
   flex-shrink: 0;
+  -webkit-flex-grow: 0;
+  -webkit-flex-shrink: 0;
   padding-left: 10px;
+  xmin-height: 44px;
 }
 
 .tab-content {
 	flex-grow: 1;
+	-webkit-flex-grow: 1;
 	display: flex;
+	display: -webkit-flex;
 	overflow: auto;
 }
 
@@ -125,16 +140,22 @@ label {
 }
 
 .vertical-stretch {
-	flex-grow: 1;
+  flex-grow: 1;
+  -webkit-flex-grow: 1; 
 	display: flex;
+	display: -webkit-flex;
   align-content: stretch;
 }
 
 .horizontal-stretch {
   flex-grow: 1;
+  -webkit-flex-grow: 1;
   display: flex;
+  display: -webkit-flex;
   flex-direction: column;
+  -webkit-flex-direction: column;
   align-content: stretch;
+  -webkit-align-content: stretch;
 }
 
 select.big-lines {
@@ -183,6 +204,7 @@ select.big-lines > option {
 
 .tab-content > .active {
   display: flex;
+  display: -webkit-flex;
   visibility: visible;
 }
 
@@ -212,14 +234,20 @@ pre.display {
 
 .properties-line {
   flex-grow: 1;
+  -webkit-flex-grow: 1;
   display: flex;
+  display: -webkit-flex;
   align-content: stretch;
+  -webkit-align-content: stretch;
   border-bottom: 1px solid #DDD;
   padding: 5px 0px;
 }
 
 .properties-label {
-  flex: 0 0 1;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
   padding-right: 20px;
   margin-top: auto;
   margin-bottom: auto;
@@ -235,20 +263,32 @@ pre.display {
 }
 
 .properties-value {
-	flex: 1 1;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 1;
 	margin-top: auto;
   margin-bottom: auto;
   display: flex;
+  display: -webkit-flex;
   align-content: stretch;
+  -webkit-align-content: stretch;
 }
 
 .properties-value-item {
 	margin-right: 10px;
-	flex: 10 0;
+  flex-grow: 10;
+  -webkit-flex-grow: 10;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
 }
 
 .properties-value-item.small {
-	flex: 5 0;
+  margin-right: 10px;
+  flex-grow: 5;
+  -webkit-flex-grow: 5;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
 }
 
 .properties-sub-panel {
@@ -268,14 +308,20 @@ pre.display {
 }
 
 .streched-table-footer {
-  flex: 1 0;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
   padding: 5px;
   display: flex;
-  justify-content: flex-end;	
+  display: -webkit-flex;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
 }
 
 .panel-footer {
-	flex-shrink: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
 }
 
 .hidden {
@@ -339,7 +385,9 @@ form .table-layout .table-cell {
 #archetype-editor-main {
   height: 100%;
   display: flex;
+  display: -webkit-flex;
   flex-direction: column;
+  -webkit-flex-direction: column;
 }
 
 #archetype-editor-main-tabs-definition .table-layout {
@@ -352,14 +400,19 @@ form .table-layout .table-cell {
 .definition-tree {
     xborder: solid 1px #ccc;
     overflow: auto;
-    flex-grow: 1;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 01;
     padding: 10px;
 }
 
 .constraint-properties {
     xfont-size: 12px;
-    display: flex;
+  display: flex;
+  display: -webkit-flex;
   flex-direction: column;
+  -webkit-flex-direction: column;
 }
 
 .constraint-properties .footer {
