@@ -418,6 +418,15 @@ ul.dropdown-menu-form {
     overflow-y: scroll;
 }
 
+.modal-alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+}
+
+.modal-alert-error {
+    color: #a94442;
+    background-color: #f2dede;
+}
 
 /* ICONS */
 .openehr-rm-icon {

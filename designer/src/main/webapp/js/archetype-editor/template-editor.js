@@ -21,7 +21,7 @@
 var TemplateEditor = (function () {
     var my = {};
 
-    my.openLoadTemplateDialog = function() {
+    my.openLoadTemplateDialog = function () {
         $.getJSON("rest/repo/template").success(function (templateInfoList) {
 
             var context = {
@@ -33,14 +33,14 @@ var TemplateEditor = (function () {
                     templateIdSelect.empty();
                     for (var i in templateInfoList) {
                         var templateInfo = templateInfoList[i];
-                        var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name +")");
+                        var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name + ")");
                         templateIdSelect.append(option);
                     }
                 }
 
                 var content = $(htmlString);
 
-                var templateIdSelect = content.find('#'+context.panel_id+"_template_id");
+                var templateIdSelect = content.find('#' + context.panel_id + "_template_id");
 
                 populateTemplateIdSelect();
 
@@ -52,7 +52,7 @@ var TemplateEditor = (function () {
                         content: content,
                         callback: function (content) {
                             var templateId = templateIdSelect.val();
-                            $.getJSON("rest/repo/template/"+encodeURIComponent(templateId)).success(function(templateData) {
+                            $.getJSON("rest/repo/template/" + encodeURIComponent(templateId)).success(function (templateData) {
                                 //alert ("Loaded template: " + templateId);
                                 AOM.TemplateModel.createFromSerialized({
                                     archetypeRepository: my.archetypeRepository,
@@ -161,7 +161,15 @@ var TemplateEditor = (function () {
 
     };
 
-    my.saveCurrentTemplate = function (successCallback) {
+    my.saveCurrentTemplateWithNotification = function () {
+        my.saveCurrentTemplate(function () {
+            GuiUtils.alert({type: 'success', title: 'Template Saved'});
+        }, function (status) {
+            GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
+        })
+    };
+
+    my.saveCurrentTemplate = function (successCallback, errorCallback) {
         if (!my.templateModel) return;
 
         jQuery.ajax({
@@ -174,17 +182,17 @@ var TemplateEditor = (function () {
             'contentType': 'application/json',
             'data': JSON.stringify(my.templateModel.toSerializableForm())/*,
              'dataType': 'text'*/
-        }).success(function () {
+        }).done(function () {
             if (successCallback) {
                 successCallback();
             }
-        });
+        }).fail(function (jxhr) { GuiUtils.processAjaxError(jxhr, errorCallback)});
 
     };
 
     my.exportToOpt14 = function () {
 
-        my.saveCurrentTemplate(function() {
+        my.saveCurrentTemplate(function () {
             var templateId = my.templateModel.getRootArchetypeModel().getArchetypeId();
             var url = "rest/repo/export/opt/14/" + encodeURIComponent(templateId);
 
@@ -207,7 +215,7 @@ var TemplateEditor = (function () {
         }
 
 
-        my.templateModel=templateModel;
+        my.templateModel = templateModel;
 
         var targetElement = $('#archetype-editor-main-tabs-definition');
         my.Definition.show(templateModel, my.referenceModel, targetElement);
@@ -219,7 +227,7 @@ var TemplateEditor = (function () {
 
         var am = templateModel.getRootArchetypeModel();
         var templateName = am.getTermDefinitionText(am.data.definition.node_id);
-        document.title = templateName  + ' - Template Editor';
+        document.title = templateName + ' - Template Editor';
 
     };
 

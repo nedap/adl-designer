@@ -121,6 +121,39 @@ var GuiUtils = (function () {
         });
     };
 
+    my.processAjaxError = function(jxhr, errorCallback) {
+        if (!errorCallback) return;
+        var status={};
+
+        status.status=jxhr.status;
+        if (status.status===0) {
+            status.message="Server unreachable";
+        } else {
+            if (jxhr.responseText.length>0) {
+                var responseJson = JSON.parse(jxhr.responseText);
+                status.message = responseJson.message || jxhr.statusText;
+            }
+        }
+        errorCallback(status);
+
+    };
+
+    /**
+     *
+     * @param {object} options
+     * @param {string} options.type success|info|warning|error
+     * @param {string?} options.text Text to display
+     * @param {string?} options.title Title to display
+     */
+    my.alert = function(options) {
+        options.panel_id=my.generateId();
+
+
+        GuiUtils.applyTemplate("dialog-common|alert", options, function (html) {
+            html=$(html);
+            html.modal();
+        });
+    };
 
     my.openSimpleDialog = function (options) {
         var defaultOptions = {buttons: {"ok": "Ok"}, title: "Dialog"};
