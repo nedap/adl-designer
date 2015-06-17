@@ -46,8 +46,24 @@ var ArchetypeEditorTerminology = (function () {
                 var tableElement = html.find('#' + context.table_id);
                 tableElement.bootstrapTable({
                     data: data
+//                    onPostBody: function() {
+//    	              	tableElement.bootstrapTable('resetView', {
+//    	                  height: getBoostrapTableHeight(targetElement)
+//    	              	})
+//                    }
                 });
-
+                
+//                tableElement.on('load-success.bs.table', function() {
+//	                $(window).resize(function () {
+//	                	tableElement.bootstrapTable('resetView', {
+//	                      height: getBoostrapTableHeight()
+//	                  });
+//	              	});   
+//	              	tableElement.bootstrapTable('resetView', {
+//	                  height: getBoostrapTableHeight()
+//	              	});
+//								});
+                
                 tableElement.on('click-row.bs.table', function (e, row, $element) {
                     row.text = row.text + 'ABC';
                     my.openUpdateTermDefinitionDialog(archetypeModel, row.code, function () {
@@ -62,10 +78,21 @@ var ArchetypeEditorTerminology = (function () {
 
                 targetElement.empty();
                 targetElement.append(html);
-
+                
+                $(window).resize(function () {
+                	tableElement.bootstrapTable('resetView', {
+                      height: getBoostrapTableHeight(targetElement)
+                  });
+              	});                
             });
         };
-
+        
+        var getBoostrapTableHeight = function (targetElement) {
+        	var height = targetElement.find(".bootstrap-table").height();
+        	console.log("Table height: ", height + "px");
+          return height > 0 ? height : null;
+      	}
+        
         var createValueSetsTable = function (archetypeModel, targetElement) {
             var context = {
                 panel_id: GuiUtils.generateId()
@@ -92,9 +119,14 @@ var ArchetypeEditorTerminology = (function () {
 
                 var tableElement = html.find('#' + context.panel_id + "_table");
                 tableElement.bootstrapTable({
-                    data: data
+                    data: data,
+                    onPostBody: function() {
+    	              	tableElement.bootstrapTable('resetView', {
+    	                  height: getBoostrapTableHeight(targetElement)
+    	              	});
+                    }
                 });
-
+                
                 tableElement.on('click-row.bs.table', function (e, row, $element) {
                     my.openUpdateValueSetDialog(archetypeModel, row.code,
                         {},
@@ -129,7 +161,13 @@ var ArchetypeEditorTerminology = (function () {
 
                 targetElement.empty();
                 targetElement.append(html);
-
+                
+                $(window).resize(function () {
+                	tableElement.bootstrapTable('resetView', {
+                      height: getBoostrapTableHeight(targetElement)
+                  });
+              	});
+                
             });
         };
         var createExternalTerminologyTable = function (archetypeModel, targetElement) {
@@ -160,7 +198,12 @@ var ArchetypeEditorTerminology = (function () {
 
                 var tableElement = html.find('#' + context.panel_id + "_table");
                 tableElement.bootstrapTable({
-                    data: data
+                    data: data,
+                    onPostBody: function() {
+    	              	tableElement.bootstrapTable('resetView', {
+    	                  height: getBoostrapTableHeight(targetElement)
+    	              	});
+                    }
                 });
 
                 tableElement.on('click-row.bs.table', function (e, row, $element) {
@@ -179,6 +222,12 @@ var ArchetypeEditorTerminology = (function () {
 
                 targetElement.empty();
                 targetElement.append(html);
+                
+                $(window).resize(function () {
+                	tableElement.bootstrapTable('resetView', {
+                      height: getBoostrapTableHeight(targetElement)
+                  });
+              	});                
             });
         };
 
@@ -849,15 +898,36 @@ var ArchetypeEditorTerminology = (function () {
 
             GuiUtils.applyTemplate('terminology/main|mainTabs', context, function (html) {
                 html = $(html);
-
                 createTerminologyTerms(archetypeModel, html.find('#' + context.panel_id + '_nodes'), "id");
                 createTerminologyTerms(archetypeModel, html.find('#' + context.panel_id + '_terms'), "at");
                 createBindings(archetypeModel, html.find('#' + context.panel_id + '_bindings'));
                 createValueSetsTable(archetypeModel, html.find('#' + context.panel_id + '_value_sets'));
                 createExternalTerminologyTable(archetypeModel, html.find('#' + context.panel_id + '_external_terminologies'));
-
+//                html.find('a[href="#' + context.panel_id + '_nodes"]').on('show.bs.tab', function (e) {
+//                  var targetElement = html.find('#' + context.panel_id + '_nodes');
+//                  targetElement.find("table").bootstrapTable('resetView', {
+//                     height: getBoostrapTableHeight(targetElement)
+//          				});
+//              	});
                 mainTargetElement.append(html);
+                
+                html.find('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                  var curTab = $($(e.target).attr("href")); // activated tab
+                	curTab.find("table").bootstrapTable('resetView', {
+                     height: getBoostrapTableHeight(curTab)
+          				});
+                });                   
+                
             });
+            setTimeout(function() {
+            	var curTab = $('#' + context.panel_id + '_nodes');
+            	curTab.find("table.table").bootstrapTable('resetView', {
+                 height: getBoostrapTableHeight(curTab)
+      				});
+            }, 500);
+            
+            
+            
         };
 
         return my;

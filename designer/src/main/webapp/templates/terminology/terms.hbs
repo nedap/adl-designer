@@ -251,7 +251,7 @@
     <td>{{term.text}}</td>
     <td>{{binding}}</td>
     <td>
-        <div class="btn-group" role="group">
+        <div class="btn-group pull-right" role="group">
             <button type="button" data-action='edit' data-term='{{termId}}' class="btn btn-default" title="edit">
                 <span class="glyphicon glyphicon-edit"></span>
             </button>
@@ -265,67 +265,49 @@
 
 
 {>bindings/updateTermBindingDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label class="col-sm-4">Terminology</label>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label>Terminology</label></div>
+    <div class="properties-value"><p class="form-control-static">{{terminology}}</p></div>
+</div>
 
-        <div class="col-sm-8">
-            <p class="form-control-static">{{terminology}}</p>
-        </div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_term">Term</label></div>
+    <div class="properties-value">
+        {{#if create}}
+            <select id="{{panel_id}}_term" class="form-control">
+            </select>
+        {{else}}
+            <p class="form-control-static">{{term.text}}</p>
+        {{/if}}
     </div>
+</div>
 
-    <div class="form-group">
-        <label class="col-sm-4" for="{{panel_id}}_term">Term</label>
-
-        <div class="col-sm-8">
-            {{#if create}}
-                <select id="{{panel_id}}_term" class="form-control">
-                </select>
-            {{else}}
-                <p class="form-control-static">{{term.text}}</p>
-            {{/if}}
-        </div>
-
-    </div>
-
-    <div class="form-group">
-        <label class="col-sm-4" for="{{panel_id}}_binding">Binding</label>
-
-        <div class="col-sm-8">
-            <input id="{{panel_id}}_binding" class="form-control" value="{{binding}}"/>
-        </div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_binding">Binding</label></div>
+    <div class="properties-value">
+        <input id="{{panel_id}}_binding" class="form-control" value="{{binding}}"/>
     </div>
 </div>
 
 {>bindings/updateNodeBindingDialog}
-<div class="form-horizontal">
-    <div class="form-group">
-        <label class="col-sm-4">Terminology</label>
-
-        <div class="col-sm-8">
-            <p class="form-control-static">{{terminology}}</p>
-        </div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label>Terminology</label></div>
+    <div class="properties-value"><p class="form-control-static">{{terminology}}</p></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_term">Node</label></div>
+    <div class="properties-value">
+        {{#if create}}
+            <select id="{{panel_id}}_term" class="form-control">
+            </select>
+        {{else}}
+            <p class="form-control-static">{{term.text}}</p>
+        {{/if}}
     </div>
-
-    <div class="form-group">
-        <label class="col-sm-4" for="{{panel_id}}_term">Node</label>
-
-        <div class="col-sm-8">
-            {{#if create}}
-                <select id="{{panel_id}}_term" class="form-control">
-                </select>
-            {{else}}
-                <p class="form-control-static">{{term.text}}</p>
-            {{/if}}
-        </div>
-
-    </div>
-
-    <div class="form-group">
-        <label class="col-sm-4" for="{{panel_id}}_binding">Binding</label>
-
-        <div class="col-sm-8">
-            <input id="{{panel_id}}_binding" class="form-control" value="{{binding}}"/>
-        </div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_binding">Binding</label></div>
+    <div class="properties-value">
+        <input id="{{panel_id}}_binding" class="form-control" value="{{binding}}"/>
     </div>
 </div>

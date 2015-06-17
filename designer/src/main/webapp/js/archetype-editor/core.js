@@ -349,6 +349,11 @@ var ArchetypeEditor = (function () {
         function loadTerminology() {
             var targetElement = $('#archetype-editor-main-tabs-terminology');
             ArchetypeEditorTerminology.showTerminology(archetypeModel, targetElement);
+//            targetElement.find(".bootstrap-table").each(function(idx, el) {
+//							$(el).find("table").bootstrapTable('resetView', {
+//		            height: getBoostrapTableHeight($(el))
+//		        	});
+//						});
         }
 
         function loadDescription() {
@@ -376,9 +381,15 @@ var ArchetypeEditor = (function () {
 
         var archetypeName = my.archetypeModel.getTermDefinitionText(my.archetypeModel.data.definition.node_id);
         document.title = archetypeName  + ' - Archetype Editor';
+        
     };
 
-
+//    var getBoostrapTableHeight = function (targetElement) {
+//    	var height = targetElement.height();
+//    	console.log("Table height: ", height + "px");
+//      return height > 0 ? height : null;
+//  	}
+    
     my.addRmModule = function (module) {
         rmModules[module.name] = module;
     };
