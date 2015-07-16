@@ -394,6 +394,10 @@ var ArchetypeEditor = (function () {
         rmModules[module.name] = module;
     };
 
+    my.getRmModule = function(moduleName) {
+        return rmModules[moduleName];
+    }
+
     /**
      * Opens a dialog that enables creation of new terms
      * @param {ArchetypeModel} archetypeModel

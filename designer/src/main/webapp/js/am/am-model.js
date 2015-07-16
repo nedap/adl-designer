@@ -1329,6 +1329,10 @@ var AOM = (function () {
                 return data.archetype_id.value;
             };
 
+            self.getArchetypeLabel = function(language) {
+                return self.getTermDefinitionText(self.data.definition.node_id, language);
+            };
+
 
 
             self.parentArchetypeModel = parentArchetypeModel;

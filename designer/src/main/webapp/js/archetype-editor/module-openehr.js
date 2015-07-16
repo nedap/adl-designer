@@ -24,6 +24,197 @@
 
         self.name = "openEHR";
 
+
+        /**
+         * @param {AOM.ArchetypeModel} archetypeModel
+         * @param {string?} language to use
+         * @return {object} mindmap
+         */
+        self.convertToMindmap = function (archetypeModel, language) {
+            var itemStructSet = AmUtils.listToSet(['ITEM_TREE', 'ITEM_SINGLE', 'ITEM_LIST', 'ITEM_TABLE']);
+
+            function createProperty(obj) {
+                return {
+                    type: 'property',
+                    property: obj.property,
+                    label: obj.label || obj.property,
+                    value: obj.value
+                };
+            }
+
+            function createConstraint(cons) {
+                var rmType = cons.rm_type_name;
+                if (rmType==='ELEMENT') {
+                    var dvCons = AOM.AmQuery.get(cons, 'value');
+                    rmType=dvCons?dvCons.rm_type_name:'DATA_VALUE';
+                }
+                return {
+                    type: 'constraint',
+                    rmType: rmType,
+                    rmPath: archetypeModel.getRmPath(cons).toString(),
+                    label: archetypeModel.getTermDefinitionText(cons.node_id, language) || cons.rm_type_name
+                }
+            }
+
+
+            function createConstraints(rootConsAttr) {
+                var result = [];
+                if (!rootConsAttr) return result;
+
+                for (var i in rootConsAttr.children) {
+                    var cons = rootConsAttr.children[i];
+                    if (itemStructSet[cons.rm_type_name]) {
+                        var structItemsAttr = archetypeModel.getAttribute(cons, 'items');
+                        var structs = createConstraints(structItemsAttr);
+                        for (var j in structs) {
+                            result.push(structs[j]);
+                        }
+
+                    } else {
+                        var modelConstraint = createConstraint(cons);
+                        if (cons.rm_type_name == 'CLUSTER') {
+                            var clusterItemsAttr = archetypeModel.getAttribute(cons, 'items');
+                            modelConstraint.children = createConstraints(clusterItemsAttr);
+                        }
+                        result.push(modelConstraint);
+                    }
+                }
+                return result;
+            }
+
+            function createDescriptionSection() {
+
+                var section = {
+                    type: 'section',
+                    section: 'description',
+                    label: 'Description',
+                    children: []
+                };
+                var rdi = Stream(archetypeModel.data.description.details).filter(function (d) {
+                    return d.language.code_string == language
+                }).findFirst().get();
+
+                section.children.push(createProperty({property: 'purpose', value: rdi.purpose}));
+                section.children.push(createProperty({property: 'use', value: rdi.use}));
+                section.children.push(createProperty({property: 'misuse', value: rdi.misuse}));
+                section.children.push(createProperty({property: 'keywords', value: AmUtils.clone(rdi.keywords || [])}));
+                return section;
+            }
+
+            function createAttributionSection() {
+
+                function createTranslatorsValue(translations) {
+                    var result = {};
+                    Stream(translations).forEach(function (t) {
+                        result[t.language.code_string] = AmUtils.clone(t.author);
+                    });
+                    return result;
+                }
+
+                var section = {
+                    type: 'section',
+                    section: 'attribution',
+                    label: 'Attribution',
+                    children: []
+                };
+
+                var description = archetypeModel.data.description;
+                section.children.push(createProperty({
+                    property: 'original_author',
+                    value: AmUtils.clone(description.original_author),
+                    label: 'Original Author'
+                }));
+                section.children.push(createProperty({
+                    property: 'other_contributors',
+                    value: AmUtils.clone(description.other_contributors),
+                    label: 'Other Contributors'
+                }));
+
+                section.children.push(createProperty({
+                    property: 'translators',
+                    value: createTranslatorsValue(archetypeModel.data.translations),
+                    label: 'Translators'
+                }));
+
+
+                return section;
+
+            }
+
+            function createEventsSection() {
+                var events = {
+                    type: 'section',
+                    section: 'events',
+                    label: 'Events'
+                };
+
+                var dataCons = AOM.AmQuery.get(archetypeModel.data.definition, 'data');
+                var eventAttr = archetypeModel.getAttribute(dataCons, 'events');
+                events.children = createConstraints(eventAttr);
+                return events;
+
+            }
+
+            function createProtocolSection() {
+                var protocol = {
+                    type: 'section',
+                    section: 'protocol',
+                    label: 'Protocol'
+                };
+
+                var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
+                protocol.children = createConstraints(protocolAttr);
+                return protocol;
+
+            }
+
+            function createDataSection() {
+                var data = {
+                    type: 'section',
+                    section: 'data',
+                    label: 'Data'
+                };
+
+                var dataConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/data");
+                var dataCons = Stream(dataConses).filter(function (d) {
+                    return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
+                }).findFirst().get();
+                data.children = createConstraints(dataCons[".parent"]);
+                return data;
+
+            }
+
+            function createStateSection() {
+                var state = {
+                    type: 'section',
+                    section: 'state',
+                    label: 'State'
+                };
+
+                var stateConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/state");
+                var stateCons = Stream(stateConses).filter(function (d) {
+                    return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
+                }).findFirst().get();
+                state.children = createConstraints(stateCons[".parent"]);
+                return state;
+
+            }
+
+            language = language || archetypeModel.defaultLanguage;
+            var mindmap = {};
+            mindmap.archetypeId = archetypeModel.getArchetypeId();
+            mindmap.label = archetypeModel.getArchetypeLabel(language);
+            mindmap.children = [];
+            mindmap.children.push(createDescriptionSection());
+            mindmap.children.push(createAttributionSection());
+            mindmap.children.push(createEventsSection());
+            mindmap.children.push(createProtocolSection());
+            mindmap.children.push(createDataSection());
+            mindmap.children.push(createStateSection());
+
+            return mindmap;
+        };
+
         /**
          * Adds an attribute with a single constraint to a constraint
          * @param cons target constrain
@@ -50,6 +241,7 @@
             };
         };
         AmUtils.extend(CComplexObjectHandler, ArchetypeEditor.Modules.RmHandler);
+
 
         self.handlers = {};
         var DvQuantityHandler = function () {
@@ -1244,7 +1436,7 @@
                         }
                     } else {
                         var types = AmUtils.keys(dataValues.data).concat(AmUtils.keys(dataValues.aliases)).sort();
-                        var noConstraints = AOM.AmQuery.findAll(cons, "value").length===0;
+                        var noConstraints = AOM.AmQuery.findAll(cons, "value").length === 0;
                         for (var i in types) {
                             var rmType = types[i];
 
@@ -1457,7 +1649,7 @@
 
             handler.updateConstraint = function (stage, context, cons) {
                 if (context.isTemplateChoice) {
-                    var allMatch = Stream(context.values).allMatch({active:true});
+                    var allMatch = Stream(context.values).allMatch({active: true});
 
                     var valueAttr = stage.archetypeModel.getAttribute(cons, "value")
                         || stage.archetypeModel.addAttribute(cons, "value");
