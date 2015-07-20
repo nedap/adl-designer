@@ -44,9 +44,9 @@
 
             function createConstraint(cons) {
                 var rmType = cons.rm_type_name;
-                if (rmType==='ELEMENT') {
+                if (rmType === 'ELEMENT') {
                     var dvCons = AOM.AmQuery.get(cons, 'value');
-                    rmType=dvCons?dvCons.rm_type_name:'DATA_VALUE';
+                    rmType = dvCons ? dvCons.rm_type_name : 'DATA_VALUE';
                 }
                 return {
                     type: 'constraint',
@@ -82,14 +82,27 @@
                 return result;
             }
 
+            function createSection(section, label) {
+                return {
+                    type: 'section',
+                    section: section,
+                    label: label,
+                    children: []
+                }
+            }
+
+            function createConstraintsSection(section, label, consAttr) {
+                var result = createSection(section, label);
+                if (consAttr) {
+                    result.children = createConstraints(consAttr);
+                }
+                return result;
+            }
+
             function createDescriptionSection() {
 
-                var section = {
-                    type: 'section',
-                    section: 'description',
-                    label: 'Description',
-                    children: []
-                };
+                var section = createSection('description', 'Description');
+
                 var rdi = Stream(archetypeModel.data.description.details).filter(function (d) {
                     return d.language.code_string == language
                 }).findFirst().get();
@@ -98,6 +111,8 @@
                 section.children.push(createProperty({property: 'use', value: rdi.use}));
                 section.children.push(createProperty({property: 'misuse', value: rdi.misuse}));
                 section.children.push(createProperty({property: 'keywords', value: AmUtils.clone(rdi.keywords || [])}));
+
+
                 return section;
             }
 
@@ -111,12 +126,7 @@
                     return result;
                 }
 
-                var section = {
-                    type: 'section',
-                    section: 'attribution',
-                    label: 'Attribution',
-                    children: []
-                };
+                var section = createSection('attribution', 'Attribution');
 
                 var description = archetypeModel.data.description;
                 section.children.push(createProperty({
@@ -141,77 +151,164 @@
 
             }
 
-            function createEventsSection() {
-                var events = {
-                    type: 'section',
-                    section: 'events',
-                    label: 'Events'
-                };
 
-                var dataCons = AOM.AmQuery.get(archetypeModel.data.definition, 'data');
-                var eventAttr = archetypeModel.getAttribute(dataCons, 'events');
-                events.children = createConstraints(eventAttr);
-                return events;
+            function addObservationSections(target) {
+                function createProtocolSection() {
+                    var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
+                    return createConstraintsSection('protocol', 'Protocol', protocolAttr);
+                }
 
+                function createDataSection() {
+
+                    var dataConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/data");
+                    var dataCons = Stream(dataConses).filter(function (d) {
+                        return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
+                    }).findFirst().get();
+                    return createConstraintsSection('data', 'Data', dataCons[".parent"]);
+
+                }
+
+                function createStateSection() {
+                    var stateConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/state");
+                    var stateCons = Stream(stateConses).filter(function (d) {
+                        return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
+                    }).findFirst().get();
+                    return createConstraintsSection('state', 'State', stateCons[".parent"]);
+                }
+
+                function createEventsSection() {
+                    var dataCons = AOM.AmQuery.get(archetypeModel.data.definition, 'data');
+                    var eventAttr = archetypeModel.getAttribute(dataCons, 'events');
+                    return createConstraintsSection('events', 'Events', eventAttr);
+                }
+
+                target.push(createEventsSection());
+                target.push(createProtocolSection());
+                target.push(createDataSection());
+                target.push(createStateSection());
             }
 
-            function createProtocolSection() {
-                var protocol = {
-                    type: 'section',
-                    section: 'protocol',
-                    label: 'Protocol'
-                };
+            function addEvaluationSections(target) {
 
-                var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
-                protocol.children = createConstraints(protocolAttr);
-                return protocol;
+                function createDataSection() {
+                    var dataAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'data');
+                    return createConstraintsSection('data', 'Data', dataAttr);
+                }
 
+                function createProtocolSection() {
+                    var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
+                    return createConstraintsSection('protocol', 'Protocol', protocolAttr);
+                }
+
+                target.push(createDataSection());
+                target.push(createProtocolSection());
             }
 
-            function createDataSection() {
-                var data = {
-                    type: 'section',
-                    section: 'data',
-                    label: 'Data'
-                };
+            function addActionSections(target) {
+                function createProtocolSection() {
+                    var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
+                    return createConstraintsSection('protocol', 'Protocol', protocolAttr);
+                }
 
-                var dataConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/data");
-                var dataCons = Stream(dataConses).filter(function (d) {
-                    return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
-                }).findFirst().get();
-                data.children = createConstraints(dataCons[".parent"]);
-                return data;
+                function createPathwaySection() {
+                    var pathwayAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'ism_transition');
+                    return createConstraintsSection('pathway', 'Pathway', pathwayAttr);
+                }
 
+                target.push(createProtocolSection());
+                target.push(createPathwaySection());
             }
 
-            function createStateSection() {
-                var state = {
-                    type: 'section',
-                    section: 'state',
-                    label: 'State'
-                };
+            function addAdminSections(target) {
+                function createDataSection() {
+                    var dataAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'data');
+                    return createConstraintsSection('data', 'Data', dataAttr);
+                }
 
-                var stateConses = AOM.AmQuery.findAll(archetypeModel.data.definition, "/data/events/state");
-                var stateCons = Stream(stateConses).filter(function (d) {
-                    return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
-                }).findFirst().get();
-                state.children = createConstraints(stateCons[".parent"]);
-                return state;
+                target.push(createDataSection());
+            }
 
+            function addInstructionSections(target) {
+                function createProtocolSection() {
+                    var protocolAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'protocol');
+                    return createConstraintsSection('protocol', 'Protocol', protocolAttr);
+                }
+
+                function createActivitiesSection() {
+                    var activities = archetypeModel.getAttribute(archetypeModel.data.definition, 'activities');
+                    return createConstraintsSection('activities', 'Activities', activities);
+                }
+
+                target.push(createProtocolSection());
+                target.push(createActivitiesSection());
+            }
+
+            function addClusterSections(target) {
+                function createItemsSection() {
+                    var itemsAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'items');
+                    return createConstraintsSection('items', 'Items', itemsAttr);
+                }
+
+                target.push(createItemsSection());
+            }
+
+            function addCompositionSections(target) {
+                function createContentSection() {
+                    var contentAttr = archetypeModel.getAttribute(archetypeModel.data.definition, 'content');
+                    return createConstraintsSection('content', 'Content', contentAttr);
+                }
+
+                function createContextSection() {
+                    var context = AOM.AmQuery.get(archetypeModel.data.definition, 'context');
+                    if (context) {
+                        var otherContextAttr = archetypeModel.getAttribute(context, 'other_context');
+                        if (otherContextAttr) {
+                            return createConstraintsSection('context', 'Context', otherContextAttr);
+                        }
+                    }
+                    return undefined;
+                }
+
+                target.push(createContentSection());
+                target.push(createContextSection());
             }
 
             language = language || archetypeModel.defaultLanguage;
             var mindmap = {};
             mindmap.archetypeId = archetypeModel.getArchetypeId();
             mindmap.label = archetypeModel.getArchetypeLabel(language);
+            mindmap.rmType = archetypeModel.data.definition.rm_type_name;
             mindmap.children = [];
             mindmap.children.push(createDescriptionSection());
             mindmap.children.push(createAttributionSection());
-            mindmap.children.push(createEventsSection());
-            mindmap.children.push(createProtocolSection());
-            mindmap.children.push(createDataSection());
-            mindmap.children.push(createStateSection());
-
+            switch (mindmap.rmType) {
+                case "ACTION":
+                    addActionSections(mindmap.children);
+                    break;
+                case "ADMIN":
+                    addAdminSections(mindmap.children);
+                    break;
+                case "CLUSTER":
+                    addClusterSections(mindmap.children);
+                    break;
+                case "COMPOSITION":
+                    addCompositionSections(mindmap.children);
+                    break;
+                case "EVALUATION":
+                    addEvaluationSections(mindmap.children);
+                    break;
+                case "OBSERVATION":
+                    addObservationSections(mindmap.children);
+                    break;
+                case "INSTRUCTION":
+                    addInstructionSections(mindmap.children);
+                    break;
+                default:
+                    console.error("Unknown rmType: " + mindmap.rmType);
+            }
+            mindmap.children = Stream(mindmap.children).filter(function (d) {
+                return d !== undefined;
+            }).toArray();
             return mindmap;
         };
 
