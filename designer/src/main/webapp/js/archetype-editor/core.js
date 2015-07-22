@@ -24,6 +24,7 @@ var ArchetypeEditor = (function () {
     var rmModules = {};
 
 
+
     my.openLoadArchetypeDialog = function () {
         var loadArchetypeContext = {
             panel_id: GuiUtils.generateId(),
@@ -266,6 +267,8 @@ var ArchetypeEditor = (function () {
                 rm_type = rm_type.rm_type_name;
             }
         }
+
+        if (!rm_type) return undefined;
 
         referenceModel = referenceModel || my.referenceModel.name();
         var rmModule = rmModules[referenceModel];

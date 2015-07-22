@@ -480,6 +480,7 @@
                                                 return "Unit " + newUnit + " already exists";
                                             }
                                             var panel = {
+                                                active: true,
                                                 panel_id: GuiUtils.generateId(),
                                                 magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage),
                                                 units: newUnit,

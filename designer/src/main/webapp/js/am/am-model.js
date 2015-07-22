@@ -523,7 +523,7 @@ var AOM = (function () {
 
                 for (var i in attributeNames) {
                     var attributeName = attributeNames[i];
-                    var attribute = self.getAttribute(cons, attributeName);
+                    var attribute = AOM.AmQuery.get(cons, attributeName);
                     if (attribute) {
                         commonAttributes[attributeName] = attribute;
                         hasCommonAttributes = true;
@@ -1329,10 +1329,9 @@ var AOM = (function () {
                 return data.archetype_id.value;
             };
 
-            self.getArchetypeLabel = function(language) {
+            self.getArchetypeLabel = function (language) {
                 return self.getTermDefinitionText(self.data.definition.node_id, language);
             };
-
 
 
             self.parentArchetypeModel = parentArchetypeModel;
@@ -1569,6 +1568,10 @@ var AOM = (function () {
                 $.getJSON("rest/repo/list").success(function (data) {
                     self.state = "ok";
                     self.infoList = data;
+                    self.infoList.sort(function (a, b) {
+                        return a.archetypeId < b.archetypeId ? -1 :
+                            a.archetypeId > b.archetypeId ? 1 : 0;
+                    });
                     if (callback) callback(self);
                 }).error(function () {
                     self.state = "error";
