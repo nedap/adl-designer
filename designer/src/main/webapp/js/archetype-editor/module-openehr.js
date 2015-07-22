@@ -1299,7 +1299,7 @@
                         }
 
                         function updateVisibilityFromContext() {
-                            var tabsElement = generatedDom.find('#' + context.panel_id + "_tabs");
+                            var tabsElement = generatedDom.filter('#' + context.panel_id + "_tabs");
                             var numeratorElement = tabsElement.find('a[href="#' + context.numerator.panel_id + '"]');
                             var denominatorElement = tabsElement.find('a[href="#' + context.denominator.panel_id + '"]');
                             if (hasDenominator(context)) {
@@ -1318,7 +1318,6 @@
                                 context.kinds[kind] = checkbox.prop('checked');
                             }
                         }
-
 
                         generatedDom = $(generatedDom);
 
