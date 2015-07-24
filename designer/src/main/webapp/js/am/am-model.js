@@ -613,6 +613,13 @@ var AOM = (function () {
              */
             self.getParentConstraint = function (cons) {
                 if (!cons || !self.parentArchetypeModel) return undefined;
+                if (AOM.mixin(cons).isAttribute()) {
+                    var parent = cons[".parent"];
+                    var parentParent = self.getParentConstraint(parent);
+                    if (parentParent) {
+                        return self.parentArchetypeModel.getAttribute(parentParent, cons.rm_attribute_name);
+                    }
+                }
                 var rmPath = self.getRmPath(cons);
                 return my.AmQuery.get(self.parentArchetypeModel.data.definition, rmPath, {matchParent: true});
             };

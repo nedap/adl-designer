@@ -31,7 +31,7 @@ AOM = (function (AOM) {
             "@type": "C_ATTRIBUTE",
             rm_attribute_name: name,
             //existence: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL"),
-            children:[]
+            children: []
         };
     };
 
@@ -220,6 +220,22 @@ AOM = (function (AOM) {
 
         };
         return result;
+    };
+
+    my.newCardinality = function () {
+        return {
+            "@type": "CARDINALITY",
+            "is_ordered": true,
+            "is_unique": false,
+            "interval": {
+                "@type": "MULTIPLICITY_INTERVAL",
+                "lower_included": false,
+                "upper_included": false,
+                "lower_unbounded": true,
+                "upper_unbounded": true
+            }
+        }
+
     };
 
     return my;

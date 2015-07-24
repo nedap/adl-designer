@@ -35,6 +35,22 @@
     </div>
 </div>
 
+{>attributePanel}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active">
+        <a href="#{{panel_id}}_attribute_tab" data-toggle="tab">Attribute</a></li>
+    {{!--<li role="presentation"><a href="#{{panel_id}}_annotations_tab" data-toggle="tab">Annotations</a></li> --}}
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade active in panel panel-default" id="{{panel_id}}_attribute_tab">
+        <div class="panel-body horizontal-stretch" id="{{panel_id}}_attribute"></div>
+    </div>
+    {{!--<div role="tabpanel" class="tab-pane fade in panel panel-default" id="{{panel_id}}_annotations_tab">--}}
+        {{!--<div class="panel-body" id="{{panel_id}}_annotations"></div>--}}
+    {{!--</div>--}}
+</div>
+
+
 {>annotations}
 <div class="xcontainer-fluid">
     <div class="form-horizontal form-group">

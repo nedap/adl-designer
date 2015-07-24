@@ -361,21 +361,112 @@
                 })
             }
 
+            function showAttributeProperties(constraintData, targetElement) {
+
+                function disableIfSpecialized() {
+                    // add global handlers
+                    if (!specialized) {
+                        var dataElements = targetElement.find(".data");
+                        dataElements.prop("disabled", true);
+                        saveButton.prop('disabled', true);
+                    }
+                }
+
+                clearConstraints(targetElement);
+                var cons = constraintData.cons;
+                if (!cons) return;
+                var parentCons = archetypeModel.getParentConstraint(cons);
+                var specialized = archetypeModel.isSpecialized(cons);
+
+
+                handler = ArchetypeEditor.getRmTypeHandler('C_ATTRIBUTE', '');
+                var customDiv = $('<div class="container-fluid">');
+                targetElement.append(customDiv);
+
+                stage = createEmptyStage();
+                stage.readOnly = !specialized;
+                context = handler.createContext(stage, cons, parentCons);
+                addPropertiesPanelToStage(stage, context, handler, customDiv);
+                handler.show(stage, context, customDiv);
+
+                var errorsDiv = $('<div class="errors">');
+                targetElement.append(errorsDiv);
+
+
+                var footerDiv = $('<div class="footer">');
+                targetElement.append(footerDiv);
+
+                var footerContext = {
+                    footer_id: GuiUtils.generateId(),
+                    specialized: specialized
+                };
+
+                GuiUtils.applyTemplate("properties/constraint-common|footer", footerContext, footerDiv);
+
+                if (!specialized) {
+                    var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
+                    specializeButton.click(function () {
+                        specializeConstraint(archetypeModel, cons, constraintData.info, constraintData.treeNode);
+                    });
+                }
+
+                var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
+
+                disableIfSpecialized();
+                setTimeout(disableIfSpecialized, 100);
+
+
+                saveButton.click(function () {
+                    var errors = new AmUtils.Errors();
+
+                    handler.updateContext(stage, context, targetElement);
+                    handler.validate(stage, context, errors);
+                    errorsDiv.empty();
+                    if (errors.getErrors().length > 0) {
+                        var errorsContext = {errors: errors.getErrors()};
+                        GuiUtils.applyTemplate("properties/constraint-common|errors", errorsContext, errorsDiv);
+                        console.error("There were validation errors:", errors.getErrors());
+                        return;
+                    }
+
+                    console.debug("save changes from: ", cons);
+                    handler.updateConstraint(stage, context, cons, errors);
+                    console.debug("save changes to:   ", cons);
+
+                    archetypeModel.enrichReplacementConstraint(cons);
+                    constraintData.info.tree.styleNodes(constraintData.treeNode.id);
+
+                });
+            }
+
             self.show = function (constraintData) {
                 self.clear();
 
                 var context = {
                     panel_id: GuiUtils.generateId()
                 };
-                GuiUtils.applyTemplate('definition|constraintsPanel', context, function (html) {
-                    html = $(html);
-                    var constraintsTab = html.find('#' + context.panel_id + '_constraints');
-                    var annotationsTab = html.find('#' + context.panel_id + '_annotations');
-                    showConstraintProperties(constraintData, constraintsTab);
-                    showAnnotations(constraintData, annotationsTab);
+                if (constraintData.cons["@type"]==="C_ATTRIBUTE") {
+                    GuiUtils.applyTemplate('definition|attributePanel', context, function (html) {
+                        html = $(html);
+                        var attributeTab = html.find('#' + context.panel_id + '_attribute');
+                        //var annotationsTab = html.find('#' + context.panel_id + '_annotations');
+                        showAttributeProperties(constraintData, attributeTab);
+                        //showAnnotations(constraintData, annotationsTab);
 
-                    targetElement.append(html);
-                });
+                        targetElement.append(html);
+                    });
+
+                } else {
+                    GuiUtils.applyTemplate('definition|constraintsPanel', context, function (html) {
+                        html = $(html);
+                        var constraintsTab = html.find('#' + context.panel_id + '_constraints');
+                        var annotationsTab = html.find('#' + context.panel_id + '_annotations');
+                        showConstraintProperties(constraintData, constraintsTab);
+                        showAnnotations(constraintData, annotationsTab);
+
+                        targetElement.append(html);
+                    });
+                }
             }
 
         };
@@ -732,7 +823,7 @@
                 var constraintData = {
                     info: info,
                     treeNode: treeEvent.node,
-                    cons: data.cons
+                    cons: data.cons || data.attr
                 };
                 info.propertiesPanel.show(constraintData);
             });

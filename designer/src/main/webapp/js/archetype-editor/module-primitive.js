@@ -295,9 +295,16 @@
                 function updateInternalValueSet(valueSetSelect) {
                     valueSetSelect.empty();
                     var valueSets = stage.archetypeModel.data.terminology.value_sets;
+
+                    var option = $("<option>").attr("value", '').text('');
+                    if (!context.value_set_code || context.value_set_code.length === 0) {
+                        option.prop("selected", true);
+                    }
+
+                    valueSetSelect.append(option);
                     for (var valueSetId in valueSets) {
                         var term = stage.archetypeModel.getTermDefinition(valueSetId);
-                        var option = $("<option>").attr("value", valueSetId).text(term.text);
+                        option = $("<option>").attr("value", valueSetId).text(term.text);
                         if (valueSetId === context.value_set_code) {
                             option.prop("selected", true);
                         }
@@ -443,6 +450,7 @@
                     // internal panel
                     valueSetSelect.change(function () {
                         context.value_set_code = valueSetSelect.val();
+                        if (context.value_set_code.length === 0) context.value_set_code = undefined;
                         updateInternalAssumedValue(assumedValueSelect);
                     });
 
@@ -1001,6 +1009,133 @@
         };
         AmUtils.extend(CDateTimeHandler, PrimitiveRmHandler);
 
+
+        var CAttributeHandler = function () {
+            var handler = this;
+            PrimitiveRmHandler.call(handler);
+
+            handler.createContext = function (stage, cons, parentCons) {
+                cons = cons || {};
+                var context = handler.createCommonContext(stage, cons, parentCons);
+                context.type = 'C_ATTRIBUTE';
+                var parentRmType = stage.archetypeEditor.referenceModel.getType(cons[".parent"].rm_type_name);
+                var rmAttribute = parentRmType && parentRmType.attributes[cons.rm_attribute_name];
+
+                context.existenceMandatory = cons.existence.lower === 1;
+                context.existenceUpdatable = rmAttribute && rmAttribute.existence.lower === 0;
+                context.multiple = rmAttribute && rmAttribute.existence.upper === undefined;
+                if (context.multiple) {
+                    if (cons.cardinality) {
+                        context.cardinality = {
+                            ordered: cons.cardinality.is_ordered,
+                            unique: cons.cardinality.is_unique
+                        };
+                        if (cons.cardinality.interval) {
+                            context.cardinality.lower = cons.cardinality.lower || 0;
+                            context.cardinality.upperBounded = !cons.cardinality.interval.upper_unbounded;
+                            context.cardinality.upper = cons.cardinality.upper || 1;
+                        } else {
+                            context.cardinality.lower = 0;
+                            context.cardinality.upperBounded = false;
+                            context.cardinality.upper = 1;
+                        }
+                    } else {
+                        context.cardinality = {
+                            lower: 0,
+                            upperBounded: false,
+                            upper: 1,
+                            ordered: true,
+                            unique: false
+                        };
+                    }
+                }
+
+                return context;
+            };
+
+            handler.show = function (stage, context, targetElement) {
+                GuiUtils.applyTemplate("properties/constraint-primitive|C_ATTRIBUTE", context, function (html) {
+                    html = $(html);
+
+                    var existenceMandatory = html.find('#' + context.panel_id + "_existenceMandatory");
+
+                    existenceMandatory.prop('disabled', !context.existenceUpdatable);
+
+                    function updateCardinalityUpperBoundVisibility() {
+                        GuiUtils.setVisible(cardinalityUpperBound, !cardinalityUpperUnbounded.prop('checked'))
+                    }
+
+                    if (context.multiple) {
+                        var cardinalityOrdered = html.find('#' + context.panel_id + "_ordered");
+                        var cardinalityUnique = html.find('#' + context.panel_id + "_unique");
+                        var cardinalityLowerBound = html.find('#' + context.panel_id + "_lowerBound");
+                        var cardinalityUpperBound = html.find('#' + context.panel_id + "_upperBound");
+                        var cardinalityUpperUnbounded = html.find('#' + context.panel_id + "_upperUnbounded");
+
+                        cardinalityUpperUnbounded.on('change', updateCardinalityUpperBoundVisibility);
+                        cardinalityUpperUnbounded.prop('checked', !context.cardinality.upperBounded);
+                        updateCardinalityUpperBoundVisibility();
+                    }
+                    targetElement.append(html);
+
+                });
+            };
+
+            handler.updateContext = function (stage, context, targetElement) {
+                var existenceMandatory = targetElement.find('#' + context.panel_id + "_existenceMandatory");
+                context.existenceMandatory = existenceMandatory.val();
+
+                if (context.multiple) {
+                    var cardinalityOrdered = targetElement.find('#' + context.panel_id + "_ordered");
+                    var cardinalityUnique = targetElement.find('#' + context.panel_id + "_unique");
+                    var cardinalityLowerBound = targetElement.find('#' + context.panel_id + "_lowerBound");
+                    var cardinalityUpperBound = targetElement.find('#' + context.panel_id + "_upperBound");
+                    var cardinalityUpperUnbounded = targetElement.find('#' + context.panel_id + "_upperUnbounded");
+
+                    context.cardinality.ordered = cardinalityOrdered.prop('checked');
+                    context.cardinality.unique = cardinalityUnique.prop('checked');
+                    context.cardinality.lower = Number(cardinalityLowerBound.val());
+                    context.cardinality.upper = Number(cardinalityUpperBound.val());
+                    context.cardinality.upperBounded = !cardinalityUpperUnbounded.prop('checked');
+                }
+
+            };
+
+
+            handler.validate = function (stage, context, errors) {
+                if (context.multiple) {
+                    errors.validate(AmUtils.isInt(context.cardinality.lower), "Not a valid integer", "cardinality.lower");
+                    errors.validate(AmUtils.isInt(context.cardinality.upper), "Not a valid integer", "cardinality.upper");
+                    errors.validate(context.cardinality.lower >= 0, "Must not be negative", "cardinality.lower");
+                    if (context.cardinality.upperBounded) {
+                        errors.validate(context.cardinality.lower < context.cardinality.upper,
+                            "Lower bound greater than upper bound", "cardinality");
+                    }
+                }
+
+            };
+
+            handler.updateConstraint = function (stage, context, cons) {
+                if (context.existenceUpdatable) {
+                    if (context.existenceMandatory) {
+                        cons.existence = AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL");
+                    } else {
+                        cons.existence = AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL");
+                    }
+                }
+                if (context.multiple) {
+                    cons.cardinality = AOM.newCardinality();
+                    cons.cardinality.is_ordered = context.cardinality.ordered;
+                    cons.cardinality.is_unique = context.cardinality.unique;
+                    cons.cardinality.interval = AmInterval.of(context.cardinality.lower,
+                        context.cardinality.upperBounded ? context.cardinality.upper : undefined,
+                        "MULTIPLICITY_INTERVAL");
+                }
+            }
+        };
+        AmUtils.extend(CAttributeHandler, PrimitiveRmHandler);
+
+
         self.handlers = {};
         self.handlers["C_REAL"] = new CRealHandler();
         self.handlers["C_INTEGER"] = new CIntegerHandler();
@@ -1010,8 +1145,11 @@
         self.handlers["C_DATE_TIME"] = new CDateTimeHandler();
         self.handlers['C_DATE'] = self.handlers['C_DATE_TIME'];
         self.handlers['C_TIME'] = self.handlers['C_DATE_TIME'];
+        self.handlers['C_ATTRIBUTE'] = new CAttributeHandler();
 
     };
 
     ArchetypeEditor.addRmModule(new PrimitiveModule());
-}(ArchetypeEditor || {}) );
+}(ArchetypeEditor || {})
+)
+;

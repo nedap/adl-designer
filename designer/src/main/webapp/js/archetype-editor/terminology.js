@@ -89,7 +89,6 @@ var ArchetypeEditorTerminology = (function () {
         
         var getBoostrapTableHeight = function (targetElement) {
         	var height = targetElement.find(".bootstrap-table").height();
-        	console.log("Table height: ", height + "px");
           return height > 0 ? height : null;
       	}
         
