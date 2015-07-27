@@ -48,12 +48,17 @@
                     var dvCons = AOM.AmQuery.get(cons, 'value');
                     rmType = dvCons ? dvCons.rm_type_name : 'DATA_VALUE';
                 }
-                return {
+                var result = {
                     type: 'constraint',
                     rmType: rmType,
                     rmPath: archetypeModel.getRmPath(cons).toString(),
-                    label: archetypeModel.getTermDefinitionText(cons.node_id, language) || cons.rm_type_name
+                    label: archetypeModel.getTermDefinitionText(cons.node_id, language) || cons.rm_type_name,
+                };
+                if (result.rmType === "CLUSTER") {
+                    result.canAddChildren = true;
                 }
+                result.canDelete = true;
+                return result;
             }
 
 
@@ -96,6 +101,7 @@
                 if (consAttr) {
                     result.children = createConstraints(consAttr);
                 }
+                result.canAddChildren=true;
                 return result;
             }
 
@@ -165,7 +171,6 @@
                         return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
                     }).findFirst().get();
                     return createConstraintsSection('data', 'Data', dataCons[".parent"]);
-
                 }
 
                 function createStateSection() {
@@ -179,7 +184,9 @@
                 function createEventsSection() {
                     var dataCons = AOM.AmQuery.get(archetypeModel.data.definition, 'data');
                     var eventAttr = archetypeModel.getAttribute(dataCons, 'events');
-                    return createConstraintsSection('events', 'Events', eventAttr);
+                    var result = createConstraintsSection('events', 'Events', eventAttr);
+                    result.children[0].canDelete = false; // disallow top
+                    return result;
                 }
 
                 target.push(createEventsSection());
