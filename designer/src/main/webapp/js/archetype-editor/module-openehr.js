@@ -132,7 +132,7 @@
                     var result = createSection(section, label);
                     if (consAttr) {
                         result.children = createConstraints(consAttr);
-                        if (!cons && consAttr.children && consAttr.children.length===1) {
+                        if (!cons && consAttr.children && consAttr.children.length === 1) {
                             cons = consAttr.children[0];
                         }
                         if (cons) {
@@ -392,19 +392,21 @@
 
             mindmap.getValidRmTypesForConstraintChild = function (rmPath) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
-                if (cons.rm_type_name === "CLUSTER") {
+                if (cons.rm_type_name === "CLUSTER" || cons.rm_type_name === "ITEM_TREE") {
                     var result = AmUtils.clone(validDvTypes);
                     result.push("CLUSTER");
                     return result;
                 }
-                else {
-                    return [cons.rm_type_name];
+                else if (cons.rm_type_name === "HISTORY") {
+                    return ["EVENT", "POINT_EVENT", "INTERVAL_EVENT"];
+                } else {
+                    return [];
                 }
             };
 
             mindmap.createConstraintChild = function (parentRmPath) {
                 var parentCons = AOM.AmQuery.get(options.archetypeModel.data.definition, parentRmPath);
-                if (!parentCons || ["ITEM_TREE", "CLUSTER"].indexOf(parentCons.rm_type_name) === -1) return false;
+                if (!parentCons) return false;
 
                 var validChildTypes = mindmap.getValidRmTypesForConstraintChild(parentRmPath);
 
@@ -446,12 +448,12 @@
                 }
 
                 // remove all sub constraints
-                var consAttributes=cons.attributes || [];
+                var consAttributes = cons.attributes || [];
                 for (var i in consAttributes) {
                     var attr = consAttributes[i];
                     options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
                 }
-                cons.rm_type_name=rmType;
+                cons.rm_type_name = rmType;
             }
 
 
