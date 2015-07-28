@@ -128,12 +128,14 @@
                     }
                 }
 
-                function createConstraintsSection(section, label, consAttr) {
+                function createConstraintsSection(section, label, consAttr, cons) {
                     var result = createSection(section, label);
                     if (consAttr) {
                         result.children = createConstraints(consAttr);
-                        if (consAttr.children && consAttr.children.length===1) {
-                            var cons = consAttr.children[0];
+                        if (!cons && consAttr.children && consAttr.children.length===1) {
+                            cons = consAttr.children[0];
+                        }
+                        if (cons) {
                             result.rmPath = options.archetypeModel.getRmPath(cons).toString();
                             result.rmType = cons.rm_type_name;
                         }
@@ -224,7 +226,7 @@
                     function createEventsSection() {
                         var dataCons = AOM.AmQuery.get(options.archetypeModel.data.definition, 'data');
                         var eventAttr = options.archetypeModel.getAttribute(dataCons, 'events');
-                        var result = createConstraintsSection('events', 'Events', eventAttr);
+                        var result = createConstraintsSection('events', 'Events', eventAttr, dataCons);
                         result.children[0].canDelete = false; // disallow top
                         return result;
                     }
@@ -436,8 +438,9 @@
                 }
 
                 // remove all sub constraints
-                for (var i in cons.attributes || []) {
-                    var attr = cons.attributes[i];
+                var consAttributes=cons.attributes || [];
+                for (var i in consAttributes) {
+                    var attr = consAttributes[i];
                     options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
                 }
                 cons.rm_type_name=rmType;
