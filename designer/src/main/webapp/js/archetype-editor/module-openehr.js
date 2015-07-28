@@ -398,7 +398,7 @@
                     return result;
                 }
                 else {
-                    return [];
+                    return [cons.rm_type_name];
                 }
             };
 
@@ -426,6 +426,14 @@
             mindmap.renameConstraint = function (rmPath, text) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
                 options.archetypeModel.setTermDefinition(cons.node_id, options.language, text);
+
+            };
+
+            mindmap.removeConstraint = function (rmPath) {
+                var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
+                if (!cons) return false;
+                options.archetypeModel.removeConstraint(cons);
+                return true;
 
             };
 
