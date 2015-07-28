@@ -47,16 +47,54 @@
 
     <script>
         $().ready(function () {
-            function convertArchetype(archetypeModel) {
-                var openEHR = ArchetypeEditor.getRmModule('openEHR');
+            var mindmapOptions = {};
 
-                var mindmap = openEHR.convertToMindmap(archetypeModel);
+            var latch = new CountdownLatch(2);
+
+
+            ArchetypeEditor.loadArchetype('openEHR-EHR-OBSERVATION.blood_pressure.v1.0.0', function(archetypeModel) {
+                mindmapOptions.archetypeModel=archetypeModel;
+                latch.countDown();
+            });
+
+
+            mindmapOptions.referenceModel=new AOM.ReferenceModel(latch.countDown);
+
+            latch.execute(convertArchetype);
+
+
+            function convertArchetype() {
+                var openEHR = ArchetypeEditor.getRmModule('openEHR');
+                var mindmapModel = new openEHR.MindmapModel(mindmapOptions);
+
+                var mindmap = mindmapModel.convertToMindmap();
 
                 $('body pre').text(JSON.stringify(mindmap, null, 4));
                 console.log(mindmap);
+
+
+
+                console.log("constraint rm types",
+                        mindmapModel.getValidRmTypesForConstraint("/data[id2]/events[id7]/state[id8]/items[id1053]"));
+                console.log("event rm types",
+                        mindmapModel.getValidRmTypesForConstraint("/data[id2]/events[id7]"));
+
+                console.log("constraint child rm types empty",
+                        mindmapModel.getValidRmTypesForConstraintChild("/data[id2]/events[id7]/state[id8]/items[id1053]"));
+                console.log("constraint child rm types all",
+                        mindmapModel.getValidRmTypesForConstraintChild("/protocol[id12]/items[id1034]"));
+
+
+                var newItem = mindmapModel.createConstraintChild("/protocol[id12]/items[id1034]");
+
+                mindmapModel.renameConstraint(newItem.rmPath, "New Text");
+                mindmapModel.changeConstraintType(newItem.rmPath, "DV_CODED_TEXT");
+
+                mindmap = mindmapModel.convertToMindmap();
+
+                $('body pre').text(JSON.stringify(mindmap, null, 4));
             }
 
-            ArchetypeEditor.loadArchetype('openEHR-EHR-CLUSTER.ambient_oxygen.v1.0.0', convertArchetype);
         });
     </script>
 </head>
