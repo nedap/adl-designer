@@ -132,6 +132,11 @@
                     var result = createSection(section, label);
                     if (consAttr) {
                         result.children = createConstraints(consAttr);
+                        if (consAttr.children && consAttr.children.length===1) {
+                            var cons = consAttr.children[0];
+                            result.rmPath = options.archetypeModel.getRmPath(cons).toString();
+                            result.rmType = cons.rm_type_name;
+                        }
                     }
                     result.canAddChildren = true;
                     return result;
@@ -363,6 +368,9 @@
                 if (cons.rm_type_name === "CLUSTER") {
                     return [cons.rm_type_name];
                 }
+                if (itemStructSet[cons.rm_type_name]) {
+                    return [cons.rm_type_name];
+                }
                 if (cons[".parent"]) {
                     var parentAttr = cons[".parent"];
                     var parentCons = parentAttr[".parent"];
@@ -370,7 +378,7 @@
                     if (rmType) {
                         var rmAttr = rmType.attributes[parentAttr.rm_attribute_name];
                         if (rmAttr) {
-                            return options.referenceModel.getSubclassTypes(rmAttr.type);
+                            return options.referenceModel.getSubclassTypes(rmAttr.type, true);
                         }
                     }
 
