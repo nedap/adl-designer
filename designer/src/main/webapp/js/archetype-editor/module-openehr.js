@@ -84,7 +84,7 @@
                         type: 'constraint',
                         rmType: rmType,
                         rmPath: options.archetypeModel.getRmPath(cons).toString(),
-                        label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name,
+                        label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name
                     };
                     if (result.rmType === "CLUSTER") {
                         result.canAddChildren = true;
@@ -459,7 +459,7 @@
                 if (parentCons.rm_type_name === "HISTORY") {
                     cons = addEventConstraint(parentCons);
                 } else {
-                    cons = AOM.newConstraint(validChildTypes[0]);
+                    cons = AOM.newCComplexObject(validChildTypes[0]);
                     cons.node_id = options.archetypeModel.addNewTermDefinition("id", cons.rm_type_name);
                     var attr = options.archetypeModel.getAttribute(parentCons, "items");
                     if (!attr) {

@@ -1406,10 +1406,16 @@ var AOM = (function () {
                 var cDataHistory = AOM.newCComplexObject("HISTORY", archetypeModel.generateSpecializedTermId("id"));
                 archetypeModel.addConstraint(aObservationData, cDataHistory);
                 var aHistoryEvents = archetypeModel.addAttribute(cDataHistory, "events");
-                var cEventsAny = AOM.newCComplexObject("EVENT", archetypeModel.generateSpecializedTermId("id"));
+                var cEventsAny = AOM.newCComplexObject("EVENT", archetypeModel.addNewTermDefinition("id", "Any event"));
                 archetypeModel.addConstraint(aHistoryEvents, cEventsAny);
-                archetypeModel.setTermDefinition(cEventsAny.node_id, undefined, "Any event");
-                archetypeModel.addAttribute(cEventsAny, "data");
+
+                var aEventData = archetypeModel.addAttribute(cEventsAny, "data");
+                var cEventData = AOM.newCComplexObject("ITEM_TREE", archetypeModel.generateSpecializedTermId("id"));
+                archetypeModel.addConstraint(aEventData, cEventData);
+
+                var aEventState = archetypeModel.addAttribute(cEventsAny, "state");
+                var cEventState = AOM.newCComplexObject("ITEM_TREE", archetypeModel.generateSpecializedTermId("id"));
+                archetypeModel.addConstraint(aEventState, cEventState);
             }
 
             function fillComposition() {
@@ -1457,6 +1463,7 @@ var AOM = (function () {
                     "original_author": {},
                     "lifecycle_state": "unmanaged",
                     "other_details": {},
+                    "copyright": "",
                     "details": [{
                         "@type": "RESOURCE_DESCRIPTION_ITEM",
                         "language": {
@@ -1468,7 +1475,6 @@ var AOM = (function () {
                             "code_string": options.language
                         },
                         "purpose": "",
-                        "copyright": "",
                         "keywords": [],
                         "original_resource_uri": {},
                         "other_details": {}
