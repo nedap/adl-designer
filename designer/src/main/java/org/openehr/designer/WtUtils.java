@@ -20,6 +20,15 @@
 
 package org.openehr.designer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -28,6 +37,36 @@ import java.util.function.Predicate;
  * @author Marko Pipan
  */
 public class WtUtils {
+    private static DocumentBuilder documentBuilder;
+    public static final Logger LOG = LoggerFactory.getLogger(WtUtils.class);
+
+
+    static {
+        try {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (Exception e) {
+            LOG.error("Error initializing document builder", e);
+        }
+    }
+
+    public static DocumentBuilder defaultDocumentBuilder() {
+        return documentBuilder;
+    }
+
+    public static List<Element> children(Element parent) {
+        List<Element> result = new ArrayList<>();
+        NodeList childNodes = parent.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                result.add((Element) node);
+            }
+        }
+        return result;
+    }
+
     public static String overrideNodeId(String nodeId) {
         if (nodeId == null) return null;
         return nodeId + ".1";

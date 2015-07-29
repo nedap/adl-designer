@@ -42,6 +42,7 @@
 
 
     <bean id="wtResource" class="org.openehr.designer.web.WtResourceImpl"/>
+    <bean id="wtSupport" class="org.openehr.designer.web.WtSupportImpl"/>
 
 
 </beans>

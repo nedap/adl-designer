@@ -29,6 +29,8 @@
     <context:annotation-config/>
     <context:property-placeholder location="classpath:config.properties"/>
 
+    <bean class="org.openehr.designer.spring.SupportConfiguration"/>
+
     <bean id="rmModel" class="org.openehr.adl.rm.OpenEhrRmModel"/>
 
     <bean id="optBuilder" class="org.openehr.designer.io.opt.OptBuilder"
@@ -41,6 +43,7 @@
             p:repositoryLocation="${template.repository.location}"
             p:rmModel-ref="rmModel"
             />
+
 
 
 </beans>
