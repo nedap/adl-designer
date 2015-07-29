@@ -356,10 +356,26 @@ var AmUtils = function () {
     my.Predicates = {
         isTruthy: function (d) {
             return d;
+        },
+
+        Factories: {
+            // factories
+            not: function (predicate) {
+                return function (d) {
+                    return !predicate(d);
+                }
+            },
+
+            consIsAmType: function (amType) {
+                return function(d) {
+                    return d && (d["@type"]===amType);
+                }
+            }
+
         }
     };
 
-    my.extractParametersFromUrl = function(url) {
+    my.extractParametersFromUrl = function (url) {
         var queryStringIndex = url.indexOf('?');
         if (queryStringIndex < 0) {
             return {};
@@ -378,7 +394,6 @@ var AmUtils = function () {
         });
         return params;
     };
-
 
 
     return my;

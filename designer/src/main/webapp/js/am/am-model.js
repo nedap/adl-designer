@@ -1600,18 +1600,29 @@ var AOM = (function () {
             self.reload(callback);
         };
 
+        /**
+         * Creates a new reference model
+         *
+         * @param {function|object} callback callback when loading is completed or preloaded reference model (for testing)
+         * @constructor
+         */
         my.ReferenceModel = function (callback) {
             var self = this;
             self.state = undefined;
 
+            if (typeof "callback"==="object") {
+                self.state="ok";
+                self.model=callback;
+            } else {
+                $.getJSON("rest/repo/rm/openEHR/1.0.2").success(function (data) {
+                    self.state = "ok";
+                    self.model = data;
+                    callback(self);
+                }).error(function () {
+                    self.state = "error";
+                });
 
-            $.getJSON("rest/repo/rm/openEHR/1.0.2").success(function (data) {
-                self.state = "ok";
-                self.model = data;
-                callback(self);
-            }).error(function () {
-                self.state = "error";
-            });
+            }
 
 
             self.name = function () {

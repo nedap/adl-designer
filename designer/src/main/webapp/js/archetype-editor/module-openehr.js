@@ -405,24 +405,73 @@
             };
 
             mindmap.createConstraintChild = function (parentRmPath) {
+                function addEventConstraint(parentCons) {
+                    function isNotArchetypeInternalRef (d) {
+                        return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
+                    }
+
+                    var dataCons = Stream(AOM.AmQuery.findAll(parentCons, "events/data")).filter(isNotArchetypeInternalRef)
+                        .findFirst().get();
+                    var stateCons = Stream(AOM.AmQuery.findAll(parentCons, "events/state")).filter(isNotArchetypeInternalRef)
+                        .findFirst().get();
+
+                    var newCons = AOM.newConstraint("EVENT", options.archetypeModel.addNewTermDefinition("id", "EVENT"));
+                    newCons.attributes = [
+                        {
+                            "@type": "C_ATTRIBUTE",
+                            "rm_attribute_name": "data",
+                            "existence": AmInterval.of(1, 1),
+                            "is_multiple": false,
+                            "match_negated": false,
+                            "children": [{
+                                "@type": "ARCHETYPE_INTERNAL_REF",
+                                "target_path": options.archetypeModel.getRmPath(dataCons),
+                                "occurrences": AmInterval.of(1, 1),
+                                "rm_type_name": "ITEM_TREE",
+                                "node_id": options.archetypeModel.generateSpecializedTermId("id")
+                            }]
+                        },
+                        {
+                            "@type": "C_ATTRIBUTE",
+                            "rm_attribute_name": "state",
+                            "existence": AmInterval.of(1, 1),
+                            "is_multiple": false,
+                            "match_negated": false,
+                            "children": [{
+                                "@type": "ARCHETYPE_INTERNAL_REF",
+                                "target_path": options.archetypeModel.getRmPath(stateCons),
+                                "occurrences": AmInterval.of(1, 1),
+                                "rm_type_name": "ITEM_TREE",
+                                "node_id": options.archetypeModel.generateSpecializedTermId("id")
+                            }]
+                        }
+                    ];
+                    options.archetypeModel.addConstraint(options.archetypeModel.getAttribute(parentCons, "events"), newCons);
+                    return newCons;
+                }
+
                 var parentCons = AOM.AmQuery.get(options.archetypeModel.data.definition, parentRmPath);
                 if (!parentCons) return false;
 
                 var validChildTypes = mindmap.getValidRmTypesForConstraintChild(parentRmPath);
 
-                var cons = AOM.newConstraint(validChildTypes[0]);
-                cons.node_id = options.archetypeModel.addNewTermDefinition("id", cons.rm_type_name);
-
-                var attr = options.archetypeModel.getAttribute(parentCons, "items");
-                if (!attr) {
-                    attr = options.archetypeModel.addAttribute(parentCons, "items");
+                var cons;
+                if (parentCons.rm_type_name === "HISTORY") {
+                    cons = addEventConstraint(parentCons);
+                } else {
+                    cons = AOM.newConstraint(validChildTypes[0]);
+                    cons.node_id = options.archetypeModel.addNewTermDefinition("id", cons.rm_type_name);
+                    var attr = options.archetypeModel.getAttribute(parentCons, "items");
+                    if (!attr) {
+                        attr = options.archetypeModel.addAttribute(parentCons, "items");
+                    }
+                    options.archetypeModel.addConstraint(attr, cons);
                 }
-                options.archetypeModel.addConstraint(attr, cons);
-
                 return {
                     rmPath: options.archetypeModel.getRmPath(cons).toString(),
                     rmType: cons.rm_type_name
                 }
+
             };
 
             mindmap.renameConstraint = function (rmPath, text) {

@@ -74,24 +74,11 @@
 
 
 
-                console.log("constraint rm types",
-                        mindmapModel.getValidRmTypesForConstraint("/data[id2]/events[id7]/state[id8]/items[id1053]"));
-                console.log("event rm types",
-                        mindmapModel.getValidRmTypesForConstraint("/data[id2]/events[id7]"));
+                var newTerm = mindmapModel.createConstraintChild("/data[id2]");
+                console.log("New term", newTerm);
 
-                console.log("constraint child rm types empty",
-                        mindmapModel.getValidRmTypesForConstraintChild("/data[id2]/events[id7]/state[id8]/items[id1053]"));
-                console.log("constraint child rm types all",
-                        mindmapModel.getValidRmTypesForConstraintChild("/protocol[id12]/items[id1034]"));
-
-
-                var newItem = mindmapModel.createConstraintChild("/protocol[id12]/items[id1034]");
-
-                mindmapModel.renameConstraint(newItem.rmPath, "New Text");
-                mindmapModel.changeConstraintType(newItem.rmPath, "DV_CODED_TEXT");
 
                 mindmap = mindmapModel.convertToMindmap();
-
                 $('body pre').text(JSON.stringify(mindmap, null, 4));
             }
 
