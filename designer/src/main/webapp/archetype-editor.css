@@ -544,7 +544,7 @@ ul.dropdown-menu-form {
 .openehr-rm-icon.cluster { background: url("images/icons/cluster.png") no-repeat !important; }
 .openehr-rm-icon.composition { background: url("images/icons/composition.png") no-repeat !important; }
 .openehr-rm-icon.dv_boolean { background: url("images/icons/dv_boolean.png") no-repeat !important; }
-.openehr-rm-icon.dv_coded_text { background: url("images/icons/dv_coded_text.png") no-repeat !important; }
+.openehr-rm-icon.dv_coded_text { background: url("images/icons/dv_text.png") no-repeat !important; }
 .openehr-rm-icon.dv_count { background: url("images/icons/dv_count.png") no-repeat !important; }
 .openehr-rm-icon.dv_date { background: url("images/icons/dv_date.png") no-repeat !important; }
 .openehr-rm-icon.dv_date_time { background: url("images/icons/dv_date_time.png") no-repeat !important; }
