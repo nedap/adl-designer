@@ -21,6 +21,16 @@
 {>DV_QUANTITY}
 <div class="horizontal-stretch">
     <div class="row properties-line">
+        <div class="properties-label"><label for="{{units_id}}">Property</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item input-group">
+                <select id="{{panel_id}}_property" class="form-control input-sm data archetype-only">
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row properties-line">
       <div class="properties-label"><label for="{{units_id}}">Units</label></div>
       <div class="properties-value">
         {{#if isTemplate}}

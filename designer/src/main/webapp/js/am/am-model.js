@@ -333,6 +333,14 @@ var AOM = (function () {
                 return td && td.text;
             };
 
+            self.getTermBinding = function (terminology, node_id) {
+                return (data.terminology
+                && data.terminology.term_bindings
+                && data.terminology.term_bindings[terminology]
+                && data.terminology.term_bindings[terminology][node_id]);
+            };
+
+
             /**
              * Exports all term definitions for a single node_id. Target term nodes are in format
              * result[language] = {text:..., description=...}. Changes to the result do not result in changes to the
@@ -506,9 +514,23 @@ var AOM = (function () {
                 return result;
             };
 
-            self.getAttribute = function (cons, attributeName) {
-                if (!cons.attributes) return undefined;
-                return Stream(cons.attributes).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
+            /**
+             * Gets an attribute of a given name on a constraint.
+             *
+             * @param {object} cons
+             * @param {string} attributeName
+             * @param {boolean?} autoCreate Should the attribute be autocreated if not found
+             * @return {object|undefined} Found attribute, or undefined if not found and autoCreate=false
+             */
+            self.getAttribute = function (cons, attributeName, autoCreate) {
+                var attr = Stream(cons.attributes || []).filter({rm_attribute_name: attributeName}).findFirst().orElse(undefined);
+                if (attr) return attr;
+                if (autoCreate) {
+                    return self.addAttribute(cons, attributeName);
+                } else {
+                    return undefined;
+                }
+
             };
 
             /**
@@ -1616,9 +1638,9 @@ var AOM = (function () {
             var self = this;
             self.state = undefined;
 
-            if (typeof "callback"==="object") {
-                self.state="ok";
-                self.model=callback;
+            if (typeof "callback" === "object") {
+                self.state = "ok";
+                self.model = callback;
             } else {
                 $.getJSON("rest/repo/rm/openEHR/1.0.2").success(function (data) {
                     self.state = "ok";
@@ -1690,6 +1712,18 @@ var AOM = (function () {
                 }
                 return result;
             };
+        };
+
+        my.UnitsModel = function (unitProperties) {
+            var self = this;
+
+            self.getPropertyFromOpenEhrId = function (openEhrId) {
+                return Stream(self.data).filter(function (d) {
+                    return d.openEhrId === openEhrId;
+                }).findFirst().orElse(undefined);
+            };
+
+            self.data = unitProperties;
         };
 
 

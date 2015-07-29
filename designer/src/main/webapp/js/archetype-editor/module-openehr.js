@@ -406,7 +406,7 @@
 
             mindmap.createConstraintChild = function (parentRmPath) {
                 function addEventConstraint(parentCons) {
-                    function isNotArchetypeInternalRef (d) {
+                    function isNotArchetypeInternalRef(d) {
                         return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
                     }
 
@@ -542,7 +542,10 @@
             var handler = this;
             CComplexObjectHandler.call(handler);
 
+            var propertyNotSetEhrId = "118";
+
             handler.createContext = function (stage, cons, parentCons) {
+
 
                 function createPanel(tupleConstraint, parentTupleConstraint) {
                     var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL");
@@ -550,6 +553,7 @@
 
                     var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
                     tupleConstraint.precision.list.length > 0);
+
 
                     var panel = {
                         panel_id: GuiUtils.generateId(),
@@ -562,6 +566,18 @@
 
                 }
 
+                function extractPropertyOpenEhrId() {
+                    var propertyCons = AOM.AmQuery.get(cons, "property");
+                    if (!propertyCons) return undefined;
+                    if (!propertyCons || !propertyCons.code_list || propertyCons.code_list.length !== 1) return undefined;
+
+                    var atCode = propertyCons.code_list[0];
+                    var tb = stage.archetypeModel.getTermBinding("openehr", atCode);
+                    if (!tb) return undefined;
+                    var openEhrId = tb.substring(tb.lastIndexOf('/') + 1);
+                    return openEhrId;
+                }
+
                 var tupleConstraints = stage.archetypeModel.getAttributesTuple(cons, ["units", "magnitude", "precision"]);
                 var parentTupleConstraints = parentCons
                     ? stage.archetypeModel.parentArchetypeModel.getAttributesTuple(parentCons, ["units", "magnitude", "precision"])
@@ -572,6 +588,7 @@
                 context.units_id = GuiUtils.generateId();
                 context.unit_panels = [];
 
+                context.property = extractPropertyOpenEhrId() || propertyNotSetEhrId;
 
                 if (context.isTemplate) {
                     for (var i in parentTupleConstraints) {
@@ -611,6 +628,17 @@
             handler.show = function (stage, context, targetElement) {
                 GuiUtils.applyTemplate(
                     "properties/constraint-openehr|DV_QUANTITY", context, function (generatedDom) {
+
+                        function populatePropertySelect() {
+                            var unitsModel = stage.archetypeEditor.unitsModel;
+                            propertySelect.empty();
+                            Stream(unitsModel.data).forEach(function (d) {
+                                propertySelect.append($("<option>").attr("value", d.openEhrId).text(d.label))
+                            });
+                            if (context.property) {
+                                propertySelect.val(context.property);
+                            }
+                        }
 
                         function showUnitPanel(panel_id) {
                             Stream(context.unit_panels).forEach(
@@ -694,11 +722,19 @@
                         stage.archetypeEditor.applySubModules(stage, generatedDom, context);
                         targetElement.append(generatedDom);
 
+
                         var unitsSelect = generatedDom.find("#" + context.units_id);
                         unitsSelect.change(
                             function () {
                                 showUnitPanel(unitsSelect.find("option:selected").val());
                             });
+
+                        var propertySelect = generatedDom.find('#' + context.panel_id + "_property");
+                        populatePropertySelect();
+                        propertySelect.prop('disabled', context.unit_panels.length > 0);
+                        propertySelect.on('change', function () {
+                            context.property = propertySelect.val();
+                        });
 
                         if (context.isTemplate) {
                             var activeUnitsOptions = {
@@ -762,6 +798,41 @@
                 }
             };
             handler.updateConstraint = function (stage, context, cons) {
+
+                function getOrCreateBindingAndCode(propertyOpenEhrId) {
+                    var tbs = stage.archetypeModel.data.terminology.term_bindings;
+                    if (!tbs["openehr"]) {
+                        tbs["openehr"] = {};
+                    }
+
+                    var openEhrTb = tbs["openehr"];
+                    for (var atCode in openEhrTb) {
+                        var url = openEhrTb[atCode];
+                        var openEhrId = url.substring(url.lastIndexOf('/') + 1);
+                        if (openEhrId === propertyOpenEhrId) {
+                            return atCode;
+                        }
+                    }
+                    atCode = stage.archetypeModel.generateSpecializedTermId('at');
+                    openEhrTb[atCode] = "http://openehr.org/id/" + propertyOpenEhrId;
+                    var property = stage.archetypeEditor.unitsModel.getPropertyFromOpenEhrId(propertyOpenEhrId);
+                    stage.archetypeModel.setTermDefinition(atCode, undefined, property.label);
+                    return atCode;
+
+                }
+
+                function updateProperty() {
+                    stage.archetypeModel.removeAttribute(cons, 'property');
+                    if (context.property && context.property !== propertyNotSetEhrId) {
+                        var aProperty = stage.archetypeModel.addAttribute(cons, 'property');
+                        var cProperty = AOM.newCTerminologyCode();
+                        cProperty.code_list = [getOrCreateBindingAndCode(context.property)];
+                        stage.archetypeModel.addConstraint(aProperty, cProperty);
+                    }
+                }
+
+                updateProperty();
+
                 stage.archetypeModel.removeAttribute(cons, ["units", "magnitude", "precision"]);
 
                 cons.attribute_tuples = cons.attribute_tuples || [];

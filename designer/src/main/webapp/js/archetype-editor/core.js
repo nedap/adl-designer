@@ -24,7 +24,6 @@ var ArchetypeEditor = (function () {
     var rmModules = {};
 
 
-
     my.openLoadArchetypeDialog = function () {
         var loadArchetypeContext = {
             panel_id: GuiUtils.generateId(),
@@ -254,7 +253,9 @@ var ArchetypeEditor = (function () {
                     successCallback();
                 }
             });
-        }).error(function (jxhr) { GuiUtils.processAjaxError(jxhr, errorCallback)});
+        }).error(function (jxhr) {
+            GuiUtils.processAjaxError(jxhr, errorCallback)
+        });
     };
 
     my.getRmTypeHandler = function (rm_type, referenceModel) {
@@ -383,8 +384,8 @@ var ArchetypeEditor = (function () {
         $('a[href="#archetype-editor-main-tabs-display"]').on('show.bs.tab', loadDisplay);
 
         var archetypeName = my.archetypeModel.getTermDefinitionText(my.archetypeModel.data.definition.node_id);
-        document.title = archetypeName  + ' - Archetype Editor';
-        
+        document.title = archetypeName + ' - Archetype Editor';
+
     };
 
 //    var getBoostrapTableHeight = function (targetElement) {
@@ -392,12 +393,12 @@ var ArchetypeEditor = (function () {
 //    	console.log("Table height: ", height + "px");
 //      return height > 0 ? height : null;
 //  	}
-    
+
     my.addRmModule = function (module) {
         rmModules[module.name] = module;
     };
 
-    my.getRmModule = function(moduleName) {
+    my.getRmModule = function (moduleName) {
         return rmModules[moduleName];
     }
 
@@ -495,8 +496,9 @@ var ArchetypeEditor = (function () {
     };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(3);
-        latch.execute(callback);
+        var latch = new CountdownLatch(4);
+
+
         my.referenceModel = new AOM.ReferenceModel(latch.countDown);
         my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
         // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
@@ -506,6 +508,17 @@ var ArchetypeEditor = (function () {
                 "terminology/terms"
             ],
             latch.countDown);
+
+        $.get("rest/support/units").done(function(data) {
+            my.unitsModel = new AOM.UnitsModel(data);
+            latch.countDown();
+        });
+
+        latch.execute(function () {
+            if (callback) {
+                callback();
+            }
+        });
     };
 
     return my;
