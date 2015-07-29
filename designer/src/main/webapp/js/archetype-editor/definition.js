@@ -657,6 +657,9 @@
                     }
                     if (!rmType) rmType = cons.rm_type_name;
                     treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
+                    if (cons["@type"]==="ARCHETYPE_SLOT") {
+                        treeNodeJson.icon += " " + "slot";
+                    }
                 }
 
 
