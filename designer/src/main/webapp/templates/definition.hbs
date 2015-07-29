@@ -3,7 +3,15 @@
   <div class="horizontal-stretch col-sm-8">
     <div class="panel panel-default horizontal-stretch">
       <div class="panel-heading">
-        <label>Reference model</label>
+          <div class="col-sm-4 properties-line no-border">
+              <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+              <div class="properties-value">
+                  <select id="{{panel_id}}_language" class="form-control input-sm">
+                      <option value="en">en</option>
+                      <option value="sl">sl</option>
+                  </select>
+              </div>
+          </div>
       </div>
       <div class="panel-body horizontal-stretch bottom-space-medium no-padding">
           <div id="{{panel_id}}_tree" class="definition-tree"></div>

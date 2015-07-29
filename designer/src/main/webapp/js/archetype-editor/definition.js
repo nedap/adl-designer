@@ -194,6 +194,27 @@
             })
         }
 
+        function populateLanguageSelect(languageSelect, archetypeModel) {
+            var lastVal = languageSelect.val();
+            var lastValPresent = false;
+            languageSelect.empty();
+            var langs = archetypeModel.allLanguages();
+
+            for (var i in langs) {
+                var lang = langs[i];
+                languageSelect.append($('<option>').attr('value', lang).text(lang));
+                if (lang == lastVal) {
+                    lastValPresent = true;
+                }
+            }
+            if (lastValPresent) {
+                languageSelect.val(lastVal);
+            } else {
+                languageSelect.val(langs[0]);
+            }
+
+        }
+
         /**
          * @param {AOM.ArchetypeModel} archetypeModel
          * @param targetElement
@@ -445,7 +466,7 @@
                 var context = {
                     panel_id: GuiUtils.generateId()
                 };
-                if (constraintData.cons["@type"]==="C_ATTRIBUTE") {
+                if (constraintData.cons["@type"] === "C_ATTRIBUTE") {
                     GuiUtils.applyTemplate('definition|attributePanel', context, function (html) {
                         html = $(html);
                         var attributeTab = html.find('#' + context.panel_id + '_attribute');
@@ -475,6 +496,7 @@
             var self = this;
             var treeIdPrefix = "dt_" + GuiUtils.generateId() + "_";
             var nextTreeIdIndex = 0;
+            var currentLanguage;
 
             var treeData = {};
 
@@ -482,13 +504,42 @@
                 return treeIdPrefix + (nextTreeIdIndex++).toString();
             }
 
-            self.extractConstraintName = function (cons) {
-                var result = archetypeModel.getTermDefinitionText(cons.node_id);
+            self.extractConstraintName = function (cons, language) {
+                var result = archetypeModel.getTermDefinitionText(cons.node_id, language);
                 if (!result) {
                     result = cons.rm_type_name;
                 }
                 return result;
             };
+
+            self.setLanguage = function (language) {
+
+                function renameSubtree(node) {
+                    var nodeData = treeData[node.id];
+                    var cons = nodeData.cons || nodeData.attr;
+                    if (AOM.mixin(cons).isConstraint()) {
+                        var newName = self.extractConstraintName(cons, language);
+                        info.tree.targetElement.jstree('rename_node', node, newName);
+                    }
+
+                    if (node.children) {
+                        for (var i in node.children) {
+                            var child = info.tree.targetElement.jstree('get_node', node.children[i]);
+                            renameSubtree(child)
+                        }
+                    }
+                }
+
+                var treeRoot = info.tree.targetElement.jstree('get_node', '#');
+                var node = info.tree.targetElement.jstree('get_node', treeRoot.children[0]);
+                renameSubtree(node);
+
+                info.tree.targetElement.jstree('redraw', true);
+                info.toolbar.languageSelect.val(language);
+
+                currentLanguage = language;
+            };
+
 
             function createAttrJson(attribute) {
                 var attrJson = {
@@ -827,6 +878,8 @@
                 };
                 info.propertiesPanel.show(constraintData);
             });
+
+            currentLanguage = archetypeModel.defaultLanguage;
         };
 
         my.show = function (archetypeModel, referenceModel, targetElement) {
@@ -842,6 +895,8 @@
                 var info = {
                     referenceModel: referenceModel,
                     toolbar: {
+                        languageSelect: html.find('#' + context.panel_id + '_language'),
+
                         addChild: html.find('#' + context.panel_id + '_addChild'),
                         removeConstraint: html.find('#' + context.panel_id + '_removeConstraint')
                     }
@@ -852,6 +907,11 @@
                 var definitionTreeElement = html.find('#' + context.panel_id + '_tree');
                 info.tree = new my.DefinitionTree(archetypeModel, definitionTreeElement, info);
 
+                info.toolbar.languageSelect.val(archetypeModel.defaultLanguage);
+                info.toolbar.languageSelect.change(function () {
+                    info.tree.setLanguage(info.toolbar.languageSelect.val())
+                });
+                populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
 
                 info.toolbar.addChild.click(info.tree.addChild);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);
