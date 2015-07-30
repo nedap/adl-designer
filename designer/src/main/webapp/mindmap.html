@@ -78,6 +78,23 @@
                 console.log("New term", newTerm);
                 newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "CLUSTER");
                 console.log("New term CLUSTER", newTerm);
+                console.log("Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+                newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "DV_CODED_TEXT");
+                console.log("New term DV_CODED_TEXT", newTerm);
+                console.log("Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+
+                newTerm = mindmapModel.createConstraintChild("/data[id2]");
+                console.log("New event", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+                newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "POINT_EVENT");
+                console.log("New event POINT_EVENT", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+
+                newTerm = mindmapModel.createConstraintChild("/protocol[id12]");
+                console.log("New protocol", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+                newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "CLUSTER");
+                console.log("New protocol CLUSTER", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+                newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "DV_QUANTITY");
+                console.log("New protocol DV_QUANTITY", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
+
 
 
 

@@ -450,16 +450,8 @@
                     return newCons;
                 }
 
-                var parentCons = AOM.AmQuery.get(options.archetypeModel.data.definition, parentRmPath);
-                if (!parentCons) return false;
-
-                var validChildTypes = mindmap.getValidRmTypesForConstraintChild(parentRmPath);
-                var childRmType = validChildTypes[0];
-
-                var cons;
-
                 function addDvTypeConstraint(childRmType) {
-                    cons = AOM.newCComplexObject("ELEMENT", options.archetypeModel.generateSpecializedTermId("id"));
+                    var cons = AOM.newCComplexObject("ELEMENT", options.archetypeModel.generateSpecializedTermId("id"));
                     cons.node_id = options.archetypeModel.addNewTermDefinition("id", childRmType);
                     var attr = options.archetypeModel.getAttribute(parentCons, "items", true);
                     options.archetypeModel.addConstraint(attr, cons);
@@ -474,10 +466,18 @@
                     return cons;
                 }
 
+                var parentCons = AOM.AmQuery.get(options.archetypeModel.data.definition, parentRmPath);
+                if (!parentCons) return false;
+
+                var validChildTypes = mindmap.getValidRmTypesForConstraintChild(parentRmPath);
+                var childRmType = validChildTypes[0];
+
+                var cons;
+
+
                 if (validDvTypes.indexOf(childRmType) >= 0) {
                     cons = addDvTypeConstraint(childRmType);
-                }
-                if (parentCons.rm_type_name === "HISTORY") {
+                } else if (parentCons.rm_type_name === "HISTORY") {
                     cons = addEventConstraint(parentCons);
                 } else {
                     cons = AOM.newCComplexObject(validChildTypes[0], options.archetypeModel.generateSpecializedTermId("id"));
