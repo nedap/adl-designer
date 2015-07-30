@@ -1021,7 +1021,9 @@
                 var parentRmType = stage.archetypeEditor.referenceModel.getType(cons[".parent"].rm_type_name);
                 var rmAttribute = parentRmType && parentRmType.attributes[cons.rm_attribute_name];
 
-                context.existenceMandatory = cons.existence.lower === 1;
+
+                var existence = stage.archetypeEditor.referenceModel.getExistence(cons);
+                context.existenceMandatory = existence.lower === 1;
                 context.existenceUpdatable = rmAttribute && rmAttribute.existence.lower === 0;
                 context.multiple = rmAttribute && rmAttribute.existence.upper === undefined;
                 if (context.multiple) {

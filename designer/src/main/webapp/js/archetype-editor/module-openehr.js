@@ -459,10 +459,6 @@
                     var dvCons = AOM.newCComplexObject(childRmType, options.archetypeModel.generateSpecializedTermId("id"));
                     options.archetypeModel.addConstraint(vAttr, dvCons);
 
-                    //return {
-                    //    rmPath: options.archetypeModel.getRmPath(cons).toString(),
-                    //    rmType: dvCons.rm_type_name
-                    //}
                     return cons;
                 }
 

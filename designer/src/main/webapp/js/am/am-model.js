@@ -1377,7 +1377,6 @@ var AOM = (function () {
 
         }; // ArchetypeModel
 
-
         /**
          * Returns the archetype model representing the archetype containing this constraint. Constraint must be part of
          * archetypeModel.data.definition structure.
@@ -1657,18 +1656,18 @@ var AOM = (function () {
                 return self.model.name;
             };
 
-            //self.isDescendantOf = function (rmType, parentRmType) {
-            //    while (true) {
-            //        if (rmType === parentRmType) return true;
-            //
-            //        var type = self.model.types[rmType];
-            //        if (!type || !type.parent) return false;
-            //        rmType = type.parent;
-            //    }
-            //};
-
             self.getType = function (name) {
                 return self.model.types[name];
+            };
+
+
+            self.getExistence = function (attr) {
+                if (attr.existence) return attr.existence;
+                var parentCons = attr[".parent"];
+                var rmType = self.getType(parentCons.rm_type_name);
+                if (!rmType) return undefined;
+                var rmAttr = rmType.attributes[attr.rm_attribute_name];
+                return AmInterval.of(rmAttr.existence.lower, rmAttr.existence.upper || 1);
             };
 
 
