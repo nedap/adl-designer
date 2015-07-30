@@ -74,8 +74,11 @@
 
 
 
-                var newTerm = mindmapModel.createConstraintChild("/data[id2]");
+                var newTerm = mindmapModel.createConstraintChild("/protocol[id12]/items[id1034]");
                 console.log("New term", newTerm);
+                newTerm = mindmapModel.changeConstraintType(newTerm.rmPath, "CLUSTER");
+                console.log("New term CLUSTER", newTerm);
+
 
 
                 mindmap = mindmapModel.convertToMindmap();

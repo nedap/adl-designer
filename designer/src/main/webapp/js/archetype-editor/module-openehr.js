@@ -63,6 +63,25 @@
             ];
 
 
+            function convertSingleConstraintToMindmap(cons) {
+                var rmType = cons.rm_type_name;
+                if (rmType === 'ELEMENT') {
+                    var dvCons = AOM.AmQuery.get(cons, 'value');
+                    rmType = dvCons ? dvCons.rm_type_name : 'DATA_VALUE';
+                }
+                var result = {
+                    type: 'constraint',
+                    rmType: rmType,
+                    rmPath: options.archetypeModel.getRmPath(cons).toString(),
+                    label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name
+                };
+                if (result.rmType === "CLUSTER" || result.rmType==="HISTORY") {
+                    result.canAddChildren = true;
+                }
+                result.canDelete = true;
+                return result;
+            }
+
             mindmap.convertToMindmap = function () {
 
                 function createProperty(obj) {
@@ -74,24 +93,6 @@
                     };
                 }
 
-                function createConstraint(cons) {
-                    var rmType = cons.rm_type_name;
-                    if (rmType === 'ELEMENT') {
-                        var dvCons = AOM.AmQuery.get(cons, 'value');
-                        rmType = dvCons ? dvCons.rm_type_name : 'DATA_VALUE';
-                    }
-                    var result = {
-                        type: 'constraint',
-                        rmType: rmType,
-                        rmPath: options.archetypeModel.getRmPath(cons).toString(),
-                        label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name
-                    };
-                    if (result.rmType === "CLUSTER") {
-                        result.canAddChildren = true;
-                    }
-                    result.canDelete = true;
-                    return result;
-                }
 
 
                 function createConstraints(rootConsAttr) {
@@ -108,7 +109,7 @@
                             }
 
                         } else {
-                            var modelConstraint = createConstraint(cons);
+                            var modelConstraint = convertSingleConstraintToMindmap(cons);
                             if (cons.rm_type_name == 'CLUSTER') {
                                 var clusterItemsAttr = options.archetypeModel.getAttribute(cons, 'items');
                                 modelConstraint.children = createConstraints(clusterItemsAttr);
@@ -364,11 +365,10 @@
 
             mindmap.getValidRmTypesForConstraint = function (rmPath) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
-                if (cons.rm_type_name === "ELEMENT") {
-                    return AmUtils.clone(validDvTypes);
-                }
-                if (cons.rm_type_name === "CLUSTER") {
-                    return [cons.rm_type_name];
+                if (cons.rm_type_name === "ELEMENT" || cons.rm_type_name==="CLUSTER") {
+                    var result = AmUtils.clone(validDvTypes);
+                    result.push("CLUSTER");
+                    return result;
                 }
                 if (itemStructSet[cons.rm_type_name]) {
                     return [cons.rm_type_name];
@@ -454,23 +454,39 @@
                 if (!parentCons) return false;
 
                 var validChildTypes = mindmap.getValidRmTypesForConstraintChild(parentRmPath);
+                var childRmType = validChildTypes[0];
 
                 var cons;
+
+                function addDvTypeConstraint(childRmType) {
+                    cons = AOM.newCComplexObject("ELEMENT", options.archetypeModel.generateSpecializedTermId("id"));
+                    cons.node_id = options.archetypeModel.addNewTermDefinition("id", childRmType);
+                    var attr = options.archetypeModel.getAttribute(parentCons, "items", true);
+                    options.archetypeModel.addConstraint(attr, cons);
+                    var vAttr = options.archetypeModel.addAttribute(cons, "value");
+                    var dvCons = AOM.newCComplexObject(childRmType, options.archetypeModel.generateSpecializedTermId("id"));
+                    options.archetypeModel.addConstraint(vAttr, dvCons);
+
+                    //return {
+                    //    rmPath: options.archetypeModel.getRmPath(cons).toString(),
+                    //    rmType: dvCons.rm_type_name
+                    //}
+                    return cons;
+                }
+
+                if (validDvTypes.indexOf(childRmType) >= 0) {
+                    cons = addDvTypeConstraint(childRmType);
+                }
                 if (parentCons.rm_type_name === "HISTORY") {
                     cons = addEventConstraint(parentCons);
                 } else {
-                    cons = AOM.newCComplexObject(validChildTypes[0]);
-                    cons.node_id = options.archetypeModel.addNewTermDefinition("id", cons.rm_type_name);
-                    var attr = options.archetypeModel.getAttribute(parentCons, "items");
-                    if (!attr) {
-                        attr = options.archetypeModel.addAttribute(parentCons, "items");
-                    }
+                    cons = AOM.newCComplexObject(validChildTypes[0], options.archetypeModel.generateSpecializedTermId("id"));
+                    options.archetypeModel.setTermDefinition(cons.node_id, undefined, cons.rm_type_name);
+                    var attr = options.archetypeModel.getAttribute(parentCons, "items", true);
                     options.archetypeModel.addConstraint(attr, cons);
                 }
-                return {
-                    rmPath: options.archetypeModel.getRmPath(cons).toString(),
-                    rmType: cons.rm_type_name
-                }
+
+                return convertSingleConstraintToMindmap(cons);
 
             };
 
@@ -495,14 +511,37 @@
                 if (cons.rm_type_name === rmType) {
                     return false;
                 }
+                var validTypes = mindmap.getValidRmTypesForConstraint(rmPath);
+                if (validTypes.indexOf(rmType) < 0) {
+                    console.error("Invalid type:", rmType, "Valid types:", validTypes);
+                    return false;
+                }
+
+                if (cons.rm_type_name === "ELEMENT" && validDvTypes.indexOf(rmType) >= 0) {
+                    var vCons = AOM.AmQuery.get(cons, "value");
+                    if (vCons) {
+                        (cons.attributes || []).forEach(function (attr) {
+                            options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
+                        });
+                        vCons.rm_type_name = rmType;
+                        return convertSingleConstraintToMindmap(cons);
+                    }
+                }
 
                 // remove all sub constraints
-                var consAttributes = cons.attributes || [];
-                for (var i in consAttributes) {
-                    var attr = consAttributes[i];
+                var attrs = cons.attributes || [];
+                attrs.forEach(function (attr) {
                     options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
+                });
+
+                if (validDvTypes.indexOf(rmType) < 0) {
+                    cons.rm_type_name = rmType;
+                } else {
+                    var attr = options.archetypeModel.addAttribute(cons, "value");
+                    var dvCons = AOM.newCComplexObject(rmType, options.archetypeModel.generateSpecializedTermId("id"));
+                    options.archetypeModel.addConstraint(attr, dvCons);
                 }
-                cons.rm_type_name = rmType;
+                return convertSingleConstraintToMindmap(cons);
             }
 
 
@@ -704,7 +743,7 @@
                                     selectOptions.push(opt);
                                 }
                             });
-                            if (selectOptions.length===0) return;
+                            if (selectOptions.length === 0) return;
                             GuiUtils.openSingleSelectInputDialog(
                                 {
                                     title: "Add unit",
