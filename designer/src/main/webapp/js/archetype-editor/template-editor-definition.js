@@ -25,11 +25,11 @@
 
         /**
          * Specializes a given constraint, and updates the
-         * @param {object} cons
-         * @param {object} info
-         * @param {object} definitionTreeNode treeNode of the definition tree
+         * @param {object} constraintData
+         * @param {object} treeNode
          */
-        function specializeConstraint(cons, info, definitionTreeNode) {
+        function specializeConstraint(constraintData, treeNode) {
+            var cons = constraintData.cons;
             var archetypeModel = AOM.ArchetypeModel.from(cons);
             var rmTypeHandler = ArchetypeEditor.getRmTypeHandler(cons.rm_type_name);
             if (rmTypeHandler) {
@@ -40,15 +40,10 @@
             }
             // did not work, so remove node_id from name
 //            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
-            info.tree.styleNodes(definitionTreeNode.id, 1);
-            var isSelected = info.tree.targetElement.jstree('is_selected', definitionTreeNode);
+            constraintData.info.tree.styleNodes(treeNode.id, 1);
+            var isSelected = constraintData.info.tree.targetElement.jstree('is_selected', treeNode);
             if (isSelected) {
-                var constraintData = {
-                    info: info,
-                    treeNode: definitionTreeNode,
-                    cons: cons
-                };
-                info.propertiesPanel.show(constraintData);
+                constraintData.info.propertiesPanel.show(constraintData);
             }
         }
 
@@ -279,7 +274,7 @@
                 if (!specialized) {
                     var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
                     specializeButton.click(function () {
-                        specializeConstraint(cons, constraintData.info, constraintData.treeNode);
+                        constraintData.specializeCallback();
                     });
                 }
 
@@ -307,7 +302,7 @@
                     console.debug("save changes to:   ", cons);
 
                     archetypeModel.enrichReplacementConstraint(cons);
-                    constraintData.info.tree.styleNodes(constraintData.treeNode.id, 1);
+                    constraintData.saveCallback();
 
                 });
             } // showConstraintProperties
@@ -757,9 +752,15 @@
 
                     var constraintData = {
                         info: info,
-                        treeNode: treeEvent.node,
                         cons: data.cons
                     };
+                    constraintData.specializeCallback = function () {
+                        specializeConstraint(constraintData, treeEvent.node);
+                    };
+                    constraintData.saveCallback = function() {
+                        info.tree.styleNodes(treeEvent.node.id);
+                    };
+
                     info.propertiesPanel.show(constraintData);
                 });
             };
