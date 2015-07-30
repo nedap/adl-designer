@@ -26,14 +26,13 @@ var ArchetypeEditor = (function () {
 
     my.openLoadArchetypeDialog = function () {
         var loadArchetypeContext = {
-            panel_id: GuiUtils.generateId()
+            panel_id: GuiUtils.generateId(),
+            archetypes: my.archetypeRepository.infoList
         };
-        var archetypes = Stream(my.archetypeRepository.infoList).map("archetypeId").toArray();
-
         GuiUtils.applyTemplate("dialog-archetype|load", loadArchetypeContext, function (htmlString) {
             var content = $(htmlString);
-            var input = content.find('#'+loadArchetypeContext.panel_id+"_archetype");
-            input.typeahead({source: archetypes, minLength: 0, items: 12});
+            var archetypeSelect = content.find('#' + loadArchetypeContext.panel_id + "_archetype");
+            archetypeSelect.selectpicker({size: "auto"});
 
             GuiUtils.openSimpleDialog(
                 {
@@ -511,7 +510,7 @@ var ArchetypeEditor = (function () {
             ],
             latch.countDown);
 
-        $.get("rest/support/units").done(function(data) {
+        $.get("rest/support/units").done(function (data) {
             my.unitsModel = new AOM.UnitsModel(data);
             latch.countDown();
         });

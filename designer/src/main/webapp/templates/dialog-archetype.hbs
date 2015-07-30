@@ -22,13 +22,11 @@
 <div class="row properties-line no-border">
     <div class="properties-label"><label for="{{panel_id}}_archetype">Archetype Id</label></div>
     <div class="properties-value">
-      {{!--<select id="{{panel_id}}_archetype" class="form-control" id="selectArchetypeId">--}}
-        {{!--{{#each archetypes}}--}}
-        {{!--<option value="{{archetypeId}}">{{archetypeId}}</option>--}}
-        {{!--{{/each}}--}}
-      {{!--</select>--}}
-    {{!--</div>--}}
-      <input id="{{panel_id}}_archetype" class="form-control">
+      <select id="{{panel_id}}_archetype" class="form-control" id="selectArchetypeId" data-live-search="true">
+        {{#each archetypes}}
+        <option value="{{archetypeId}}">{{archetypeId}}</option>
+        {{/each}}
+      </select>
     </div>
 </div>
 
