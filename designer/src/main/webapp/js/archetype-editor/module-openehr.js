@@ -689,34 +689,46 @@
                                 stage.propertiesPanel.redraw();
                             });
 
-                        generatedDom.find("#" + context.units_id + "_add").click(
-                            function () {
-                                GuiUtils.openSingleTextInputDialog(
-                                    {
-                                        title: "Add unit constraint",
-                                        inputLabel: "Enter unit",
-                                        callback: function (content) {
-                                            var newUnit = content.find("input").val().trim();
-                                            if (newUnit.length === 0) return;
-                                            var existingUnitPanel = Stream(context.unit_panels)
-                                                .filter({units: newUnit})
-                                                .findFirst().orElse();
-                                            if (existingUnitPanel) {
-                                                return "Unit " + newUnit + " already exists";
-                                            }
-                                            var panel = {
-                                                active: true,
-                                                panel_id: GuiUtils.generateId(),
-                                                magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage),
-                                                units: newUnit,
-                                                precision: ""
-                                            };
-                                            context.unit_panels.push(panel);
-                                            stage.propertiesPanel.redraw();
-
-                                        }
-                                    })
+                        generatedDom.find("#" + context.units_id + "_add").click(function () {
+                            if (context.property === propertyNotSetEhrId) return;
+                            var property = stage.archetypeEditor.unitsModel.getPropertyFromOpenEhrId(context.property);
+                            if (!property) return;
+                            var existingUnits = AmUtils.listToSet(Stream(context.unit_panels).map("units").toArray());
+                            var unitOptions = [];
+                            property.units.forEach(function (u) {
+                                if (!existingUnits[u.code]) {
+                                    var opt = {key: u.code, label: u.code};
+                                    if (u.code !== u.label) {
+                                        opt.label += "    (" + u.label + ")";
+                                    }
+                                    unitOptions.push(opt);
+                                }
                             });
+                            GuiUtils.openSingleSelectInputDialog(
+                                {
+                                    title: "Add unit",
+                                    selectOptions: unitOptions,
+                                    callback: function (unit) {
+                                        if (unit.length === 0) return;
+                                        var existingUnitPanel = Stream(context.unit_panels)
+                                            .filter({units: unit})
+                                            .findFirst().orElse();
+                                        if (existingUnitPanel) {
+                                            return "Unit " + unit + " already exists";
+                                        }
+                                        var panel = {
+                                            active: true,
+                                            panel_id: GuiUtils.generateId(),
+                                            magnitude: stage.archetypeEditor.getRmTypeHandler("C_REAL").createContext(stage),
+                                            units: unit,
+                                            precision: ""
+                                        };
+                                        context.unit_panels.push(panel);
+                                        stage.propertiesPanel.redraw();
+
+                                    }
+                                });
+                        });
 
 
                         stage.archetypeEditor.applySubModules(stage, generatedDom, context);

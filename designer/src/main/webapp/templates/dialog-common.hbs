@@ -47,6 +47,12 @@
     <div class="properties-value"><input id="{{input_id}}" class="form-control" value="{{value}}"></div>
 </div>
 
+{>singleSelectInput}
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{id}}_select">{{label}}</label></div>
+    <div class="properties-value"><select id="{{id}}_select" class="form-control"></select></div>
+</div>
+
 {>alert}
 <div class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog">

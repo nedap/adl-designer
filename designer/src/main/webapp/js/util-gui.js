@@ -121,15 +121,15 @@ var GuiUtils = (function () {
         });
     };
 
-    my.processAjaxError = function(jxhr, errorCallback) {
+    my.processAjaxError = function (jxhr, errorCallback) {
         if (!errorCallback) return;
-        var status={};
+        var status = {};
 
-        status.status=jxhr.status;
-        if (status.status===0) {
-            status.message="Server unreachable";
+        status.status = jxhr.status;
+        if (status.status === 0) {
+            status.message = "Server unreachable";
         } else {
-            if (jxhr.responseText.length>0) {
+            if (jxhr.responseText.length > 0) {
                 var responseJson = JSON.parse(jxhr.responseText);
                 status.message = responseJson.message || jxhr.statusText;
             }
@@ -145,12 +145,12 @@ var GuiUtils = (function () {
      * @param {string?} options.text Text to display
      * @param {string?} options.title Title to display
      */
-    my.alert = function(options) {
-        options.panel_id=my.generateId();
+    my.alert = function (options) {
+        options.panel_id = my.generateId();
 
 
         GuiUtils.applyTemplate("dialog-common|alert", options, function (html) {
-            html=$(html);
+            html = $(html);
             html.modal();
         });
     };
@@ -221,6 +221,66 @@ var GuiUtils = (function () {
             my.openSimpleDialog(options);
         });
     };
+
+    /**
+     * A dialog with a single select button
+     * @param {object} options
+     * @param {string} options.title Title of the text box
+     * @param {object[]} options.selectOptions An array of objects with (key,label) properties, or one key:value object
+     * @param {string?} options.selectedKey key of the preselected choice
+     * @param {function} options.callback callback function with the selected key as the parameter
+     */
+    my.openSingleSelectInputDialog = function (options) {
+
+        var context = {
+            id: my.generateId(),
+            label: options.title
+        };
+        var dialogOptions = AmUtils.clone(options);
+        my.applyTemplate("dialog-common|singleSelectInput", context, function (content) {
+
+            dialogOptions.content = $(content);
+            var select = dialogOptions.content.find('#' + context.id + "_select");
+            my.populateSelect(select, options.selectOptions, options.selectedKey);
+
+            dialogOptions.callback = function () {
+                options.callback(select.val());
+            };
+            my.openSimpleDialog(dialogOptions);
+        });
+    };
+
+    /**
+     * Populates a select element with options
+     * @param {object} select jQuery select element
+     * @param {object[]|object} selectOptions An array of (key,label) objects, or one (key: label) object. Used to
+     *                      populate select options
+     * @param {string?} selectedKey key of the selected option
+     */
+    my.populateSelect = function (select, selectOptions, selectedKey) {
+        select.empty();
+        var first = true;
+        if (Array.isArray(selectOptions)) {
+            for (var i in selectOptions) {
+                var opt = selectOptions[i];
+                select.append($("<option>").attr("value", opt.key).text(opt.label));
+                if (first) select.val(opt.key);
+                first = false;
+            }
+            select.val()
+        } else if (typeof selectOptions === "object") {
+            for (var key in selectOptions) {
+                select.append($("<option>").attr("value", key).text(selectOptions[key]));
+                if (first) select.val(key);
+                first = false;
+            }
+
+        }
+        if (selectedKey) {
+            select.val(selectedKey);
+        }
+    };
+
 
     /**
      * adds or removes .hidden class
