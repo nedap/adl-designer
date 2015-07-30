@@ -694,20 +694,21 @@
                             var property = stage.archetypeEditor.unitsModel.getPropertyFromOpenEhrId(context.property);
                             if (!property) return;
                             var existingUnits = AmUtils.listToSet(Stream(context.unit_panels).map("units").toArray());
-                            var unitOptions = [];
+                            var selectOptions = [];
                             property.units.forEach(function (u) {
                                 if (!existingUnits[u.code]) {
                                     var opt = {key: u.code, label: u.code};
                                     if (u.code !== u.label) {
                                         opt.label += "    (" + u.label + ")";
                                     }
-                                    unitOptions.push(opt);
+                                    selectOptions.push(opt);
                                 }
                             });
+                            if (selectOptions.length===0) return;
                             GuiUtils.openSingleSelectInputDialog(
                                 {
                                     title: "Add unit",
-                                    selectOptions: unitOptions,
+                                    selectOptions: selectOptions,
                                     callback: function (unit) {
                                         if (unit.length === 0) return;
                                         var existingUnitPanel = Stream(context.unit_panels)
