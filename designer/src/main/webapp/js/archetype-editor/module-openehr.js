@@ -540,6 +540,10 @@
                 return convertSingleConstraintToMindmap(cons);
             }
 
+            mindmap.getConstraintObject = function(rmPath) {
+                return AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
+            }
+
 
         };
 
