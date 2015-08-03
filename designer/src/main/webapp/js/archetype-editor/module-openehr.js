@@ -538,10 +538,15 @@
                     options.archetypeModel.addConstraint(attr, dvCons);
                 }
                 return convertSingleConstraintToMindmap(cons);
-            }
+            };
 
             mindmap.getConstraintObject = function(rmPath) {
                 return AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
+            };
+
+            mindmap.getMindmapConstraint = function(rmPath) {
+                var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
+                return convertSingleConstraintToMindmap(cons);
             }
 
 
