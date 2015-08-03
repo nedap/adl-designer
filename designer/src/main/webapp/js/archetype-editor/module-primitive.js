@@ -1023,8 +1023,8 @@
 
 
                 var existence = stage.archetypeEditor.referenceModel.getExistence(cons);
-                context.existenceMandatory = existence.lower === 1;
-                context.existenceUpdatable = rmAttribute && rmAttribute.existence.lower === 0;
+                context.existenceMandatory = existence && existence.lower === 1;
+                context.existenceUpdatable = existence && rmAttribute && rmAttribute.existence.lower === 0;
                 context.multiple = rmAttribute && rmAttribute.existence.upper === undefined;
                 if (context.multiple) {
                     if (cons.cardinality) {
