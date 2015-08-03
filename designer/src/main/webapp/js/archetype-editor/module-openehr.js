@@ -75,7 +75,7 @@
                     rmPath: options.archetypeModel.getRmPath(cons).toString(),
                     label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name
                 };
-                if (result.rmType === "CLUSTER" || result.rmType==="HISTORY") {
+                if (cons["@type"]==="C_COMPLEX_OBJECT" && (result.rmType === "CLUSTER" || result.rmType==="HISTORY")) {
                     result.canAddChildren = true;
                 }
                 result.canDelete = true;
