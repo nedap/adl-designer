@@ -541,12 +541,16 @@
                     }
                     if (!rmType) rmType = cons.rm_type_name;
                     treeNodeJson.icon = "openehr-rm-icon " + rmType.toLowerCase();
+                    if (cons["@type"] === "ARCHETYPE_SLOT") {
+                        treeNodeJson.icon += " slot";
+                    }
                 }
 
                 treeNodeJson.a_attr = treeNodeJson.a_attr || {};
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
                 if (isSpecialized) {
                     treeNodeJson.a_attr.class += ' specialized';
+
                     if (cons.occurrences && cons.occurrences.upper === 0) {
                         treeNodeJson.a_attr.class += ' specialized prohibited';
                     }

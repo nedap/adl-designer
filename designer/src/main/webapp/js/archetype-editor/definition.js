@@ -426,13 +426,6 @@
 
                 GuiUtils.applyTemplate("properties/constraint-common|footer", footerContext, footerDiv);
 
-                if (!specialized) {
-                    var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
-                    specializeButton.click(function () {
-                        specializeConstraint(archetypeModel, cons, constraintData.info, constraintData.treeNode);
-                    });
-                }
-
                 var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
 
                 disableIfSpecialized();
