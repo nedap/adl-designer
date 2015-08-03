@@ -145,7 +145,7 @@ label {
 }
 
 .bottom-space-medium {
-	padding-bottom: 10px;
+	xpadding-bottom: 10px;
 }
 
 .vertical-stretch {
@@ -452,8 +452,19 @@ form .table-layout .table-cell {
   flex-grow: 1;
   -webkit-flex-grow: 1;
   flex-shrink: 1;
-  -webkit-flex-shrink: 01;
-    padding: 10px;
+  -webkit-flex-shrink: 1;
+  padding: 10px;
+}
+
+.definition-mindmap {
+    xborder: solid 1px #ccc;
+  overflow: hidden;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 1;
+  xpadding: 10px;
+  display: flex;
 }
 
 .constraint-properties {

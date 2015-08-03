@@ -12,9 +12,20 @@
                   </select>
               </div>
           </div>
+          <div class="col-sm-4 pull-right">
+            <div class="btn-group pull-right" data-toggle="buttons">
+              <label class="btn btn-primary active">
+                <input type="radio" name="options" id="{{panel_id}}_viewTree" autocomplete="off" checked> Tree
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" id="{{panel_id}}_viewMindmap" autocomplete="off"> Mindmap
+              </label>
+            </div>
+          </div>
       </div>
       <div class="panel-body horizontal-stretch bottom-space-medium no-padding">
           <div id="{{panel_id}}_tree" class="definition-tree"></div>
+          <div id="{{panel_id}}_mindmap_container" class="definition-mindmap"></div>
       </div>
       <div class="panel-footer">
         <div class="btn-toolbar pull-right" role="toolbar">

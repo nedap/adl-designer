@@ -1,0 +1,115 @@
+{
+    "archetypeId": "openEHR-EHR-CLUSTER.ambient_oxygen.v1.0.0",
+    "label": "Ambient oxygen",
+    "rmType": "CLUSTER",
+    "children": [
+        {
+            "type": "section",
+            "section": "description",
+            "label": "Description",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "purpose",
+                    "label": "purpose",
+                    "value": "To record the amount of oxygen being delivered to the subject at the time of observation.  Assumed values of 21% O2, Fi02 of 0.21 and Oxygen flow rate of zero."
+                },
+                {
+                    "type": "property",
+                    "property": "use",
+                    "label": "use",
+                    "value": "May be used within an ACTION archetype to specificy oxygen therapy , or within OBSERVATION archetypes such as Blood gases or Respirations, as part of patient state, where knowledge of ambient oxygen status is critical to interpretation of the observation."
+                },
+                {
+                    "type": "property",
+                    "property": "misuse",
+                    "label": "misuse",
+                    "value": ""
+                },
+                {
+                    "type": "property",
+                    "property": "keywords",
+                    "label": "keywords",
+                    "value": [
+                        "breathing",
+                        "oxygen"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "attribution",
+            "label": "Attribution",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "original_author",
+                    "label": "Original Author",
+                    "value": {
+                        "name": "Ian McNicoll",
+                        "organisation": "Ocean Informatics",
+                        "email": "ian.mcnicoll@oceaninformatics.com",
+                        "date": "2009-06-08"
+                    }
+                },
+                {
+                    "type": "property",
+                    "property": "other_contributors",
+                    "label": "Other Contributors",
+                    "value": [
+                        "Heather Leslie, Ocean Informatics, Australia",
+                        "Sebastian Garde, Ocean Informatics, Germany",
+                        "Andrew James, University of Toronto, Canada",
+                        "Sundarasan Jaganathan NHS Scotland, United Kingdom",
+                        "Omer Hotomargolu,, Turkey",
+                        "Marja Buur, Medisch Centrum Alkmaar, Netherlands",
+                        "Gregory Caulton PatientOS Inc., USA",
+                        "Anne Harbison, CPCER, Australia",
+                        "Sam Heard, Ocean Informatics, Australia"
+                    ]
+                },
+                {
+                    "type": "property",
+                    "property": "translators",
+                    "label": "Translators",
+                    "value": {
+                        "de": {
+                            "name": "Jasmin Buck, Sebastian Garde",
+                            "organisation": "University of Heidelberg, Central Queensland University"
+                        },
+                        "es-ar": {
+                            "name": "Dr. Leonardo Der Jachadurian",
+                            "organisation": "Bitios.com"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "items",
+            "label": "Items",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/items[id52]",
+                    "label": "Oxygen flow rate"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_PROPORTION",
+                    "rmPath": "/items[id53]",
+                    "label": "FiO2"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_PROPORTION",
+                    "rmPath": "/items[id54]",
+                    "label": "Percent O2"
+                }
+            ]
+        }
+    ]
+}

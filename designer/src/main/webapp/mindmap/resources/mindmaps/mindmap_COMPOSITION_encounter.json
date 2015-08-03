@@ -1,0 +1,107 @@
+{
+    "archetypeId": "openEHR-EHR-COMPOSITION.encounter.v1.0.0",
+    "label": "Encounter",
+    "rmType": "COMPOSITION",
+    "children": [
+        {
+            "type": "section",
+            "section": "description",
+            "label": "Description",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "purpose",
+                    "label": "purpose",
+                    "value": "Record of encounter as a progress note."
+                },
+                {
+                    "type": "property",
+                    "property": "use",
+                    "label": "use",
+                    "value": ""
+                },
+                {
+                    "type": "property",
+                    "property": "misuse",
+                    "label": "misuse",
+                    "value": ""
+                },
+                {
+                    "type": "property",
+                    "property": "keywords",
+                    "label": "keywords",
+                    "value": [
+                        "progress",
+                        "note",
+                        "encounter"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "attribution",
+            "label": "Attribution",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "original_author",
+                    "label": "Original Author",
+                    "value": {
+                        "name": "Thomas Beale",
+                        "organisation": "Ocean Informatics",
+                        "date": "2005-10-10"
+                    }
+                },
+                {
+                    "type": "property",
+                    "property": "other_contributors",
+                    "label": "Other Contributors",
+                    "value": [
+                        "Heather Leslie, Ocean Informatics, Australia (Editor)",
+                        "Ian McNicoll, Ocean Informatics, United Kingdom (Editor)"
+                    ]
+                },
+                {
+                    "type": "property",
+                    "property": "translators",
+                    "label": "Translators",
+                    "value": {
+                        "ko": {
+                            "name": "Seung-Jong Yu",
+                            "organisation": "Yonsei FM Clinic",
+                            "email": "seungjong.yu@gmail.com"
+                        },
+                        "ar-sy": {
+                            "name": "Mona Saleh"
+                        },
+                        "es-ar": {
+                            "name": "Edgardo Vazquez",
+                            "organisation": "VinculoMedico"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "content",
+            "label": "Content",
+            "children": []
+        },
+        {
+            "type": "section",
+            "section": "context",
+            "label": "Context",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "CLUSTER",
+                    "rmPath": "/context[id5]/other_context[id2]/items[id3]",
+                    "label": "Local context",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}

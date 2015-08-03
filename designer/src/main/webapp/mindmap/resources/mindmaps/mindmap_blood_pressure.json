@@ -1,0 +1,301 @@
+{
+    "archetypeId": "openEHR-EHR-OBSERVATION.blood_pressure.v1.0.0",
+    "label": "Blood Pressure",
+    "children": [
+        {
+            "type": "section",
+            "section": "description",
+            "label": "Description",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "purpose",
+                    "label": "purpose",
+                    "value": "To record the systemic arterial blood pressure of an individual. "
+                },
+                {
+                    "type": "property",
+                    "property": "use",
+                    "label": "use",
+                    "value": "Use to record all representations of systemic arterial blood pressure measurement, no matter which method or body location is used to record it. The archetype is intended to capture blood pressure measurements in all clinical scenarios - for example, self-measurement with a home blood pressure machine; an emergency assessment of systolic using palpation and a sphygmomanometer; measurements taken in clinical consultations or during exercise stress testing; and a series of measurements made by a machine in Intensive Care.   \r\nThere is a rich state model that supports interpretation of measurements through identifying patient position, exercise, confounding factors and angle of a tilt table in research. \r\nNamed events have been limited to average over a 24 hour period, however templates can further constrain the default 'any event' to cater for specific requirements for blood pressure measurements such as recording Blood Pressure against specific points in time, or over a range of intervals (+/- mathematical functions)."
+                },
+                {
+                    "type": "property",
+                    "property": "misuse",
+                    "label": "misuse",
+                    "value": "Not to be used for intravenous pressure.\r\nNot to be used for the measurement of arterial blood pressure which is NOT a surrogate for arterial pressure in the systemic circulation eg specific measurement of right Pulmonary artery pressure.  \r\nUse OBSERVATION.intravascular_pressure and related specialisations in both of these situations."
+                },
+                {
+                    "type": "property",
+                    "property": "keywords",
+                    "label": "keywords",
+                    "value": [
+                        "observations",
+                        "measurement",
+                        "bp",
+                        "vital signs",
+                        "mean arterial pressure",
+                        "pulse pressure",
+                        "systolic",
+                        "diastolic",
+                        "RR",
+                        "NIBP"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "attribution",
+            "label": "Attribution",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "original_author",
+                    "label": "Original Author",
+                    "value": {
+                        "name": "Sam Heard",
+                        "organisation": "Ocean Informatics",
+                        "email": "sam.heard@oceaninformatics.com",
+                        "date": "22/03/2006"
+                    }
+                },
+                {
+                    "type": "property",
+                    "property": "other_contributors",
+                    "label": "Other Contributors",
+                    "value": [
+                        "Koray Atalag, University of Auckland, New Zealand",
+                        "Knut Bernstein, MEDIQ, Denmark",
+                        "Marja Buur, Medisch Centrum Alkmaar, Netherlands",
+                        "Rong Chen, Cambio Healthcare Systems, Sweden",
+                        "Beatriz de Faria Leão, Zilics, Brazil",
+                        "Paul Donaldson, Nursing Informatics Australia, Australia",
+                        "Jose Florez Arango, Universidad de Antioquia, Colombia",
+                        "Gerard Freriks, ERC, Netherlands",
+                        "Sebastian Garde, Ocean Informatics, Germany",
+                        "Anneke Goossen, Results 4 Care, Netherlands",
+                        "Sam Heard, Ocean Informatics, Australia",
+                        "Karsten Heusser, Hannover Medical School, Germany",
+                        "Omer Hotomaroglu, Turkey",
+                        "Evelyn Hovenga, EJSH Consulting, Australia",
+                        "Derek Hoy, United Kingdom",
+                        "Pieter Hummel, Medisch Centrum Alkmaar, Netherlands",
+                        "Eugene Igras, IRIS Systems, Inc., Canada",
+                        "Sundaresan Jagannathan, Scottish NHS, United Kingdom",
+                        "Andrew James, University of Toronto, Canada",
+                        "Heather Leslie, Ocean Informatics, Australia (Editor)",
+                        "Rikard Lovstrom, Swedish Medical Association, Sweden",
+                        "Rohan Martin, Ambulance Victoria, Australia",
+                        "Ian McNicoll, Ocean Informatics, United Kingdom",
+                        "Jeroen Meintjens, Medisch Centrum Alkmaar, Netherlands",
+                        "Udo Müller-Oest, CompuGROUP Software, Germany",
+                        "Melvin Reynolds, United Kingdom",
+                        "Tony Shannon, NHS, United Kingdom",
+                        "Hwei-Yee Tai, Tan Tock Seng Hospital, Singapore",
+                        "Stef Verlinden, Vivici, Netherlands",
+                        "Soon Ghee Yap, Singapore Health Services Pte Ltd, Singapore"
+                    ]
+                },
+                {
+                    "type": "property",
+                    "property": "translators",
+                    "label": "Translators",
+                    "value": {
+                        "de": {
+                            "name": "Sebastian Garde, Jasmin Buck",
+                            "organisation": "Ocean Informatics, University of Heidelberg"
+                        },
+                        "zh-cn": {
+                            "name": "Chunlan Ma",
+                            "organisation": "Ocean Informatics"
+                        },
+                        "ar-sy": {
+                            "name": "Mona Saleh"
+                        },
+                        "es-ar": {
+                            "name": "Domingo Liotta",
+                            "organisation": "Universidad de Morón",
+                            "email": "domingo_liotta@hotmail.com"
+                        },
+                        "fa": {
+                            "name": "Shahla Foozonkhah",
+                            "organisation": "Ocean Informatics",
+                            "email": "shahla.foozonkhah@oceaninformatics.com"
+                        },
+                        "ru": {
+                            "name": "Igor Lizunov",
+                            "email": "i.lizunov@infinnity.ru"
+                        },
+                        "ja": {
+                            "name": "Shinji Kobayashi",
+                            "email": "skoba@moss.gr.jp"
+                        },
+                        "nl": {
+                            "name": "Marja Buur",
+                            "organisation": "M.C.A.",
+                            "email": "m.buur-krom@mca.nl"
+                        },
+                        "pt-br": {
+                            "name": "Jussara Rözsch",
+                            "organisation": "OpenEHR  Foundation",
+                            "email": "jussara.macedo@gmail.com"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "events",
+            "label": "Events",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "EVENT",
+                    "rmPath": "/data[id2]/events[id7]",
+                    "label": "any event"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "INTERVAL_EVENT",
+                    "rmPath": "/data[id2]/events[id1043]",
+                    "label": "24 hour average "
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "protocol",
+            "label": "Protocol",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "DV_CODED_TEXT",
+                    "rmPath": "/protocol[id12]/items[id14]",
+                    "label": "Cuff size"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "CLUSTER",
+                    "rmPath": "/protocol[id12]/items[id1034]",
+                    "label": "Location",
+                    "children": [
+                        {
+                            "type": "constraint",
+                            "rmType": "DV_CODED_TEXT",
+                            "rmPath": "/protocol[id12]/items[id1034]/items[id15]",
+                            "label": "Location of measurement"
+                        },
+                        {
+                            "type": "constraint",
+                            "rmType": "DV_TEXT",
+                            "rmPath": "/protocol[id12]/items[id1034]/items[id1035]",
+                            "label": "Specific location"
+                        }
+                    ]
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_CODED_TEXT",
+                    "rmPath": "/protocol[id12]/items[id1036]",
+                    "label": "Method"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_TEXT",
+                    "rmPath": "/protocol[id12]/items[id1039]",
+                    "label": "Mean Arterial Pressure Formula"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_CODED_TEXT",
+                    "rmPath": "/protocol[id12]/items[id1011]",
+                    "label": "Diastolic endpoint"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "CLUSTER",
+                    "rmPath": "/protocol[id12]/items[id1026]",
+                    "label": "Device",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "data",
+            "label": "Data",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/data[id2]/events[id7]/data[id4]/items[id5]",
+                    "label": "Systolic"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/data[id2]/events[id7]/data[id4]/items[id6]",
+                    "label": "Diastolic"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/data[id2]/events[id7]/data[id4]/items[id1007]",
+                    "label": "Mean Arterial Pressure"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/data[id2]/events[id7]/data[id4]/items[id1008]",
+                    "label": "Pulse Pressure"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_TEXT",
+                    "rmPath": "/data[id2]/events[id7]/data[id4]/items[id34]",
+                    "label": "Comment"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "state",
+            "label": "State",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "DV_CODED_TEXT",
+                    "rmPath": "/data[id2]/events[id7]/state[id8]/items[id9]",
+                    "label": "Position"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_TEXT",
+                    "rmPath": "/data[id2]/events[id7]/state[id8]/items[id1053]",
+                    "label": "Confounding factors"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "CLUSTER",
+                    "rmPath": "/data[id2]/events[id7]/state[id8]/items[id1031]",
+                    "label": "Exertion  ",
+                    "children": []
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_CODED_TEXT",
+                    "rmPath": "/data[id2]/events[id7]/state[id8]/items[id1044]",
+                    "label": "Sleep status"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_QUANTITY",
+                    "rmPath": "/data[id2]/events[id7]/state[id8]/items[id1006]",
+                    "label": "Tilt"
+                }
+            ]
+        }
+    ]
+}

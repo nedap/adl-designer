@@ -1,0 +1,142 @@
+{
+    "archetypeId": "openEHR-EHR-INSTRUCTION.medication_order.v1.0.0",
+    "label": "Medication order",
+    "rmType": "INSTRUCTION",
+    "children": [
+        {
+            "type": "section",
+            "section": "description",
+            "label": "Description",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "purpose",
+                    "label": "purpose",
+                    "value": "Recording intent to use or to continue to use a medicine, vaccine or other therapeutic good including instructions on use, dispensing and administration, where neccessary."
+                },
+                {
+                    "type": "property",
+                    "property": "use",
+                    "label": "use",
+                    "value": "For recording instructions to dispense, administer or use a medicine, vaccine or other therapeutic good. This medication instruction can be used in many circumstances including: a record in a progress note; an item in a medication list, prescription  or drug chart (to be dispensed and/or administered); or in a summary document such as discharge summary or a referral for care. The instruction may be complex and involve more than one activity, such as in the case of a reducing dose of Predisolone, or multiple medications as components of the same order.  This would include a written order by a physician, dentist, nurse practitioner, or other designated health professional for a medication to be dispensed and administered to a patient.\r\n\r\nThis instruction will generally apply to things that can be prescribed or are available 'over the counter'.\r\n\r\nUse for orders for vaccinations or other therapeutic goods. These may be presented differently in different applications but require the same structure.\r\n\r\nUse for the consistent representation of an item in a medication list comprising the medicines that a clinicians collectively expect the individual to be taking.\r\n\r\nThe information recorded may separate dose, route and timing to achieve a computable and sharable specification but also allows for narrative instructions for orders like 'Frusemide 40mg two tablets in the morning and one at lunch' to ensure compatibility with existing systems. To achieve a structure statement for such compound orders, two items are required: 'Frusemide 40mg two tablets in the morning' and 'Frusemide 40mg one tablet at lunch'. The instruction will usually include information about the timing and dose  (which may be structured) and in some settings will include the route of administration. The amount of the medicines will usually be given in terms of a number and a dose unit but may be a textural statement to ensure compatibility with existing systems and also coverage of all scenarios.\r\n\r\nUse to represent a prescription item for a medicine, vaccine or other therapeutic good within a document such as an electronic prescription (see COMPOSITION.prescription) or a medication chart.\r\n\r\nThe content is potentially complex. Where the content is re-usable in other contexts, especially the paired ACTION.medication archetype (for recording dispensing, administration etc) the content has been specified in re-useable CLUSTER archetypes. For example: CLUSTER.amount and CLUSTER.amount-range contain the detail about Medication dose; CLUSTER.timing contains detail about structured dose timing; CLUSTER.medication_administration contains structure around administration for both the order and the action; and CLUSTER.chemical_description described the specific ingredients within a medicine. All of these archetypes together are required to make up the total maximal dataset for a re-useable medication instruction."
+                },
+                {
+                    "type": "property",
+                    "property": "misuse",
+                    "label": "misuse",
+                    "value": "Not to be used to record administration, use or dispensing. (For those use ACTION.medication)\r\n\r\nNot to be used to record ordering of blood products, implants or major devices such as pacemakers and defibrillators, etc."
+                },
+                {
+                    "type": "property",
+                    "property": "keywords",
+                    "label": "keywords",
+                    "value": [
+                        "medication",
+                        "order",
+                        "prescribe",
+                        "therapy",
+                        "substance",
+                        "drug",
+                        "therapeutic",
+                        "otc",
+                        "therapeutic good"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "attribution",
+            "label": "Attribution",
+            "children": [
+                {
+                    "type": "property",
+                    "property": "original_author",
+                    "label": "Original Author",
+                    "value": {
+                        "name": "Sam Heard",
+                        "organisation": "OpenEHR Foundation",
+                        "email": "sam.heard@oceaninformatics.com",
+                        "date": "2013-05-16"
+                    }
+                },
+                {
+                    "type": "property",
+                    "property": "other_contributors",
+                    "label": "Other Contributors",
+                    "value": [
+                        "John Bennett, NEHTA, Australia",
+                        "Sharmila Biswas, Australia",
+                        "Stephen Chu, NEHTA, Australia (Editor)",
+                        "Matthew Cordell, NEHTA, Australia",
+                        "Gail Easterbrook, Flinders Medical Centre, Australia",
+                        "David Evans, Queensland Health, Australia",
+                        "Sarah Gaunt, NEHTA, Australia",
+                        "Trina Gregory, cpc, Australia",
+                        "Sam Heard, Ocean Informatics, Australia (Editor)",
+                        "Mary Kelaher, NEHTA, Australia",
+                        "Robert L'egan, NEHTA, Australia",
+                        "Heather Leslie, Ocean Informatics, Australia (Editor)",
+                        "Susan McIndoe, Royal District Nursing Service, Australia",
+                        "David McKillop, NEHTA, Australia",
+                        "Chris Mitchell, RACGP, Australia",
+                        "Stewart Morrison, NEHTA, Australia",
+                        "Chris Pearce, Melbourne East GP Network, Australia",
+                        "Camilla Preeston, Royal Australian College of General Practitioners, Australia",
+                        "Margaret Prichard, NEHTA, Australia",
+                        "Cathy Richardson, NEHTA, Australia",
+                        "Robyn Richards, NEHTA - Clinical Terminology, Australia",
+                        "John Taylor, NEHTA, Australia",
+                        "Richard Townley-O'Neill, NEHTA, Australia (Editor)",
+                        "Kylie Young, The Royal Australian College of General Practitioners, Australia",
+                        "Ian McNicoll, Ocean Informatics. UK"
+                    ]
+                },
+                {
+                    "type": "property",
+                    "property": "translators",
+                    "label": "Translators",
+                    "value": {}
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "protocol",
+            "label": "Protocol",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "DV_TEXT",
+                    "rmPath": "/protocol[id32]/items[id39]",
+                    "label": "Indication for authorised use"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_IDENTIFIER",
+                    "rmPath": "/protocol[id32]/items[id33]",
+                    "label": "Medication Instruction Id"
+                },
+                {
+                    "type": "constraint",
+                    "rmType": "DV_TEXT",
+                    "rmPath": "/protocol[id32]/items[id43]",
+                    "label": "Concession benefit"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "section": "activities",
+            "label": "Activities",
+            "children": [
+                {
+                    "type": "constraint",
+                    "rmType": "ACTIVITY",
+                    "rmPath": "/activities[id2]",
+                    "label": "Order"
+                }
+            ]
+        }
+    ]
+}

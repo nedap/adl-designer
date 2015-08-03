@@ -206,6 +206,18 @@
             }
 
         }
+        
+        function loadMindmapView(panelId, archetypeModel, referenceModel, info) {
+
+          initializeMindMap(panelId, archetypeModel, referenceModel, info);
+//          mindMap.model = go.Model.fromJson(formatBuilder(model));
+//          arrangeLayout(mindMap);
+        }
+        
+        function loadTreeView(panelId, archetypeModel) {
+        	$("#" + panelId + "_mindmap_container").empty().hide();
+        	$("#" + panelId + "_tree").show();
+        }
 
         /**
          * @param {AOM.ArchetypeModel} archetypeModel
@@ -892,7 +904,8 @@
                     referenceModel: referenceModel,
                     toolbar: {
                         languageSelect: html.find('#' + context.panel_id + '_language'),
-
+												viewTree: html.find('#' + context.panel_id + '_viewTree'),
+												viewMindmap: html.find('#' + context.panel_id + '_viewMindmap'),
                         addChild: html.find('#' + context.panel_id + '_addChild'),
                         removeConstraint: html.find('#' + context.panel_id + '_removeConstraint')
                     }
@@ -908,6 +921,14 @@
                     info.tree.setLanguage(info.toolbar.languageSelect.val())
                 });
                 populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
+                
+                info.toolbar.viewMindmap.change(function() {
+                	loadMindmapView(context.panel_id, archetypeModel, referenceModel, info);
+                });
+                
+                info.toolbar.viewTree.change(function() {
+                	loadTreeView(context.panel_id, archetypeModel);
+                });
 
                 info.toolbar.addChild.click(info.tree.addChild);
                 info.toolbar.removeConstraint.click(info.tree.removeConstraint);
