@@ -501,6 +501,13 @@
             };
 
             mindmap.changeConstraintType = function (rmPath, rmType) {
+                function removeAllAttributes(cons) {
+                    var attrs = cons.attributes || [];
+                    attrs.forEach(function (attr) {
+                        options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
+                    });
+
+                }
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
 
                 // do nothing when no change
@@ -513,26 +520,22 @@
                     return false;
                 }
 
+                // If already ELEMENT, and new type needs ELEMENT wrapper, only change the existing DV node
                 if (cons.rm_type_name === "ELEMENT" && validDvTypes.indexOf(rmType) >= 0) {
                     var vCons = AOM.AmQuery.get(cons, "value");
                     if (vCons) {
-                        (cons.attributes || []).forEach(function (attr) {
-                            options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
-                        });
+                        removeAllAttributes(vCons);
                         vCons.rm_type_name = rmType;
                         return convertSingleConstraintToMindmap(cons);
                     }
                 }
 
-                // remove all sub constraints
-                var attrs = cons.attributes || [];
-                attrs.forEach(function (attr) {
-                    options.archetypeModel.removeAttribute(cons, attr.rm_attribute_name);
-                });
+                removeAllAttributes(cons);
 
                 if (validDvTypes.indexOf(rmType) < 0) {
                     cons.rm_type_name = rmType;
                 } else {
+                    cons.rm_type_name="ELEMENT";
                     var attr = options.archetypeModel.addAttribute(cons, "value");
                     var dvCons = AOM.newCComplexObject(rmType, options.archetypeModel.generateSpecializedTermId("id"));
                     options.archetypeModel.addConstraint(attr, dvCons);
