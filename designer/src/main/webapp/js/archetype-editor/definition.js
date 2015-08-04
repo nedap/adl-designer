@@ -217,8 +217,12 @@
         	$("#" + panelId + "_mindmap_container").empty().hide();
         	$("#" + panelId + "_tree").show();
         	$("#" + panelId + "_tree").closest(".panel").children(".panel-footer").show();
-          var definitionTreeElement = $('#' + panelId + '_tree');
-          info.tree = new my.DefinitionTree(archetypeModel, definitionTreeElement, info);
+
+            var definitionTreeElement = $('#' + panelId + '_tree');
+            info.tree = new my.DefinitionTree(archetypeModel, definitionTreeElement, info);
+
+            info.toolbar.addChild.click(info.tree.addChild);
+            info.toolbar.removeConstraint.click(info.tree.removeConstraint);
         }
 
         /**
@@ -604,7 +608,7 @@
                     };
 
                     if (!consJson.text) {
-                        consJson.text = self.extractConstraintName(cons);
+                        consJson.text = self.extractConstraintName(cons, currentLanguage);
                     }
 
                     // only add attributes if no custom handler for this type
@@ -837,6 +841,8 @@
             }
 
             self.info = info;
+            currentLanguage = info.toolbar.languageSelect.val();
+
 
             var jsonTreeTarget = [];
             buildTreeJson(jsonTreeTarget, archetypeModel.data.definition);
@@ -882,7 +888,7 @@
                 info.propertiesPanel.show(constraintData);
             });
 
-            currentLanguage = archetypeModel.defaultLanguage;
+
         };
 
         my.show = function (archetypeModel, referenceModel, targetElement) {
@@ -894,6 +900,7 @@
 
             GuiUtils.applyTemplate("definition|main", context, function (html) {
                 html = $(html);
+                targetElement.append(html);
 
                 var info = {
                     referenceModel: referenceModel,
@@ -908,12 +915,14 @@
                 var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
                 info.propertiesPanel = new my.DefinitionPropertiesPanel(archetypeModel, definitionPropertiesElement);
 
-                var definitionTreeElement = html.find('#' + context.panel_id + '_tree');
-                info.tree = new my.DefinitionTree(archetypeModel, definitionTreeElement, info);
+                loadTreeView(context.panel_id, archetypeModel, info);
+
 
                 info.toolbar.languageSelect.val(archetypeModel.defaultLanguage);
                 info.toolbar.languageSelect.change(function () {
-                    info.tree.setLanguage(info.toolbar.languageSelect.val())
+                    if (info.tree) {
+                        info.tree.setLanguage(info.toolbar.languageSelect.val());
+                    }
                     var mindmapContainer = $("#" + context.panel_id + "_mindmap_container");
                     if(mindmapContainer.is(":visible")) {
                     	mindmapContainer.empty();
@@ -923,6 +932,7 @@
                 populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
                 
                 info.toolbar.viewMindmap.change(function() {
+                    delete info.tree;
                 	loadMindmapView(context.panel_id, archetypeModel, referenceModel, info);
                 });
                 
@@ -930,10 +940,7 @@
                 	loadTreeView(context.panel_id, archetypeModel, info);
                 });
 
-                info.toolbar.addChild.click(info.tree.addChild);
-                info.toolbar.removeConstraint.click(info.tree.removeConstraint);
 
-                targetElement.append(html);
             });
         };
 

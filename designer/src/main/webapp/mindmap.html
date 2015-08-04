@@ -98,6 +98,8 @@
 //                console.log("New protocol DV_QUANTITY", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
 
 
+                var slotTypes = mindmapModel.getValidRmTypesForConstraint("/protocol[id30]/items[id31]");
+                console.log("Valid slot types", slotTypes);
                 newTerm = mindmapModel.changeConstraintType("/data[id2]/events[id3]/data[id4]/items[id128]/items[id56]/items[id90]", "DV_BOOLEAN");
                 console.log("New protocol DV_CODED_TEXT", newTerm, "Valid rm types", mindmapModel.getValidRmTypesForConstraint(newTerm.rmPath));
 

@@ -353,6 +353,21 @@ var AmUtils = function () {
         return str && str.length > 0 ? str : undefined;
     };
 
+    /**
+     * Remove items that are undefined in the list. Changes the original list
+     * @param {*[]} list
+     */
+    my.removeUndefinedItems = function (list) {
+        var i=0;
+        while (i<list.length) {
+            if (list[i]===undefined) {
+                list.splice(i, 1);
+            } else {
+                i++;
+            }
+        }
+    };
+
     my.Predicates = {
         isTruthy: function (d) {
             return d;

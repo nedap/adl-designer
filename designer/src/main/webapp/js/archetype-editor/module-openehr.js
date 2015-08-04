@@ -36,6 +36,9 @@
             var mindmap = this;
 
             var itemStructSet = AmUtils.listToSet(['ITEM_TREE', 'ITEM_SINGLE', 'ITEM_LIST', 'ITEM_TABLE']);
+            var validSlotTypes = ["ADMIN_ENTRY", "CLUSTER", "EVALUATION", "OBSERVATION", "SECTION", "COMPOSITION",
+                "INSTRUCTION", "ACTION", "ELEMENT"];
+            validSlotTypes.sort();
 
             var validDvTypes = [
                 "DV_TEXT",
@@ -221,6 +224,8 @@
 
                     function createStateSection() {
                         var stateConses = AOM.AmQuery.findAll(options.archetypeModel.data.definition, "/data/events/state");
+                        if (stateConses.length==null) return undefined;
+
                         var stateCons = Stream(stateConses).filter(function (d) {
                             return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
                         }).findFirst().get();
@@ -239,6 +244,8 @@
                     target.push(createProtocolSection());
                     target.push(createDataSection());
                     target.push(createStateSection());
+
+                    AmUtils.removeUndefinedItems(target);
                 }
 
                 function addEvaluationSections(target) {
@@ -368,6 +375,24 @@
 
             mindmap.getValidRmTypesForConstraint = function (rmPath) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
+                if (cons["@type"]==="ARCHETYPE_SLOT") {
+                    var parentAttr = cons[".parent"];
+                    var parentCons = parentAttr[".parent"];
+                    var rmType = options.referenceModel.getType(parentCons.rm_type_name);
+                    var rmAttr = rmType ? rmType.attributes[parentAttr.rm_attribute_name] : undefined;
+                    if (rmAttr) {
+                        var validParentTypes = options.referenceModel.getSubclassTypes(rmAttr.type, true);
+                        var intersectSlotTypes = AmUtils.keys(AmUtils.intersectSet(
+                            AmUtils.listToSet(validSlotTypes), AmUtils.listToSet(validParentTypes)));
+                        if (intersectSlotTypes.length===0) return [cons.rm_type_name];
+                        intersectSlotTypes.sort();
+                        return intersectSlotTypes;
+                    } else {
+                        return [cons.rm_type_name];
+                    }
+                    return validSlotTypes;
+                }
+
                 if (cons.rm_type_name === "ELEMENT" || cons.rm_type_name==="CLUSTER") {
                     var result = AmUtils.clone(validDvTypes);
                     result.push("CLUSTER");
