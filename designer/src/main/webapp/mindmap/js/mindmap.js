@@ -93,7 +93,10 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     );
     
     var simpleTemplate = goJS(go.Node, "Auto", {
-				selectionAdornmentTemplate: defaultNodeAdornmentTemplate
+				selectionAdornmentTemplate: defaultNodeAdornmentTemplate,
+  			click: function(e, obj) {
+  				repaintPropertiesPanel(obj, info);
+  			}
     	},
   		goJS(go.Shape, {
       	figure: "RoundedRectangle",
@@ -108,10 +111,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     			margin: new go.Margin(1,1,1,1),
     			defaultAlignment: go.Spot.Left,
     			stretch: go.GraphObject.Horizontal,
-    			minSize: new go.Size(30, 20),
-    			click: function(e, obj) {
-    				repaintPropertiesPanel(obj, info);
-    			}
+    			minSize: new go.Size(30, 20)
     		},
     		goJS("TreeExpanderButton", {
           width: 14,
@@ -133,7 +133,12 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
       new go.Binding("isTreeExpanded", "expand")
     );
 
-    var rootTemplate = goJS(go.Node, "Auto", {selectionAdorned: false},
+    var rootTemplate = goJS(go.Node, "Auto", {
+    		selectionAdorned: false,
+  			click: function(e, obj) {
+  				repaintPropertiesPanel(obj, info);
+  			}
+    	},
         goJS(go.Shape, {
         	figure: "Ellipse",
         	strokeWidth: 1,
@@ -141,15 +146,12 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
         }, 
         new go.Binding("fill", "mandatory", function(v) { return !v ? "lightblue" : "lightgray"; }),
         new go.Binding("stroke", "mandatory", function(v) { return !v ? "darkblue" : "darkgray"; })),            
-        goJS(go.Panel, "Horizontal",
+      goJS(go.Panel, "Horizontal",
           { 
       			margin: new go.Margin(1,1,1,1),
       			defaultAlignment: go.Spot.Left,
       			stretch: go.GraphObject.Horizontal,
-      			minSize: new go.Size(10, 10),
-      			click: function(e, obj) {
-      				repaintPropertiesPanel(obj, info);
-      			}
+      			minSize: new go.Size(10, 10)
       		},    
           goJS(go.TextBlock, {
               name: "TEXT",
@@ -164,7 +166,10 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     
     var rmNodeTemplate = goJS(go.Node, "Auto",  {
 				selectionAdornmentTemplate: defaultNodeAdornmentTemplate,
-				cursor: "pointer"
+				cursor: "pointer",
+  			click: function(e, obj) {
+  				repaintPropertiesPanel(obj, info);
+  			}
   		},
     		goJS(go.Shape, {
         	figure: "RoundedRectangle",
@@ -178,10 +183,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     			margin: new go.Margin(1,1,1,1),
     			defaultAlignment: go.Spot.Left,
     			stretch: go.GraphObject.Horizontal,
-    			minSize: new go.Size(30, 15),
-    			click: function(e, obj) {
-    				repaintPropertiesPanel(obj, info);
-    			}
+    			minSize: new go.Size(30, 15)
     		},
     		goJS("TreeExpanderButton", {
           width: 14,
@@ -326,7 +328,7 @@ function repaintPropertiesPanel(obj, info) {
 function repaintMindmapNode(oldData, rmPath) {
 	var nodeData = mindmapModel.getMindmapConstraint(rmPath);
 	oldData.setProperties({
-    "ICON.source": "mindmap/resources/icons/" + (nodeData.rmType ? nodeData.rmType.toLowerCase() : "DV_TEXT".toLowerCase()) + ".png",
+    "ICON.source": nodeIconPath(nodeData.rmType),
     "TEXT.text": nodeData.label
 	});
 	oldData.data.node = nodeData;
@@ -365,7 +367,7 @@ function recursiveChildrenFormatBuilder(data, parentKey, brush, dir) {
       var nodeObj = {"key": parseInt(key), "parent": parentKey, "text": data[i].label, "brush": brush, "dir": dir, "node": nodeData, "expand": (data[i].section != "description" && data[i].section != "attribution")};
 
       if (data[i].rmType) {
-          nodeObj["img"] = "mindmap/resources/icons/" + data[i].rmType.toLowerCase() + ".png";
+          nodeObj["img"] = nodeIconPath(data[i].rmType), // "mindmap/resources/icons/" + data[i].rmType.toLowerCase() + ".png";
           nodeObj["category"] = "rmNode";
       } else {
       	nodeObj["category"] = "simple";
@@ -398,6 +400,10 @@ function spotConverter(dir, from) {
   } else {
       return (from ? go.Spot.Right : go.Spot.Left);
   }
+}
+
+function nodeIconPath(rmType) {
+	return "images/icons/" + (rmType ? rmType.toLowerCase() : "DV_TEXT".toLowerCase()) + ".png";
 }
 
 function toggleTextWeight(obj) {
@@ -434,7 +440,7 @@ function addDefaultNodeAndLink(e, obj) {
   		mandatory: false, 
   		fixed: true, 
   		category: "rmNode", 
-  		img: "mindmap/resources/icons/" + (newNode ? newNode.rmType.toLowerCase() : "DV_TEXT".toLowerCase()) + ".png",
+  		img: nodeIconPath(newNode.rmType),
   		node: {
   			label: label,
   			rmPath: newNode.rmPath,
