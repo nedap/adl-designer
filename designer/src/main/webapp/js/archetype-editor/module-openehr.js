@@ -78,6 +78,9 @@
                 if (cons["@type"]==="C_COMPLEX_OBJECT" && (result.rmType === "CLUSTER" || result.rmType==="HISTORY")) {
                     result.canAddChildren = true;
                 }
+                if (cons["@type"]==="ARCHETYPE_SLOT") {
+                    result.isSlot=true;
+                }
                 result.canDelete = true;
                 return result;
             }
