@@ -165,6 +165,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
       );  // end Node    
     
     var rmNodeTemplate = goJS(go.Node, "Auto",  {
+    	  name: "NODE",
 				selectionAdornmentTemplate: defaultNodeAdornmentTemplate,
 				cursor: "pointer",
   			click: function(e, obj) {
@@ -330,20 +331,27 @@ function repaintMindmapNode(oldNode, rmPath) {
   var adorn = oldNode.part;
   var diagram = adorn.diagram;
 	var nodeData = mindmapModel.getMindmapConstraint(rmPath);
-	var parentLink = oldNode.findTreeParentLink();
-	var parentNode = diagram.model.findNodeDataForKey(oldNode.data.parent);
-//	oldNode.data = createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir);
-	diagram.model.addNodeData(createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir));
-//	var newNode = diagram.model.findNodeDataForKey(oldNode.data.key);
-	deleteNode(diagram, oldNode, false);
-//	parentLink.toNode(newNode);
-	arrangeLayout(diagram);
-//	diagram.model
-//	oldData.setProperties({
+	var rmTypeChanged = nodeData.rmType != oldNode.data.node.rmType;
+//	var parentLink = oldNode.findTreeParentLink();
+//	var parentNode = diagram.model.findNodeDataForKey(oldNode.data.parent);
+  //oldNode.data = createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir);
+	// diagram.model.addNodeData(createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir));
+//	var newNodeData = diagram.model.findNodeDataForKey(oldNode.data.key);
+//	var newNode = diagram.findNodeForData(oldNode);
+//	oldNode.setProperties({
 //    "ICON.source": nodeIconPath(nodeData.rmType, nodeData.isSlot),
 //    "TEXT.text": nodeData.label
 //	});
-//	oldData.data.node = nodeData;
+//	oldNode.data.node = nodeData;
+	updateNodeData(oldNode, nodeData);
+  oldNode.findObject("NODE").updateAdornments();
+  if(rmTypeChanged) {
+  	deleteNode(diagram, oldNode, true);
+  }
+//	parentLink.toNode(newNode);
+	arrangeLayout(diagram);
+//	diagram.model
+
 }
 
 function formatBuilder(data) {
@@ -382,49 +390,42 @@ function recursiveChildrenFormatBuilder(data, parentKey, brush, dir) {
         key = parentKey + "" + (i + 1);
     }
   	var nodeData = $.extend({}, data[i]);
-  	delete nodeData.children;
-  	
-  	
-  	
-//    var nodeObj = {
-//    		"key": parseInt(key), 
-//    		"parent": parentKey, 
-//    		"text": data[i].label, 
-//    		"brush": brush, 
-//    		"dir": dir, 
-//    		"node": nodeData, 
-//    		"expand": (data[i].section != "description" && data[i].section != "attribution")
-//    };
-//
-//    if (data[i].rmType) {
-//        nodeObj["img"] = nodeIconPath(data[i].rmType, data[i].isSlot),
-//        nodeObj["category"] = "rmNode";
-//    } else {
-//    	nodeObj["category"] = "simple";
-//    }
-//    if(data[i].hasOwnProperty("canDelete") && data[i].canDelete) {
-//    	nodeObj["mandatory"] = false;
-//    } else {
-//    	nodeObj["mandatory"] = true;
-//    }
-//    if(data[i].hasOwnProperty("canAddChildren") && data[i].canAddChildren) {
-//    	nodeObj["fixed"] = false;
-//    } else {
-//    	nodeObj["fixed"] = true;
-//    }
-    
-    
-    
-    
     nodeDataArray.push(createNewNodeData(nodeData, key, parentKey, brush, dir));
-
     if (data[i].children){
         recursiveChildrenFormatBuilder(data[i].children , key, brush, dir);
     }
   }
 }
 
+function updateNodeData(oldNode, newNodeData) {
+	oldNode.data.text = newNodeData.label;
+	oldNode.data.node = newNodeData;
+	oldNode.data.expand = (newNodeData.section != "description" && newNodeData.section != "attribution");
+  if (newNodeData.rmType) {
+  		oldNode.data["img"] = nodeIconPath(newNodeData.rmType, newNodeData.isSlot);
+      oldNode.data["category"] = "rmNode";
+  } else {
+  	oldNode.data["category"] = "simple";
+  }
+  if(newNodeData.hasOwnProperty("canDelete") && newNodeData.canDelete) {
+  	oldNode.data["mandatory"] = false;
+  } else {
+  	oldNode.data["mandatory"] = true;
+  }
+  if(newNodeData.hasOwnProperty("canAddChildren") && newNodeData.canAddChildren) {
+  	oldNode.data["fixed"] = false;
+  } else {
+  	oldNode.data["fixed"] = true;
+  }
+	oldNode.setProperties({
+    "ICON.source": nodeIconPath(newNodeData.rmType, newNodeData.isSlot),
+    "TEXT.text": newNodeData.label
+	});
+}
+
+
 function createNewNodeData(nodeData, key, parentKey, brush, dir) {
+	delete nodeData.children;
   var nodeObj = {
   		"key": parseInt(key), 
   		"parent": parentKey, 
@@ -435,7 +436,7 @@ function createNewNodeData(nodeData, key, parentKey, brush, dir) {
   		"expand": (nodeData.section != "description" && nodeData.section != "attribution")
   };
   if (nodeData.rmType) {
-      nodeObj["img"] = nodeIconPath(nodeData.rmType, nodeData.isSlot),
+      nodeObj["img"] = nodeIconPath(nodeData.rmType, nodeData.isSlot);
       nodeObj["category"] = "rmNode";
   } else {
   	nodeObj["category"] = "simple";
