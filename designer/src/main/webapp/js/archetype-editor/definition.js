@@ -208,15 +208,17 @@
         }
         
         function loadMindmapView(panelId, archetypeModel, referenceModel, info) {
-
-          initializeMindMap(panelId, archetypeModel, referenceModel, info);
-//          mindMap.model = go.Model.fromJson(formatBuilder(model));
-//          arrangeLayout(mindMap);
+        	$("#" + panelId + "_tree").hide();
+        	$("#" + panelId + "_tree").closest(".panel").children(".panel-footer").hide();
+          initializeMindMap(panelId, archetypeModel, referenceModel, info.toolbar.languageSelect.val(), info);
         }
         
-        function loadTreeView(panelId, archetypeModel) {
+        function loadTreeView(panelId, archetypeModel, info) {
         	$("#" + panelId + "_mindmap_container").empty().hide();
         	$("#" + panelId + "_tree").show();
+        	$("#" + panelId + "_tree").closest(".panel").children(".panel-footer").show();
+          var definitionTreeElement = $('#' + panelId + '_tree');
+          info.tree = new my.DefinitionTree(archetypeModel, definitionTreeElement, info);
         }
 
         /**
@@ -912,6 +914,11 @@
                 info.toolbar.languageSelect.val(archetypeModel.defaultLanguage);
                 info.toolbar.languageSelect.change(function () {
                     info.tree.setLanguage(info.toolbar.languageSelect.val())
+                    var mindmapContainer = $("#" + context.panel_id + "_mindmap_container");
+                    if(mindmapContainer.is(":visible")) {
+                    	mindmapContainer.empty();
+                    	initializeMindMap(context.panel_id, archetypeModel, referenceModel, info.toolbar.languageSelect.val(), info);
+                    }
                 });
                 populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
                 
@@ -920,7 +927,7 @@
                 });
                 
                 info.toolbar.viewTree.change(function() {
-                	loadTreeView(context.panel_id, archetypeModel);
+                	loadTreeView(context.panel_id, archetypeModel, info);
                 });
 
                 info.toolbar.addChild.click(info.tree.addChild);
