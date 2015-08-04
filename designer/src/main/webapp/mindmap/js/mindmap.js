@@ -201,7 +201,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
           alignment: go.Spot.TopRight,
           cursor: "pointer",
           click: function(e, obj) {
-          	createRmTypeSelect(myDiagram, obj);
+          	createRmTypeSelect(myDiagram, obj, info);
             e.event.stopPropagation();
             e.event.stopImmediatePropagation();
             return false;
@@ -276,7 +276,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
   arrangeLayout(myDiagram);
 }
 
-function createRmTypeSelect(myDiagram, obj) {
+function createRmTypeSelect(myDiagram, obj, info) {
   var loc = obj.getDocumentPoint(go.Spot.BottomLeft);
   var svgPosition = myDiagram.transformDocToView(loc);
 	var panelPosition = $(myDiagram.div).offset();
@@ -288,7 +288,8 @@ function createRmTypeSelect(myDiagram, obj) {
   		$("body").append("<div id='customNodeEditor' style='display:inline;position:absolute;z-index:1000;'><select id='availableRmTypes'></div>");
   		$("#customNodeEditor").offset({left: panelPosition.left + svgPosition.x, top: panelPosition.top + svgPosition.y});
       for (var i = 0; i < availableOptions.length; i++) {
-      	$("#availableRmTypes").append("<option value='" + availableOptions[i] + "'>" + availableOptions[i] + "</option>");
+      	$("#availableRmTypes").append("<option value='" + availableOptions[i] + "'></option>");
+      	$("#availableRmTypes").find("option").last().text(availableOptions[i]);
       }
       $("#availableRmTypes").val(obj.part.data.node.rmType);
       $("#availableRmTypes").change(obj, function(ev) {
@@ -325,21 +326,39 @@ function repaintPropertiesPanel(obj, info) {
 	}
 }
 
-function repaintMindmapNode(oldData, rmPath) {
+function repaintMindmapNode(oldNode, rmPath) {
+  var adorn = oldNode.part;
+  var diagram = adorn.diagram;
 	var nodeData = mindmapModel.getMindmapConstraint(rmPath);
-	oldData.setProperties({
-    "ICON.source": nodeIconPath(nodeData.rmType),
-    "TEXT.text": nodeData.label
-	});
-	oldData.data.node = nodeData;
+	var parentLink = oldNode.findTreeParentLink();
+	var parentNode = diagram.model.findNodeDataForKey(oldNode.data.parent);
+//	oldNode.data = createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir);
+	diagram.model.addNodeData(createNewNodeData(nodeData, oldNode.data.key, oldNode.data.parent, oldNode.data.brush, oldNode.data.dir));
+//	var newNode = diagram.model.findNodeDataForKey(oldNode.data.key);
+	deleteNode(diagram, oldNode, false);
+//	parentLink.toNode(newNode);
+	arrangeLayout(diagram);
+//	diagram.model
+//	oldData.setProperties({
+//    "ICON.source": nodeIconPath(nodeData.rmType, nodeData.isSlot),
+//    "TEXT.text": nodeData.label
+//	});
+//	oldData.data.node = nodeData;
 }
 
-function formatBuilder(data){
+function formatBuilder(data) {
   var key = 0;
   if (data) {
   	var nodeData = $.extend({}, data);
   	delete nodeData.children;
-    nodeDataArray.push( {"key": key, "text": data.label , "loc":"0 0", "category": "root", "node": nodeData, "mandatory": true} );
+    nodeDataArray.push({
+    	"key": key, 
+    	"text": data.label, 
+    	"loc":"0 0", 
+    	"category": "root", 
+    	"node": nodeData, 
+    	"mandatory": true
+    });
     if (data.children){
         recursiveChildrenFormatBuilder(data.children, key);
     }
@@ -348,51 +367,95 @@ function formatBuilder(data){
 }
 
 function recursiveChildrenFormatBuilder(data, parentKey, brush, dir) {
-  for (var i=0; i<data.length; i++){
-      var key = "";
-      var brush = brushArray["rmnode"];
-      if (data[i].children && !data[i].rmType) {
-      	brush = brushArray["subtree"];
-      }
-      if(parentKey == 0){
-          key = (i + 1);
-          brush = brush;
-          dir = (dir == "left") ? "right" : "left";
-      }
-      else {
-          key = parentKey + "" + (i + 1);
-      }
-    	var nodeData = $.extend({}, data[i]);
-    	delete nodeData.children;
-      var nodeObj = {"key": parseInt(key), "parent": parentKey, "text": data[i].label, "brush": brush, "dir": dir, "node": nodeData, "expand": (data[i].section != "description" && data[i].section != "attribution")};
+  for (var i=0; i<data.length; i++) {
+    var key = "";
+    var brush = brushArray["rmnode"];
+    if (data[i].children && !data[i].rmType) {
+    	brush = brushArray["subtree"];
+    }
+    if(parentKey == 0){
+        key = (i + 1);
+        brush = brush;
+        dir = (dir == "left") ? "right" : "left";
+    }
+    else {
+        key = parentKey + "" + (i + 1);
+    }
+  	var nodeData = $.extend({}, data[i]);
+  	delete nodeData.children;
+  	
+  	
+  	
+//    var nodeObj = {
+//    		"key": parseInt(key), 
+//    		"parent": parentKey, 
+//    		"text": data[i].label, 
+//    		"brush": brush, 
+//    		"dir": dir, 
+//    		"node": nodeData, 
+//    		"expand": (data[i].section != "description" && data[i].section != "attribution")
+//    };
+//
+//    if (data[i].rmType) {
+//        nodeObj["img"] = nodeIconPath(data[i].rmType, data[i].isSlot),
+//        nodeObj["category"] = "rmNode";
+//    } else {
+//    	nodeObj["category"] = "simple";
+//    }
+//    if(data[i].hasOwnProperty("canDelete") && data[i].canDelete) {
+//    	nodeObj["mandatory"] = false;
+//    } else {
+//    	nodeObj["mandatory"] = true;
+//    }
+//    if(data[i].hasOwnProperty("canAddChildren") && data[i].canAddChildren) {
+//    	nodeObj["fixed"] = false;
+//    } else {
+//    	nodeObj["fixed"] = true;
+//    }
+    
+    
+    
+    
+    nodeDataArray.push(createNewNodeData(nodeData, key, parentKey, brush, dir));
 
-      if (data[i].rmType) {
-          nodeObj["img"] = nodeIconPath(data[i].rmType), // "mindmap/resources/icons/" + data[i].rmType.toLowerCase() + ".png";
-          nodeObj["category"] = "rmNode";
-      } else {
-      	nodeObj["category"] = "simple";
-      }
-      if(data[i].hasOwnProperty("canDelete") && data[i].canDelete) {
-      	nodeObj["mandatory"] = false;
-      } else {
-      	nodeObj["mandatory"] = true;
-      }
-      if(data[i].hasOwnProperty("canAddChildren") && data[i].canAddChildren) {
-      	nodeObj["fixed"] = false;
-      } else {
-      	nodeObj["fixed"] = true;
-      }
-      nodeDataArray.push(nodeObj);
-
-      if (data[i].children){
-          recursiveChildrenFormatBuilder(data[i].children , key, brush, dir);
-      }
+    if (data[i].children){
+        recursiveChildrenFormatBuilder(data[i].children , key, brush, dir);
+    }
   }
 }
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function createNewNodeData(nodeData, key, parentKey, brush, dir) {
+  var nodeObj = {
+  		"key": parseInt(key), 
+  		"parent": parentKey, 
+  		"text": nodeData.label, 
+  		"brush": brush, 
+  		"dir": dir, 
+  		"node": nodeData, 
+  		"expand": (nodeData.section != "description" && nodeData.section != "attribution")
+  };
+  if (nodeData.rmType) {
+      nodeObj["img"] = nodeIconPath(nodeData.rmType, nodeData.isSlot),
+      nodeObj["category"] = "rmNode";
+  } else {
+  	nodeObj["category"] = "simple";
+  }
+  if(nodeData.hasOwnProperty("canDelete") && nodeData.canDelete) {
+  	nodeObj["mandatory"] = false;
+  } else {
+  	nodeObj["mandatory"] = true;
+  }
+  if(nodeData.hasOwnProperty("canAddChildren") && nodeData.canAddChildren) {
+  	nodeObj["fixed"] = false;
+  } else {
+  	nodeObj["fixed"] = true;
+  }
+  return nodeObj;
 }
+
+//function createRandomId() {
+//  return Math.floor(Math.random() * 1000);
+//}
 
 function spotConverter(dir, from) {
   if (dir === "left") {
@@ -402,23 +465,24 @@ function spotConverter(dir, from) {
   }
 }
 
-function nodeIconPath(rmType) {
-	return "images/icons/" + (rmType ? rmType.toLowerCase() : "DV_TEXT".toLowerCase()) + ".png";
+function nodeIconPath(rmType, isSlot) {
+	isSlot = isSlot || false;
+	return "images/icons/" + (rmType ? rmType.toLowerCase() : "DV_TEXT".toLowerCase()) + (isSlot ? "_slot" : "") + ".png";
 }
 
-function toggleTextWeight(obj) {
-  var adorn = obj.part;
-  adorn.diagram.startTransaction("Change Text Weight");
-  var node = adorn.adornedPart;
-  var tb = node.findObject("TEXT");
-  var idx = tb.font.indexOf("bold");
-  if (idx < 0) {
-      tb.font = "bold " + tb.font;
-  } else {
-      tb.font = tb.font.substr(idx + 5);
-  }
-  adorn.diagram.commitTransaction("Change Text Weight");
-}
+//function toggleTextWeight(obj) {
+//  var adorn = obj.part;
+//  adorn.diagram.startTransaction("Change Text Weight");
+//  var node = adorn.adornedPart;
+//  var tb = node.findObject("TEXT");
+//  var idx = tb.font.indexOf("bold");
+//  if (idx < 0) {
+//      tb.font = "bold " + tb.font;
+//  } else {
+//      tb.font = tb.font.substr(idx + 5);
+//  }
+//  adorn.diagram.commitTransaction("Change Text Weight");
+//}
 
 function addDefaultNodeAndLink(e, obj) {
   var adorn = obj.part;
@@ -440,7 +504,7 @@ function addDefaultNodeAndLink(e, obj) {
   		mandatory: false, 
   		fixed: true, 
   		category: "rmNode", 
-  		img: nodeIconPath(newNode.rmType),
+  		img: nodeIconPath(newNode.rmType, newNode.isSlot),
   		node: {
   			label: label,
   			rmPath: newNode.rmPath,
@@ -465,50 +529,55 @@ function removeNodeAndLink(e, obj) {
   layoutAll(diagram);
 }
 
-function deleteNode(mydiagram, deletedItem)
+function deleteNode(mydiagram, deletedItem, keepParent)
 {
+		keepParent = keepParent || false;
     var nodeToDelete = mydiagram.selection.iterator.first();    
     var childNodes = getChildNodes(mydiagram, deletedItem);
-    $.each(childNodes, function()
-    {
-         myDiagram.remove(this);
-    });
-    mydiagram.commandHandler.deleteSelection();
+//    $.each(childNodes, function()
+//    {
+//         myDiagram.remove(this);
+//    });
+    if(!keepParent)
+    	mydiagram.commandHandler.deleteSelection();
+    else
+    	mydiagram.removeParts(childNodes, false);
 }
 
 function getChildNodes(mydiagram, deleteNode)
 {
     var children = [];
-    var allConnected= deleteNode.findNodesConnected();
+//    var allConnected= deleteNode.findNodesConnected();
+    var allConnected = deleteNode.findNodesOutOf()
     while (allConnected.next())
     {
         var child = allConnected.value;
-        if (isChildNode(mydiagram, deleteNode, child))
-        {
+//        if (isChildNode(mydiagram, deleteNode, child))
+//        {
             children.push(child);
-            var subChildren = getChildrenNodes(child);
+            var subChildren = getChildNodes(mydiagram, child);
             $.each(subChildren, function()
             {
                 children.push(this);
             });
-       }
+//       }
    }
    return children;
 }
 
-function isChildNode(mydiagram, currNode, currChild)
-{
-    var links = mydiagram.links.iterator;
-    while (links.next())
-    {
-        var currentLinkModel = links.value.data;
-        if (currentLinkModel.from === currNode.data.key &&   currentLinkModel.to === currChild.data.key)
-        {
-             return true;
-        }
-    }
-    return false;
-}
+//function isChildNode(mydiagram, currNode, currChild)
+//{
+//    var links = mydiagram.links.iterator;
+//    while (links.next())
+//    {
+//        var currentLinkModel = links.value.data;
+//        if (currentLinkModel.from === currNode.data.key &&   currentLinkModel.to === currChild.data.key)
+//        {
+//             return true;
+//        }
+//    }
+//    return false;
+//}
 
 function layoutAll(myDiagram) {
   var root = myDiagram.findNodeForKey(0);
