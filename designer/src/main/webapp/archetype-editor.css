@@ -465,6 +465,7 @@ form .table-layout .table-cell {
   -webkit-flex-shrink: 1;
   xpadding: 10px;
   display: flex;
+  display: -webkit-flex;
 }
 
 .constraint-properties {
