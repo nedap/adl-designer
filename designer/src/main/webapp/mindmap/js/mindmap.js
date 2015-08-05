@@ -33,9 +33,9 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     myDiagram.toolManager.dragSelectingTool.isEnabled = false;
     
     var defaultNodeAdornmentTemplate = goJS(go.Adornment, "Spot",
-        goJS(go.Panel, "Auto",         		
+        goJS(go.Panel, "Auto",
             goJS(go.Shape, "RoundedRectangle", { fill: null, stroke: null, strokeWidth: 2 }),
-            goJS(go.Placeholder, { margin: new go.Margin(-16,6,-15,0) })
+            goJS(go.Placeholder, { margin: new go.Margin(-10,6,-10,0) })
         ),
         goJS(go.Panel, "Horizontal", {
 	          alignment: go.Spot.TopRight, 
@@ -86,7 +86,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
             	}  
 	          },
 	          goJS(go.TextBlock, " - ",  // the Button content
-	              { font: "bold 12pt sans-serif" }),
+	              { font: 'bold 12pt "Helvetica Neue", Helvetica, Arial, sans-serif' }),
 	          new go.Binding("visible", "mandatory", function(v) { return !v; })
 	        )
       	)
@@ -96,9 +96,20 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
 				selectionAdornmentTemplate: defaultNodeAdornmentTemplate,
   			click: function(e, obj) {
   				repaintPropertiesPanel(obj, info);
-  			}
+  			},
+      	selectionChanged: function(node) {
+			    var box = node.findObject("BOX");
+		      if (node.isSelected) {
+//		      	box.stroke = "Navy";
+		      	box.strokeWidth = 3;
+		      } else {
+//		      	box.stroke = !node.data.mandatory ? "darkblue" : "darkgray";
+		      	box.strokeWidth = 1;
+		      }
+			  }
     	},
   		goJS(go.Shape, {
+  			name: "BOX",
       	figure: "RoundedRectangle",
       	strokeWidth: 1,
       	margin: new go.Margin(1,1,1,1)
@@ -122,7 +133,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
         }),
         goJS(go.TextBlock, {
             name: "TEXT",
-            font: "12px SourceSansPro",
+            font: '12px "Helvetica Neue", Helvetica, Arial, sans-serif',
             margin: new go.Margin(0, 8, 0, 4),
             isMultiline: false
           },
@@ -137,9 +148,20 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     		selectionAdorned: false,
   			click: function(e, obj) {
   				repaintPropertiesPanel(obj, info);
-  			}
+  			},
+      	selectionChanged: function(node) {
+			    var box = node.findObject("BOX");
+		      if (node.isSelected) {
+//		      	box.stroke = "Navy";
+		      	box.strokeWidth = 3;
+		      } else {
+//		      	box.stroke = !node.data.mandatory ? "darkblue" : "darkgray";
+		      	box.strokeWidth = 1;
+		      }
+			  }
     	},
         goJS(go.Shape, {
+        	name: "BOX",
         	figure: "Ellipse",
         	strokeWidth: 1,
         	margin: new go.Margin(1,1,1,1)
@@ -155,8 +177,8 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
       		},    
           goJS(go.TextBlock, {
               name: "TEXT",
-              font: "13px SourceSansPro",
-              margin: new go.Margin(0, 8, 0, 4),
+              font: '13px "Helvetica Neue", Helvetica, Arial, sans-serif',
+              margin: new go.Margin(3, 0, 3, 0),
               editable: false
             },
             new go.Binding("text", "text").makeTwoWay()
@@ -170,9 +192,20 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
 				cursor: "pointer",
   			click: function(e, obj) {
   				repaintPropertiesPanel(obj, info);
-  			}
+  			},
+      	selectionChanged: function(node) {
+			    var box = node.findObject("BOX");
+		      if (node.isSelected) {
+//		      	box.stroke = "Navy";
+		      	box.strokeWidth = 3;
+		      } else {
+//		      	box.stroke = !node.data.mandatory ? "darkblue" : "darkgray";
+		      	box.strokeWidth = 1;
+		      }
+			  }
   		},
     		goJS(go.Shape, {
+    			name: "BOX",
         	figure: "RoundedRectangle",
         	strokeWidth: 1,
         	margin: new go.Margin(1,1,1,1)
@@ -213,7 +246,7 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
         // text
         goJS(go.TextBlock, {
             name: "TEXT",
-            font: "12px SourceSansPro",
+            font: '12px "Helvetica Neue", Helvetica, Arial, sans-serif',
             margin: new go.Margin(0, 8, 0, 4),
             isMultiline: false
           },
@@ -513,6 +546,7 @@ function addDefaultNodeAndLink(e, obj) {
   		}
   };
   diagram.model.addNodeData(newdata);
+  mindmapModel.renameConstraint(newNode.rmPath, label);
   layoutTree(diagram, oldnode);
   diagram.commitTransaction("Add Node");
   layoutAll(diagram);
@@ -525,6 +559,7 @@ function removeNodeAndLink(e, obj) {
   var oldnode = adorn.adornedPart;
   var olddata = oldnode.data;
   deleteNode(diagram, oldnode);
+  mindmapModel.removeConstraint(olddata.node.rmPath);
   layoutTree(diagram, oldnode);
   diagram.commitTransaction("Remove Node");
   layoutAll(diagram);
