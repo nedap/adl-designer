@@ -85,6 +85,8 @@ label {
   flex-direction: column;
   -webkit-flex-direction: column; 
   pading-left: 10px;
+  flex: 1;
+  -webkit-flex: 1;
 }
 
 .navbar-right {
@@ -215,6 +217,15 @@ select.big-lines > option {
   display: flex;
   display: -webkit-flex;
   visibility: visible;
+}
+
+.row-children {
+	flex-direction: row;
+	-webkit-flex-direction: row;
+}
+
+.show-scrollbar {
+	overflow: auto;
 }
 
 .tab-pane.panel {
