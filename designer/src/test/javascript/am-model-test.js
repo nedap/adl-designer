@@ -78,6 +78,40 @@ describe("ArchetypeModel.generateSpecializedTermId", function () {
 
 });
 
+describe("ArchetypeId", function () {
+    it("parses archetype id", function () {
+        var aid = new AOM.ArchetypeId("openEHR-EHR-OBSERVATION.test.v1");
+        expect(aid.data).toEqual(jasmine.objectContaining({
+            context: {publisher: "openEHR", rm_package: "EHR", rm_class: "OBSERVATION"},
+            concept: "test",
+            version: jasmine.objectContaining({major: 1})
+        }));
+
+        aid = new AOM.ArchetypeId("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.1.0-rc.22");
+        expect(aid.data).toEqual(jasmine.objectContaining({
+            context: {publisher: "openEHR", rm_package: "DEMOGRAPHIC", rm_class: "ADDRESS"},
+            concept: "test2",
+            version: {major: 1, minor: 1, patch: 0, status: "rc", build_count: 22}
+        }));
+    });
+
+    it("parses and recreates archetype id", function () {
+        var aid = new AOM.ArchetypeId("openEHR-EHR-OBSERVATION.test.v1");
+        expect(aid.toString()).toEqual("openEHR-EHR-OBSERVATION.test.v1");
+        aid = new AOM.ArchetypeId("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.1.0-rc.22");
+        expect(aid.toString()).toEqual("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.1.0-rc.22");
+
+        // no status
+        aid = new AOM.ArchetypeId("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.1.0.22");
+        expect(aid.toString()).toEqual("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.1.0.22");
+
+        // no patch
+        aid = new AOM.ArchetypeId("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.2-release.54");
+        expect(aid.toString()).toEqual("openEHR-DEMOGRAPHIC-ADDRESS.test2.v1.2-release.54");
+    });
+});
+
+
 describe("ArchetypeModel.addUnconstrainedAttributes", function () {
     var am = new AOM.ArchetypeModel(AmUtils.clone(Resources.archetypes.bodyWeight));
     it("adds simple attribute", function () {

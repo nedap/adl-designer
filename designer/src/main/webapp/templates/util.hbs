@@ -69,3 +69,13 @@
     </ul>
 </div>
 
+
+{>colorizeArchetypeId}
+<span class="archetype-id-colorized">
+    {{#if namespace}}
+        <span class="namespace">{{namespace}}</span> ::
+    {{/if}}
+    <span class="context">{{context}}</span>.<span class="concept">{{concept}}</span>.v<span class="version">{{version}}</span>
+</span>
+
+

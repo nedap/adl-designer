@@ -23,7 +23,6 @@ var ArchetypeEditor = (function () {
 
     var rmModules = {};
 
-
     my.openLoadArchetypeDialog = function () {
         var loadArchetypeContext = {
             panel_id: GuiUtils.generateId(),
@@ -371,6 +370,21 @@ var ArchetypeEditor = (function () {
             my.Display.show(archetypeModel, targetElement);
         }
 
+        function displayArchetypeId() {
+            var aid = new AOM.ArchetypeId(archetypeModel.getArchetypeId());
+
+            var targetElement = $('#archetype-editor-id-panel');
+            targetElement.empty();
+
+            var context = {
+                namespace: aid.data.namespace,
+                context: aid.getContextString(),
+                concept: aid.data.concept,
+                version: aid.getVersionString()
+            };
+            GuiUtils.applyTemplate("util|colorizeArchetypeId", context, targetElement)
+        }
+
 
         my.archetypeModel = archetypeModel;
 
@@ -387,6 +401,8 @@ var ArchetypeEditor = (function () {
         var archetypeName = my.archetypeModel.getTermDefinitionText(my.archetypeModel.data.definition.node_id);
         document.title = archetypeName + ' - Archetype Editor';
 
+        displayArchetypeId();
+
     };
 
 //    var getBoostrapTableHeight = function (targetElement) {
@@ -401,7 +417,7 @@ var ArchetypeEditor = (function () {
 
     my.getRmModule = function (moduleName) {
         return rmModules[moduleName];
-    }
+    };
 
     /**
      * Opens a dialog that enables creation of new terms

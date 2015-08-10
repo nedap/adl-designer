@@ -1377,6 +1377,113 @@ var AOM = (function () {
 
         }; // ArchetypeModel
 
+
+        my.ArchetypeId = function (archetypeId) {
+            var self=this;
+
+            function parseContext(contextStr) {
+                var regex = /^([^-]+)\-([^-]+)\-([^.]+)/;
+                var match = regex.exec(contextStr);
+                if (!match) {
+                    console.error("Invalid archetypeId context part", contextStr);
+                    return null;
+                }
+                return {
+                    "publisher": match[1],
+                    "rm_package": match[2],
+                    "rm_class": match[3]
+                }
+            }
+
+            function parseVersion(versionStr) {
+                var regex=/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\-([^.]+))?(?:\.(\d+))?$/;
+                var match = regex.exec(versionStr);
+                if (!match) {
+                    console.error("Invalid archetype id version part", versionStr);
+                    return null;
+                }
+                return  {
+                    major: parseInt(match[1], 10),
+                    minor: match[2] ? parseInt(match[2], 10) : null,
+                    patch: match[3] ? parseInt(match[3], 10) : null,
+                    status: match[4],
+                    build_count: match[5] ? parseInt(match[5], 10) : null
+                }
+            }
+
+            function parseArchetypeId(archetypeId) {
+                var regex = /^(?:([^:]+)::)?([^.]+)\.([^.]+).v(.+)$/;
+                var match = regex.exec(archetypeId);
+                if (!match) {
+                    console.error("Invalid archetypeId", archetypeId);
+                    return null;
+                }
+                var result={};
+                result.namespace=match[1];
+                result.context = parseContext(match[2]);
+                if (!result.context) {
+                    console.error("Invalid archetypeId", archetypeId);
+                    return null;
+                }
+                result.concept=match[3];
+                result.version=parseVersion(match[4]);
+                if (!result.version) {
+                    console.error("Invalid archetypeId", archetypeId);
+                    return null;
+                }
+                return result;
+            }
+
+            self.getContextString = function() {
+                var ctx = self.data.context;
+                return ctx.publisher+"-"+ctx.rm_package+"-"+ctx.rm_class;
+            };
+            self.setContextString = function(contextStr) {
+                var context=parseContext(contextStr);
+                if (context) {
+                    self.data.context=context;
+                }
+            };
+
+            self.getVersionString = function() {
+                var v = self.data.version;
+                var result= v.major;
+                if (typeof v.minor==="number") {
+                    result += "." + v.minor;
+                }
+                if (typeof v.patch==="number") {
+                    result += "." + v.patch;
+                }
+                if (v.status) {
+                    result += "-" + v.status;
+                }
+                if (v.build_count) {
+                    result +="." + v.build_count;
+                }
+                return result;
+            };
+
+            self.setVersionString = function(versionStr) {
+                var version = parseVersion(versionStr);
+                if (version) {
+                    self.data.version=version;
+                }
+            };
+
+            self.toString = function () {
+                var result="";
+                if (self.data.namespace) {
+                    result +=self.data.namespace+"::";
+                }
+                result += self.getContextString() + ".";
+                result += self.data.concept + ".v";
+                result += self.getVersionString();
+                return result;
+            };
+
+            self.data = parseArchetypeId(archetypeId);
+        };
+
         /**
          * Returns the archetype model representing the archetype containing this constraint. Constraint must be part of
          * archetypeModel.data.definition structure.
