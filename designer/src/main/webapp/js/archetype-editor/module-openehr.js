@@ -78,11 +78,11 @@
                     rmPath: options.archetypeModel.getRmPath(cons).toString(),
                     label: options.archetypeModel.getTermDefinitionText(cons.node_id, options.language) || cons.rm_type_name
                 };
-                if (cons["@type"]==="C_COMPLEX_OBJECT" && (result.rmType === "CLUSTER" || result.rmType==="HISTORY")) {
+                if (cons["@type"] === "C_COMPLEX_OBJECT" && (result.rmType === "CLUSTER" || result.rmType === "HISTORY")) {
                     result.canAddChildren = true;
                 }
-                if (cons["@type"]==="ARCHETYPE_SLOT") {
-                    result.isSlot=true;
+                if (cons["@type"] === "ARCHETYPE_SLOT") {
+                    result.isSlot = true;
                 }
                 result.canDelete = true;
                 return result;
@@ -98,7 +98,6 @@
                         value: obj.value
                     };
                 }
-
 
 
                 function createConstraints(rootConsAttr) {
@@ -218,17 +217,19 @@
                         var dataConses = AOM.AmQuery.findAll(options.archetypeModel.data.definition, "/data/events/data");
                         var dataCons = Stream(dataConses).filter(function (d) {
                             return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
-                        }).findFirst().get();
+                        }).findFirst().orElse();
+                        if (!dataCons) return;
                         return createConstraintsSection('data', 'Data', dataCons[".parent"]);
                     }
 
                     function createStateSection() {
                         var stateConses = AOM.AmQuery.findAll(options.archetypeModel.data.definition, "/data/events/state");
-                        if (stateConses.length==null) return undefined;
+                        if (stateConses.length == null) return undefined;
 
                         var stateCons = Stream(stateConses).filter(function (d) {
                             return d["@type"] !== "ARCHETYPE_INTERNAL_REF";
-                        }).findFirst().get();
+                        }).findFirst().orElse();
+                        if (!stateCons) return undefined;
                         return createConstraintsSection('state', 'State', stateCons[".parent"]);
                     }
 
@@ -375,7 +376,7 @@
 
             mindmap.getValidRmTypesForConstraint = function (rmPath) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
-                if (cons["@type"]==="ARCHETYPE_SLOT") {
+                if (cons["@type"] === "ARCHETYPE_SLOT") {
                     var parentAttr = cons[".parent"];
                     var parentCons = parentAttr[".parent"];
                     var rmType = options.referenceModel.getType(parentCons.rm_type_name);
@@ -384,7 +385,7 @@
                         var validParentTypes = options.referenceModel.getSubclassTypes(rmAttr.type, true);
                         var intersectSlotTypes = AmUtils.keys(AmUtils.intersectSet(
                             AmUtils.listToSet(validSlotTypes), AmUtils.listToSet(validParentTypes)));
-                        if (intersectSlotTypes.length===0) return [cons.rm_type_name];
+                        if (intersectSlotTypes.length === 0) return [cons.rm_type_name];
                         intersectSlotTypes.sort();
                         return intersectSlotTypes;
                     } else {
@@ -393,7 +394,7 @@
                     return validSlotTypes;
                 }
 
-                if (cons.rm_type_name === "ELEMENT" || cons.rm_type_name==="CLUSTER") {
+                if (cons.rm_type_name === "ELEMENT" || cons.rm_type_name === "CLUSTER") {
                     var result = AmUtils.clone(validDvTypes);
                     result.push("CLUSTER");
                     return result;
@@ -439,13 +440,14 @@
                     }
 
                     var dataCons = Stream(AOM.AmQuery.findAll(parentCons, "events/data")).filter(isNotArchetypeInternalRef)
-                        .findFirst().get();
+                        .findFirst().orElse();
                     var stateCons = Stream(AOM.AmQuery.findAll(parentCons, "events/state")).filter(isNotArchetypeInternalRef)
                         .findFirst().get();
 
                     var newCons = AOM.newConstraint("EVENT", options.archetypeModel.addNewTermDefinition("id", "EVENT"));
-                    newCons.attributes = [
-                        {
+                    newCons.attributes = [];
+                    if (dataCons) {
+                        newCons.attributes.push({
                             "@type": "C_ATTRIBUTE",
                             "rm_attribute_name": "data",
                             "existence": AmInterval.of(1, 1),
@@ -458,8 +460,10 @@
                                 "rm_type_name": "ITEM_TREE",
                                 "node_id": options.archetypeModel.generateSpecializedTermId("id")
                             }]
-                        },
-                        {
+                        });
+                    }
+                    if (stateCons) {
+                        newCons.attributes.push({
                             "@type": "C_ATTRIBUTE",
                             "rm_attribute_name": "state",
                             "existence": AmInterval.of(1, 1),
@@ -472,8 +476,8 @@
                                 "rm_type_name": "ITEM_TREE",
                                 "node_id": options.archetypeModel.generateSpecializedTermId("id")
                             }]
-                        }
-                    ];
+                        });
+                    }
                     options.archetypeModel.addConstraint(options.archetypeModel.getAttribute(parentCons, "events"), newCons);
                     return newCons;
                 }
@@ -536,6 +540,7 @@
                     });
 
                 }
+
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
 
                 // do nothing when no change
@@ -563,7 +568,7 @@
                 if (validDvTypes.indexOf(rmType) < 0) {
                     cons.rm_type_name = rmType;
                 } else {
-                    cons.rm_type_name="ELEMENT";
+                    cons.rm_type_name = "ELEMENT";
                     var attr = options.archetypeModel.addAttribute(cons, "value");
                     var dvCons = AOM.newCComplexObject(rmType, options.archetypeModel.generateSpecializedTermId("id"));
                     options.archetypeModel.addConstraint(attr, dvCons);
@@ -571,11 +576,11 @@
                 return convertSingleConstraintToMindmap(cons);
             };
 
-            mindmap.getConstraintObject = function(rmPath) {
+            mindmap.getConstraintObject = function (rmPath) {
                 return AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
             };
 
-            mindmap.getMindmapConstraint = function(rmPath) {
+            mindmap.getMindmapConstraint = function (rmPath) {
                 var cons = AOM.AmQuery.get(options.archetypeModel.data.definition, rmPath);
                 return convertSingleConstraintToMindmap(cons);
             }

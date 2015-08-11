@@ -457,6 +457,20 @@ form .table-layout .table-cell {
     height: 100%
 }
 
+#archetype-editor-id-panel {
+    vertical-align: bottom;
+    padding-top: 10px;
+    padding-right: 20px
+}
+
+.archetype-id-colorized {
+    text-wrap: none;
+    color: #8c8c8c;
+}
+.archetype-id-colorized .namespace { color: #800080; }
+.archetype-id-colorized .context { color: #2C9601; }
+.archetype-id-colorized .concept { color: #007fff; }
+.archetype-id-colorized .version { color: #e13100; }
 
 .definition-tree {
     xborder: solid 1px #ccc;

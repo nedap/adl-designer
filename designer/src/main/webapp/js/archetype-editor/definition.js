@@ -915,9 +915,9 @@
                 var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
                 info.propertiesPanel = new my.DefinitionPropertiesPanel(archetypeModel, definitionPropertiesElement);
 
-                loadTreeView(context.panel_id, archetypeModel, info);
 
 
+                populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
                 info.toolbar.languageSelect.val(archetypeModel.defaultLanguage);
                 info.toolbar.languageSelect.change(function () {
                     if (info.tree) {
@@ -929,8 +929,9 @@
                     	initializeMindMap(context.panel_id, archetypeModel, referenceModel, info.toolbar.languageSelect.val(), info);
                     }
                 });
-                populateLanguageSelect(info.toolbar.languageSelect, archetypeModel);
-                
+
+                loadTreeView(context.panel_id, archetypeModel, info);
+
                 info.toolbar.viewMindmap.change(function() {
                     delete info.tree;
                 	loadMindmapView(context.panel_id, archetypeModel, referenceModel, info);
