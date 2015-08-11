@@ -33,63 +33,63 @@ var initializeMindMap = function(panelId, archetypeModel, referenceModel, langua
     myDiagram.toolManager.dragSelectingTool.isEnabled = false;
     
     var defaultNodeAdornmentTemplate = goJS(go.Adornment, "Spot",
-        goJS(go.Panel, "Auto",
-            goJS(go.Shape, "RoundedRectangle", { fill: null, stroke: null, strokeWidth: 2 }),
-            goJS(go.Placeholder, { margin: new go.Margin(-10,6,-10,0) })
-        ),
-        goJS(go.Panel, "Horizontal", {
-	          alignment: go.Spot.TopRight, 
-	          alignmentFocus: go.Spot.BottomRight
+      goJS(go.Panel, "Auto",
+          goJS(go.Shape, "RoundedRectangle", { fill: null, stroke: null, strokeWidth: 2 }),
+          goJS(go.Placeholder, { margin: new go.Margin(-10,6,-10,0) })
+      ),
+      goJS(go.Panel, "Horizontal", {
+          alignment: go.Spot.TopRight, 
+          alignmentFocus: go.Spot.BottomRight
+        },
+				goJS("Button", {
+			 				width: 20, 
+			 				height: 20,
+		          "ButtonBorder.fill": "lightblue",
+		          "ButtonBorder.stroke": "dodgerblue",
+		          "_buttonFillOver": "rgb(0,128,255)",
+		          "_buttonStrokeOver": null,
+		          "_buttonStrokeNormal": "dodgerblue",
+		          "_buttonFillNormal": "lightblue",
+		          alignment: go.Spot.TopRight, 
+		          alignmentFocus: go.Spot.BottomLeft,
+		          margin: new go.Margin(0,3,0,0),
+              cursor: "pointer",                 
+                click: function(e, obj) {
+                	addDefaultNodeAndLink(e, obj);
+                  e.event.stopPropagation();
+                  e.event.stopImmediatePropagation();
+                  return false;
+              	}  
           },
-					goJS("Button", {
-				 				width: 20, 
-				 				height: 20,
-			          "ButtonBorder.fill": "lightblue",
-			          "ButtonBorder.stroke": "dodgerblue",
-			          "_buttonFillOver": "rgb(0,128,255)",
-			          "_buttonStrokeOver": null,
-			          "_buttonStrokeNormal": "dodgerblue",
-			          "_buttonFillNormal": "lightblue",
-			          alignment: go.Spot.TopRight, 
-			          alignmentFocus: go.Spot.BottomLeft,
-			          margin: new go.Margin(0,3,0,0),
-                cursor: "pointer",                 
-                  click: function(e, obj) {
-                  	addDefaultNodeAndLink(e, obj);
-                    e.event.stopPropagation();
-                    e.event.stopImmediatePropagation();
-                    return false;
-                	}  
-            },
-            goJS(go.TextBlock, " + ",  // the Button content
-                { font: "bold 12pt sans-serif" }),
-            new go.Binding("visible", "fixed", function(v) { return !v; })
-          ),
-          goJS("Button", {
-		 				width: 20, 
-		 				height: 20,
-	          "ButtonBorder.fill": "lightblue",
-	          "ButtonBorder.stroke": "dodgerblue",
-	          "_buttonFillOver": "rgb(0,128,255)",
-	          "_buttonStrokeOver": null,
-	          "_buttonStrokeNormal": "dodgerblue",
-	          "_buttonFillNormal": "lightblue",
-	          alignment: go.Spot.TopRight, 
-	          alignmentFocus: go.Spot.BottomLeft,
-            cursor: "pointer",                 
-              click: function(e, obj) {
-              	removeNodeAndLink(e, obj);
-              	info.propertiesPanel.clear();
-                e.event.stopPropagation();
-                e.event.stopImmediatePropagation();
-                return false;
-            	}  
-	          },
-	          goJS(go.TextBlock, " - ",  // the Button content
-	              { font: 'bold 12pt "Helvetica Neue", Helvetica, Arial, sans-serif' }),
-	          new go.Binding("visible", "mandatory", function(v) { return !v; })
-	        )
-      	)
+          goJS(go.TextBlock, " + ",  // the Button content
+              { font: "bold 12pt sans-serif" }),
+          new go.Binding("visible", "fixed", function(v) { return !v; })
+        ),
+        goJS("Button", {
+	 				width: 20,
+	 				height: 20,
+          "ButtonBorder.fill": "lightblue",
+          "ButtonBorder.stroke": "dodgerblue",
+          "_buttonFillOver": "rgb(0,128,255)",
+          "_buttonStrokeOver": null,
+          "_buttonStrokeNormal": "dodgerblue",
+          "_buttonFillNormal": "lightblue",
+          alignment: go.Spot.TopRight, 
+          alignmentFocus: go.Spot.BottomLeft,
+          cursor: "pointer",                 
+            click: function(e, obj) {
+            	removeNodeAndLink(e, obj);
+            	info.propertiesPanel.clear();
+              e.event.stopPropagation();
+              e.event.stopImmediatePropagation();
+              return false;
+          	}  
+          },
+          goJS(go.TextBlock, " - ",  // the Button content
+              { font: 'bold 12pt "Helvetica Neue", Helvetica, Arial, sans-serif' }),
+          new go.Binding("visible", "mandatory", function(v) { return !v; })
+        )
+    	)
     );
     
     var simpleTemplate = goJS(go.Node, "Auto", {

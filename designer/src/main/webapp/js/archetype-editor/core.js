@@ -32,11 +32,12 @@ var ArchetypeEditor = (function () {
         GuiUtils.applyTemplate("dialog-archetype|load", loadArchetypeContext, function (htmlString) {
             var content = $(htmlString);
             var archetypeSelect = content.find('#' + loadArchetypeContext.panel_id + "_archetype");
-            archetypeSelect.selectpicker({size: "auto"});
+            archetypeSelect.selectpicker({size: "10"});
 
             GuiUtils.openSimpleDialog(
                 {
                     title: "Load archetype",
+                    backdrop: "static",
                     buttons: {"load": "Load"},
                     content: content,
                     callback: function (content) {
