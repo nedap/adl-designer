@@ -56,7 +56,7 @@ Mostly rewritten for the Template Editor. Javascript code resides in _/js/archet
 
 ### Archetype Object Model
 
-* AOM.Template model - Models a single template. Every archetype in the template is included as a specialized ArchetypeModel, so on archetype level it can do everything that Archetype Designer can. Additionaly, it provides functions for adding/removing archetypes from the template.
+* AOM.TemplateModel - Models a single template. Every archetype in the template is included as a specialized ArchetypeModel, so on archetype level it can do everything that Archetype Designer can. Additionaly, it provides functions for adding/removing archetypes from the template.
 
 ### Template Repository
 Provides functionality of a template repository, such as listing existing templates, load/save template. Accessible via REST interface
