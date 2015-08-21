@@ -458,9 +458,10 @@ form .table-layout .table-cell {
 }
 
 #archetype-editor-id-panel {
-    vertical-align: bottom;
-    padding-top: 10px;
-    padding-right: 20px
+    xvertical-align: bottom;
+    padding-top: 15px;
+    padding-right: 15px;
+    font-weight: bold;
 }
 
 .archetype-id-colorized {
