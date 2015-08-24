@@ -18,11 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Repository type. Valid values: "file", "git"
 archetype.repository.type=file
-archetype.repository.file.location=c:/projects/thinkehr/adltools/designer/repository/archetypes
-archetype.repository.git.localdir=c:/projects/thinkehr/adltools-sandbox
-archetype.repository.git.uri=gitolite@git.marand.si:adltools-sandbox
+archetype.repository.git.localdir=
+archetype.repository.git.uri=
 
-#archetype.repository.location=c:/projects/openehr/Adl Workbench repositories/adl-archetypes/Reference/CKM_2013_12_09
-#archetype.repository.location=c:/projects/thinkehr/adltools/designer/src/test/resources/repository
-template.repository.location=d:/temp/designer/templates
+archetype.repository.file.location=
+template.repository.location=
+
