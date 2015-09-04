@@ -39,15 +39,15 @@ import java.util.regex.Pattern;
  * @author Marko Pipan
  */
 public class TemplateDeserializer {
-    public static List<DifferentialArchetype> deserialize(RmModel rmModel, InputStream adltStream) throws IOException {
+    public static List<DifferentialArchetype> deserialize(InputStream adltStream) throws IOException {
         try (Reader r = new BomSupportingReader(adltStream, Charsets.UTF_8)) {
             String adltContents = CharStreams.toString(r);
-            return deserialize(rmModel, adltContents);
+            return deserialize(adltContents);
         }
 
     }
 
-    public static List<DifferentialArchetype> deserialize(RmModel rmModel, String adltContent) {
+    public static List<DifferentialArchetype> deserialize(String adltContent) {
         Iterable<String> adls = Splitter.on(Pattern.compile("(\r|\n)+ *\\-{2,} *(\r|\n)+")).split(adltContent);
 
         List<DifferentialArchetype> result = new ArrayList<>();

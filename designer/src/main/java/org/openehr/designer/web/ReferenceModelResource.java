@@ -20,28 +20,17 @@
 
 package org.openehr.designer.web;
 
-import org.openehr.designer.support.units.Property;
-import org.openehr.designer.support.units.UnitsProvider;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.rm.ReferenceModelInfo;
 
-import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 /**
  * @author markopi
  */
-@RestController
-@RequestMapping(value = "/support")
-public class WtSupportImpl implements WtSupport {
+public interface ReferenceModelResource {
+    List<ReferenceModelInfo> list();
 
-    @Resource
-    private UnitsProvider unitsProvider;
-
-    @RequestMapping(value = "/units", method = RequestMethod.GET)
-    @Override
-    public List<Property> getUnits() {
-        return unitsProvider.getProperties();
-    }
+    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 }

@@ -1748,7 +1748,7 @@ var AOM = (function () {
                 self.state = "ok";
                 self.model = callback;
             } else {
-                $.getJSON("rest/repo/rm/openEHR/1.0.2").success(function (data) {
+                $.getJSON("rest/rm/openEHR/1.0.2").success(function (data) {
                     self.state = "ok";
                     self.model = data;
                     callback(self);

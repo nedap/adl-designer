@@ -53,17 +53,11 @@ public class FileTemplateRepository implements TemplateRepository {
     private static final Logger LOG = LoggerFactory.getLogger(FileTemplateRepository.class);
 
     private Path repositoryLocation;
-    private RmModel rmModel;
     private ConcurrentHashMap<String, List<DifferentialArchetype>> templateMap = new ConcurrentHashMap<>();
 
     @Required
     public void setRepositoryLocation(String repositoryLocation) {
         this.repositoryLocation = Paths.get(repositoryLocation);
-    }
-
-    @Required
-    public void setRmModel(RmModel rmModel) {
-        this.rmModel = rmModel;
     }
 
     @PostConstruct
@@ -74,7 +68,7 @@ public class FileTemplateRepository implements TemplateRepository {
                 .filter(path -> path.getFileName().toString().endsWith(".adlt") && !Files.isDirectory(path))
                 .forEach(path -> {
                     try {
-                        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(rmModel, Files.newInputStream(path));
+                        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(Files.newInputStream(path));
                         templateMap.put(archetypes.get(0).getArchetypeId().getValue(), archetypes);
                     } catch (Exception e) {
                         LOG.error("Error parsing template {}. Will be ignored", path.getFileName(), e);
@@ -105,7 +99,7 @@ public class FileTemplateRepository implements TemplateRepository {
         String templateId = archetypes.get(0).getArchetypeId().getValue();
         String adltContent = TemplateSerializer.serialize(archetypes);
         // Check to see if the template can still be deserialized
-        TemplateDeserializer.deserialize(rmModel, adltContent);
+        TemplateDeserializer.deserialize(adltContent);
         try {
             try (Writer w = new OutputStreamWriter(new FileOutputStream(repositoryLocation.resolve(templateId + ".adlt").toFile()),
                     Charsets.UTF_8)) {

@@ -20,15 +20,11 @@
 
 package org.openehr.designer.web;
 
-import org.openehr.designer.support.units.Property;
-
-import java.util.List;
-
 /**
  * @author markopi
  */
-public interface WtSupport {
-    public List<Property> getUnits();
-
-
+public class NotFoundException extends RuntimeException {
+    public NotFoundException(String message) {
+        super(message);
+    }
 }

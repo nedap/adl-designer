@@ -38,11 +38,13 @@
         </mvc:message-converters>
         <mvc:path-matching suffix-pattern="false"/>
     </mvc:annotation-driven>
+
     <context:annotation-config/>
 
 
-    <bean id="wtResource" class="org.openehr.designer.web.WtResourceImpl"/>
-    <bean id="wtSupport" class="org.openehr.designer.web.WtSupportImpl"/>
+    <bean id="wtResource" class="org.openehr.designer.web.RepositoryResourceImpl"/>
+    <bean id="wtSupport" class="org.openehr.designer.web.SupportResourceImpl"/>
+    <bean id="wtReferenceModel" class="org.openehr.designer.web.ReferenceModelResourceImpl"/>
 
 
 </beans>

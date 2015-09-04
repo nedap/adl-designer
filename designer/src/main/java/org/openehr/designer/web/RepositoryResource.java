@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * @author Marko Pipan
  */
-public interface WtResource {
+public interface RepositoryResource {
     DifferentialArchetype getSourceArchetype(String archetypeId);
 
     FlatArchetype getFlatArchetype(String archetypeId);
@@ -42,7 +42,7 @@ public interface WtResource {
 
     List<ArchetypeInfo> listArchetypeInfos();
 
-    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
+//    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 
     void saveTemplate(List<FlatArchetype> archetypeList);
 

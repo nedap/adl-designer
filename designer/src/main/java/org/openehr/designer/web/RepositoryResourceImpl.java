@@ -35,6 +35,7 @@ import org.openehr.designer.diff.TemplateDifferentiator;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
+import org.openehr.designer.rm.ReferenceModels;
 import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.am.FlatArchetype;
 import org.slf4j.Logger;
@@ -55,8 +56,8 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/repo")
-public class WtResourceImpl implements WtResource {
-    private static final Logger LOG = LoggerFactory.getLogger(WtResourceImpl.class);
+public class RepositoryResourceImpl implements RepositoryResource {
+    private static final Logger LOG = LoggerFactory.getLogger(RepositoryResourceImpl.class);
 
     @Resource
     private ArchetypeRepository archetypeRepository;
@@ -64,7 +65,8 @@ public class WtResourceImpl implements WtResource {
     @Resource
     private TemplateRepository templateRepository;
     @Resource
-    private RmModel rmModel;
+    private ReferenceModels referenceModels;
+
     @Resource
     private OptBuilder optBuilder;
 
@@ -73,7 +75,7 @@ public class WtResourceImpl implements WtResource {
 
     @PostConstruct
     public void init() {
-        this.flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, rmModel);
+        this.flatArchetypeRepository = new FlatArchetypeRepository(archetypeRepository, referenceModels.getDefaultReferenceModel());
     }
 
     @RequestMapping(value = "/archetype/{archetypeId}/source")
@@ -95,12 +97,9 @@ public class WtResourceImpl implements WtResource {
         if (!archetypeId.equals(archetype.getArchetypeId().getValue())) {
             throw new IllegalArgumentException("Archetype id in path does not match archetype id in body");
         }
-//        FlatArchetype parentArchetype = null;
-//        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
-//            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
-//        }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeRepository, archetype);
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(
+                referenceModels.getDefaultReferenceModel(), flatArchetypeRepository, archetype);
         differentialArchetype.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
         archetypeRepository.saveDifferentialArchetype(differentialArchetype);
     }
@@ -112,20 +111,19 @@ public class WtResourceImpl implements WtResource {
     }
 
 
-    @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
-    @Override
-    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
-        List<RmType> types = rmModel.getAllTypes();
-
-        ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
-        return builder.build(rmModel);
-    }
+//    @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
+//    @Override
+//    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
+//
+//        ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
+//        return builder.build(referenceModels.getDefaultReferenceModel());
+//    }
 
     @RequestMapping(value = "/template", method = RequestMethod.POST)
     @Override
     public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(rmModel, archetypes);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(referenceModels.getDefaultReferenceModel(), archetypes);
         sourceArchetypes.forEach(a -> {
             if (a.getRmRelease() == null) {
                 a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
@@ -144,7 +142,8 @@ public class WtResourceImpl implements WtResource {
     @Override
     public List<FlatArchetype> loadTemplate(@PathVariable String templateId) {
         List<DifferentialArchetype> differentials = templateRepository.loadTemplate(templateId);
-        FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeRepository, rmModel, differentials);
+        FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeRepository,
+                referenceModels.getDefaultReferenceModel(), differentials);
 
         List<FlatArchetype> result = new ArrayList<>();
         for (DifferentialArchetype differential : differentials) {
@@ -173,7 +172,8 @@ public class WtResourceImpl implements WtResource {
     @Override
     public ResponseEntity<byte[]> exportProvidedOpt14(@RequestBody List<FlatArchetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> templateArchetypes = differentiator.differentiate(rmModel, flatArchetypeList);
+        List<DifferentialArchetype> templateArchetypes = differentiator.differentiate(
+                referenceModels.getDefaultReferenceModel(), flatArchetypeList);
 
         OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
 
@@ -210,7 +210,8 @@ public class WtResourceImpl implements WtResource {
 //            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
 //        }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeRepository, archetype);
+        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(
+                referenceModels.getDefaultReferenceModel(), flatArchetypeRepository, archetype);
         return ArchetypeSerializer.serialize(differentialArchetype);
     }
 
@@ -226,7 +227,8 @@ public class WtResourceImpl implements WtResource {
     @Override
     public String displayTemplateAdl(@RequestBody List<FlatArchetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(rmModel, flatArchetypeList);
+        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(
+                referenceModels.getDefaultReferenceModel(), flatArchetypeList);
         return TemplateSerializer.serialize(sourceArchetypes);
     }
 

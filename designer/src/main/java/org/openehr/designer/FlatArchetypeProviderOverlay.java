@@ -53,9 +53,6 @@ public class FlatArchetypeProviderOverlay implements FlatArchetypeProvider {
         }
     }
 
-    public RmModel getRmModel() {
-        return rmModel;
-    }
 
     @Override
     public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
