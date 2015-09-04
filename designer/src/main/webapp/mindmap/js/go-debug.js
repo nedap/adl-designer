@@ -1,9 +1,21 @@
 /*
- * GoJS v1.5.3 JavaScript Library for HTML Canvas Diagrams
- * Northwoods Software, http://www.nwoods.com/
- * GoJS and Northwoods Software are registered trademarks of Northwoods Software Corporation.
- * Copyright (C) 1998-2015 by Northwoods Software Corporation.  All Rights Reserved.
- * THIS SOFTWARE IS LICENSED.  THE LICENSE AGREEMENT IS AT: http://www.gojs.net/1.5.3/doc/license.html.
+ * ADL Designer
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+ *
+ * This file is part of ADL2-tools.
+ *
+ * ADL2-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 (function(window) { var e,aa={};if(!window.document||void 0===window.document.createElement("canvas").getContext)throw window.console&&window.console.log("The HTML Canvas element is not supported in this browser,or this browser is in Compatibility mode."),Error("The HTML Canvas element is not supported in this browser,or this browser is in Compatibility mode.");if(!Object.defineProperty)throw Error("GoJS requires a newer version of JavaScript");
 (function(){for(var a=0,b=["ms","moz","webkit","o"],c=0;c<b.length&&!window.requestAnimationFrame;++c)window.requestAnimationFrame=window[b[c]+"RequestAnimationFrame"],window.cancelAnimationFrame=window[b[c]+"CancelAnimationFrame"]||window[b[c]+"CancelRequestAnimationFrame"];window.requestAnimationFrame||(window.requestAnimationFrame=function(b){var c=(new Date).getTime(),g=Math.max(8,16-(c-a)),h=window.setTimeout(function(){b(c+g)},g);a=c+g;return h});window.cancelAnimationFrame||(window.cancelAnimationFrame=

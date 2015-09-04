@@ -1,3 +1,23 @@
+/*
+ * ADL Designer
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+ *
+ * This file is part of ADL2-tools.
+ *
+ * ADL2-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 .cm-s-twilight.CodeMirror { background: #141414; color: #f7f7f7; } /**/
 .cm-s-twilight .CodeMirror-selected { background: #323232 !important; } /**/
 .cm-s-twilight.CodeMirror ::selection { background: rgba(50, 50, 50, 0.99); }

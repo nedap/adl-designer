@@ -1,5 +1,5 @@
 /*
- * ADL2-tools
+ * ADL Designer
  * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
  *
  * This file is part of ADL2-tools.
