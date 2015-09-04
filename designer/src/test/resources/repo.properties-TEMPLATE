@@ -1,0 +1,4 @@
+# the location of test archetypes
+# clone this repo https://github.com/openEHR/adl-archetypes.git
+# add your own repo.properties with local foldeer
+test.repo=c:/projects/openehr/Adl Workbench repositories/adl-archetypes/Reference/CKM_2013_12_09

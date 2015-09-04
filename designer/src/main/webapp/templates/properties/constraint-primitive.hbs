@@ -1,0 +1,310 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+
+{>C_REAL}
+<div class="row properties-line">
+    <div class="properties-label"><label for="{{range_id}}" class=" control-label">Range</label></div>
+    <div class="properties-value"><input id="{{range_id}}" type="text" class="form-control input-sm data"
+                                         value="{{range}}"/></div>
+</div>
+<div class="row properties-line">
+    <div class="properties-label"><label for="{{assumed_value_id}}" class="control-label">Assumed Value</label></div>
+    <div class="properties-value"><input id="{{assumed_value_id}}" type="number" class="form-control input-sm data"
+                                         value="{{assumed_value}}"/></div>
+</div>
+
+{>C_INTEGER}
+<div class="row properties-line">
+    <div class="properties-label"><label for="{{range_id}}">Range</label></div>
+    <div class="properties-value"><input id="{{range_id}}" type="text" class="form-control input-sm data"
+                                         value="{{range}}"/></div>
+</div>
+<div class="row properties-line">
+    <div class="properties-label"><label for="{{assumed_value_id}}">Assumed Value</label></div>
+    <div class="properties-value"><input id="{{assumed_value_id}}" type="number" class="form-control input-sm data"
+                                         value="{{assumed_value}}"/></div>
+</div>
+
+{>C_TERMINOLOGY_CODE}
+<div class="row properties-line">
+    <div class="properties-value">
+        <div class="properties-value-item">
+            <label><input type="radio" name="terminologyTarget" id="{{panel_id}}_internal" class="data"
+                          value="internal"> Internal</label>
+        </div>
+        <div class="properties-value-item">
+            <label><input type="radio" name="terminologyTarget" id="{{panel_id}}_external" class="data"
+                          value="external"> External</label>
+        </div>
+    </div>
+    <!--
+    <label class="radio-inline">
+        <input type="radio" name="terminologyTarget" id="{{panel_id}}_internal" class="data" value="internal">Internal
+    </label>
+    <label class="radio-inline">
+        <input type="radio" name="terminologyTarget" id="{{panel_id}}_external" class="data" value="external">External
+    </label>
+-->
+</div>
+<div id="{{panel_id}}_internal_panel" class="row properties-line">
+    <div class="horizontal-stretch">
+        <div class="row properties-line">
+            <div class="properties-label"><label for="{{panel_id}}_value_set">Value Set</label></div>
+            <div class="properties-value">
+                {{#if isParentConstrained}}
+                    <div class="properties-value-item" id="{{panel_id}}_value_set_items_container"></div>
+                {{else}}
+                    <div class="properties-value-item input-group">
+                        <select id="{{panel_id}}_value_set" class="form-control input-sm data">
+                        </select>
+            <span class="input-group-btn">
+                <button id="{{panel_id}}_value_set_edit" type="button" class="btn btn-sm btn-default">
+                    &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
+                </button>
+                <button id="{{panel_id}}_value_set_new" type="button" class="btn btn-sm btn-default data">
+                    &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+                </button>
+            </span>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+        <div class="row properties-line">
+            <div class="properties-label"><label for="{{panel_id}}_assumed_value">Assumed Value</label></div>
+            <div class="properties-value">
+                <div class="properties-value-item input-group">
+                    <select id="{{panel_id}}_assumed_value" class="form-control input-sm data"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="{{panel_id}}_external_panel" class="row properties-line">
+    <div class="horizontal-stretch">
+        <div class="row properties-line">
+            <div class="properties-label"><label for="{{panel_id}}_external_select">External Terminology</label></div>
+            <div class="properties-value">
+                <div class="input-group">
+                    <select id="{{panel_id}}_external_select" class="form-control input-sm data"
+                            {{#if isParentConstrained}}disabled="disabled"{{/if}}
+                            ></select>
+                <span class="input-group-btn">
+                    {{#unless isParentConstrained}}
+                        <button id="{{panel_id}}_external_edit" type="button" class="btn btn-sm btn-default">
+                            &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
+                        </button>
+                        <button id="{{panel_id}}_external_new" type="button" class="btn btn-sm btn-default data">
+                            &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+                        </button>
+                    {{/unless}}
+                </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{>C_BOOLEAN}
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+        <div class="properties-label"><label class="control-label">Allowed values</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item">
+                <input type="checkbox" id="{{panel_id}}_true_valid" class="data archetype-only"> True
+            </div>
+            <div class="properties-value-item">
+                <input type="checkbox" id="{{panel_id}}_false_valid" class="data archetype-only"> False
+            </div>
+        </div>
+    </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_assumed_value" class="control-label">Assumed
+            value</label></div>
+        <div class="properties-value">
+            <select id="{{panel_id}}_assumed_value" class="form-control data archetype-only"></select>
+        </div>
+    </div>
+</div>
+
+{>C_DURATION}
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+        <div class="properties-label"><label>Allow all time units</label></div>
+        <div class="properties-value">
+            <input type="checkbox" id="{{panel_id}}_pattern_all" {{#if pattern.all}}checked{{/if}} class="data">
+        </div>
+    </div>
+    <div id="{{panel_id}}_pattern_custom" class="properties-sub-panel custom">
+        <div class="properties-line">
+            <div class="properties-value">
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_years" {{#if pattern.years}}checked{{/if}}
+                           class="data"> Years
+                </div>
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_months" {{#if pattern.months}}checked{{/if}}
+                           class="data"> Months
+                </div>
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_weeks" {{#if pattern.weeks}}checked{{/if}}
+                           class="data"> Weeks
+                </div>
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_days" {{#if pattern.days}}checked{{/if}}
+                           class="data"> Days
+                </div>
+            </div>
+        </div>
+        <div class="properties-line">
+            <div class="properties-value">
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_hours" {{#if pattern.hours}}checked{{/if}}
+                           class="data"> Hours
+                </div>
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_minutes" {{#if pattern.minutes}}checked{{/if}}
+                           class="data"> Minutes
+                </div>
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_pattern_seconds" {{#if pattern.seconds}}checked{{/if}}
+                           class="data"> Seconds
+                </div>
+                <div class="properties-value-item"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label class="control-label">Units</label></div>
+        <div class="properties-value">
+            <select id="{{panel_id}}_units" class="form-control input-sm data">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+                <option value="hours">Hours</option>
+                <option value="minutes">Minutes</option>
+                <option value="seconds">Seconds</option>
+            </select>
+        </div>
+    </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_lower" class="control-label">Min value</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item">
+                <select id="{{panel_id}}_lower_included" class="form-control input-sm data">
+                    <option value="true">&gt;=</option>
+                    <option value="false">&gt;</option>
+                </select>
+            </div>
+            <div class="properties-value-item">
+                <input id="{{panel_id}}_lower" type="number" class="form-control input-sm data"
+                       value="{{range.lower}}"/>
+            </div>
+        </div>
+    </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_upper" class="control-label">Max value</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item">
+                <select id="{{panel_id}}_upper_included" class="form-control input-sm data">
+                    <option value="true">=&lt;</option>
+                    <option value="false">&lt;</option>
+                </select>
+            </div>
+            <div class="properties-value-item">
+                <input id="{{panel_id}}_upper" type="number" class="form-control input-sm data"
+                       value="{{range.upper}}"/>
+            </div>
+        </div>
+    </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label for="{{panel_id}}_assumed_value" class="control-label">Assumed
+            value</label></div>
+        <div class="properties-value">
+            <input id="{{panel_id}}_assumed_value" type="number" class="form-control input-sm data"
+                   value="{{assumed_value}}"/>
+        </div>
+    </div>
+</div>
+
+
+{>C_DATE_TIME}
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+        <div class="properties-label align-top"><label>Pattern</label></div>
+        <div class="properties-value">
+            {{#if isTemplate}}
+                <div class="col-sm-10"><p id="{{panel_id}}_pattern" class="form-control-static"></p></div>
+            {{else}}
+                <div id="{{panel_id}}_pattern" class="date_time_pattern"></div>
+            {{/if}}
+        </div>
+    </div>
+</div>
+
+{>C_ATTRIBUTE}
+<div class="horizontal-stretch">
+    <div class="row properties-line">
+        <div class="properties-label align-top"><label>Existence</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item">
+                <input type="checkbox" id="{{panel_id}}_existenceMandatory" class="data archetype-only"
+                       {{#if existenceMandatory}}checked{{/if}}>
+                Mandatory
+            </div>
+        </div>
+    </div>
+    {{#if multiple}}
+    <div class="row properties-line">
+        <div class="properties-label align-top"><label>Cardinality</label></div>
+        <div class="properties-value">
+            <div class="properties-value-item">
+                <div class="properties-value-item">
+                    <input type="checkbox" id="{{panel_id}}_ordered" class="data archetype-only"
+                           {{#if cardinality.ordered}}checked{{/if}}>
+                    Ordered
+                    <input type="checkbox" id="{{panel_id}}_unique" class="data archetype-only"
+                           {{#if cardinality.unique}}checked{{/if}}>
+                    Unique
+                </div>
+                <div class="properties-value-item">
+                    <div class="properties-value-item">
+                        Min
+                        <input type="number" id="{{panel_id}}_lowerBound" value="{{cardinality.lower}}"
+                               class="form-control input-sm data archetype-only">
+                    </div>
+                    <div class="properties-value-item">
+                        Max
+                        <div class="pull-right">
+                            <input type="checkbox" id="{{panel_id}}_upperUnbounded" class="data archetype-only">
+                            Unbounded
+                        </div>
+
+                        <input type="number" id="{{panel_id}}_upperBound" value="{{cardinality.upper}}"
+                               class="form-control input-sm  data archetype-only">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+</div>

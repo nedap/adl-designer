@@ -1,0 +1,72 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+{>load}
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_archetype">Archetype Id</label></div>
+    <div class="properties-value">
+      <select id="{{panel_id}}_archetype" class="form-control" id="selectArchetypeId" data-live-search="true">
+        {{#each archetypes}}
+        <option value="{{archetypeId}}">{{archetypeId}}</option>
+        {{/each}}
+      </select>
+    </div>
+</div>
+
+{>specialize}
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_parent">Parent Archetype Id</label></div>
+    <div class="properties-value">
+      <select id="{{panel_id}}_parent" class="form-control" id="selectArchetypeId">
+        {{#each archetypes}}
+            <option value="{{archetypeId}}">{{archetypeId}}</option>
+        {{/each}}
+      </select>
+    </div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_specialized">Specialized Archetype Id</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_specialized" type="text" class="form-control input-sm"></div>
+</div>
+
+{>create}
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_version" class="control-label">Archetype Id</label></div>
+    <div class="properties-value"><p id="{{panel_id}}_archetype_id" class="form-control-static"></p></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_rm_type" class="control-label">Rm Type</label></div>
+    <div class="properties-value"><select id="{{panel_id}}_rm_type" class="form-control input-sm"></select></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_concept" class="control-label">Concept</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_concept" class="form-control input-sm" value=""></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_version" class="control-label">Version</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_version" class="form-control input-sm" value="1.0.0"></div>
+</div>
+<div class="row properties-line no-border">
+    <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Original Language</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_language" class="form-control input-sm" value="en"></div>
+</div>
+
+
+

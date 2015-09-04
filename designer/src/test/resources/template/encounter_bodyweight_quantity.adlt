@@ -1,0 +1,365 @@
+template (adl_version=1.5)
+    openEHR-EHR-COMPOSITION.encounter_e92f.v1.0.0
+
+specialize
+    openEHR-EHR-COMPOSITION.encounter.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    translations = <
+        ["ko"] = <
+            accreditation = <"Medical Doctor">
+            author = <
+                ["name"] = <"Seung-Jong Yu">
+                ["organisation"] = <"Yonsei FM Clinic">
+                ["email"] = <"seungjong.yu@gmail.com">
+            >
+            language = <[ISO_639-1::ko]>
+        >
+        ["ar-sy"] = <
+            author = <
+                ["name"] = <"Mona Saleh">
+            >
+            language = <[ISO_639-1::ar-sy]>
+        >
+        ["es-ar"] = <
+            accreditation = <"Medical Doctor">
+            author = <
+                ["name"] = <"Edgardo Vazquez">
+                ["organisation"] = <"VinculoMedico">
+            >
+            language = <[ISO_639-1::es-ar]>
+        >
+    >
+    
+definition
+    COMPOSITION[id1.1] occurrences matches {1} matches {    -- Encounter
+        /content matches {
+            use_archetype OBSERVATION[openEHR-EHR-OBSERVATION.blood_pressure_a9c2.v1.0.0]
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                ["text"] = <"Encounter Body Weight">
+                ["description"] = <"Generic encounter or progress note composition.">
+            >
+        >
+        ["ko"] = <
+            ["id1.1"] = <
+                ["text"] = <"환자대면">
+                ["description"] = <"외래기록, 경과기록, 간호기록와 일반노트와 같은 환자를 대면한 후 작성하는 기록 composition">
+            >
+        >
+        ["ar-sy"] = <
+            ["id1.1"] = <
+                ["text"] = <"المقابلة">
+                ["description"] = <"مقابلة جنيسة (غير محدودة الملكية) أو بِنْية ملاحظة تقدم حالة المريض">
+            >
+        >
+        ["es-ar"] = <
+            ["id1.1"] = <
+                ["text"] = <"Consulta">
+                ["description"] = <"Composition de consulta generica o notas de evolucion ">
+            >
+        >
+    >
+
+---------------------------------------------------------------------------------
+template_overlay (adl_version=1.5)
+    openEHR-EHR-OBSERVATION.blood_pressure_a9c2.v1.0.0
+
+specialize
+    openEHR-EHR-OBSERVATION.blood_pressure.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    translations = <
+        ["de"] = <
+            author = <
+                ["name"] = <"Sebastian Garde, Jasmin Buck">
+                ["organisation"] = <"Ocean Informatics, University of Heidelberg">
+            >
+            language = <[ISO_639-1::de]>
+        >
+        ["zh-cn"] = <
+            author = <
+                ["name"] = <"Chunlan Ma">
+                ["organisation"] = <"Ocean Informatics">
+            >
+            language = <[ISO_639-1::zh-cn]>
+        >
+        ["ar-sy"] = <
+            author = <
+                ["name"] = <"Mona Saleh">
+            >
+            language = <[ISO_639-1::ar-sy]>
+        >
+        ["es-ar"] = <
+            accreditation = <"Universidad de Morón">
+            author = <
+                ["name"] = <"Domingo Liotta">
+                ["organisation"] = <"Universidad de Morón">
+                ["email"] = <"domingo_liotta@hotmail.com">
+            >
+            language = <[ISO_639-1::es-ar]>
+        >
+        ["fa"] = <
+            author = <
+                ["name"] = <"Shahla Foozonkhah">
+                ["organisation"] = <"Ocean Informatics">
+                ["email"] = <"shahla.foozonkhah@oceaninformatics.com">
+            >
+            language = <[ISO_639-1::fa]>
+        >
+        ["ru"] = <
+            author = <
+                ["name"] = <"Igor Lizunov">
+                ["email"] = <"i.lizunov@infinnity.ru">
+            >
+            language = <[ISO_639-1::ru]>
+        >
+        ["ja"] = <
+            author = <
+                ["name"] = <"Shinji Kobayashi">
+                ["email"] = <"skoba@moss.gr.jp">
+            >
+            language = <[ISO_639-1::ja]>
+        >
+        ["nl"] = <
+            author = <
+                ["name"] = <"Marja Buur">
+                ["organisation"] = <"M.C.A.">
+                ["email"] = <"m.buur-krom@mca.nl">
+            >
+            language = <[ISO_639-1::nl]>
+        >
+        ["pt-br"] = <
+            accreditation = <"Medical Doctor, Psychiarist, Clinical Modeller, openEHR Diretor, ehealth infostructuture WG ccoordinator- brazilian  ehealth program">
+            author = <
+                ["name"] = <"Jussara Rözsch">
+                ["organisation"] = <"OpenEHR  Foundation">
+                ["email"] = <"jussara.macedo@gmail.com">
+            >
+            language = <[ISO_639-1::pt-br]>
+        >
+    >
+    
+definition
+    OBSERVATION[id1.1] occurrences matches {1} matches {    -- Blood Pressure
+        /data[id2]/events matches {
+            EVENT[id7.1] matches {    -- any event 2
+                /data[id4]/items matches {
+                    ELEMENT[id5.1] matches {    -- Systolic 2
+                        value matches {
+                            DV_QUANTITY[id1054.1] matches {*}
+                        }
+                    }
+                }
+                /state[id8]/items matches {
+                    ELEMENT[id9.1] matches {    -- Position
+                        value matches {
+                            DV_CODED_TEXT[id1059.1] matches {
+                                defining_code matches {[ac1.1]}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                ["text"] = <"Blood Pressure">
+                ["description"] = <"The local measurement of arterial blood pressure which is a surrogate for arterial. pressure in the systemic circulation.  Most commonly, use of the term 'blood pressure' refers to measurement of brachial artery pressure in the upper arm.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"any event 2">
+                ["description"] = <"Default event">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Systolic 2">
+                ["description"] = <"Peak systemic arterial blood pressure  - measured in systolic or contraction phase of the heart cycle.">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Position">
+                ["description"] = <"The position of the subject at the time of measurement.">
+            >
+        >
+        ["de"] = <
+            ["id1.1"] = <
+                ["text"] = <"Blutdruck">
+                ["description"] = <"Die lokale Messung des arteriellen Blutdrucks als Surrogat für den arteriellen Druck in der systemischen Zirkulation. Häufig wird der Ausdruck 'Blutdruck' zur Bezeichung der Messung des brachialen Ateriendrucks im Oberarm verwendet.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"any event">
+                ["description"] = <"Default event">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Systolisch">
+                ["description"] = <"Der höchste arterielle Blutdruck eines Zyklus - gemessen in der systolischen oder Kontraktionsphase des Herzens.">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Position">
+                ["description"] = <"Die Position der untersuchten Person während der Messung.">
+            >
+        >
+        ["zh-cn"] = <
+            ["id1.1"] = <
+                ["text"] = <"*Blood Pressure(en)">
+                ["description"] = <"*The local measurement of arterial blood pressure which is a surrogate for arterial pressure in the systemic circulation.  Most commonly, use of the term 'blood pressure' refers to measurement of brachial artery pressure in the upper arm.(en)">
+            >
+            ["id7.1"] = <
+                ["text"] = <"*any event(en)">
+                ["description"] = <"*Default event(en)">
+            >
+            ["id5.1"] = <
+                ["text"] = <"收缩压">
+                ["description"] = <"一个血液循环周期中，系统性动脉血压高峰值。 收缩期血压">
+            >
+            ["id9.1"] = <
+                ["text"] = <"*Position(en)">
+                ["description"] = <"*The position of the subject at the time of measurement(en)">
+            >
+        >
+        ["ar-sy"] = <
+            ["id1.1"] = <
+                ["text"] = <"ضغط الدم">
+                ["description"] = <"قياس موضعي لضغط الدم الشرياني و الذي يحل محل الضغط الشرياني في الدورة الدموية الجهازية. 
+و عادة ما يستخدم مصطلح \"ضغط الدم\" لللإشارة إلى قياس ضغط دم الشريان العضُدي في أعلى الذراع.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"إحدى الوقائع">
+                ["description"] = <"الواقعة التلقائية">
+            >
+            ["id5.1"] = <
+                ["text"] = <"الانقباضي">
+                ["description"] = <"ذروة ضغط الدم الشرياني الجهازي - يتم قياسه في طور الانقباض من دورة القلب">
+            >
+            ["id9.1"] = <
+                ["text"] = <"الموضع">
+                ["description"] = <"موضع الشخص في وقت القياس">
+            >
+        >
+        ["es-ar"] = <
+            ["id1.1"] = <
+                ["text"] = <"Presión Arterial">
+                ["description"] = <"La medición local de la tensión arterial que deriva de la medida de la presión arterial en la circulación sistémica. Comúnmente el uso de 'presión arterial' se refiere a la medida de la presión de la arteria braquial por encima del pliegue del codo.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"cualquier evento">
+                ["description"] = <"Evento por defecto">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Sistólica">
+                ["description"] = <"Presión arterial sistólica pico - medido en sístole o la fase de contracción del ciclo cardíaco">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Posición">
+                ["description"] = <"La posición del individuo en el momento del registro.">
+            >
+        >
+        ["fa"] = <
+            ["id1.1"] = <
+                ["text"] = <"فشار خون">
+                ["description"] = <"اندازه گیری موضعی فشار خون وریدی، که جایگزینی برای فشار وریدی در گردش خون کلی است.
+معمولا واژه \"فشار خون\" به اندازه گیری فشار ورید بازویی در روی بازو گفته می شود">
+            >
+            ["id7.1"] = <
+                ["text"] = <"هر رویداد">
+                ["description"] = <"رویداد پیش فرض">
+            >
+            ["id5.1"] = <
+                ["text"] = <"سیستولیک">
+                ["description"] = <"اوج فشار خون وریدی کلی که در سیستولیک یا فاز انقباضی چرخه گردش خون اندازه گیری می شود">
+            >
+            ["id9.1"] = <
+                ["text"] = <"موقعیت">
+                ["description"] = <"موقعیت فرد در زمان اندازه گیری ">
+            >
+        >
+        ["ru"] = <
+            ["id1.1"] = <
+                ["text"] = <"АД">
+                ["description"] = <"Локальное измерение артериального давления, которое является суррогатом артериального давления в системном кровотоке. Как правило, термин относится к давления плечевой артерии на предплечье.
+">
+            >
+            ["id7.1"] = <
+                ["text"] = <"Любое событие">
+                ["description"] = <"*Default event(en)">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Систолическое">
+                ["description"] = <"Пик системного артериального давления - измеряется в систолиу или в фазу сокращения сердца">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Поза">
+                ["description"] = <"Поза пациента во время измерения давления.">
+            >
+        >
+        ["ja"] = <
+            ["id1.1"] = <
+                ["text"] = <"血圧">
+                ["description"] = <"全身の循環での動脈圧の代用として，局所で測定される血圧。一般的には「血圧」とは上腕で上腕動脈を測定したものをさすことが多い。">
+            >
+            ["id7.1"] = <
+                ["text"] = <"血圧">
+                ["description"] = <"*Default event(en)">
+            >
+            ["id5.1"] = <
+                ["text"] = <"収縮期">
+                ["description"] = <"1つ以上の脈の間で最高値を示す全身の動脈圧 - 心機図の収縮期で測定される">
+            >
+            ["id9.1"] = <
+                ["text"] = <"体位">
+                ["description"] = <"計測のときの対象者の体位">
+            >
+        >
+        ["nl"] = <
+            ["id1.1"] = <
+                ["text"] = <"Bloeddruk">
+                ["description"] = <"De lokale meting van de arteriële bloeddruk, welke surrogaat is voor de arteriële druk in de systemische circulatie. Meest gebruikelijk is dat de term 'bloeddruk'  refereert aan de meting van de bloeddruk van de arterie brachialis in de bovenarm.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"any event">
+                ["description"] = <"Default gebeurtenis">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Systole">
+                ["description"] = <"De maximale (piek) systemische arteriele bloeddruk - gemeten in de systolische of samentrekkingsfase van de hartslag">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Houding">
+                ["description"] = <"De houding van het individu op het moment van de meting">
+            >
+        >
+        ["pt-br"] = <
+            ["id1.1"] = <
+                ["text"] = <"Pressão Arterial">
+                ["description"] = <"A medida local da pressão sanguínea arterial, a qual é uma substituta da pressão arterial na circulação arterial sistêmica. Mais comumente o uso do termo pressão arterial se refere à medida da pressão da artéria braquial no antebraço.">
+            >
+            ["id7.1"] = <
+                ["text"] = <"qualquer evento">
+                ["description"] = <"evento Default, padrão predeterminado">
+            >
+            ["id5.1"] = <
+                ["text"] = <"Sistólica">
+                ["description"] = <"Pressão arterial sistêmica máxima - medida na fase sistólica ou de contração do ciclo cardíaco.">
+            >
+            ["id9.1"] = <
+                ["text"] = <"Posição">
+                ["description"] = <"A posição do sujeito na hora da medida.">
+            >
+        >
+    >
+    value_sets = <
+        ["ac1.1"] = <
+            id = <"ac1.1">
+            members = <"at1001", "at1002", "at1003">
+        >
+    >

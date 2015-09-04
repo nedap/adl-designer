@@ -1,0 +1,30 @@
+/* General Style */
+
+body{
+    background-color: #F5F7FA;
+}
+
+.navbar {
+    border-radius: 0;
+    min-height: 50px;
+}
+
+.navbar-brand {
+    padding: 15px 30px;
+    height: auto;
+}
+
+textarea {
+    resize: none;
+}
+
+#diagram-target{
+    width:100%;
+    height:600px;
+    background-color: #DAE4E4;
+}
+
+canvas {
+    outline: none;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+}

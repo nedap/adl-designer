@@ -1,0 +1,137 @@
+{>main}
+<div class="xcontainer-fluid vertical-stretch">
+  <div class="horizontal-stretch col-sm-8 row-children">
+    <div class="panel panel-default horizontal-stretch">
+      <div class="panel-heading row">
+          <div class="col-sm-4 properties-line no-border">
+              <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+              <div class="properties-value">
+                  <select id="{{panel_id}}_language" class="form-control input-sm">
+                      <option value="en">en</option>
+                      <option value="sl">sl</option>
+                  </select>
+              </div>
+          </div>
+          <div class="col-sm-4 pull-right">
+            <div class="btn-group pull-right" data-toggle="buttons">
+              <label class="btn btn-primary active">
+                <input type="radio" name="options" id="{{panel_id}}_viewTree" autocomplete="off" checked> Tree
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" id="{{panel_id}}_viewMindmap" autocomplete="off"> Mindmap
+              </label>
+            </div>
+          </div>
+      </div>
+      <div class="panel-body horizontal-stretch bottom-space-medium no-padding show-scrollbar">
+          <div id="{{panel_id}}_tree" class="definition-tree"></div>
+          <div id="{{panel_id}}_mindmap_container" class="definition-mindmap" style="display:none;"></div>
+      </div>
+      <div class="panel-footer">
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button id="{{panel_id}}_addChild" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add</button>
+          <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span> Remove</button>
+        </div>        
+      </div>
+    </div>
+  </div>
+  <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
+  </div>
+</div>
+
+{>constraintsPanel}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active">
+        <a href="#{{panel_id}}_constraints_tab" data-toggle="tab">Constraints</a></li>
+    <li role="presentation"><a href="#{{panel_id}}_annotations_tab" data-toggle="tab">Annotations</a></li>
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade active in panel panel-default" id="{{panel_id}}_constraints_tab">
+        <div class="panel-body horizontal-stretch" id="{{panel_id}}_constraints"></div>
+    </div>
+    <div role="tabpanel" class="tab-pane fade in panel panel-default" id="{{panel_id}}_annotations_tab">
+        <div class="panel-body" id="{{panel_id}}_annotations"></div>
+    </div>
+</div>
+
+{>attributePanel}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active">
+        <a href="#{{panel_id}}_attribute_tab" data-toggle="tab">Attribute</a></li>
+    {{!--<li role="presentation"><a href="#{{panel_id}}_annotations_tab" data-toggle="tab">Annotations</a></li> --}}
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade active in panel panel-default" id="{{panel_id}}_attribute_tab">
+        <div class="panel-body horizontal-stretch" id="{{panel_id}}_attribute"></div>
+    </div>
+    {{!--<div role="tabpanel" class="tab-pane fade in panel panel-default" id="{{panel_id}}_annotations_tab">--}}
+        {{!--<div class="panel-body" id="{{panel_id}}_annotations"></div>--}}
+    {{!--</div>--}}
+</div>
+
+
+{>annotations}
+<div class="xcontainer-fluid">
+    <div class="form-horizontal form-group">
+        <label for="{{panel_id}}_language" class="col-sm-6 control-label">Language ({{lang}})</label>
+
+        <div class="col-sm-6">
+            <select id="{{panel_id}}_language" class="form-control input-sm"></select>
+        </div>
+    </div>
+    <div id="{{panel_id}}_annotations" class="row"></div>
+</div>
+
+
+{>addAttributeDialog}
+<div class="row properties-line no-border">
+  <div class="properties-label"><label for="{{panel_id}}_attributes" class="control-label">Attribute</label></div>
+  <div class="properties-value">
+    <select id="{{panel_id}}_attributes" class="form-control">
+      {{#each attributes}}
+        <option value="{{this}}">{{this}}</option>
+      {{/each}}
+    </select>
+  </div>
+</div>
+
+
+{>addConstraintDialog}
+<div class="horizontal-stretch">
+    {{#if namedCheckShow}}
+      <div class="row properties-line no-border">
+        <div class="properties-label"><label>Has term definition</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_named" type="checkbox" checked></div>
+      </div>
+    {{/if}}
+    {{#if nameShow}}
+        <div id="{{panel_id}}_name_panel">
+            <div class="row properties-line no-border">
+                <div class="properties-label"><label for="{{panel_id}}_text" class="control-label">Text</label></div>
+                <div class="properties-value"><input id="{{panel_id}}_text" class="form-control"/></div>
+            </div>
+            <div class="row properties-line no-border">
+                <div class="properties-label"><label for="{{panel_id}}_description" class="control-label">Description</label></div>
+                <div class="properties-value"><input id="{{panel_id}}_description" class="form-control"/></div>
+            </div>
+        </div>
+    {{/if}}
+    <div class="row properties-line no-border">
+      <div class="properties-label"><label for="{{panel_id}}_amType" class="control-label">Type</label></div>
+      <div class="properties-value">
+        <select id="{{panel_id}}_amType" class="form-control">
+                {{#each amTypes}}
+                    <option value="{{@key}}">{{this}}</option>
+                {{/each}}
+        </select>
+      </div>
+    </div>
+    <div id="{{panel_id}}_rmTypePanel" class="row properties-line no-border">
+        <div class="properties-label"><label for="{{panel_id}}_types" class="control-label">Rm type</label></div>
+        <div class="properties-value"><select id="{{panel_id}}_types" class="form-control"></select></div>
+    </div>
+    <div id="{{panel_id}}_targetPathPanel" class="row properties-line no-border">
+        <div class="properties-label"><label for="{{panel_id}}_types" class="control-label">Target Path</label></div>
+        <div class="properties-value"><input id="{{panel_id}}_targetPath" class="form-control"/></div>
+    </div>
+</div>

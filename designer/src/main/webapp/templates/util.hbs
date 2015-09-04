@@ -1,0 +1,81 @@
+{>tableMap}
+<table class="table">
+    <thead>
+    <tr>
+        <th>Key</th>
+        <th>Value</th>
+        <th>
+            <button id="{{panel_id}}_add" type="button" class="btn btn-default pull-right">
+                &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+            </button>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+{>tableMap/row}
+<tr id="{{panel_id}}_{{row_id}}">
+    <td><input name="key" data-row="{{row_id}}" value="{{key}}" class="form-control input"></td>
+    <td><input name="value" data-row="{{row_id}}" value="{{value}}" class="form-control input"></td>
+    <td>
+        <button id="{{panel_id}}_{{row_id}}_remove" data-row="{{row_id}}" type="button" class="btn btn-default pull-right">
+            &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
+        </button>
+    </td>
+</tr>
+
+{>stringList}
+<table>
+    <tr>
+        <td style="width:100%">
+            <select id="{{panel_id}}" class="form-control input big-lines" {{#if size}}size="{{size}}"{{/if}}>
+            </select>
+        </td>
+        <td class="align-top left-space-small">
+            <div class="btn-group-vertical" role="group">
+                <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
+                    &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+                </button>
+                <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
+                    &nbsp;<span class="glyphicon glyphicon-minus"></span>&nbsp;
+                </button>
+
+                <button id="{{panel_id}}_edit" type="button" class="btn btn-default data" title="edit">
+                    &nbsp;<span class="glyphicon glyphicon-edit"></span>&nbsp;
+                </button>
+            </div>
+        </td>
+    </tr>
+</table>
+
+
+{>dropdownCheckboxList}
+<div id="{{panel_id}}" class="dropdown">
+    <a class="dropdown-toggle btn btn-default" data-toggle="dropdown" href="#">
+        {{title}}
+        <b class="caret"></b>
+    </a>
+    <ul id="{{panel_id}}_menu" class="dropdown-menu dropdown-menu-form" role="menu">
+        {{#each items}}
+            <li id="{{panel_id}}_item_{{@key}}">
+                <span class="checkbox">
+                    <input id="{{../panel_id}}_check_{{@index}}" class="data" type="checkbox" {{#if checked}}checked="checked"{{/if}}>
+                    {{label}}
+                </span>
+            </li>
+        {{/each}}
+    </ul>
+</div>
+
+
+{>colorizeArchetypeId}
+<span class="archetype-id-colorized">
+    {{#if namespace}}
+        <span class="namespace">{{namespace}}</span> ::
+    {{/if}}
+    <span class="context">{{context}}</span>.<span class="concept">{{concept}}</span>.v<span class="version">{{version}}</span>
+</span>
+
+

@@ -1,0 +1,23 @@
+.cm-s-adl span.cm-meta {color: black;} /* default */
+.cm-s-adl span.cm-keyword { line-height: 1em; font-weight: bold; color: #7F0055; } /* keywords */
+.cm-s-adl span.cm-atom {color: #1A6;} /* terminology code: [local::at0002] */
+.cm-s-adl span.cm-number {color: #275;} /* number */
+.cm-s-adl span.cm-def {color: #00f;}
+.cm-s-adl span.cm-variable {color: #FF1717;} /* id/at/ac codes */
+.cm-s-adl span.cm-variable-2 {color: #0FA707;} /* rm type */
+.cm-s-adl span.cm-variable-3 {color: #0000C0;}
+.cm-s-adl span.cm-property {color: black;}
+.cm-s-adl span.cm-operator {color: black;}
+.cm-s-adl span.cm-comment {color: #8F9F8F;} /* comment */
+.cm-s-adl span.cm-string {color: #2A00FF;} /* string */
+.cm-s-adl span.cm-string-2 {color: #A50;} /* string key */
+.cm-s-adl span.cm-qualifier {color: #555;}
+.cm-s-adl span.cm-builtin {color: #30a;}
+.cm-s-adl span.cm-bracket {color: #cc7;}
+.cm-s-adl span.cm-tag {color: #170;}
+.cm-s-adl span.cm-attribute {color: #00c;}
+.cm-s-adl span.cm-link {color: #219;} /* url */
+.cm-s-adl span.cm-error {color: #f00;}
+
+.cm-s-adl .CodeMirror-activeline-background {background: #e8f2ff !important;}
+.cm-s-adl .CodeMirror-matchingbracket {outline:1px solid grey; color:black !important;}

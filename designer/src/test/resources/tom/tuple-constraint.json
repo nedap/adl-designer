@@ -1,0 +1,161 @@
+{
+    "type": "template",
+    "rmType": "COMPOSITION",
+    "parentArchetypeId": "openEHR-EHR-COMPOSITION.encounter.v1.0.0",
+    "archetypeId": "openEHR-EHR-COMPOSITION.encounter_8958.v1.0.0",
+    "terms": {
+        "en": {
+            "text": "Encounter",
+            "description": "Generic encounter or progress note composition."
+        },
+        "ko": {
+            "text": "환자대면",
+            "description": "외래기록, 경과기록, 간호기록와 일반노트와 같은 환자를 대면한 후 작성하는 기록 composition"
+        },
+        "ar-sy": {
+            "text": "المقابلة",
+            "description": "مقابلة جنيسة (غير محدودة الملكية) أو بِنْية ملاحظة تقدم حالة المريض"
+        },
+        "es-ar": {
+            "text": "Consulta",
+            "description": "Composition de consulta generica o notas de evolucion "
+        }
+    },
+    "nodeId": "id1",
+    "items": [{
+        "type": "archetype",
+        "parentArchetypeId": "openEHR-EHR-OBSERVATION.body_weight.v1.0.0",
+        "archetypeId": "openEHR-EHR-OBSERVATION.body_weight_a577.v1.0.0",
+        "rmType": "OBSERVATION",
+        "terms": {
+            "en": {
+                "text": "Body weight",
+                "description": "Measurement of the body weight of an individual."
+            },
+            "de": {
+                "text": "Körpergewicht",
+                "description": "Messung des Körpergewichts eines Individuums."
+            },
+            "ar-sy": {
+                "text": "وزن الجسم",
+                "description": "قياس وزن الجسم للشخص"
+            },
+            "fa": {
+                "text": "وزن بدن",
+                "description": "اندازه گیری وزن بدن فرد"
+            },
+            "ru": {
+                "text": "Масса тела",
+                "description": "Измерение актуальной массы тела человека."
+            },
+            "es": {
+                "text": "Peso corporal",
+                "description": "Medición del peso corporal de un individuo."
+            },
+            "nl": {
+                "text": "Lichaamsgewicht",
+                "description": "Meting van het lichaamsgewicht van een individu."
+            },
+            "pt-br": {
+                "text": "Peso corporal",
+                "description": "A medição do peso corporal de um indivíduo."
+            }
+        },
+        "nodeId": "id1",
+        "items": [{
+            "type": "item",
+            "terms": {
+                "en": {
+                    "text": "Weight 2",
+                    "description": "The weight of the individual."
+                },
+                "de": {
+                    "text": "Gewicht",
+                    "description": "Das Gewicht eines Individuums."
+                },
+                "ar-sy": {
+                    "text": "الوزن",
+                    "description": "وزن الشخص"
+                },
+                "fa": {
+                    "text": "وزن",
+                    "description": "وزن فرد"
+                },
+                "ru": {
+                    "text": "Вес",
+                    "description": "Актуальный вес человека."
+                },
+                "es": {
+                    "text": "Peso",
+                    "description": "Peso del individuo."
+                },
+                "nl": {
+                    "text": "Gewicht",
+                    "description": "Het gewicht van het individu."
+                },
+                "pt-br": {
+                    "text": "Peso",
+                    "description": "O peso do indivíduo."
+                }
+            },
+            "nodeId": "id5",
+            "constraints": {
+                "type": "C_COMPLEX_OBJECT",
+                "children": [
+                    {
+                        "type": "C_TERMINOLOGY_CODE",
+                        "rmType": "C_TERMINOLOGY_CODE",
+                        "code_list": ["at19"],
+                        "attribute": "property"
+                    },
+                    {
+                        "type": "tuple",
+                        "children": [
+                            {
+                                "present": true,
+                                "members": [
+                                    {
+                                        "type": "C_REAL",
+                                        "rmType": "C_REAL",
+                                        "attribute": "magnitude"
+                                    },
+                                    {
+                                        "type": "C_STRING",
+                                        "rmType": "C_STRING",
+                                        "list": ["kg"],
+                                        "attribute": "units"
+                                    }
+                                ]
+                            },
+                            {
+                                "present": true,
+                                "members": [
+                                    {
+                                        "type": "C_REAL",
+                                        "rmType": "C_REAL",
+                                        "attribute": "magnitude"
+                                    },
+                                    {
+                                        "type": "C_STRING",
+                                        "rmType": "C_STRING",
+                                        "list": ["lb"],
+                                        "attribute": "units"
+                                    }
+                                ]
+                            }
+                        ],
+                        "members": [
+                            "magnitude",
+                            "units"
+                        ]
+                    }
+                ],
+                "rmType": "DV_QUANTITY"
+            },
+            "path": "/data[id3]/events[id4]/data[id2]/items",
+            "rmType": "ELEMENT",
+            "dataAttribute": "value"
+        }],
+        "path": "/content"
+    }]
+}

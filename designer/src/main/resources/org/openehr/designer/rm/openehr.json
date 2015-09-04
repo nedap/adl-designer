@@ -1,0 +1,55 @@
+{
+  "CARE_ENTRY": {
+    "attributes": {
+      "guideline_id": {"ignore": true}
+    }
+  },
+  "CLUSTER": {
+    "rootType": true,
+    "attributes": {
+      "items": {"transparent": true}
+    }
+  },
+  "COMPOSITION": {
+    "rootType": true
+  },
+  "ELEMENT": {
+    "finalType": true
+  },
+  "ENTRY": {
+    "rootType": true,
+    "attributes": {
+      "language": {"ignore": true},
+      "encoding": {"ignore": true},
+      "subject": {"ignore": true},
+      "provider": {"ignore": true},
+      "work_flow_id": {"ignore": true}
+    }
+  },
+  "HISTORY": {
+    "transparent": true,
+    "attributes": {
+      "events": {"transparent": true},
+      "summary": {"transparent": true}
+    }
+  },
+  "ITEM": {
+    "rootType": true
+  },
+  "ITEM_STRUCTURE": {
+    "transparent": true,
+    "attributes": {
+      "items": {"transparent": true}
+    }
+  },
+  "LOCATABLE": {
+    "attributes": {
+      "name": {"ignore": true},
+      "uid": {"ignore": true},
+      "links": {"ignore": true},
+      "archetype_details": {"ignore": true},
+      "feeder_audit": {"ignore": true},
+      "archetype_node_id": {"ignore": true}
+    }
+  }
+}

@@ -1,0 +1,114 @@
+<!--
+  ~ ADL2-core
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-core.
+  ~
+  ~ ADL2-core is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+{>top}
+<div class="row properties-line">
+    <div class="properties-label"><label>Node Id</label></div>
+    <div class="properties-value data">{{node_id}}</div>
+</div>
+<div class="row properties-line">
+    <div class="properties-label"><label>Path</label></div>
+    <div class="properties-value data">{{rmPath}}</div>
+</div>
+<div class="row properties-line">
+    <div class="properties-label"><label for="occurrences">Occurrences</label></div>
+    <div class="properties-value">
+      <div class="properties-value-item">
+          <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
+      </div>
+      <div class="properties-value-item">
+          <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
+      </div>
+      <div class="properties-value-item small">
+          <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
+      </div>
+    </div>
+</div>
+
+{>main}
+<div id="{{panel_id}}">
+    <div id="{{top.panel_id}}" class="horizontal-stretch"></div>
+    {{#if constraint}}
+        <div id="{{constraint.panel_id}}" class="horizontal-stretch"></div>
+    {{/if}}
+</div>
+
+{>footer}
+<div>
+    {{#unless specialized}}
+        <button id="{{footer_id}}_specialize" class="btn btn-primary">Specialize</button>
+    {{/unless}}
+    <button id="{{footer_id}}_save" class="btn btn-primary">Save</button>
+</div>
+
+{>errors}
+<ul>
+    {{#each errors}}
+        <li>{{location}}: {{error}}</li>
+    {{/each}}
+</ul>
+
+{>ARCHETYPE_SLOT}
+<div class="row properties-line">
+  <div class="properties-label align-top"><label>Include</label></div>
+  <div id="{{panel_id}}_includes" class="properties-value"></div>
+</div>
+<div class="row properties-line">
+  <div class="properties-label align-top"><label>Exclude</label></div>
+  <div id="{{panel_id}}_excludes" class="properties-value"></div>
+</div>
+
+{>ARCHETYPE_SLOT/assertionList}
+<div class="properties-line no-border">
+  <div class="properties-value">
+    <select id="{{panel_id}}_list" size="10" style="width:100%" multiple></select>
+    <div class="btn-group-vertical left-space-small" role="group">
+        <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+        <button id="{{panel_id}}_remove" type="button" class="btn btn-default data" title="remove">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </div>
+  </div>
+</div>
+
+{>ARCHETYPE_INTERNAL_REF}
+<div class="row properties-line">
+    <div class="properties-label"><label>Target Path</label></div>
+    <div class="properties-value">{{target_path}}</div>
+</div>
+
+
+{>ARCHETYPE_SLOT/addAssertionDialog}
+<div class="row properties-line no-border">
+  <div class="properties-value">
+    <select id="{{panel_id}}_candidates" class="form-control" size="10" multiple>
+        {{#each candidates}}
+            <option value="{{archetypeId}}" title="{{name}}">{{archetypeId}}</option>
+        {{/each}}
+    </select>
+  </div>
+</div>
+<div class="row properties-line no-border">
+  <div class="properties-label"><label>Match specializations</label></div>
+  <div class="properties-value">
+    <input id="{{panel_id}}_specializations" type="checkbox">
+  </div>
+</div>

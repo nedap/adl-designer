@@ -1,0 +1,620 @@
+/*
+ * ADL2-core
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+ *
+ * This file is part of ADL2-core.
+ *
+ * ADL2-core is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+label {
+  xpadding: 10px 5px;	
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #FFF;
+  background-image: none;
+  border: 1px solid #CCC;
+  border-radius: 0px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-transition: none;
+  -o-transition: none;
+  transition: none;
+}
+
+.input-sm {
+	height: 30px;
+	padding: 1px 5px;
+}
+
+.container-fluid {
+  margin-right: 0;
+  margin-left: 0;
+  padding-left: 0px;
+  padding-right: 0px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-grow: 1;
+  -webkit-flex-shrink: 1;
+}
+
+.row {
+  margin-right: 0px;
+  margin-left: 0px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-grow: 0;
+  -webkit-flex-shrink: 0;
+}
+
+.form-horizontal .form-group {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.align-top {
+	vertical-align: top;
+}
+
+.tab-pane {
+  padding-top: 10px;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  -webkit-flex-direction: column; 
+  pading-left: 10px;
+  flex: 1;
+  -webkit-flex: 1;
+}
+
+.navbar-right {
+	margin-right: 0px !important;
+}
+
+.navbar {
+	flex-shrink: 0;
+	-webkit-flex-shrink: 0;
+	margin-bottom: 10px;
+}
+
+.navbar-nav {
+  margin: 0px 0px;
+}
+
+.navbar-default .navbar-nav > li > a {
+  border-bottom: 3px solid transparent;
+}
+
+.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+	color: #57A447;
+  border-bottom: 3px solid #57A447;
+}
+
+.nav-tabs {
+	flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-grow: 0;
+  -webkit-flex-shrink: 0;
+  padding-left: 10px;
+  xmin-height: 44px;
+}
+
+.tab-content {
+	flex-grow: 1;
+	-webkit-flex-grow: 1;
+	display: flex;
+	display: -webkit-flex;
+	overflow: auto;
+}
+
+.tab-pane.padded {
+	padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+
+.no-padding {
+	  padding: 0px;
+}
+
+.left-space-small {
+	padding-left: 3px;
+}
+
+.top-space-small {
+	padding-top: 3px;
+}
+
+.bottom-space-medium {
+	xpadding-bottom: 10px;
+}
+
+.vertical-stretch {
+  flex-grow: 1;
+  -webkit-flex-grow: 1; 
+	display: flex;
+	display: -webkit-flex;
+  align-content: stretch;
+}
+
+.horizontal-stretch {
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  align-content: stretch;
+  -webkit-align-content: stretch;
+}
+
+select.big-lines {
+	padding: 0px;
+}
+
+select.big-lines > option {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.nav-tabs > li > a:hover {
+  border: 1px solid #DDD;
+  border-bottom: 2px solid #FFF;
+}
+
+.nav > li > a:hover, .nav > li > a:focus {
+  text-decoration: none;
+  background-color: #FFF;
+  color: #57A447;
+}
+
+.nav-tabs > li.active > a {
+  border: 1px solid #DDD;
+  border-bottom-color: #FFF;
+  cursor: default;
+  color: #808080;
+  outline: none;
+  border-top: 3px solid #57A447;
+  top: 1px;
+}
+
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+  color: #555;
+  cursor: default;
+  background-color: #FFF;
+  border-top: 3px solid #57A447;
+  border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.nav-tabs > li > a {
+	color: #000;
+	border: 1px solid #DDD;
+	border-bottom: 2px solid #FFF;
+}
+
+.tab-content > .active {
+  display: flex;
+  display: -webkit-flex;
+  visibility: visible;
+}
+
+.row-children {
+	flex-direction: row;
+	-webkit-flex-direction: row;
+}
+
+.show-scrollbar {
+	overflow: auto;
+}
+
+.tab-pane.panel {
+	border-top: 0px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+}
+
+.xcontainer-fluid > div:nth-child(even) {
+	padding-left: 0px;
+}
+
+#archetype-editor-main {
+    width: 100%;
+    height: 100%;
+}
+
+#archetype-editor-definition-layout {
+    width: 100%;
+    height: 85%;
+}
+
+pre.display {
+  border-radius: 0px;
+}
+
+.table > thead > tr > th {
+	font-size: 14px;
+}
+
+.properties-line {
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  display: flex;
+  display: -webkit-flex;
+  align-content: stretch;
+  -webkit-align-content: stretch;
+  border-bottom: 1px solid #DDD;
+  padding: 5px 0px;
+}
+
+.properties-label {
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+  padding-right: 20px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.properties-label.align-top {
+	margin-top: 0px;
+}
+
+.properties-label > label {
+  padding: 5px 5px;
+  margin-bottom: 0px;
+}
+
+.properties-value {
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 1;
+	margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  display: -webkit-flex;
+  align-content: stretch;
+  -webkit-align-content: stretch;
+}
+
+.properties-value-item {
+	margin-right: 10px;
+  flex-grow: 10;
+  -webkit-flex-grow: 10;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+}
+
+.properties-value-item.small {
+  margin-right: 10px;
+  flex-grow: 5;
+  -webkit-flex-grow: 5;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+}
+
+.properties-sub-panel {
+	padding-left: 20px;
+}
+
+.properties-custom-panel .properties-line:last-child {
+	border-bottom: 0px solid #FFF;
+}
+
+.properties-line.no-border {
+	border-bottom: 0px solid #FFF;
+}
+
+.fixed-table-body {
+	xheight: auto;
+}
+
+.streched-table-footer {
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+  padding: 5px;
+  display: flex;
+  display: -webkit-flex;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+}
+
+.panel-footer {
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+}
+
+.hidden {
+    display: none
+}
+
+/* TABLE HACK - FIXED HEADER - START 
+table.table {
+    width: 100%;
+}
+
+table.table > thead, table.table > tbody, table.table > tr, table.table > td, table.table > th { display: block; }
+
+table.table tr:after {
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+table.table > thead th {
+    height: 30px;
+}
+
+table.table > tbody {
+    height: 120px;
+    overflow-y: auto;
+}
+
+table.table > thead {
+}
+
+
+table.table > tbody td, table.table > thead th {
+    width: 19.2%;
+    float: left;
+}
+
+TABLE HACK - FIXED HEADER - END */
+
+
+a.definition-tree-node {
+    color: #AAA !important;
+}
+
+a.definition-tree-node.attribute {
+    font-style: italic !important;
+}
+a.definition-tree-node.constraint {
+    font-style: normal !important;
+}
+
+a.definition-tree-node.specialized {
+    color: black !important;
+}
+
+a.definition-tree-node.specialized.prohibited {
+    color: black !important;
+    text-decoration: line-through;
+}
+
+pre.display {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+}
+/* marks the field that represent actual model data (used in constraint properties, to enable save button) */
+.data {}
+.archetype-only {}
+
+.vertical-button-column {
+    vertical-align: top
+}
+S
+/* For column layout using tables */
+.table-layout {
+    display:table;
+    width:100%;
+}
+.table-layout .table-row {
+    display:table-row;
+}
+.table-layout .table-cell {
+    display:table-cell;
+}
+
+.table-layout .table-cell .right {
+    text-align: right;
+}
+
+form .table-layout .table-cell {
+    vertical-align: middle;
+    height: 100%;
+}
+
+#archetype-editor-main {
+  height: 100%;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+}
+
+#archetype-editor-main-tabs-definition .table-layout {
+    height: 100%
+}
+#archetype-editor-main-tabs-definition .table-layout .table-cell {
+    height: 100%
+}
+
+#archetype-editor-id-panel {
+    xvertical-align: bottom;
+    padding-top: 15px;
+    padding-right: 15px;
+    font-weight: bold;
+}
+
+.archetype-id-colorized {
+    text-wrap: none;
+    color: #8c8c8c;
+}
+.archetype-id-colorized .namespace { color: #800080; }
+.archetype-id-colorized .context { color: #2C9601; }
+.archetype-id-colorized .concept { color: #007fff; }
+.archetype-id-colorized .version { color: #e13100; }
+
+.definition-tree {
+    xborder: solid 1px #ccc;
+    overflow: auto;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 1;
+  padding: 10px;
+}
+
+.definition-mindmap {
+    xborder: solid 1px #ccc;
+  overflow: hidden;
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  flex-shrink: 1;
+  -webkit-flex-shrink: 1;
+  xpadding: 10px;
+  display: flex;
+  display: -webkit-flex;
+}
+
+.constraint-properties {
+    xfont-size: 12px;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+}
+
+.constraint-properties .footer {
+    padding-top: 20px;
+    text-align: right
+}
+
+.constraint-properties .errors {
+    color: #8b0000;
+}
+
+.constraint-properties .date_time_pattern {
+    border: solid 1px #DDD;
+    width: 100%;
+    height: auto;
+    overflow: auto;
+    padding: 5px;
+}
+
+.constraint-properties .custom-container {
+    padding-top: 20px;
+}
+
+.terminology-type-choice {
+    padding-bottom: 20px;
+}
+
+.duration_pattern_panel {
+    padding-bottom: 5px;
+}
+
+.duration_pattern_panel .custom {
+    padding-left: 20px;
+}
+
+
+
+.external_terminology_table {
+    width: 100%
+}
+.external_terminology_row_header {
+    padding-top: 22px;
+}
+
+.external_terminology_row_binding {
+    font-size: 14px;
+}
+
+.external_terminology_row_actions {
+}
+
+
+ul.dropdown-menu-form {
+    padding: 5px 30px 0;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.modal-alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+}
+
+.modal-alert-error {
+    color: #a94442;
+    background-color: #f2dede;
+}
+
+/* ICONS */
+.openehr-rm-icon {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    background: url("images/icons/any.png") no-repeat !important;
+    padding-left: 20px !important;
+}
+
+.openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
+.openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }
+.openehr-rm-icon.admin_entry { background: url("images/icons/admin_entry.png") no-repeat !important; }
+.openehr-rm-icon.admin_entry.slot { background: url("images/icons/admin_entry_slot.png") no-repeat !important; }
+.openehr-rm-icon.cluster { background: url("images/icons/cluster.png") no-repeat !important; }
+.openehr-rm-icon.cluster.slot { background: url("images/icons/cluster_slot.png") no-repeat !important; }
+.openehr-rm-icon.composition { background: url("images/icons/composition.png") no-repeat !important; }
+.openehr-rm-icon.composition.slot { background: url("images/icons/composition_slot.png") no-repeat !important; }
+.openehr-rm-icon.dv_boolean { background: url("images/icons/dv_boolean.png") no-repeat !important; }
+.openehr-rm-icon.dv_coded_text { background: url("images/icons/dv_coded_text.png") no-repeat !important; }
+.openehr-rm-icon.dv_count { background: url("images/icons/dv_count.png") no-repeat !important; }
+.openehr-rm-icon.dv_date { background: url("images/icons/dv_date.png") no-repeat !important; }
+.openehr-rm-icon.dv_date_time { background: url("images/icons/dv_date_time.png") no-repeat !important; }
+.openehr-rm-icon.dv_duration { background: url("images/icons/dv_duration.png") no-repeat !important; }
+.openehr-rm-icon.dv_identifier { background: url("images/icons/dv_identifier.png") no-repeat !important; }
+.openehr-rm-icon.dv_multimedia { background: url("images/icons/dv_multimedia.png") no-repeat !important; }
+.openehr-rm-icon.dv_ordinal { background: url("images/icons/dv_ordinal.png") no-repeat !important; }
+.openehr-rm-icon.dv_proportion { background: url("images/icons/dv_proportion.png") no-repeat !important; }
+.openehr-rm-icon.dv_quantity { background: url("images/icons/dv_quantity.png") no-repeat !important; }
+.openehr-rm-icon.dv_text { background: url("images/icons/dv_text.png") no-repeat !important; }
+.openehr-rm-icon.dv_time { background: url("images/icons/dv_time.png") no-repeat !important; }
+.openehr-rm-icon.dv_uri { background: url("images/icons/uri.png") no-repeat !important; }
+.openehr-rm-icon.element { background: url("images/icons/element.png") no-repeat !important; }
+.openehr-rm-icon.element.slot { background: url("images/icons/element_slot.png") no-repeat !important; }
+.openehr-rm-icon.evaluation { background: url("images/icons/evaluation.png") no-repeat !important; }
+.openehr-rm-icon.evaluation.slot { background: url("images/icons/evaluation_slot.png") no-repeat !important; }
+.openehr-rm-icon.event { background: url("images/icons/event.png") no-repeat !important; }
+.openehr-rm-icon.history { background: url("images/icons/history.png") no-repeat !important; }
+.openehr-rm-icon.instruction { background: url("images/icons/instruction.png") no-repeat !important; }
+.openehr-rm-icon.instruction.slot { background: url("images/icons/instruction_slot.png") no-repeat !important; }
+.openehr-rm-icon.interval_event { background: url("images/icons/interval_event.png") no-repeat !important; }
+.openehr-rm-icon.item_tree { background: url("images/icons/item_tree.png") no-repeat !important; }
+.openehr-rm-icon.item_tree.slot { background: url("images/icons/item_tree_slot.png") no-repeat !important; }
+.openehr-rm-icon.observation { background: url("images/icons/observation.png") no-repeat !important; }
+.openehr-rm-icon.observation.slot { background: url("images/icons/observation_slot.png") no-repeat !important; }
+.openehr-rm-icon.item_list { background: url("images/icons/structure.png") no-repeat !important; }
+.openehr-rm-icon.item_single { background: url("images/icons/structure.png") no-repeat !important; }
+.openehr-rm-icon.section { background: url("images/icons/section.png") no-repeat !important; }
+.openehr-rm-icon.section.slot { background: url("images/icons/section_slot.png") no-repeat !important; }
+
