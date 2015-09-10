@@ -30,6 +30,7 @@
 
     <artifactId>designer</artifactId>
     <packaging>war</packaging>
+    <name>${project.artifactId}</name>
 
 
     <dependencies>
@@ -50,8 +51,8 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-          <groupId>com.fasterxml.jackson.module</groupId>
-          <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
         </dependency>
 
         <!-- spring -->
@@ -99,16 +100,17 @@
         </dependency>
 
 
-        
-				<dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        
-		    <scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
 
-
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+    </build>
 
     <profiles>
         <profile>
