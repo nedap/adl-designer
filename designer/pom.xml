@@ -115,7 +115,7 @@
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <configuration>
-                    <path>/designer</path>
+                    <path>/${project.artifactId}</path>
                 </configuration>
             </plugin>
         </plugins>
