@@ -26,8 +26,6 @@ log4j.logger.org.openehr=DEBUG
 log4j.additivity.org.springframework=false
 log4j.logger.org.springframework=INFO, CONSOLE
 
-
-# CONSOLE is set to be a ConsoleAppender using a PatternLayout.
 log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
 log4j.appender.CONSOLE.Threshold=ALL
 log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
