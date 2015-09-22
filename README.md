@@ -2,9 +2,57 @@
 
 ADL 2.0 designer (template designer, archetype editor,...)
 
+## Initial Setup
 
-### Info for users
-Adl Designer depends on adl2 parser which can be found at https://github.com/openEHR/adl2-core. As the parser is not yet available as an artifact in maven repostory, you will need to clone and install adl2-core into a local maven repository before building this project.
+Prerequisites:
+
+* git client
+* Java 1.8 SDK
+* Maven 3.0
+
+Clone adl-designer from GitHub:
+
+```bash 
+git clone https://github.com/openEHR/adl-designer.git
+```    
+
+Go to the newly created directory _adl-designer_. From there, go to _src/main/resources_ and copy configuration 
+template files to real configuration:
+
+ ```bash
+ cp config.properties-TEMPLATE config.properties
+ cp log4j.properties-TEMPLATE log4j.properties
+ ```
+ 
+ In config.properties, update:
+ 
+ * archetype.repository.file.location - Path to the directory that contains archetype files. Directory must already exist.
+    Any file with .adls extension in this directory and any subfolder will be loaded as an archetype. For a repository with 
+    existing archetypes, you can try using a directory with contents of CKM_2013_12_09 Reference archetypes: 
+    https://github.com/openEHR/adl-archetypes/tree/master/Reference/CKM_2013_12_09
+* template.repository.location -  Path to the directory that contains template files. Directory must already exist.
+  
+  
+ Back at _adl-designer_ directory, use Maven to build the project:  
+  
+ ```bash
+ mvn clean install
+ ```
+ 
+This will generate a _designer.war_ file in _designer/target_, which can be deployed into any java web application server.
+
+For development purposes, you may also run the application with the embedded maven tomcat plugin:
+
+```bash
+mvn tomcat7:run
+```
+
+This will deploy the application on port http://localhost:8080/designer and the endpoint urls will be:
+ * http://localhost:8080/designer/archetype-editor.html - Archetype Editor
+ * http://localhost:8080/designer/template-editor.html - Template Editor
+
+ 
+ 
 
 ## Archetype Editor
 Part of the designer module, that is capable editing ADL2 archetypes. Can be accessed on the url _/designer/archetype-editor.html_

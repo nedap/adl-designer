@@ -1,4 +1,5 @@
 .idea/
+/repository
 target/
 *.iml
 *.ipr
