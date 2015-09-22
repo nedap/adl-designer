@@ -8,7 +8,7 @@ Prerequisites:
 
 * git client
 * Java 1.8 SDK
-* Maven 3.0
+* Apache Maven 3 - https://maven.apache.org
 
 Clone adl-designer from GitHub:
 
