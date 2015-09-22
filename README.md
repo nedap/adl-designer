@@ -26,14 +26,14 @@ template files to real configuration:
  
  In config.properties, update:
  
- * archetype.repository.file.location - Path to the directory that contains archetype files. Directory must already exist.
+* archetype.repository.file.location - Path to the directory that contains archetype files. Directory must already exist.
     Any file with .adls extension in this directory and any subfolder will be loaded as an archetype. For a repository with 
     existing archetypes, you can try using a directory with contents of CKM_2013_12_09 Reference archetypes: 
     https://github.com/openEHR/adl-archetypes/tree/master/Reference/CKM_2013_12_09
 * template.repository.location -  Path to the directory that contains template files. Directory must already exist.
   
   
- Back at _adl-designer_ directory, use Maven to build the project:  
+Back at _adl-designer_ directory, use Maven to build the project:  
   
  ```bash
  mvn clean install
