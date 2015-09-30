@@ -21,9 +21,7 @@
 package org.openehr.designer.io;
 
 import com.google.common.base.Charsets;
-import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.adl.rm.OpenEhrRmModel;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -35,8 +33,8 @@ public class TemplateDeserializerTestManual {
     @Test
     public void testDeserialize() throws Exception {
 
-        String templateAdlt = new String(Files.readAllBytes(Paths.get("c:/temp/template.adlt")), Charsets.UTF_8);
+        String templateAdlt = new String(Files.readAllBytes(Paths.get("d:/temp/template.adlt")), Charsets.UTF_8);
 
-        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(templateAdlt);
+        List<Archetype> archetypes = TemplateDeserializer.deserialize(templateAdlt);
     }
 }

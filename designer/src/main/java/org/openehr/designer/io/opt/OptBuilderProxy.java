@@ -20,7 +20,7 @@
 
 package org.openehr.designer.io.opt;
 
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.List;
 
@@ -28,13 +28,14 @@ import java.util.List;
  * @author Marko Pipan
  */
 abstract class OptBuilderProxy {
-    abstract OptBuilder.Opt build(List<DifferentialArchetype> archetypes);
+    abstract OptBuilder.Opt build(List<Archetype> archetypes);
+
     abstract boolean enabled();
 
     static class DummyOptBuilderProxy extends OptBuilderProxy {
 
         @Override
-        OptBuilder.Opt build(List<DifferentialArchetype> archetypes) {
+        OptBuilder.Opt build(List<Archetype> archetypes) {
             throw new UnsupportedOperationException("Exporting to opt is not available");
         }
 

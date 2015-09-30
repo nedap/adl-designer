@@ -22,7 +22,7 @@ package org.openehr.designer.io;
 
 import com.google.common.base.Joiner;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +31,9 @@ import java.util.List;
  * @author Marko Pipan
  */
 public class TemplateSerializer {
-    public static String serialize(List<DifferentialArchetype> archetypes) {
+    public static String serialize(List<Archetype> archetypes) {
         List<String> serializedArchetypes = new ArrayList<>();
-        for (DifferentialArchetype archetype : archetypes) {
+        for (Archetype archetype : archetypes) {
             serializedArchetypes.add(ArchetypeSerializer.serialize(archetype));
         }
 

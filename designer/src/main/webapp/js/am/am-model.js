@@ -1368,7 +1368,7 @@ var AOM = (function () {
             self.defaultLanguage = defaultLanguage;
             self.translations = extractTranslations();
             self.specializationDepth = new my.NodeId(data.definition.node_id).getSpecializationDepth();
-            data["@type"] = data["@type"] || "FLAT_ARCHETYPE";
+            data["@type"] = data["@type"] || "ARCHETYPE";
 
 
             enrichConstraintData(data.definition, undefined);
@@ -1585,7 +1585,7 @@ var AOM = (function () {
             options = $.extend({}, defaultOptions, options);
 
             var newArchetypeJson = {
-                "@type": "FLAT_ARCHETYPE",
+                "@type": "ARCHETYPE",
                 "description": {
                     "@type": "RESOURCE_DESCRIPTION",
                     "original_author": {},

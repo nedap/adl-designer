@@ -25,8 +25,7 @@ import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.designer.repository.FlatArchetypeRepository;
 import org.openehr.designer.repository.file.FileArchetypeRepository;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -55,9 +54,9 @@ public class ArchetypeDifferentiatorTestManual {
 
     @Test
     public void testBuild() throws Exception {
-        FlatArchetype parent = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
-        FlatArchetype flatChild = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
-        DifferentialArchetype diff = ArchetypeDifferentiator.differentiate(OpenEhrRmModel.getInstance(), parent, flatChild);
+        Archetype parent = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output.v1.0.0");
+        Archetype flatChild = flatArchetypeRepository.getFlatArchetype("openEHR-EHR-OBSERVATION.bodily_output-urination.v1.0.0");
+        Archetype diff = ArchetypeDifferentiator.differentiate(OpenEhrRmModel.getInstance(), parent, flatChild);
         String archetype = ArchetypeSerializer.serialize(diff);
 
         Path targetDir = Paths.get("target");

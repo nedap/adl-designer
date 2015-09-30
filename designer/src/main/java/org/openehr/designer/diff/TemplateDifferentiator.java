@@ -22,21 +22,10 @@ package org.openehr.designer.diff;
 
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.rm.RmModel;
-import org.openehr.adl.util.AdlUtils;
-import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.adl.util.walker.AmConstraintContext;
-import org.openehr.adl.util.walker.AmVisitors;
-import org.openehr.adl.util.walker.ArchetypeWalker;
-import org.openehr.adl.util.walker.ConstraintAmVisitor;
-import org.openehr.jaxb.am.CArchetypeRoot;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
-import org.openehr.jaxb.rm.TranslationDetails;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author markopi
@@ -48,14 +37,14 @@ public class TemplateDifferentiator {
         this.flatArchetypeProvider = flatArchetypeProvider;
     }
 
-    public List<DifferentialArchetype> differentiate(RmModel rmModel, List<FlatArchetype> flatTemplateArchetypes) {
-        List<DifferentialArchetype> result = new ArrayList<>();
-        for (FlatArchetype flatArchetype : flatTemplateArchetypes) {
-            FlatArchetype flatArchetypeParent = null;
+    public List<Archetype> differentiate(RmModel rmModel, List<Archetype> flatTemplateArchetypes) {
+        List<Archetype> result = new ArrayList<>();
+        for (Archetype flatArchetype : flatTemplateArchetypes) {
+            Archetype flatArchetypeParent = null;
             if (flatArchetype.getParentArchetypeId() != null) {
                 flatArchetypeParent = flatArchetypeProvider.getFlatArchetype(flatArchetype.getParentArchetypeId().getValue());
             }
-            DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeParent, flatArchetype);
+            Archetype differentialArchetype = ArchetypeDifferentiator.differentiate(rmModel, flatArchetypeParent, flatArchetype);
             result.add(differentialArchetype);
         }
 //        removeUnchangedArchetypes(result);

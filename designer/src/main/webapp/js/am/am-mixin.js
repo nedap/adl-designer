@@ -31,7 +31,7 @@ AOM = (function (AOM) {
                 },
                 "OPERATIONAL_TEMPLATE": {
                     "type": "OPERATIONAL_TEMPLATE",
-                    "parent": "FLAT_ARCHETYPE"
+                    "parent": "ARCHETYPE"
                 },
                 "C_ATTRIBUTE_TUPLE": {
                     "type": "C_ATTRIBUTE_TUPLE",
@@ -108,10 +108,6 @@ AOM = (function (AOM) {
                 "C_PRIMITIVE_OBJECT": {
                     "type": "C_PRIMITIVE_OBJECT",
                     "parent": "C_DEFINED_OBJECT"
-                },
-                "FLAT_ARCHETYPE": {
-                    "type": "FLAT_ARCHETYPE",
-                    "parent": "ARCHETYPE"
                 },
                 "ARCHETYPE_SLOT": {
                     "type": "ARCHETYPE_SLOT",
@@ -260,10 +256,6 @@ AOM = (function (AOM) {
                 "C_ATTRIBUTE": {
                     "type": "C_ATTRIBUTE",
                     "parent": "ARCHETYPE_CONSTRAINT"
-                },
-                "DIFFERENTIAL_ARCHETYPE": {
-                    "type": "DIFFERENTIAL_ARCHETYPE",
-                    "parent": "ARCHETYPE"
                 },
                 "EXPR_LEAF": {
                     "type": "EXPR_LEAF",

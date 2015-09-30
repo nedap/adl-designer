@@ -28,7 +28,7 @@ import org.openehr.adl.parser.BomSupportingReader;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.WtUtils;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -55,12 +56,12 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
 
     private List<LocalArchetypeInfo> localArchetypeInfoList;
 
-    private Function<DifferentialArchetype, Path> newArchetypeFileLocationGenerator = (archetype) -> {
+    private Function<Archetype, Path> newArchetypeFileLocationGenerator = (archetype) -> {
         ArchetypeIdInfo aidi = ArchetypeIdInfo.parse(archetype.getArchetypeId().getValue());
         return Paths.get(aidi.toInterfaceString() + ".adls");
     };
 
-    protected LocalArchetypeInfo createLocalArchetypeInfo(Path path, DifferentialArchetype archetype) {
+    protected LocalArchetypeInfo createLocalArchetypeInfo(Path path, Archetype archetype) {
         LocalArchetypeInfo result = new LocalArchetypeInfo();
 
         result.setInfo(createArchetypeInfo(archetype));
@@ -84,11 +85,11 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
 
     protected abstract Path getRepositoryLocation();
 
-    public Function<DifferentialArchetype, Path> getNewArchetypeFileLocator() {
+    public Function<Archetype, Path> getNewArchetypeFileLocator() {
         return newArchetypeFileLocationGenerator;
     }
 
-    public void setNewArchetypeFileLocationGenerator(Function<DifferentialArchetype, Path> newArchetypeFileLocationGenerator) {
+    public void setNewArchetypeFileLocationGenerator(Function<Archetype, Path> newArchetypeFileLocationGenerator) {
         this.newArchetypeFileLocationGenerator = newArchetypeFileLocationGenerator;
     }
 
@@ -106,7 +107,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
             try {
                 LOG.info("Parsing archetype file " + relativeArchetypePath);
                 String adlContent = readArchetype(adlFile);
-                DifferentialArchetype archetype = deserializer.parse(adlContent);
+                Archetype archetype = deserializer.parse(adlContent);
 
                 LocalArchetypeInfo info = createLocalArchetypeInfo(relativeArchetypePath, archetype);
 
@@ -149,7 +150,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
         return !dir.getFileName().toString().startsWith(".");
     }
 
-    protected Path getArchetypeFileLocation(@Nullable LocalArchetypeInfo info, DifferentialArchetype archetype) {
+    protected Path getArchetypeFileLocation(@Nullable LocalArchetypeInfo info, Archetype archetype) {
         if (info == null) {
             // new archetype
             return newArchetypeFileLocationGenerator.apply(archetype);
@@ -158,7 +159,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
         }
     }
 
-    protected LocalArchetypeInfo addArchetype(DifferentialArchetype archetype, String adl) throws IOException {
+    protected LocalArchetypeInfo addArchetype(Archetype archetype, String adl) throws IOException {
         final Path archetypePath = getArchetypeFileLocation(null, archetype);
         LOG.info("Saving new archetype in file {}", archetypePath);
 
@@ -172,7 +173,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
         return localArchetypeInfo;
     }
 
-    protected LocalArchetypeInfo updateArchetype(DifferentialArchetype archetype, String adl) throws IOException {
+    protected LocalArchetypeInfo updateArchetype(Archetype archetype, String adl) throws IOException {
         LocalArchetypeInfo existingArchetypeInfo = getLocalArchetypeInfo(archetype.getArchetypeId().getValue());
         checkNotNull(existingArchetypeInfo, "Archetype does not exist");
         LOG.info("Updating archetype in file {}", existingArchetypeInfo.getPath());
@@ -187,7 +188,8 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
     }
 
 
-    protected LocalArchetypeInfo saveArchetypeToFile(DifferentialArchetype archetype) {
+    protected LocalArchetypeInfo saveArchetypeToFile(Archetype archetype) {
+        checkArgument(archetype.isIsDifferential(), "Must be a differential archetype");
         String adl = ArchetypeSerializer.serialize(archetype);
 
         archetype = deserializer.parse(adl); // checks if the serialization is readable
@@ -206,7 +208,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
         }
     }
 
-    protected DifferentialArchetype loadDifferentialArchetype(String archetypeId) {
+    protected Archetype loadDifferentialArchetype(String archetypeId) {
         LocalArchetypeInfo localArchetypeInfo = getLocalArchetypeInfo(archetypeId);
 
         if (localArchetypeInfo == null) {

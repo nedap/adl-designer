@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDepth;
 
 /**
@@ -41,12 +42,15 @@ import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDe
  */
 public class ArchetypeDifferentiator {
     private final RmModel rmModel;
-    private final FlatArchetype flatParent;
-    private final FlatArchetype flatChild;
+    private final Archetype flatParent;
+    private final Archetype flatChild;
     private final ArchetypeWrapper flatParentWrapper;
     private final int archetypeSpecializationDepth;
 
-    private ArchetypeDifferentiator(RmModel rmModel, @Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+    private ArchetypeDifferentiator(RmModel rmModel, @Nullable Archetype flatParent, Archetype flatChild) {
+        checkArgument(flatParent == null || !flatParent.isIsDifferential(), "flatParent: must be a flat archetype or null");
+        checkArgument(!flatChild.isIsDifferential(), "flatChild: must be a flat archetype");
+
         this.rmModel = rmModel;
         this.flatParent = flatParent;
         this.flatChild = flatChild;
@@ -54,20 +58,20 @@ public class ArchetypeDifferentiator {
         this.archetypeSpecializationDepth = getSpecializationDepth(flatChild.getDefinition().getNodeId());
     }
 
-    public static DifferentialArchetype differentiate(RmModel rmModel, FlatArchetypeProvider flatArchetypeProvider, FlatArchetype flatChild) {
-        FlatArchetype flatParent = null;
+    public static Archetype differentiate(RmModel rmModel, FlatArchetypeProvider flatArchetypeProvider, Archetype flatChild) {
+        Archetype flatParent = null;
         if (flatChild.getParentArchetypeId() != null && flatChild.getParentArchetypeId().getValue() != null) {
             flatParent = flatArchetypeProvider.getFlatArchetype(flatChild.getParentArchetypeId().getValue());
         }
         return differentiate(rmModel, flatParent, flatChild);
     }
 
-    public static DifferentialArchetype differentiate(RmModel rmModel, @Nullable FlatArchetype flatParent, FlatArchetype flatChild) {
+    public static Archetype differentiate(RmModel rmModel, @Nullable Archetype flatParent, Archetype flatChild) {
         return new ArchetypeDifferentiator(rmModel, flatParent, flatChild).build();
     }
 
-    private DifferentialArchetype build() {
-        DifferentialArchetype diffChild = AdlUtils.createDifferentialArchetypeClone(flatChild);
+    private Archetype build() {
+        Archetype diffChild = AdlUtils.createDifferentialArchetypeClone(flatChild);
         removeUnspecializedOccurrences(null, diffChild.getDefinition());
 
         if (flatParent == null) {
@@ -80,7 +84,6 @@ public class ArchetypeDifferentiator {
         removeUnspecializedTermDefinitions(diffChild);
         removeUnspecializedTermBindings(diffChild);
         removeUnspecializedValueSets(diffChild);
-
 
 
         return diffChild;
@@ -128,7 +131,7 @@ public class ArchetypeDifferentiator {
 
     }
 
-    private void removeUnspecializedValueSets(DifferentialArchetype diffChild) {
+    private void removeUnspecializedValueSets(Archetype diffChild) {
 
         for (Iterator<ValueSetItem> iterator = diffChild.getTerminology().getValueSets().iterator(); iterator.hasNext(); ) {
             ValueSetItem valueSetItem = iterator.next();
@@ -140,7 +143,7 @@ public class ArchetypeDifferentiator {
 
     }
 
-    private void removeUnspecializedTermDefinitions(DifferentialArchetype diffChild) {
+    private void removeUnspecializedTermDefinitions(Archetype diffChild) {
         ArchetypeWrapper diffChildWrapper = new ArchetypeWrapper(diffChild);
         List<String> languages = diffChild.getTerminology().getTermDefinitions().stream()
                 .map(CodeDefinitionSet::getLanguage)
@@ -179,7 +182,7 @@ public class ArchetypeDifferentiator {
         }
     }
 
-    private void removeUnspecializedTermBindings(DifferentialArchetype diffChild) {
+    private void removeUnspecializedTermBindings(Archetype diffChild) {
         if (diffChild.getTerminology().getTermBindings().isEmpty()) return;
 
         for (Iterator<TermBindingSet> tbsIterator = diffChild.getTerminology().getTermBindings().iterator(); tbsIterator.hasNext(); ) {

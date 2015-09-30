@@ -24,12 +24,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import org.openehr.designer.json.AmMixinModule;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.BomSupportingReader;
-import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.jaxb.am.Archetype;
-import org.openehr.jaxb.am.DifferentialArchetype;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -44,8 +41,8 @@ import static org.fest.assertions.Assertions.assertThat;
 public class JsonSerializerTest {
     ObjectMapper objectMapper;
     AdlDeserializer deserializer;
-    DifferentialArchetype differentialAlert;
-    DifferentialArchetype differentialAlertZn;
+    Archetype differentialAlert;
+    Archetype differentialAlertZn;
 
     @BeforeClass
     public void init() throws IOException {
@@ -98,7 +95,7 @@ public class JsonSerializerTest {
 
     @Test
     public void flattenAndSerializeAsJson() throws IOException {
-        DifferentialArchetype bp = deserializer.parse(readArchetype("repository/openEHR-EHR-EVALUATION.alert.v1.adls"));
+        Archetype bp = deserializer.parse(readArchetype("repository/openEHR-EHR-EVALUATION.alert.v1.adls"));
 
         String jsonString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(bp);
         //System.out.println(jsonString);

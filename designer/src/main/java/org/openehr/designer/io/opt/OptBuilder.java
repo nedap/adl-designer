@@ -21,7 +21,7 @@
 package org.openehr.designer.io.opt;
 
 import org.openehr.designer.repository.ArchetypeRepository;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class OptBuilder {
 
         try {
             Class cls = Class.forName("org.openehr.designer.io.opt.ActualOptBuilderProxy");
-            Constructor<OptBuilderProxy>constructor = cls.getConstructor(ArchetypeRepository.class);
+            Constructor<OptBuilderProxy> constructor = cls.getConstructor(ArchetypeRepository.class);
             proxy = constructor.newInstance(archetypeRepository);
         } catch (ClassNotFoundException e) {
             proxy = new OptBuilderProxy.DummyOptBuilderProxy();
@@ -55,7 +55,7 @@ public class OptBuilder {
         }
     }
 
-    public Opt build(List<DifferentialArchetype> archetypes) {
+    public Opt build(List<Archetype> archetypes) {
         return proxy.build(archetypes);
     }
 

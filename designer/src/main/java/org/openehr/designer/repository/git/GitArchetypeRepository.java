@@ -20,10 +20,11 @@
 
 package org.openehr.designer.repository.git;
 
-import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.*;
@@ -38,7 +39,7 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.openehr.designer.repository.AbstractFileBasedArchetypeRepository;
 import org.openehr.designer.repository.ArchetypeRepositoryScmException;
 import org.openehr.designer.repository.ScmEnabled;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -222,12 +223,12 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
     }
 
     @Override
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
+    public Archetype getDifferentialArchetype(String archetypeId) {
         return loadDifferentialArchetype(archetypeId);
     }
 
     @Override
-    public void saveDifferentialArchetype(DifferentialArchetype archetype) {
+    public void saveDifferentialArchetype(Archetype archetype) {
         LocalArchetypeInfo localArchetypeInfo = saveArchetypeToFile(archetype);
         try {
             git.add()

@@ -21,9 +21,9 @@
 package org.openehr.designer.repository;
 
 import org.openehr.designer.ArchetypeInfo;
+import org.openehr.jaxb.am.Archetype;
 import org.openehr.jaxb.am.ArchetypeTerm;
 import org.openehr.jaxb.am.CodeDefinitionSet;
-import org.openehr.jaxb.am.DifferentialArchetype;
 import org.openehr.jaxb.rm.StringDictionaryItem;
 import org.openehr.jaxb.rm.TranslationDetails;
 
@@ -33,7 +33,7 @@ import java.util.ArrayList;
  * @author markopi
  */
 abstract public class AbstractArchetypeRepository implements ArchetypeRepository {
-    protected ArchetypeInfo createArchetypeInfo(DifferentialArchetype archetype) {
+    protected ArchetypeInfo createArchetypeInfo(Archetype archetype) {
         ArchetypeInfo info = new ArchetypeInfo();
         info.setArchetypeId(archetype.getArchetypeId().getValue());
         info.setRmType(archetype.getDefinition().getRmTypeName());
@@ -53,7 +53,7 @@ abstract public class AbstractArchetypeRepository implements ArchetypeRepository
         return info;
     }
 
-    private String findTermText(DifferentialArchetype archetype, String concept, String defaultLanguage) {
+    private String findTermText(Archetype archetype, String concept, String defaultLanguage) {
         if (archetype.getTerminology() == null || archetype.getTerminology().getTermDefinitions() == null) return null;
         CodeDefinitionSet cds = archetype.getTerminology()
                 .getTermDefinitions()

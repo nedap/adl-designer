@@ -22,11 +22,8 @@ package org.openehr.designer;
 
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.flattener.ArchetypeFlattener;
-import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.adl.rm.RmModel;
-import org.openehr.designer.repository.ArchetypeRepository;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,34 +34,34 @@ import java.util.Map;
  */
 public class FlatArchetypeProviderOverlay implements FlatArchetypeProvider {
     private final FlatArchetypeProvider delegate;
-    private final Map<String, DifferentialArchetype> overlayArchetypeMap;
+    private final Map<String, Archetype> overlayArchetypeMap;
     private final ArchetypeFlattener flattener;
     private final RmModel rmModel;
 
 
-    public FlatArchetypeProviderOverlay(FlatArchetypeProvider delegate, RmModel rmModel, List<DifferentialArchetype> archetypes) {
+    public FlatArchetypeProviderOverlay(FlatArchetypeProvider delegate, RmModel rmModel, List<Archetype> archetypes) {
         this.delegate = delegate;
-        this.rmModel=rmModel;
+        this.rmModel = rmModel;
         flattener = new ArchetypeFlattener(rmModel);
 
         overlayArchetypeMap = new LinkedHashMap<>();
-        for (DifferentialArchetype archetype : archetypes) {
+        for (Archetype archetype : archetypes) {
             overlayArchetypeMap.put(archetype.getArchetypeId().getValue(), archetype);
         }
     }
 
 
     @Override
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
-        DifferentialArchetype archetype = overlayArchetypeMap.get(archetypeId);
+    public Archetype getDifferentialArchetype(String archetypeId) {
+        Archetype archetype = overlayArchetypeMap.get(archetypeId);
         if (archetype != null) return archetype;
         return delegate.getDifferentialArchetype(archetypeId);
     }
 
     @Override
-    public FlatArchetype getFlatArchetype(String archetypeId) {
-        DifferentialArchetype source = getDifferentialArchetype(archetypeId);
-        FlatArchetype parent = null;
+    public Archetype getFlatArchetype(String archetypeId) {
+        Archetype source = getDifferentialArchetype(archetypeId);
+        Archetype parent = null;
         if (source.getParentArchetypeId() != null && source.getParentArchetypeId().getValue() != null) {
             parent = getFlatArchetype(source.getParentArchetypeId().getValue());
         }

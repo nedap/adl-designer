@@ -20,7 +20,7 @@
 
 package org.openehr.designer.repository;
 
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.List;
 
@@ -30,6 +30,8 @@ import java.util.List;
 public interface TemplateRepository {
 
     List<TemplateInfo> listTemplates();
-    void saveTemplate(List<DifferentialArchetype> archetypes);
-    List<DifferentialArchetype> loadTemplate(String templateId);
+
+    void saveTemplate(List<Archetype> archetypes);
+
+    List<Archetype> loadTemplate(String templateId);
 }

@@ -23,8 +23,7 @@ package org.openehr.designer.repository;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.flattener.ArchetypeFlattener;
 import org.openehr.adl.rm.RmModel;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 /**
  * @author markopi
@@ -39,9 +38,9 @@ public class FlatArchetypeRepository implements FlatArchetypeProvider {
     }
 
     @Override
-    public FlatArchetype getFlatArchetype(String archetypeId) {
-        DifferentialArchetype source = getDifferentialArchetype(archetypeId);
-        FlatArchetype parent = null;
+    public Archetype getFlatArchetype(String archetypeId) {
+        Archetype source = getDifferentialArchetype(archetypeId);
+        Archetype parent = null;
         if (source.getParentArchetypeId() != null && source.getParentArchetypeId().getValue() != null) {
             parent = getFlatArchetype(source.getParentArchetypeId().getValue());
         }
@@ -49,7 +48,7 @@ public class FlatArchetypeRepository implements FlatArchetypeProvider {
     }
 
     @Override
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
+    public Archetype getDifferentialArchetype(String archetypeId) {
         return repository.getDifferentialArchetype(archetypeId);
     }
 }

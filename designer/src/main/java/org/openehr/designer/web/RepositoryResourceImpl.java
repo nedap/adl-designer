@@ -22,13 +22,10 @@ package org.openehr.designer.web;
 
 import com.google.common.base.Charsets;
 import org.openehr.adl.FlatArchetypeProvider;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.adl.rm.RmType;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.FlatArchetypeProviderOverlay;
-import org.openehr.designer.ReferenceModelData;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
 import org.openehr.designer.diff.TemplateDifferentiator;
@@ -36,8 +33,7 @@ import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
 import org.openehr.designer.rm.ReferenceModels;
-import org.openehr.jaxb.am.DifferentialArchetype;
-import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -47,7 +43,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,25 +75,25 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/archetype/{archetypeId}/source")
     @Override
-    public DifferentialArchetype getSourceArchetype(@PathVariable("archetypeId") String archetypeId) {
+    public Archetype getSourceArchetype(@PathVariable("archetypeId") String archetypeId) {
 
         return archetypeRepository.getDifferentialArchetype(archetypeId);
     }
 
     @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.GET)
     @Override
-    public FlatArchetype getFlatArchetype(@PathVariable("archetypeId") String archetypeId) {
+    public Archetype getFlatArchetype(@PathVariable("archetypeId") String archetypeId) {
         return flatArchetypeRepository.getFlatArchetype(archetypeId);
     }
 
     @RequestMapping(value = "/archetype/{archetypeId}/flat", method = RequestMethod.PUT)
     @Override
-    public void saveFlatArchetype(@PathVariable("archetypeId") String archetypeId, @RequestBody FlatArchetype archetype) {
+    public void saveFlatArchetype(@PathVariable("archetypeId") String archetypeId, @RequestBody Archetype archetype) {
         if (!archetypeId.equals(archetype.getArchetypeId().getValue())) {
             throw new IllegalArgumentException("Archetype id in path does not match archetype id in body");
         }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(
+        Archetype differentialArchetype = ArchetypeDifferentiator.differentiate(
                 referenceModels.getDefaultReferenceModel(), flatArchetypeRepository, archetype);
         differentialArchetype.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
         archetypeRepository.saveDifferentialArchetype(differentialArchetype);
@@ -121,9 +116,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/template", method = RequestMethod.POST)
     @Override
-    public void saveTemplate(@RequestBody List<FlatArchetype> archetypes) {
+    public void saveTemplate(@RequestBody List<Archetype> archetypes) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(referenceModels.getDefaultReferenceModel(), archetypes);
+        List<Archetype> sourceArchetypes = differentiator.differentiate(referenceModels.getDefaultReferenceModel(), archetypes);
         sourceArchetypes.forEach(a -> {
             if (a.getRmRelease() == null) {
                 a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
@@ -140,13 +135,13 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/template/{templateId}", method = RequestMethod.GET)
     @Override
-    public List<FlatArchetype> loadTemplate(@PathVariable String templateId) {
-        List<DifferentialArchetype> differentials = templateRepository.loadTemplate(templateId);
+    public List<Archetype> loadTemplate(@PathVariable String templateId) {
+        List<Archetype> differentials = templateRepository.loadTemplate(templateId);
         FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeRepository,
                 referenceModels.getDefaultReferenceModel(), differentials);
 
-        List<FlatArchetype> result = new ArrayList<>();
-        for (DifferentialArchetype differential : differentials) {
+        List<Archetype> result = new ArrayList<>();
+        for (Archetype differential : differentials) {
             result.add(flatArchetypeProvider.getFlatArchetype(differential.getArchetypeId().getValue()));
         }
 
@@ -156,7 +151,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
     @Override
     public ResponseEntity<byte[]> exportSavedOpt14(@PathVariable String templateId) {
-        List<DifferentialArchetype> templateArchetypes = templateRepository.loadTemplate(templateId);
+        List<Archetype> templateArchetypes = templateRepository.loadTemplate(templateId);
 
         OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
 
@@ -170,9 +165,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/export/opt/14", method = RequestMethod.POST)
     @Override
-    public ResponseEntity<byte[]> exportProvidedOpt14(@RequestBody List<FlatArchetype> flatArchetypeList) {
+    public ResponseEntity<byte[]> exportProvidedOpt14(@RequestBody List<Archetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> templateArchetypes = differentiator.differentiate(
+        List<Archetype> templateArchetypes = differentiator.differentiate(
                 referenceModels.getDefaultReferenceModel(), flatArchetypeList);
 
         OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
@@ -187,8 +182,8 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @RequestMapping(value = "/export/adlt/{templateId}", method = RequestMethod.GET)
     @Override
     public ResponseEntity<byte[]> exportAdlt(@PathVariable String templateId) {
-        List<DifferentialArchetype> archetypes = templateRepository.loadTemplate(templateId);
-        DifferentialArchetype archetype = archetypes.get(0);
+        List<Archetype> archetypes = templateRepository.loadTemplate(templateId);
+        Archetype archetype = archetypes.get(0);
         ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(archetype);
         String archetypeName = archetypeWrapper.getTermText(archetype.getDefinition().getNodeId());
 
@@ -204,13 +199,13 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @RequestMapping(value = "/display/adl/source", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
     @ResponseBody
     @Override
-    public String displayArchetypeAdlSource(@RequestBody FlatArchetype archetype) {
+    public String displayArchetypeAdlSource(@RequestBody Archetype archetype) {
 //        FlatArchetype parentArchetype = null;
 //        if (archetype.getParentArchetypeId() != null && archetype.getParentArchetypeId().getValue() != null) {
 //            parentArchetype = flatArchetypeRepository.getFlatArchetype(archetype.getParentArchetypeId().getValue());
 //        }
 
-        DifferentialArchetype differentialArchetype = ArchetypeDifferentiator.differentiate(
+        Archetype differentialArchetype = ArchetypeDifferentiator.differentiate(
                 referenceModels.getDefaultReferenceModel(), flatArchetypeRepository, archetype);
         return ArchetypeSerializer.serialize(differentialArchetype);
     }
@@ -218,16 +213,16 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @RequestMapping(value = "/display/adl/flat", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
     @ResponseBody
     @Override
-    public String displayArchetypeAdlFlat(@RequestBody FlatArchetype archetype) {
+    public String displayArchetypeAdlFlat(@RequestBody Archetype archetype) {
         return ArchetypeSerializer.serialize(archetype);
     }
 
     @RequestMapping(value = "/display/adl/template", method = RequestMethod.POST, produces = "text/plain; charset=utf-8")
     @ResponseBody
     @Override
-    public String displayTemplateAdl(@RequestBody List<FlatArchetype> flatArchetypeList) {
+    public String displayTemplateAdl(@RequestBody List<Archetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
-        List<DifferentialArchetype> sourceArchetypes = differentiator.differentiate(
+        List<Archetype> sourceArchetypes = differentiator.differentiate(
                 referenceModels.getDefaultReferenceModel(), flatArchetypeList);
         return TemplateSerializer.serialize(sourceArchetypes);
     }

@@ -26,7 +26,7 @@ import org.openehr.adl.flattener.ArchetypeFlattener;
 import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.designer.repository.FlatArchetypeRepository;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.openehr.jaxb.am14.Template;
 import org.openehr.optexporter14.Opt14TemplateBuilder;
 import org.openehr.optexporter14.Template14Serializer;
@@ -53,7 +53,7 @@ class ActualOptBuilderProxy extends OptBuilderProxy {
     }
 
     @Override
-    OptBuilder.Opt build(List<DifferentialArchetype> archetypes) {
+    OptBuilder.Opt build(List<Archetype> archetypes) {
         Template template14 = builder.build(archetypes);
         return new OptBuilder.Opt(
                 template14.getTemplateId().getValue(),

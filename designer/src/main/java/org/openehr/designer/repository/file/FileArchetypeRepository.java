@@ -21,7 +21,7 @@
 package org.openehr.designer.repository.file;
 
 import org.openehr.designer.repository.AbstractFileBasedArchetypeRepository;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.annotation.PostConstruct;
@@ -45,12 +45,12 @@ public class FileArchetypeRepository extends AbstractFileBasedArchetypeRepositor
 
 
     @Override
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId) {
+    public Archetype getDifferentialArchetype(String archetypeId) {
         return loadDifferentialArchetype(archetypeId);
     }
 
     @Override
-    public void saveDifferentialArchetype(DifferentialArchetype archetype) {
+    public void saveDifferentialArchetype(Archetype archetype) {
         saveArchetypeToFile(archetype);
     }
 

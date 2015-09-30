@@ -22,7 +22,7 @@ package org.openehr.designer.repository;
 
 import org.openehr.adl.ArchetypeProvider;
 import org.openehr.designer.ArchetypeInfo;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.util.List;
 
@@ -31,10 +31,10 @@ import java.util.List;
  */
 public interface ArchetypeRepository extends ArchetypeProvider {
 
-    public DifferentialArchetype getDifferentialArchetype(String archetypeId);
+    Archetype getDifferentialArchetype(String archetypeId);
 
-    public void saveDifferentialArchetype(DifferentialArchetype archetype);
+    void saveDifferentialArchetype(Archetype archetype);
 
-    public List<ArchetypeInfo> getArchetypeInfos();
+    List<ArchetypeInfo> getArchetypeInfos();
 
 }

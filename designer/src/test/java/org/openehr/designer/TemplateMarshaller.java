@@ -20,7 +20,7 @@
 
 package org.openehr.designer;
 
-import org.openehr.jaxb.am.FlatArchetype;
+import org.openehr.jaxb.am.Archetype;
 import org.openehr.jaxb.am.ObjectFactory;
 import org.openehr.jaxb.am.Template;
 import org.slf4j.Logger;
@@ -88,17 +88,17 @@ public class TemplateMarshaller {
         }
     }
 
-    public void write(FlatArchetype flatArchetype, Path out) throws JAXBException, IOException {
+    public void write(Archetype flatArchetype, Path out) throws JAXBException, IOException {
         writeAmObject(objectFactory.createArchetype(flatArchetype), out);
     }
 
     private void writeAmObject(JAXBElement<?> template, OutputStream out) throws JAXBException, IOException {
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setSchema(null);
-            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setSchema(null);
+        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-            marshaller.marshal(template, out);
-            out.flush();
+        marshaller.marshal(template, out);
+        out.flush();
     }
 
     private void writeAmObject(JAXBElement<?> template, Path out) throws JAXBException, IOException {

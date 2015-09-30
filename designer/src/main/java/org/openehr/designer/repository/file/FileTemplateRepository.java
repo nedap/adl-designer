@@ -21,15 +21,13 @@
 package org.openehr.designer.repository.file;
 
 import com.google.common.base.Charsets;
+import org.apache.commons.lang.ObjectUtils;
+import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
-import org.apache.commons.lang.ObjectUtils;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.jaxb.am.Archetype;
-import org.openehr.jaxb.am.DifferentialArchetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -53,7 +51,7 @@ public class FileTemplateRepository implements TemplateRepository {
     private static final Logger LOG = LoggerFactory.getLogger(FileTemplateRepository.class);
 
     private Path repositoryLocation;
-    private ConcurrentHashMap<String, List<DifferentialArchetype>> templateMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<Archetype>> templateMap = new ConcurrentHashMap<>();
 
     @Required
     public void setRepositoryLocation(String repositoryLocation) {
@@ -68,7 +66,7 @@ public class FileTemplateRepository implements TemplateRepository {
                 .filter(path -> path.getFileName().toString().endsWith(".adlt") && !Files.isDirectory(path))
                 .forEach(path -> {
                     try {
-                        List<DifferentialArchetype> archetypes = TemplateDeserializer.deserialize(Files.newInputStream(path));
+                        List<Archetype> archetypes = TemplateDeserializer.deserialize(Files.newInputStream(path));
                         templateMap.put(archetypes.get(0).getArchetypeId().getValue(), archetypes);
                     } catch (Exception e) {
                         LOG.error("Error parsing template {}. Will be ignored", path.getFileName(), e);
@@ -95,7 +93,7 @@ public class FileTemplateRepository implements TemplateRepository {
     }
 
     @Override
-    public void saveTemplate(List<DifferentialArchetype> archetypes) {
+    public void saveTemplate(List<Archetype> archetypes) {
         String templateId = archetypes.get(0).getArchetypeId().getValue();
         String adltContent = TemplateSerializer.serialize(archetypes);
         // Check to see if the template can still be deserialized
@@ -112,8 +110,8 @@ public class FileTemplateRepository implements TemplateRepository {
     }
 
     @Override
-    public List<DifferentialArchetype> loadTemplate(String templateId) {
-        final List<DifferentialArchetype> result = templateMap.get(templateId);
+    public List<Archetype> loadTemplate(String templateId) {
+        final List<Archetype> result = templateMap.get(templateId);
         if (result == null) {
             throw new IllegalArgumentException("No such template: " + templateId);
         }

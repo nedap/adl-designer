@@ -25,7 +25,7 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.rm.OpenEhrRmModel;
 import org.openehr.adl.rm.RmModelException;
 import org.openehr.adl.rm.RmType;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,7 +35,7 @@ import java.util.function.Function;
 /**
  * @author markopi
  */
-public class OpenEhrNewArchetypeFileLocationGenerator implements Function<DifferentialArchetype, Path> {
+public class OpenEhrNewArchetypeFileLocationGenerator implements Function<Archetype, Path> {
     private static final Map<String, String> rmTypeToPath = ImmutableMap.<String, String>builder()
             .put("CLUSTER", "cluster")
             .put("COMPOSITION", "composition")
@@ -51,24 +51,24 @@ public class OpenEhrNewArchetypeFileLocationGenerator implements Function<Differ
             .build();
 
     @Override
-    public Path apply(DifferentialArchetype archetype) {
+    public Path apply(Archetype archetype) {
         Path dir = getStorageDir(archetype);
         ArchetypeIdInfo aidi = ArchetypeIdInfo.parse(archetype.getArchetypeId().getValue());
         return dir.resolve(aidi.toInterfaceString() + ".adls");
 
     }
 
-    private Path getStorageDir(DifferentialArchetype archetype) {
+    private Path getStorageDir(Archetype archetype) {
         String rmType = archetype.getDefinition().getRmTypeName();
-        while (rmType!=null) {
+        while (rmType != null) {
             String path = rmTypeToPath.get(rmType);
-            if (path!=null) {
+            if (path != null) {
                 return Paths.get(path);
             }
             try {
                 RmType type = OpenEhrRmModel.getInstance().getRmType(rmType);
-                if (type.getParent()!=null) {
-                    rmType=type.getParent().getRmType();
+                if (type.getParent() != null) {
+                    rmType = type.getParent().getRmType();
                 } else {
                     return getDefaultPath();
                 }

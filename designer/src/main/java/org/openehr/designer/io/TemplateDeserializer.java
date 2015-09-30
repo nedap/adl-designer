@@ -25,8 +25,7 @@ import com.google.common.base.Splitter;
 import com.google.common.io.CharStreams;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.BomSupportingReader;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.jaxb.am.DifferentialArchetype;
+import org.openehr.jaxb.am.Archetype;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +38,7 @@ import java.util.regex.Pattern;
  * @author Marko Pipan
  */
 public class TemplateDeserializer {
-    public static List<DifferentialArchetype> deserialize(InputStream adltStream) throws IOException {
+    public static List<Archetype> deserialize(InputStream adltStream) throws IOException {
         try (Reader r = new BomSupportingReader(adltStream, Charsets.UTF_8)) {
             String adltContents = CharStreams.toString(r);
             return deserialize(adltContents);
@@ -47,10 +46,10 @@ public class TemplateDeserializer {
 
     }
 
-    public static List<DifferentialArchetype> deserialize(String adltContent) {
+    public static List<Archetype> deserialize(String adltContent) {
         Iterable<String> adls = Splitter.on(Pattern.compile("(\r|\n)+ *\\-{2,} *(\r|\n)+")).split(adltContent);
 
-        List<DifferentialArchetype> result = new ArrayList<>();
+        List<Archetype> result = new ArrayList<>();
         AdlDeserializer deserializer = new AdlDeserializer();
         for (String adl : adls) {
             result.add(deserializer.parse(adl));
