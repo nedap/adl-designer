@@ -21,6 +21,7 @@
 package org.openehr.designer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.openehr.adl.rm.RmMultiplicity;
 import org.openehr.jaxb.rm.MultiplicityInterval;
 
 import java.util.Map;
@@ -193,7 +194,7 @@ public class ReferenceModelData {
             this.upper = upper;
         }
 
-        public static Multiplicity of(MultiplicityInterval mi) {
+        public static Multiplicity of(RmMultiplicity mi) {
             return new Multiplicity(mi.getLower() != null ? mi.getLower() : 0, mi.getUpper());
         }
 

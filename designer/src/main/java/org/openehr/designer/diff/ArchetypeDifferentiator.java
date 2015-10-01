@@ -23,9 +23,7 @@ package org.openehr.designer.diff;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.adl.am.mixin.MultiplicityIntervalMixin;
-import org.openehr.adl.rm.RmModel;
-import org.openehr.adl.rm.RmModelException;
-import org.openehr.adl.rm.RmTypeAttribute;
+import org.openehr.adl.rm.*;
 import org.openehr.adl.util.AdlUtils;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.jaxb.am.*;
@@ -123,7 +121,13 @@ public class ArchetypeDifferentiator {
                 cAttribute.setExistence(null);
             }
             if (cAttribute.getCardinality() != null) {
-                if (AmMixins.of(cAttribute.getCardinality()).isEqualTo(rmAttribute.getCardinality())) {
+                RmCardinality card = new RmCardinality(cAttribute.getCardinality().isIsOrdered(),
+                        cAttribute.getCardinality().isIsUnique(),
+                        new RmMultiplicity(
+                                cAttribute.getCardinality().getInterval().getLower(),
+                                cAttribute.getCardinality().getInterval().getUpper())
+                );
+                if (card.equals(rmAttribute.getCardinality())) {
                     cAttribute.setCardinality(null);
                 }
             }

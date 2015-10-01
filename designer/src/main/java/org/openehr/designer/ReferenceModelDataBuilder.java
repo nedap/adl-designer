@@ -81,17 +81,16 @@ public class ReferenceModelDataBuilder {
     }
 
     @Nullable
-    private Attribute getAttributeInfo(RmTypeAttribute rmAttribute) {
-        RmType type = rmAttribute.getOwner();
-        while (type != null) {
-            Type t = typeMap.get(type.getRmType());
+    private Attribute getAttributeInfo(RmType owner, RmTypeAttribute rmAttribute) {
+        while (owner != null) {
+            Type t = typeMap.get(owner.getRmType());
             if (t != null) {
                 if (t.attributes != null) {
                     Attribute a = t.attributes.get(rmAttribute.getAttributeName());
                     if (a != null) return a;
                 }
             }
-            type = type.getParent();
+            owner = owner.getParent();
         }
         return null;
     }
@@ -111,17 +110,16 @@ public class ReferenceModelDataBuilder {
             getTypeInfoProperty(type, "finalType").ifPresent(f -> t.setFinalType((Boolean) f));
             getTypeInfoProperty(type, "transparent").ifPresent(f -> t.getDisplay().setTransparent((Boolean)f));
 
-            t.setDataAttribute(type.getDataAttribute());
             if (!type.getAttributes().isEmpty()) {
                 t.setAttributes(new LinkedHashMap<>());
                 for (RmTypeAttribute attribute : type.getAttributes().values()) {
-                    Attribute attrInfo = getAttributeInfo(attribute);
+                    Attribute attrInfo = getAttributeInfo(type, attribute);
                     if (attrInfo != null && attrInfo.ignore) continue;
 
                     ReferenceModelData.Attribute a = new ReferenceModelData.Attribute();
                     a.setName(attribute.getAttributeName());
                     a.setExistence(ReferenceModelData.Multiplicity.of(attribute.getExistence()));
-                    a.setType(attribute.getTargetType() != null ? attribute.getTargetType().getRmType() : null);
+                    a.setType(attribute.getType());
                     if (attrInfo!=null) {
                         a.getDisplay().setTransparent(attrInfo.transparent);
                     }
