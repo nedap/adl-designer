@@ -82,15 +82,15 @@ AOM = (function (AOM) {
 
     /**
      * Creates new C_STRING constraint
-     * @param {string[]?} list valid values list
+     * @param {string[]?} constraint valid values constraint
      * @param {string?} pattern regex pattern
      * @returns {object} C_STRING constraint
      */
-    my.newCString = function (list, pattern) {
+    my.newCString = function (constraint, pattern) {
         var result = {
             "@type": "C_STRING",
             rm_type_name: "C_STRING",
-            list: list || [],
+            constraint: constraint || [],
             pattern: pattern,
             occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
@@ -100,28 +100,28 @@ AOM = (function (AOM) {
 
     /**
      * Creates new C_INTEGER constraint
-     * @param {number[]?} list valid values list
+     * @param {interval[]?} constraint valid values constraint
      * @returns {object} C_INTEGER constraint
      */
-    my.newCInteger = function (list) {
+    my.newCInteger = function (constraint) {
         var result = {
             "@type": "C_INTEGER",
             rm_type_name: "C_INTEGER",
-            list: list || [],
+            constraint: constraint || [],
             occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
     };
     /**
      * Creates new C_REAL constraint
-     * @param {number[]?} list valid values list
+     * @param {interval[]?} constraint valid values constraint
      * @returns {object} C_REAL constraint
      */
-    my.newCReal = function (list) {
+    my.newCReal = function (constraint) {
         var result = {
             "@type": "C_REAL",
             rm_type_name: "C_REAL",
-            list: list || [],
+            constraint: constraint || [],
             occurrences: AmInterval.of(1, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;

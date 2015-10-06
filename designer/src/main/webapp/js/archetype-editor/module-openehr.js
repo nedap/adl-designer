@@ -629,10 +629,10 @@
 
                 function createPanel(tupleConstraint, parentTupleConstraint) {
                     var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL");
-                    var units = tupleConstraint.units.list[0];
+                    var units = tupleConstraint.units.constraint[0];
 
-                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
-                    tupleConstraint.precision.list.length > 0);
+                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.constraint &&
+                    tupleConstraint.precision.constraint.length > 0);
 
 
                     var panel = {
@@ -640,7 +640,7 @@
                         magnitude: magnitudeHandler.createContext(stage, tupleConstraint.magnitude,
                             parentTupleConstraint && parentTupleConstraint.magnitude),
                         units: units,
-                        precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
+                        precision: precisionEnabled ? tupleConstraint.precision.constraint[0] : ""
                     };
                     return panel;
 
@@ -674,11 +674,11 @@
                     for (var i in parentTupleConstraints) {
                         var parentTupleConstraint = parentTupleConstraints[i];
 
-                        var units = (parentTupleConstraint.units && parentTupleConstraint.units.list) ? parentTupleConstraint.units.list[0] : undefined;
+                        var units = (parentTupleConstraint.units && parentTupleConstraint.units.constraint) ? parentTupleConstraint.units.constraint[0] : undefined;
                         if (units === undefined) continue;
 
                         var tupleConstraint = Stream(tupleConstraints).filter(function (d) {
-                            return d.units.list && d.units.list.length === 1 && d.units.list[0] === units;
+                            return d.units.constraint && d.units.constraint.length === 1 && d.units.constraint[0] === units;
                         }).findFirst().orElse();
 
                         var panel = createPanel(tupleConstraint || parentTupleConstraint, parentTupleConstraint);
@@ -689,7 +689,7 @@
                 } else {
                     for (var i in tupleConstraints) {
                         var tupleConstraint = tupleConstraints[i];
-                        var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
+                        var units = (tupleConstraint.units && tupleConstraint.units.constraint) ? tupleConstraint.units.constraint[0] : undefined;
                         if (units === undefined) continue;
 
                         var parentTupleConstraint = undefined;
@@ -937,7 +937,7 @@
                         var panel = panels[panelIndex];
 
                         var unitCons = AOM.newCString();
-                        unitCons.list = [panel.units];
+                        unitCons.constraint = [panel.units];
                         unitCons.default_value = panel.units;
 
                         var magnitudeCons = AOM.newCReal();
@@ -946,9 +946,9 @@
 
                         var precisionCons = AOM.newCInteger();
                         if (panel.precision === "" || !panel.precision) {
-                            precisionCons.range = AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER");
+                            precisionCons.constraint = [AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER")];
                         } else {
-                            precisionCons.list = [parseInt(panel.precision)];
+                            precisionCons.constraint = [parseInt(panel.precision)];
                         }
                         attributeTuple.children.push(AOM.newCObjectTuple([unitCons, magnitudeCons, precisionCons]));
                     }
