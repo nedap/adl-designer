@@ -199,27 +199,16 @@
                         }
                     }
 
-                    if (!cons.code_list || cons.code_list.length === 0) {
-                        return {
-                            type: 'internal',
-                            any: true, // if can be changed to external
-                            code: undefined,
-                            internal_code_list: {},
-                            external_term: undefined,
-                            external_bindings: {}
-                        };
-                    }
 
-                    if (cons.code_list.length === 1) {
-                        var code = cons.code_list[0];
+                    if (cons.constraint) {
+                        var code = cons.constraint;
                         var valueSet = getValueSet(code);
                         var externalBinding = getExternalBinding(code);
 
                         if (valueSet || AOM.NodeId.of(code).prefix === 'at') {
                             return {
                                 type: 'internal',
-                                code: cons.code_list[0],
-                                //internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
+                                code: code,
                                 external_term: undefined,
                                 external_bindings: {}
                             }
@@ -228,7 +217,6 @@
                         return {
                             type: 'external',
                             code: code,
-                            //internal_code_list: {},
                             external_term: externalBinding ? AmUtils.clone(externalBinding.term) : {},
                             external_bindings: externalBinding ? externalBinding.bindings : {}
                         }
@@ -237,7 +225,6 @@
                     return {
                         type: 'internal',
                         code: undefined,
-                        //internal_code_list: archetypeModel.explodeValueSets(cons.code_list),
                         external_term: undefined,
                         external_bindings: {}
                     }
@@ -519,7 +506,7 @@
                                 context.value_set_code = context.parent_value_set_code;
                             }
                             if (Stream(context.valueSetItems).allMatch({checked: true})) {
-                                cons.code_list = [context.value_set_code];
+                                cons.constraint = context.value_set_code;
                             } else {
                                 //var parentValueSet = stage.archetypeModel.data.ontology.value_sets[context.parent_value_set_code];
                                 var members = Stream(context.valueSetItems).filter({checked: true}).map('code').toArray();
@@ -529,23 +516,23 @@
                                     id: context.value_set_code,
                                     members: members
                                 };
-                                cons.code_list = [context.value_set_code];
+                                cons.constraint = context.value_set_code;
                             }
                             cons.assumed_value = AmUtils.undefinedIfEmpty(context.assumed_value);
 
                         } else {
                             if (context.value_set_code && context.value_set_code.length > 0) {
-                                cons.code_list = [context.value_set_code];
+                                cons.constraint  = context.value_set_code;
                                 cons.assumed_value = AmUtils.undefinedIfEmpty(context.assumed_value);
                             } else {
-                                cons.code_list = [];
+                                cons.constraint = null;
                             }
                         }
                     } else {
                         if (context.external_term_code && context.external_term_code.length > 0) {
-                            cons.code_list = [context.external_term_code];
+                            cons.constraint = context.external_term_code;
                         } else {
-                            cons.code_list = [];
+                            cons.constraint = null;
                         }
                     }
 

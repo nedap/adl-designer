@@ -649,9 +649,9 @@
                 function extractPropertyOpenEhrId() {
                     var propertyCons = AOM.AmQuery.get(cons, "property");
                     if (!propertyCons) return undefined;
-                    if (!propertyCons || !propertyCons.code_list || propertyCons.code_list.length !== 1) return undefined;
+                    if (!propertyCons || propertyCons.constraint) return undefined;
 
-                    var atCode = propertyCons.code_list[0];
+                    var atCode = propertyCons.constraint;
                     var tb = stage.archetypeModel.getTermBinding("openehr", atCode);
                     if (!tb) return undefined;
                     var openEhrId = tb.substring(tb.lastIndexOf('/') + 1);
@@ -919,7 +919,7 @@
                     if (context.property && context.property !== propertyNotSetEhrId) {
                         var aProperty = stage.archetypeModel.addAttribute(cons, 'property');
                         var cProperty = AOM.newCTerminologyCode();
-                        cProperty.code_list = [getOrCreateBindingAndCode(context.property)];
+                        cProperty.constraint = getOrCreateBindingAndCode(context.property);
                         stage.archetypeModel.addConstraint(aProperty, cProperty);
                     }
                 }
@@ -1166,11 +1166,11 @@
                         }).findFirst().orElse();
                         var tuple = specializedTuple || parentTuple;
                         //var parentTuple = parentTuples && parentTuples[i];
-                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: !!specializedTuple,
                             value: tuple ["value"].list[0],
-                            term_id: tuple["symbol"].code_list[0],
+                            term_id: tuple["symbol"].constraint,
                             term: term
                         };
                         context.values.push(value);
@@ -1179,11 +1179,11 @@
                     for (var i in tuples) {
                         var tuple = tuples[i];
                         //var parentTuple = parentTuples && parentTuples[i];
-                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: true,
                             value: tuple["value"].list[0],
-                            term_id: tuple["symbol"].code_list[0],
+                            term_id: tuple["symbol"].constraint,
                             term: term
                         };
                         context.values.push(value);
@@ -1372,7 +1372,7 @@
                         var valueCons = AOM.newCInteger([contextValue.value]);
 
                         var symbolCons = AOM.newCTerminologyCode();
-                        symbolCons.code_list = [contextValue.term_id];
+                        symbolCons.constraint = contextValue.term_id;
 
                         attributeTuple.children.push(AOM.newCObjectTuple([valueCons, symbolCons]));
                     }
