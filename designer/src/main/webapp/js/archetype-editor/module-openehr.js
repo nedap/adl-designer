@@ -1162,15 +1162,15 @@
                     for (var i in parentTuples) {
                         var parentTuple = parentTuples[i];
                         var specializedTuple = Stream(tuples).filter(function (d) {
-                            return d["value"].list[0] === parentTuple["value"].list[0];
+                            return d["value"].constraint[0] === parentTuple["value"].constraint[0];
                         }).findFirst().orElse();
                         var tuple = specializedTuple || parentTuple;
                         //var parentTuple = parentTuples && parentTuples[i];
                         var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: !!specializedTuple,
-                            value: tuple ["value"].list[0],
-                            term_id: tuple["symbol"].constraint,
+                            value: tuple ["value"].constraint[0],
+                            term_id: tuple["symbol"].constraint[0],
                             term: term
                         };
                         context.values.push(value);
@@ -1182,8 +1182,8 @@
                         var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: true,
-                            value: tuple["value"].list[0],
-                            term_id: tuple["symbol"].constraint,
+                            value: tuple["value"].constraint[0],
+                            term_id: tuple["symbol"].constraint[0],
                             term: term
                         };
                         context.values.push(value);
