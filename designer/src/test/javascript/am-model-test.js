@@ -220,6 +220,39 @@ describe("AmQuery", function () {
         expect(matches[1].list).toEqual(["lb"]);
     });
 
-
 });
+
+
+describe("ArchetypeModel.moveBefore", function () {
+    var am = new AOM.ArchetypeModel(AmUtils.clone(Resources.archetypes.bodyWeight));
+    it("moves before existing", function () {
+        var consStateOfDress = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/state[id9]/items[id10]");
+        var consPregnant = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/state[id9]/items[id29]");
+        var consConfoundingFactors = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/state[id9]/items[id26]");
+
+        am.moveBefore(consPregnant, consStateOfDress);
+
+        var list = AOM.AmQuery.findAll(am.data.definition, "/data[id3]/events[id4]/state[id9]/items");
+
+        expect(list.length).toEqual(3);
+        expect(list[0]).toBe(consPregnant);
+        expect(list[1]).toBe(consStateOfDress);
+        expect(list[2]).toBe(consConfoundingFactors);
+    });
+
+    it("moves on end", function () {
+        var consWeight = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/data[id2]/items[id5]");
+        var consComment = AOM.AmQuery.get(am.data.definition, "/data[id3]/events[id4]/data[id2]/items[id25]");
+
+        am.moveBefore(consWeight, null);
+
+        var constraintList = AOM.AmQuery.findAll(am.data.definition, "/data[id3]/events[id4]/data[id2]/items");
+
+        expect(constraintList.length).toEqual(2);
+        expect(constraintList[0]).toBe(consComment);
+        expect(constraintList[1]).toBe(consWeight);
+    });
+
+
+})
 
