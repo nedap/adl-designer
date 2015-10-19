@@ -629,10 +629,10 @@
 
                 function createPanel(tupleConstraint, parentTupleConstraint) {
                     var magnitudeHandler = stage.archetypeEditor.getRmTypeHandler("C_REAL");
-                    var units = tupleConstraint.units.list[0];
+                    var units = tupleConstraint.units.constraint[0];
 
-                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.list &&
-                    tupleConstraint.precision.list.length > 0);
+                    var precisionEnabled = !!(tupleConstraint.precision && tupleConstraint.precision.constraint &&
+                    tupleConstraint.precision.constraint.length > 0);
 
 
                     var panel = {
@@ -640,7 +640,7 @@
                         magnitude: magnitudeHandler.createContext(stage, tupleConstraint.magnitude,
                             parentTupleConstraint && parentTupleConstraint.magnitude),
                         units: units,
-                        precision: precisionEnabled ? tupleConstraint.precision.list[0] : ""
+                        precision: precisionEnabled ? tupleConstraint.precision.constraint[0] : ""
                     };
                     return panel;
 
@@ -649,9 +649,9 @@
                 function extractPropertyOpenEhrId() {
                     var propertyCons = AOM.AmQuery.get(cons, "property");
                     if (!propertyCons) return undefined;
-                    if (!propertyCons || !propertyCons.code_list || propertyCons.code_list.length !== 1) return undefined;
+                    if (!propertyCons || propertyCons.constraint) return undefined;
 
-                    var atCode = propertyCons.code_list[0];
+                    var atCode = propertyCons.constraint;
                     var tb = stage.archetypeModel.getTermBinding("openehr", atCode);
                     if (!tb) return undefined;
                     var openEhrId = tb.substring(tb.lastIndexOf('/') + 1);
@@ -674,11 +674,11 @@
                     for (var i in parentTupleConstraints) {
                         var parentTupleConstraint = parentTupleConstraints[i];
 
-                        var units = (parentTupleConstraint.units && parentTupleConstraint.units.list) ? parentTupleConstraint.units.list[0] : undefined;
+                        var units = (parentTupleConstraint.units && parentTupleConstraint.units.constraint) ? parentTupleConstraint.units.constraint[0] : undefined;
                         if (units === undefined) continue;
 
                         var tupleConstraint = Stream(tupleConstraints).filter(function (d) {
-                            return d.units.list && d.units.list.length === 1 && d.units.list[0] === units;
+                            return d.units.constraint && d.units.constraint.length === 1 && d.units.constraint[0] === units;
                         }).findFirst().orElse();
 
                         var panel = createPanel(tupleConstraint || parentTupleConstraint, parentTupleConstraint);
@@ -689,7 +689,7 @@
                 } else {
                     for (var i in tupleConstraints) {
                         var tupleConstraint = tupleConstraints[i];
-                        var units = (tupleConstraint.units && tupleConstraint.units.list) ? tupleConstraint.units.list[0] : undefined;
+                        var units = (tupleConstraint.units && tupleConstraint.units.constraint) ? tupleConstraint.units.constraint[0] : undefined;
                         if (units === undefined) continue;
 
                         var parentTupleConstraint = undefined;
@@ -919,7 +919,7 @@
                     if (context.property && context.property !== propertyNotSetEhrId) {
                         var aProperty = stage.archetypeModel.addAttribute(cons, 'property');
                         var cProperty = AOM.newCTerminologyCode();
-                        cProperty.code_list = [getOrCreateBindingAndCode(context.property)];
+                        cProperty.constraint = getOrCreateBindingAndCode(context.property);
                         stage.archetypeModel.addConstraint(aProperty, cProperty);
                     }
                 }
@@ -937,7 +937,7 @@
                         var panel = panels[panelIndex];
 
                         var unitCons = AOM.newCString();
-                        unitCons.list = [panel.units];
+                        unitCons.constraint = [panel.units];
                         unitCons.default_value = panel.units;
 
                         var magnitudeCons = AOM.newCReal();
@@ -946,9 +946,9 @@
 
                         var precisionCons = AOM.newCInteger();
                         if (panel.precision === "" || !panel.precision) {
-                            precisionCons.range = AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER");
+                            precisionCons.constraint = [AmInterval.of(0, undefined, "INTERVAL_OF_INTEGER")];
                         } else {
-                            precisionCons.list = [parseInt(panel.precision)];
+                            precisionCons.constraint = [parseInt(panel.precision)];
                         }
                         attributeTuple.children.push(AOM.newCObjectTuple([unitCons, magnitudeCons, precisionCons]));
                     }
@@ -1182,15 +1182,15 @@
                     for (var i in parentTuples) {
                         var parentTuple = parentTuples[i];
                         var specializedTuple = Stream(tuples).filter(function (d) {
-                            return d["value"].list[0] === parentTuple["value"].list[0];
+                            return d["value"].constraint[0] === parentTuple["value"].constraint[0];
                         }).findFirst().orElse();
                         var tuple = specializedTuple || parentTuple;
                         //var parentTuple = parentTuples && parentTuples[i];
-                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: !!specializedTuple,
-                            value: tuple ["value"].list[0],
-                            term_id: tuple["symbol"].code_list[0],
+                            value: tuple ["value"].constraint[0],
+                            term_id: tuple["symbol"].constraint[0],
                             term: term
                         };
                         context.values.push(value);
@@ -1199,11 +1199,11 @@
                     for (var i in tuples) {
                         var tuple = tuples[i];
                         //var parentTuple = parentTuples && parentTuples[i];
-                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].code_list[0]);
+                        var term = stage.archetypeModel.getTermDefinition(tuple["symbol"].constraint);
                         var value = {
                             active: true,
-                            value: tuple["value"].list[0],
-                            term_id: tuple["symbol"].code_list[0],
+                            value: tuple["value"].constraint[0],
+                            term_id: tuple["symbol"].constraint[0],
                             term: term
                         };
                         context.values.push(value);
@@ -1392,7 +1392,7 @@
                         var valueCons = AOM.newCInteger([contextValue.value]);
 
                         var symbolCons = AOM.newCTerminologyCode();
-                        symbolCons.code_list = [contextValue.term_id];
+                        symbolCons.constraint = contextValue.term_id;
 
                         attributeTuple.children.push(AOM.newCObjectTuple([valueCons, symbolCons]));
                     }
