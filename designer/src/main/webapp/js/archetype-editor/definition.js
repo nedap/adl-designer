@@ -275,6 +275,9 @@
                     // add global handlers
                     if (!specialized) {
                         var dataElements = targetElement.find(".data");
+                        $('.data').children().css('background-color','#dddddd');
+                        targetElement.prop("disabled", true);
+                        targetElement.css('background-color','#dddddd');
                         dataElements.prop("disabled", true);
                         saveButton.prop('disabled', true);
                     }
@@ -857,7 +860,12 @@
                         'multiple': false,
                         'check_callback': true
 
-                    }
+                    },
+                    "plugins" : [
+                        "contextmenu", "dnd", "search",
+                        "state", "types", "wholerow"
+                    ],
+
                 }).on('loaded.jstree', function () {
                     targetElement.jstree('open_all');
                     var superRootNode = targetElement.jstree('get_node', '#');

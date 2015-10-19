@@ -19,39 +19,71 @@
 
 {>definition}
 <div class="vertical-stretch xcontainer-fluid">
-  <div class="horizontal-stretch col-sm-8">
+  <div class="horizontal-stretch col-sm-5">
     <div class="panel panel-default horizontal-stretch">
       <div class="panel-heading row">
-        <div class="col-sm-4 properties-line no-border">
+        <div class="col-sm-3 properties-line no-border">
           <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
           <div class="properties-value">
-            <select id="{{panel_id}}_language" class="form-control input-sm">
+            <select id="{{panel_id}}_language" class="form-control input-sm" style="width: 60px">
                 <option value="en">en</option>
                 <option value="sl">sl</option>
             </select>
           </div>
         </div>
-        <div class="col-sm-4 pull-right">
+         <!-- <div class="col-sm-7 no-border">
+              <div class="btn-toolbar pull-right row">
+                  <button id="{{panel_id}}_renameConstraint" type="button" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span> Rename</button>
+                  <button id="{{panel_id}}_editArchetype" type="button" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-edit"></span>  Edit Archetype</button>
+                  <button id="{{panel_id}}_addArchetype" type="button" class="btn btn-sm btn-success addArc"><span class="glyphicon glyphicon-plus-sign"></span> Add Archetype</button>
+                  <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove-sign"></span> Remove</button>
+              </div>
+          </div>-->
+        <div class="col-sm-2 pull-right">
+
           <div class="checkbox pull-right">
-            <label>
+          <!--  <label>
                 <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
+            </label>-->
+            <label>
+                <input id="{{panel_id}}_filterProhibited" checked="checked" type="checkbox">Show prohibited nodes
             </label>
           </div>
-        </div>           
+        </div>
+          <div class="row" style="margin-left: -25px">
+              <div class="col-xs-12">
+                  <div class="btn-toolbar">
+                      <div class="btn-group btn-group-xss">
+                          <button id="addArche" class="btn-sm btn-primary addArche"><span class="glyphicon glyphicon-plus"></span> Add Archetype</button>
+                          <button id="prohibToolbar" class="btn-sm btn-default prohibToolbar">Prohibit</button>
+                          <button id="unprohibToolbar" class="btn-sm btn-default unprohibToolbar">Unprohibit</button>
+                          <button id="renameToolbar" class="btn-sm btn-primary renameToolbar"><span class="glyphicon glyphicon-edit"></span> Rename</button>
+                          <button id="cloneToolbar" class="btn-sm btn-info">Clone</button>
+
+
+                          <button id="deleteArcheToolbar" class="btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+                          <button id="editArcheToolbar" class="btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
       </div>
+
       <div class="panel-body horizontal-stretch bottom-space-medium no-padding">
-        <div id="{{panel_id}}_tree" class="definition-tree"></div>
+
+        <div id="{{panel_id}}_tree" class="definition-tree treejsc jstree jstree-default drag"></div>
       </div>
+
       <div class="panel-footer">
         <div class="btn-toolbar pull-right" role="toolbar">
-          <button id="{{panel_id}}_renameConstraint" type="button" class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span> Rename</button>
-          <button id="{{panel_id}}_editArchetype" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span>  Edit Archetype</button>
-          <button id="{{panel_id}}_addArchetype" type="button" class="btn btn-success"><span class="glyphicon glyphicon-plus-sign"></span> Add Archetype</button>
-          <button id="{{panel_id}}_removeConstraint" type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove-sign"></span> Remove</button>
+          <button id="{{panel_id}}_expor" type="button" class="btn btn-default"><span class="glyphicon glyphicon-cloud"></span> Import to EHRScape</button>
+
         </div>
       </div>
     </div>
   </div>
+
   <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
   </div>
 </div>
@@ -60,7 +92,13 @@
 {>addArchetypeDialog}
 <div class="row properties-line no-border">
    <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Archetype Id</label></div>
-   <div class="properties-value"><select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select></div>
+   <div class="properties-value">
+       <select id="{{panel_id}}_archetype_id" class="form-control input-sm" data-live-search="true">
+       {{#each candidateArches}}
+           <option value="{{archetypeId}}">{{archetypeId}}</option>
+       {{/each}}
+       </select>
+   </div>
 </div>
 
 {>loadTemplateDialog}
@@ -104,8 +142,11 @@
     <div class="col-sm-4">
         <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
     </div>
-    <div class="col-sm-2">
-        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
+    <div class="col-sm-1">
+        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number" placeholder = 'min'>
+    </div>
+    <div class="col-sm-1">
+        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number" placeholder='max'>
     </div>
 </div>
 
@@ -121,3 +162,4 @@
         Adl
     </div>
 </div>
+

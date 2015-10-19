@@ -78,11 +78,13 @@
                     if (parentRange) {
                         if (!AmInterval.contains(parentRange, range)) {
                             errors.add("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
+                            toastr.error("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
                         }
                     }
 
                     if (context.parent.assumed_value !== undefined && context.assumed_value !== context.assumed_value) {
                         errors.add("Assumed value does not match parent assumed value", "assumed_value");
+                        toastr.error("Assumed value does not match parent assumed value", "assumed_value");
                     }
                 }
             };
@@ -145,11 +147,13 @@
                     if (parentRange) {
                         if (!AmInterval.contains(parentRange, range)) {
                             errors.add("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
+                            toastr.error("Range " + context.range + " is not a subset of parent range " + context.parent.range, "range");
                         }
                     }
 
                     if (context.parent.assumed_value !== undefined && context.assumed_value !== context.assumed_value) {
                         errors.add("Assumed value does not match parent assumed value", "assumed_value");
+
                     }
                 }
 
@@ -250,7 +254,7 @@
                 context.type = 'C_TERMINOLOGY_CODE';
                 context.assumed_value = cons.assumed_value;
 
-                var terminologyData = getTerminologyData(stage.archetypeModel, cons);
+                var terminologyData = getTerminologyData(AOM.ArchetypeModel.from(cons), cons);
                 context.type_internal = terminologyData.type === 'internal';
                 context.any = terminologyData.any;
                 if (context.type_internal) {
@@ -268,6 +272,7 @@
                     var parentValueSet = stage.archetypeModel.data.terminology.value_sets[context.parent_value_set_code];
                     var valueSet = stage.archetypeModel.data.terminology.value_sets[context.value_set_code];
                     context.valueSetItems = [];
+                    if (parentValueSet)
                     for (var pvi in parentValueSet.members) {
                         var code = parentValueSet.members[pvi];
                         context.valueSetItems.push({
@@ -974,7 +979,45 @@
                                 'core': {
                                     'data': buildPatternTree(),
                                     'multiple': false
+                                },
+                                "plugins" : [
+                                    "contextmenu", "dnd", "search",
+                                    "state", "types", "wholerow"
+                                ],
+                                "contextmenu":{
+                                    "items": function($node) {
+                                        var tree = $(".treejsc").jstree(true);
+                                        return {
+                                            "Pop": {
+                                                "separator_before": false,
+                                                "separator_after": false,
+                                                "label": "Pop",
+                                                "action": function (obj) {
+                                                    alert(JSON.stringify(obj)+"Q");
+                                                    console.log(obj);
+                                                    console.log(tree.get_selected($node)+"n");
+                                                }
+                                            },
+                                            "Rename": {
+                                                "separator_before": false,
+                                                "separator_after": false,
+                                                "label": "Rename",
+                                                "action": function (obj) {
+                                                    tree.edit($node);
+                                                }
+                                            },
+                                            "Remove": {
+                                                "separator_before": false,
+                                                "separator_after": false,
+                                                "label": "Remove",
+                                                "action": function (obj) {
+                                                    tree.delete_node($node);
+                                                }
+                                            }
+                                        };
+                                    }
                                 }
+
                             });
                         var patternId = findIdFromPattern(context.pattern, context.type);
                         patternElement.on('ready.jstree', function () {

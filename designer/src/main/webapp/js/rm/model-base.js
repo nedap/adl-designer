@@ -161,6 +161,7 @@ var ReferenceModels = (function () {
 
 
         handler.saveModelBase = function (archetypeModel, gui, cons) {
+
             cons.occurrences = AmInterval.of(gui.occurrences.lower, gui.occurrences.upper, "MULTIPLICITY_INTERVAL");
         };
 

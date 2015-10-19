@@ -209,6 +209,7 @@ AOM = (function (AOM) {
          * @return {object} generated cons object
          */
         self.addArchetype = function (targetCons, flatParentArchetypeData) {
+
             function createNewOverlayArchetypeId(parentArchetypeModel) {
                 function extractNamePart(pid) {
                     var start = pid.indexOf('.');
@@ -276,6 +277,7 @@ AOM = (function (AOM) {
             // add constraint to the target attribute and model to the models list
             targetArchetypeModel.addConstraint(targetAttribute, newConstraint);
             archetypeModels.push(newArchetypeModel);
+
             return newArchetypeModel.data.definition;
         };
 
@@ -290,7 +292,7 @@ AOM = (function (AOM) {
 
         self.canAddArchetype = function (cons) {
             var targetConsMixin = AOM.mixin(cons);
-            var children;
+             var children;
 
             if (targetConsMixin.isAttribute()) {
                 // is there place for one more child ?
@@ -438,6 +440,7 @@ AOM = (function (AOM) {
      * @return {AOM.TemplateModel} template model for the given constraint, or undefined
      */
     my.TemplateModel.from = function (cons) {
+        if(cons[".parent"])
         while (cons[".parent"]) cons = cons[".parent"];
         return cons[".templateModel"];
     };

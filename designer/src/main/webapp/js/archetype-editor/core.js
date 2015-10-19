@@ -290,6 +290,7 @@ var ArchetypeEditor = (function () {
     };
 
     my.applySubModules = function (stage, generatedDom, context) {
+
         for (var key in context) {
             var prop = context[key];
             if (typeof prop === "object") {
