@@ -67,6 +67,9 @@
     <link href="lib/bootstrap-select-v1.7.2.0/css/bootstrap-select.min.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-select-v1.7.2.0/js/bootstrap-select.min.js"></script>
 
+    <!-- Handle bounce scroll on touch devices -->
+    <script src="lib/overscroll.js"></script>
+
     <!-- Archetype editor -->
     <script src="js/util.js"></script>
     <script src="js/archetype-editor/util-gui.js"></script>
@@ -95,7 +98,7 @@
     <script>
         $().ready(function () {
             $.fn.editable.defaults.mode = 'inline';
-
+            toastr.options.preventDuplicates = true;
 
             var mytab = $('#archetype-editor-archetype-tabs');
             var ul = mytab.find('ul');
@@ -115,7 +118,7 @@
     </script>
 
 </head>
-<body>
+<body style="overflow:hidden">
 <div id="archetype-editor-main">
 	  <nav class="navbar navbar-default navbar-static-top">
 	    <div class="container-fluid">

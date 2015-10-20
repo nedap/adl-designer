@@ -521,8 +521,8 @@
 
 
 
-                var term = archetypeModel.getTermDefinitionText(cons.node_id);
-                var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id);
+                var term = archetypeModel.getTermDefinitionText(cons.node_id, language);
+                var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id, language);
                 if(context != undefined)
                 {
                    if(context.values)
@@ -600,7 +600,7 @@
                         cons: cons
                     };
                     if (!consJson.text) {
-                        consJson.text = self.extractConstraintName(cons);
+                        consJson.text = self.extractConstraintName(cons, currentLanguage);
                     }
                     if (cons["@type"] === "ARCHETYPE_SLOT" || !ArchetypeEditor.getRmTypeHandler(cons)) {
                         consJson.children = [];
@@ -692,7 +692,7 @@
                     }
                 }
                 if (cons) {
-                    treeNodeJson.text = self.extractConstraintName(cons);
+                    treeNodeJson.text = self.extractConstraintName(cons, currentLanguage);
                 }
 
             }
@@ -957,7 +957,33 @@
                         'core': {
                             'data': jsonTreeTarget,
                             'multiple': false,
-                            'check_callback': true
+                            'check_callback': function(operation, node, node_parent, node_position, more){
+
+                                if(operation === 'move_node'){
+                                    try{
+                                        var cons = treeData[node.id].cons;
+                                        var anchorCons = treeData[node_parent.children[node_position]].cons;
+                                    }
+                                    catch(err){
+                                        console.log(err);
+                                        return false;
+                                    }
+                                   /* console.log(cons);
+                                    console.log(anchorCons);*/
+                                    if(typeof cons != 'undefined' && typeof anchorCons != 'undefined'){
+                                        console.log("entered");
+                                        console.log(cons);
+                                        console.log(anchorCons);
+                                        var archetypeModel = AOM.ArchetypeModel.from(cons);
+                                        return archetypeModel.moveBeforeChecker(cons,anchorCons);
+                                    }
+                                    return false;
+
+                                }
+                                else
+                                return true;
+
+                            }
 
                         },
                         "plugins" : [
@@ -1022,6 +1048,25 @@
                         $('.openC').remove();
                         $('.movertb').remove();
 
+                    }).
+                    on("move_node.jstree", function(node, parent){
+
+                        var treeNode = self.targetElement.jstree('get_node', parent.old_parent);
+
+
+                        console.log(node);
+                        console.log(parent);
+
+
+                        var cons = treeData[treeNode.children[parent["position"]]].cons;
+                        var anchorCons = treeData[treeNode.children[parent["old_position"]]].cons;
+                    /*    console.log(cons);
+                        console.log(anchorCons);*/
+                        if(typeof cons != 'undefined' && typeof anchorCons != 'undefined') {
+                            var archetypeModel = AOM.ArchetypeModel.from(cons);
+                            archetypeModel.moveBefore(cons, anchorCons);
+                        }
+
                     })
                    /* .on("hover_node.jstree", function(e, treeEvent){
                         //$('#'+treeEvent.node.id+'_anchor').append("<button style='heigth: 5px; width: 5px' class='btn-sm movertb'><span class='glyphicon glyphicon-plus'></span></button>");
@@ -1066,12 +1111,12 @@
                         $('#'+treeEvent.node.id+'_anchor').append(
 
                             " <span class='movertb'>" +
-                            "<span style='margin-left: 30px' class='btn-sm btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
-                            "<span style='margin-left: 30px; display: none' class='btn-sm btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
-                            "<span style='margin-left: 10px' class='btn-sm btn-primary prohibToolbar'> Prohibit</span>" +
-                            "<span style='margin-left: 10px' class='btn-sm btn-primary unprohibToolbar'> Unprohibit</span>" +
-                            "<span style='margin-left: 10px' class='btn-sm btn-primary renameToolbar'><span class='glyphicon glyphicon-edit'></span> Rename</span>" +
-                            "<span style='margin-left: 10px' class='btn-sm btn-primary Clone'><span class='glyphicon glyphicon-plus'></span> Clone</span>" +
+                                "<span style='margin-left: 30px' class='btn-sm btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
+                                "<span style='margin-left: 30px; display: none' class='btn-sm btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary prohibToolbar'> Prohibit</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary unprohibToolbar'> Unprohibit</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary renameToolbar'><span class='glyphicon glyphicon-edit'></span> Rename</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary Clone'><span class='glyphicon glyphicon-plus'></span> Clone</span>" +
                             "</span>");
                     }
 
@@ -1087,13 +1132,14 @@
                         //$('#addArcheq').unbind('click').hide();
                     }
                     else{
-                        $('#addArche').unbind('click').click(function() { info.tree.addArchetype() });
+                        //$('#addArche').unbind('click').click(function() { info.tree.addArchetype() });
                         $(document).off('click', '.addArche').on('click', '.addArche', function() { info.tree.addArchetype() });
                         $('.addArche').show();
                         $('.addArc').prop('disabled', false);
                     }
 
-                    if(data.cons['@type']=='C_COMPLEX_OBJECT' && data.cons.rm_type_name != 'ELEMENT') {
+
+                        if(data.cons[".templateArchetypeRoot"]){
                         $('#deleteArcheToolbar').unbind('click').click(function() { info.tree.removeConstraint() }).text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
                         $('.deleteArche').click(function() { info.tree.removeConstraint()}).show();
                         $('#editArcheToolbar').unbind('click').click(function() {
@@ -1262,6 +1308,12 @@
                 var ProhibitedIDs = [];
                 var instance = $('.treejsc').jstree(true);
 
+               /* if(status)
+                $('.prohibitedTog').addClass("active");
+                else
+                $('.prohibitedTog').removeClass("active");*/
+
+
                 for(var node in treeData)
                 {
                     if(treeData[node] != undefined)
@@ -1320,9 +1372,10 @@
                 });
             };
 
+            currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
+
             self.createTree();
 
-            currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
         };
 
         my.show = function (templateModel, referenceModel, targetElement) {
@@ -1378,7 +1431,8 @@
                 });
                 info.toolbar.showProhibited.on('change', function() {
                     info.tree.filterProhibited(info.toolbar.showProhibited.prop('checked'));
-                })
+                });
+
 
                 targetElement.append(html);
             });

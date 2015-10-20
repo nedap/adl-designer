@@ -531,6 +531,7 @@
                         }
                     }
                 }
+                currentLanguage = language;
 
                 var treeRoot = info.tree.targetElement.jstree('get_node', '#');
                 var node = info.tree.targetElement.jstree('get_node', treeRoot.children[0]);
@@ -539,7 +540,6 @@
                 info.tree.targetElement.jstree('redraw', true);
                 info.toolbar.languageSelect.val(language);
 
-                currentLanguage = language;
             };
 
 
@@ -610,9 +610,7 @@
                         cons: cons
                     };
 
-                    if (!consJson.text) {
-                        consJson.text = self.extractConstraintName(cons, currentLanguage);
-                    }
+                    consJson.text = self.extractConstraintName(cons, currentLanguage);
 
                     // only add attributes if no custom handler for this type
                     if (!ArchetypeEditor.getRmTypeHandler(cons)) {

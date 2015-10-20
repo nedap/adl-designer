@@ -32,7 +32,7 @@ var TemplateEditor = (function () {
                 function populateTemplateIdSelect() {
                     templateIdSelect.empty();
                     for (var i in templateInfoList) {
-
+                        var templateInfo = templateInfoList[i];
                         var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name + ")");
                         templateIdSelect.append(option);
                     }

@@ -1365,21 +1365,25 @@ var AOM = (function () {
                  * @return {boolean} True if the move was successful
                  */
                 self.moveBefore = function (cons, anchorCons) {
+
                     if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
                         console.error("Only specialized constraints can be moved");
+                        toastr.error("Only specialized nodes can be moved.");
                         return false;
                     }
 
 
                     if (anchorCons && anchorCons[".parent"] !== cons[".parent"]) {
                         console.error("Can only move before a constraint on the same level");
+                        toastr.error("You can only move before a specialized constraint on the same level");
                         return false;
                     }
 
-                    if (!self.isSpecialized(cons[".parent"])) {
+                   /* if (!self.isSpecialized(cons[".parent"])) {
                         console.error("Can only move constraints on a specialized parent");
+                        toastr.error("The parent must be specialied to move this node.");
                         return false;
-                    }
+                    }*/
 
                     var parentAttr = cons[".parent"];
                     var found=false;
@@ -1390,7 +1394,10 @@ var AOM = (function () {
                             found=true;
                         }
                     }
-                    if (!found) throw "cons is not a child of its own parent";
+                    if (!found) {
+                        toastr.error("Reorder not valid");
+                        throw "cons is not a child of its own parent";
+                    }
 
                     if (anchorCons) {
                         var found=false;
@@ -1402,14 +1409,39 @@ var AOM = (function () {
                                 break;
                             }
                         }
-                        if (!found) throw "targetCons is not a child of its own parent";
+                        if (!found) {
+                            toastr.error("Reorder not valid");
+                            throw "targetCons is not a child of its own parent";
+                        }
 
                     } else {
+
                         parentAttr.children.push(cons);
                     }
+                    toastr.success("Reorder successful!");
                     return true;
 
                 };
+                self.moveBeforeChecker = function(cons, anchorCons){
+                    if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
+                        console.error("Only specialized constraints can be moved");
+                        toastr.error("Only specialized constraints can be moved");
+                        return false;
+                    }
+
+                    if (anchorCons && anchorCons[".parent"] !== cons[".parent"]) {
+                        console.error("Can only move before a constraint on the same level");
+                        toastr.error("You can only move constraints on the same level");
+                        return false;
+                    }
+
+                  /*  if (!self.isSpecialized(cons[".parent"])) {
+                        console.error("Can only move constraints on a specialized parent");
+                        toastr.error("You can only move constraints which are on a specialized parent");
+                        return false;
+                    }*/
+                    return true;
+                }
 
                 self.getArchetypeId = function () {
                     return data.archetype_id.value;

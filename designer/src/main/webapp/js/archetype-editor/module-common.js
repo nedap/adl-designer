@@ -234,9 +234,9 @@
                     }
 
                     html.find('#' + context.panel_id + "_minOccur").val(minV);
-                    var oldValue = '[ '+minV+'..'+maxV+' ]';
+                    var oldValue = minV+'..'+maxV;
                     html.find('#' + context.panel_id + "_minMaxF").editable({
-                        value: '['+minV+'..'+maxV+']',
+                        value: minV+'..'+maxV,
 
                         tpl: "<input type='text' style='width: 100px'>",
                         success: function(response, newValue) {
@@ -249,24 +249,24 @@
                             switch(newValue)
                             {
                                 case '1':
-                                    formatted = '[' + 0 + '..' + 1 + ']';
-
+                                    formatted = 0 + '..' + 1;
+                                    oldValue = 0+'..'+1;
                                     return {newValue: formatted};
                                     break;
                                 case '0':
-                                    formatted = '[' + 0 + '..' + 0 + ']';
-
+                                    formatted = 0 + '..' + 0;
+                                    oldValue = 0+'..'+0;
                                     return {newValue: formatted};
                                     break;
                                 case '*':
-                                    formatted = '[' + 0 + '..' + '*' + ']';
-
+                                    formatted = 0 + '..' + '*';
+                                    oldValue = 0+'..*';
                                     return {newValue: formatted};
                                     break;
                                 default:
                                     if(!isNaN(newValue) && newValue % 1 == 0){
-                                        formatted = '[0..'+newValue+']';
-
+                                        formatted = '0..'+newValue+'';
+                                        oldValue = 0+'..'+newValue;
                                         return {newValue: formatted};
                                         break;
                                     }
@@ -287,13 +287,14 @@
                                         }
                                         var minR = newValue.substring(0, parse);
                                         var maxR = newValue.substring(parse+2);
-                                        formatted = '[' + minR + '..' + maxR + ']';
+
+                                        formatted = minR + '..' + maxR;
 
                                         if(minR > maxR){
                                             toastr.error("Min value cannot be bigger than max value");
                                             return {newValue: oldValue};
                                         }
-
+                                        oldValue = minR+'..'+maxR;
                                         return {newValue: formatted};
                                         break;
                                     }
@@ -306,9 +307,10 @@
 
 
                         }
-                    }).on('shown', function(e, editable) {
+                    })
+                    /*.on('shown', function(e, editable) {
                         editable.input.$input.val(editable["value"].substr(1,editable["value"].length-2));
-                    });;
+                    });*/
 
                     //html.find('#' + context.panel_id + "_minMaxF").text('[ '+minV+'..'+maxV+' ]');
 
@@ -370,7 +372,7 @@
                 var maxRange = targetElement.find('#' + context.panel_id + "_maxOccur").val();*/
 
                 var minmaxRange = $('.minMaxF').text();
-                context.occurrences = minmaxRange;
+                context.occurrences = '['+minmaxRange+']';
 
                 /*var minR, maxR;
                 switch(minmaxRange)

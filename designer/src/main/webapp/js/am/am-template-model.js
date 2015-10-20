@@ -440,7 +440,7 @@ AOM = (function (AOM) {
      * @return {AOM.TemplateModel} template model for the given constraint, or undefined
      */
     my.TemplateModel.from = function (cons) {
-        if(cons[".parent"])
+
         while (cons[".parent"]) cons = cons[".parent"];
         return cons[".templateModel"];
     };

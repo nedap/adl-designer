@@ -229,6 +229,7 @@ select.big-lines > option {
 
 .show-scrollbar {
 	overflow: auto;
+    max-height: 70%!important;
 }
 
 .tab-pane.panel {
