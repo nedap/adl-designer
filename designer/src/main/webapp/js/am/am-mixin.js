@@ -303,6 +303,10 @@ AOM = (function (AOM) {
 
         self.isPrimitive = function () {
             return false;
+        };
+
+        self.isArchetypeRoot = function() {
+            return false;
         }
     };
 
@@ -339,7 +343,23 @@ AOM = (function (AOM) {
         CObjectMixin.call(self);
 
     };
-    extend(CDefinedObjectMixin, CObjectMixin);
+
+    var CComplexObjectMixin = function () {
+        var self = this;
+        CDefinedObjectMixin.call(self);
+
+    };
+    extend(CComplexObjectMixin, CDefinedObjectMixin);
+
+    var CArchetypeRootMixin = function () {
+        var self = this;
+        CComplexObjectMixin.call(self);
+
+        self.isArchetypeRoot = function() {
+            return true;
+        }
+    };
+    extend(CArchetypeRootMixin, CComplexObjectMixin);
 
     var CPrimitiveObjectMixin = function () {
         var self = this;
@@ -446,7 +466,9 @@ AOM = (function (AOM) {
         "C_STRING": new CStringMixin(),
         "C_TERMINOLOGY_CODE": new CTerminologyCodeMixin(),
         "C_ATTRIBUTE": new CAttributeMixin(),
-        "ARCHETYPE_SLOT": new ArchetypeSlotMixin()
+        "ARCHETYPE_SLOT": new ArchetypeSlotMixin(),
+        "C_COMPLEX_OBJECT": new CComplexObjectMixin(),
+        "C_ARCHETYPE_ROOT": new CArchetypeRootMixin()
     };
 
 
