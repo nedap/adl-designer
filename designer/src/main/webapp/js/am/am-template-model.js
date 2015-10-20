@@ -416,7 +416,7 @@ AOM = (function (AOM) {
                 if (!consMixin.isConstraint()) return false;
                 if (consMixin.isSlot()) return false;
                 if (cons.occurrences && cons.occurrences.upper === 1) return false;
-                if (!cons[".parent"]) return false;
+                if (!self.getConstraintParent(cons)) return false;
 
                 var archetypeModel = AOM.ArchetypeModel.from(cons);
                 if (!archetypeModel.isSpecialized(cons)) return false;
@@ -451,8 +451,6 @@ AOM = (function (AOM) {
                 }
 
                 function cloneCons(sourceCons, cons) {
-                    // todo clone archetype
-                    var consMixin = AOM.mixin(cons);
                     if (cons["@type"] === "C_ARCHETYPE_ROOT") {
                         var sourceSlotArchetypeModel = getArchetypeModel(cons.archetype_ref);
                         var newArchetypeModel = createOverlayArchetypeClone(sourceSlotArchetypeModel);
@@ -466,7 +464,10 @@ AOM = (function (AOM) {
 
                     var archetypeModel = AOM.ArchetypeModel.from(sourceCons);
                     if (archetypeModel.isSpecialized(cons)) {
-                        cons.node_id = archetypeModel.generateSpecializedTermId(cons.node_id)
+                        var newNodeId = archetypeModel.generateSpecializedTermId(cons.node_id);
+                        archetypeModel.copyTermDefinition(cons.node_id, newNodeId);
+                        cons.node_id = newNodeId;
+
 
                         // copy the value set if needed
                         if (cons["@type"] === "C_TERMINOLOGY_CODE") {
@@ -542,6 +543,10 @@ AOM = (function (AOM) {
 
                 function moveCArchetypeRoot() {
                     var parent = self.getConstraintParent(cons);
+                    if (AOM.mixin(parent).isSlot()) {
+                        parent = parent[".parent"];
+                    }
+
                     var consArchetypeRoot = cons[".templateArchetypeRoot"];
                     var anchorConsArchetypeRoot = anchorCons && anchorCons[".templateArchetypeRoot"];
                     var consIndexOf = parent.children.indexOf(consArchetypeRoot);
