@@ -19,196 +19,188 @@
  */
 
 AOM = (function (AOM) {
-    var my = AOM;
+        var my = AOM;
 
-    // todo use for loading templates
-    /**
-     *
-     * @param {object[]} archetypeDataList
-     * @param {AOM.ArchetypeRepository} archetypeRepository repository of the archetypes
-     * @param {function(AOM.ArchetypeModel[])} callback function with a list of archetype models to call when all archetype models are constructed
-     */
-    function buildArchetypeModels(archetypeDataList, archetypeRepository, callback) {
-        function buildArchetypeModel(index) {
-            var archetypeData = archetypeDataList[index];
-            archetypeRepository.loadArchetype(archetypeData.parent_archetype_id.value, function (parentArchetypeData) {
-                var parentArchetypeModel = new AOM.ArchetypeModel(parentArchetypeData);
-                result[index] = new AOM.ArchetypeModel(archetypeDataList[index], parentArchetypeModel);
-                latch.countDown();
+        // todo use for loading templates
+        /**
+         *
+         * @param {object[]} archetypeDataList
+         * @param {AOM.ArchetypeRepository} archetypeRepository repository of the archetypes
+         * @param {function(AOM.ArchetypeModel[])} callback function with a list of archetype models to call when all archetype models are constructed
+         */
+        function buildArchetypeModels(archetypeDataList, archetypeRepository, callback) {
+            function buildArchetypeModel(index) {
+                var archetypeData = archetypeDataList[index];
+                archetypeRepository.loadArchetype(archetypeData.parent_archetype_id.value, function (parentArchetypeData) {
+                    var parentArchetypeModel = new AOM.ArchetypeModel(parentArchetypeData);
+                    result[index] = new AOM.ArchetypeModel(archetypeDataList[index], parentArchetypeModel);
+                    latch.countDown();
+                });
+            }
+
+            var result = [];
+            var latch = new CountdownLatch(archetypeDataList.length);
+            for (var i in archetypeDataList) {
+                var archetypeData = archetypeDataList[i];
+                if (archetypeData.parent_archetype_id) {
+                    buildArchetypeModel(i);
+                } else {
+                    result[i] = new AOM.ArchetypeModel(archetypeData);
+                    latch.countDown();
+                }
+            }
+            latch.execute(function () {
+                callback(result);
             });
+
         }
 
-        var result = [];
-        var latch = new CountdownLatch(archetypeDataList.length);
-        for (var i in archetypeDataList) {
-            var archetypeData = archetypeDataList[i];
-            if (archetypeData.parent_archetype_id) {
-                buildArchetypeModel(i);
-            } else {
-                result[i] = new AOM.ArchetypeModel(archetypeData);
-                latch.countDown();
-            }
-        }
-        latch.execute(function () {
-            callback(result);
-        });
+        /**
+         * @constructor
 
-    }
+         * @param {AOM.ArchetypeModel[]} archetypeModels list of archetype models present in the archetype.
+         *                                               First item is the root archetype, the rest are template overlays
+         * @param {AOM.ArchetypeRepository} archetypeRepository
+         * @param {AOM.ReferenceModel} referenceModel
+         */
+        my.TemplateModel = function (archetypeModels, archetypeRepository, referenceModel) {
+            var self = this;
 
-    /**
-     * @constructor
-
-     * @param {AOM.ArchetypeModel[]} archetypeModels list of archetype models present in the archetype.
-     *                                               First item is the root archetype, the rest are template overlays
-     * @param {AOM.ArchetypeRepository} archetypeRepository
-     * @param {AOM.ReferenceModel} referenceModel
-     */
-    my.TemplateModel = function (archetypeModels, archetypeRepository, referenceModel) {
-        var self = this;
-
-        function getArchetypeModel(archetypeId) {
-            return Stream(archetypeModels)
-                .filter(function (model) {
-                    return model.data.archetype_id.value === archetypeId
-                })
-                .findFirst().orElse(undefined);
-        }
-
-        function enrichAttributeData(cons) {
-            for (var i in cons.children || []) {
-                enrichConstraintData(cons.children[i])
-            }
-        }
-
-        function enrichConstraintData(cons) {
-            if (cons["@type"] === "C_ARCHETYPE_ROOT") {
-                var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
-                refArchetypeModel.data.definition[".templateArchetypeRoot"] = cons;
-            }
-            if (cons["@type"] === "ARCHETYPE_SLOT") {
-                return; // do not add any attributes on slots
-            }
-            var existingAttributes = {};
-            for (var i in cons.attributes || []) {
-                existingAttributes[cons.attributes[i].rm_attribute_name] = true;
+            function getArchetypeModel(archetypeId) {
+                return Stream(archetypeModels)
+                    .filter(function (model) {
+                        return model.data.archetype_id.value === archetypeId
+                    })
+                    .findFirst().orElse(undefined);
             }
 
-            // add attributes that can be filled by archetypes
-            if (cons["@type"] === "C_COMPLEX_OBJECT" || cons["@type"] === "C_ARCHETYPE_ROOT") {
-                var rmType = cons.rm_type_name;
-                var referenceType = referenceModel.getType(rmType);
-                if (referenceType) {
-                    for (var attrName in referenceType.attributes) {
-                        if (!existingAttributes[attrName]) {
-                            var attr = referenceType.attributes[attrName];
-                            if (rmTypesForArchetypesSet[attr.type]) {
-                                var attrCons = AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
-                                existingAttributes[attrName] = true;
+            function enrichAttributeData(cons) {
+                for (var i in cons.children || []) {
+                    enrichConstraintData(cons.children[i])
+                }
+            }
+
+            function enrichConstraintData(cons) {
+                if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                    var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
+                    refArchetypeModel.data.definition[".templateArchetypeRoot"] = cons;
+                }
+                if (cons["@type"] === "ARCHETYPE_SLOT") {
+                    return; // do not add any attributes on slots
+                }
+                var existingAttributes = {};
+                for (var i in cons.attributes || []) {
+                    existingAttributes[cons.attributes[i].rm_attribute_name] = true;
+                }
+
+                // add attributes that can be filled by archetypes
+                if (cons["@type"] === "C_COMPLEX_OBJECT" || cons["@type"] === "C_ARCHETYPE_ROOT") {
+                    var rmType = cons.rm_type_name;
+                    var referenceType = referenceModel.getType(rmType);
+                    if (referenceType) {
+                        for (var attrName in referenceType.attributes) {
+                            if (!existingAttributes[attrName]) {
+                                var attr = referenceType.attributes[attrName];
+                                if (rmTypesForArchetypesSet[attr.type]) {
+                                    var attrCons = AOM.ArchetypeModel.from(cons).addAttribute(cons, attrName);
+                                    existingAttributes[attrName] = true;
+                                }
                             }
                         }
                     }
                 }
+
+                // enrich attributes of the constraint
+                for (var i in cons.attributes || []) {
+                    enrichAttributeData(cons.attributes[i])
+                }
+
             }
 
-            // enrich attributes of the constraint
-            for (var i in cons.attributes || []) {
-                enrichAttributeData(cons.attributes[i])
+            function enrichArchetypeModelData(archetypeModel) {
+                archetypeModel.data.definition[".templateModel"] = self;
+                enrichConstraintData(archetypeModel.data.definition)
             }
 
-        }
-
-        function enrichArchetypeModelData(archetypeModel) {
-            archetypeModel.data.definition[".templateModel"] = self;
-            enrichConstraintData(archetypeModel.data.definition)
-        }
-
-        function enrichArchetypeModelsData() {
-            for (var i in archetypeModels) {
-                enrichArchetypeModelData(archetypeModels[i]);
+            function enrichArchetypeModelsData() {
+                for (var i in archetypeModels) {
+                    enrichArchetypeModelData(archetypeModels[i]);
+                }
             }
-        }
 
 
-        self.getRootArchetypeModel = function () {
-            return archetypeModels[0];
-        };
+            self.getRootArchetypeModel = function () {
+                return archetypeModels[0];
+            };
 
-        self.getConstraintParent = function (cons) {
-            function findArchetypeSlot(archetypeRoot) {
-                if (!archetypeRoot.slot_node_id) return null;
+            self.getConstraintParent = function (cons) {
+                function findArchetypeSlot(archetypeRoot) {
+                    if (!archetypeRoot.slot_node_id) return null;
 
-                var parentAttr = archetypeRoot[".parent"];
-                for (var i in parentAttr.children) {
-                    var consChild = parentAttr.children[i];
-                    if (consChild["@type"] === "ARCHETYPE_SLOT") {
-                        if (my.nodeIdMatches(archetypeRoot.slot_node_id, consChild.node_id, {matchParent: true})) {
-                            return consChild;
+                    var parentAttr = archetypeRoot[".parent"];
+                    for (var i in parentAttr.children) {
+                        var consChild = parentAttr.children[i];
+                        if (consChild["@type"] === "ARCHETYPE_SLOT") {
+                            if (my.nodeIdMatches(archetypeRoot.slot_node_id, consChild.node_id, {matchParent: true})) {
+                                return consChild;
+                            }
                         }
                     }
+                    return null;
                 }
-                return null;
-            }
 
-            if (cons[".templateArchetypeRoot"]) {
-                var archetypeRoot = cons[".templateArchetypeRoot"];
-                var parentSlot = findArchetypeSlot(archetypeRoot);
-                return parentSlot || archetypeRoot[".parent"];
-            } else {
-                return cons[".parent"];
-            }
-        };
-
-        self.getConstraintChildren = function (cons) {
-            function constraintChildren(children) {
-                var result = [];
-                for (var i in children) {
-                    var consChild = children[i];
-                    var amType = consChild["@type"];
-                    if (amType === "C_ARCHETYPE_ROOT") {
-                        if (consChild.slot_node_id === undefined) {
-                            // only show the archetype_root if it is directly under attribute, instead of under slot
-                            result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
-                        }
-                    } else {
-                        result.push(consChild);
-                    }
+                if (cons[".templateArchetypeRoot"]) {
+                    var archetypeRoot = cons[".templateArchetypeRoot"];
+                    var parentSlot = findArchetypeSlot(archetypeRoot);
+                    return parentSlot || archetypeRoot[".parent"];
+                } else {
+                    return cons[".parent"];
                 }
-                return result;
-            }
+            };
 
-            function slotChildren(cons) {
-
-                var result = [];
-                var parentAttrCons = cons[".parent"];
-                for (var i in parentAttrCons.children) {
-                    var consChild = parentAttrCons.children[i];
-                    if (consChild["@type"] === "C_ARCHETYPE_ROOT") {
-                        if (my.nodeIdMatches(consChild.slot_node_id, cons.node_id, {matchSpecialized: true})) {
-                            result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+            self.getConstraintChildren = function (cons) {
+                function constraintChildren(children) {
+                    var result = [];
+                    for (var i in children) {
+                        var consChild = children[i];
+                        var amType = consChild["@type"];
+                        if (amType === "C_ARCHETYPE_ROOT") {
+                            if (consChild.slot_node_id === undefined) {
+                                // only show the archetype_root if it is directly under attribute, instead of under slot
+                                result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+                            }
+                        } else {
+                            result.push(consChild);
                         }
                     }
+                    return result;
                 }
-                return result;
-            }
+
+                function slotChildren(cons) {
+
+                    var result = [];
+                    var parentAttrCons = cons[".parent"];
+                    for (var i in parentAttrCons.children) {
+                        var consChild = parentAttrCons.children[i];
+                        if (consChild["@type"] === "C_ARCHETYPE_ROOT") {
+                            if (my.nodeIdMatches(consChild.slot_node_id, cons.node_id, {matchSpecialized: true})) {
+                                result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
+                            }
+                        }
+                    }
+                    return result;
+                }
 
 
-            var consMixin = AOM.mixin(cons);
-            if (consMixin.isAttribute()) {
-                return constraintChildren(cons.children || []);
-            } else if (consMixin.isSlot()) {
-                return slotChildren(cons);
-            } else {
-                return cons.attributes || [];
-            }
-        };
-
-        /**
-         *  Adds a new archetype to the target constraint (slot or attribute)
-         * @param targetCons
-         * @param flatParentArchetypeData
-         * @return {object} generated cons object
-         */
-        self.addArchetype = function (targetCons, flatParentArchetypeData) {
+                var consMixin = AOM.mixin(cons);
+                if (consMixin.isAttribute()) {
+                    return constraintChildren(cons.children || []);
+                } else if (consMixin.isSlot()) {
+                    return slotChildren(cons);
+                } else {
+                    return cons.attributes || [];
+                }
+            };
 
             function createNewOverlayArchetypeId(parentArchetypeModel) {
                 function extractNamePart(pid) {
@@ -235,259 +227,372 @@ AOM = (function (AOM) {
                     var newArchetypeId = parentId.substring(0, start) + ".ovl-"
                         + templateName + "-" + parentName + "-" + pad(num, 3)
                         + parentId.substring(end);
-
-                    if (Stream(archetypeModels).noneMatch(function (d) {
-                            return d.getArchetypeId() === newArchetypeId
-                        })) {
-                        return newArchetypeId;
+                    if (!getArchetypeModel(newArchetypeId)) {
+                        return newArchetypeId
                     }
+                    //if (Stream(archetypeModels).noneMatch(function (d) {
+                    //        return d.getArchetypeId() === newArchetypeId
+                    //    })) {
+                    //    return newArchetypeId;
+                    //}
                     num++;
                 }
             }
 
-            function createNewOverlayArchetypeModel(flatParentArchetypeData) {
-                var parentArchetypeModel = new AOM.ArchetypeModel(flatParentArchetypeData);
+            /**
+             *  Adds a new archetype to the target constraint (slot or attribute)
+             * @param targetCons
+             * @param flatParentArchetypeData
+             * @return {object} generated cons object
+             */
+            self.addArchetype = function (targetCons, flatParentArchetypeData) {
 
-                var archetypeModel = AOM.createSpecializedArchetype({
-                    archetypeId: createNewOverlayArchetypeId(parentArchetypeModel),
-                    parent: parentArchetypeModel
-                });
-                archetypeModel.data.is_overlay = true;
-                return archetypeModel;
-            }
+                function createNewOverlayArchetypeModel(flatParentArchetypeData) {
+                    var parentArchetypeModel = new AOM.ArchetypeModel(flatParentArchetypeData);
 
-            var mixin = AOM.mixin(targetCons);
-            var targetAttribute = targetCons;
-            if (mixin.isSlot()) {
-                targetAttribute = targetCons[".parent"];
-            }
-
-            var newArchetypeModel = createNewOverlayArchetypeModel(flatParentArchetypeData);
-            enrichArchetypeModelData(newArchetypeModel);
-
-            var newConstraint = AOM.newCArchetypeRoot(
-                newArchetypeModel.data.definition.rm_type_name,
-                newArchetypeModel.getArchetypeId(),
-                mixin.isSlot() ? targetCons.node_id : undefined);
-
-            newArchetypeModel.data.definition[".templateArchetypeRoot"] = newConstraint;
-
-            var targetArchetypeModel = AOM.ArchetypeModel.from(targetAttribute);
-
-            // add constraint to the target attribute and model to the models list
-            targetArchetypeModel.addConstraint(targetAttribute, newConstraint);
-            archetypeModels.push(newArchetypeModel);
-
-            return newArchetypeModel.data.definition;
-        };
-
-        self.getAttributeChildOccurrences = function (attrCons) {
-            if (attrCons.cardinality && attrCons.cardinality.interval) {
-                return attrCons.cardinality.interval;
-            }
-            var rmTypeName = attrCons[".parent"].rm_type_name;
-            var rmAttribute = referenceModel.getType(rmTypeName).attributes[attrCons.rm_attribute_name];
-            return AmInterval.of(rmAttribute.existence.lower, rmAttribute.existence.upper);
-        };
-
-        self.canAddArchetype = function (cons) {
-            var targetConsMixin = AOM.mixin(cons);
-             var children;
-
-            if (targetConsMixin.isAttribute()) {
-                // is there place for one more child ?
-                var childOccurrences = self.getAttributeChildOccurrences(cons);
-                children = self.getConstraintChildren(cons);
-                return typeof childOccurrences.upper !== "number" || childOccurrences.upper > children.length;
-            } else if (targetConsMixin.isSlot()) {
-                children = self.getConstraintChildren(cons);
-                if (cons.occurrences) {
-                    return typeof cons.occurrences.upper !== "number" || cons.occurrences.upper > children.length;
-                } else {
-                    return true;
+                    var archetypeModel = AOM.createSpecializedArchetype({
+                        archetypeId: createNewOverlayArchetypeId(parentArchetypeModel),
+                        parent: parentArchetypeModel
+                    });
+                    archetypeModel.data.is_overlay = true;
+                    return archetypeModel;
                 }
-            } else {
-                return false;
-            }
-        };
 
-        self.removeConstraint = function (cons) {
-            function removeOrphanArchetypeModels() {
-                do {
-                    var referencedArchetypes = {};
-                    for (var i in archetypeModels) {
-                        my.visitDefinition(archetypeModels[i].data.definition, function (cons) {
-                            if (cons["@type"] === "C_ARCHETYPE_ROOT") {
-                                referencedArchetypes[cons.archetype_ref] = true;
-                            }
-                        });
+                var mixin = AOM.mixin(targetCons);
+                var targetAttribute = targetCons;
+                if (mixin.isSlot()) {
+                    targetAttribute = targetCons[".parent"];
+                }
+
+                var newArchetypeModel = createNewOverlayArchetypeModel(flatParentArchetypeData);
+                enrichArchetypeModelData(newArchetypeModel);
+
+                var newConstraint = AOM.newCArchetypeRoot(
+                    newArchetypeModel.data.definition.rm_type_name,
+                    newArchetypeModel.getArchetypeId(),
+                    mixin.isSlot() ? targetCons.node_id : undefined);
+
+                newArchetypeModel.data.definition[".templateArchetypeRoot"] = newConstraint;
+
+                var targetArchetypeModel = AOM.ArchetypeModel.from(targetAttribute);
+
+                // add constraint to the target attribute and model to the models list
+                targetArchetypeModel.addConstraint(targetAttribute, newConstraint);
+                archetypeModels.push(newArchetypeModel);
+                return newArchetypeModel.data.definition;
+            };
+
+            self.getAttributeChildOccurrences = function (attrCons) {
+                if (attrCons.cardinality && attrCons.cardinality.interval) {
+                    return attrCons.cardinality.interval;
+                }
+                var rmTypeName = attrCons[".parent"].rm_type_name;
+                var rmAttribute = referenceModel.getType(rmTypeName).attributes[attrCons.rm_attribute_name];
+                return AmInterval.of(rmAttribute.existence.lower, rmAttribute.existence.upper);
+            };
+
+            self.canAddArchetype = function (cons) {
+                var targetConsMixin = AOM.mixin(cons);
+                var children;
+
+                if (targetConsMixin.isAttribute()) {
+                    // is there place for one more child ?
+                    var childOccurrences = self.getAttributeChildOccurrences(cons);
+                    children = self.getConstraintChildren(cons);
+                    return typeof childOccurrences.upper !== "number" || childOccurrences.upper > children.length;
+                } else if (targetConsMixin.isSlot()) {
+                    children = self.getConstraintChildren(cons);
+                    if (cons.occurrences) {
+                        return typeof cons.occurrences.upper !== "number" || cons.occurrences.upper > children.length;
+                    } else {
+                        return true;
                     }
+                } else {
+                    return false;
+                }
+            };
 
-                    var removedCount = 0;
-                    var index = 1;
-                    while (index < archetypeModels.length) {
-                        if (!referencedArchetypes[archetypeModels[index].getArchetypeId()]) {
-                            archetypeModels.splice(index, 1);
-                            removedCount++;
-                        } else {
-                            index++;
+            self.removeConstraint = function (cons) {
+                function removeOrphanArchetypeModels() {
+                    do {
+                        var referencedArchetypes = {};
+                        for (var i in archetypeModels) {
+                            my.visitDefinition(archetypeModels[i].data.definition, function (cons) {
+                                if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                                    referencedArchetypes[cons.archetype_ref] = true;
+                                }
+                            });
+                        }
+
+                        var removedCount = 0;
+                        var index = 1;
+                        while (index < archetypeModels.length) {
+                            if (!referencedArchetypes[archetypeModels[index].getArchetypeId()]) {
+                                archetypeModels.splice(index, 1);
+                                removedCount++;
+                            } else {
+                                index++;
+                            }
+                        }
+                    } while (removedCount > 0);
+
+                }
+
+                function removeArchetypeModel(archetypeModel) {
+
+                    for (var i in archetypeModels) {
+                        var candidate = archetypeModels[i];
+                        if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
+                            archetypeModels.splice(Number(i), 1);
                         }
                     }
-                } while (removedCount > 0);
+                    removeOrphanArchetypeModels();
+                }
+
+                if (AOM.mixin(cons).isAttribute()) return;
+                var consArchetypeModel = AOM.ArchetypeModel.from(cons);
+                if (cons[".parent"]) {
+                    return consArchetypeModel.removeConstraint(cons);
+                } else if (cons[".templateArchetypeRoot"]) {
+                    var parentArchetypeRoot = cons[".templateArchetypeRoot"];
+                    var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
+                    //removeArchetypeModel(consArchetypeModel);
+                    var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot);
+                    removeOrphanArchetypeModels();
+                    return result;
+                }
+            };
+
+            self.getConstraintLabel = function (cons, language) {
+                if (cons["@type"] === "C_ATTRIBUTE") return cons.rm_attribute_name;
+                if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                    var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
+                    return refArchetypeModel.getTermDefinitionText(refArchetypeModel.data.definition.node_id, language);
+                } else {
+                    var label = AOM.ArchetypeModel.from(cons).getTermDefinitionText(cons.node_id, language);
+                    if (!label) {
+                        label = cons.rm_type_name;
+                    }
+                    return label;
+                }
+            };
+
+            self.renameConstraint = function (cons, text, language) {
+                var archetypeModel = AOM.ArchetypeModel.from(cons);
+
+                if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                    var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
+                    refArchetypeModel.setTermDefinition(refArchetypeModel.data.definition.node_id, language, text);
+                } else if (cons.node_id !== undefined) {
+                    if (!archetypeModel.isSpecialized(cons)) return;
+                    archetypeModel.setTermDefinition(cons.node_id, language, text);
+                }
+            };
+
+
+            /**
+             * Creates a json representation of the template than can be stored via rest call to /rest/repo/template
+             * @return {object[]} list of archetype data, in serializable form.
+             */
+            self.toSerializableForm = function () {
+                var result = [];
+                for (var i in archetypeModels) {
+                    var archetypeModel = archetypeModels[i];
+                    result.push(AOM.impoverishedClone(archetypeModel.data));
+                }
+                return result;
+            };
+
+            self.getArchetypeLanguageIntersection = function () {
+                var languageSet = AmUtils.listToSet(archetypeModels[0].allLanguages());
+                for (var i = 1; i < archetypeModels.length; i++) {
+                    languageSet = AmUtils.intersectSet(languageSet, AmUtils.listToSet(archetypeModels[i].allLanguages()));
+                }
+                return AmUtils.keys(languageSet);
+            };
+
+            self.canCloneConstraint = function (cons) {
+                var consMixin = AOM.mixin(cons);
+                if (!consMixin.isConstraint()) return false;
+                if (consMixin.isSlot()) return false;
+                if (cons.occurrences && cons.occurrences.upper === 1) return false;
+                if (!cons[".parent"]) return false;
+
+                var archetypeModel = AOM.ArchetypeModel.from(cons);
+                if (!archetypeModel.isSpecialized(cons)) return false;
+
+                return true;
+            };
+
+
+            /**
+             *
+             * @param {AOM.ArchetypeModel} sourceArchetypeModel
+             */
+            function createOverlayArchetypeClone(sourceArchetypeModel) {
+                var sourceData = AOM.impoverishedClone(sourceArchetypeModel.data);
+
+                var archetypeModel = new AOM.ArchetypeModel(sourceData, sourceArchetypeModel.parentArchetypeModel);
+                archetypeModel.data.archetype_id.value = createNewOverlayArchetypeId(sourceArchetypeModel.parentArchetypeModel);
+                archetypeModel.data.is_overlay = true;
+                enrichArchetypeModelData(archetypeModel);
+                return archetypeModel;
 
             }
 
-            function removeArchetypeModel(archetypeModel) {
+            /**
+             * Clones a constraint and adds it to the model
+             * @param {object} consToClone constraint to be cloned
+             * @return {object|false} cloned constraint, or false if constraint cannot be added
+             */
+            self.cloneConstraint = function (consToClone) {
+                if (!self.canCloneConstraint(consToClone)) {
+                    return false;
+                }
 
-                for (var i in archetypeModels) {
-                    var candidate = archetypeModels[i];
-                    if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
-                        archetypeModels.splice(Number(i), 1);
+                function cloneCons(sourceCons, cons) {
+                    // todo clone archetype
+                    var consMixin = AOM.mixin(cons);
+                    if (cons["@type"] === "C_ARCHETYPE_ROOT") {
+                        var sourceSlotArchetypeModel = getArchetypeModel(cons.archetype_ref);
+                        var newArchetypeModel = createOverlayArchetypeClone(sourceSlotArchetypeModel);
+                        newArchetypeModel.data.definition[".templateArchetypeRoot"] = cons;
+
+                        archetypeModels.push(newArchetypeModel);
+                        cons.archetype_ref = newArchetypeModel.getArchetypeId();
+                        cons.node_id = newArchetypeModel.getArchetypeId();
+                        return;
+                    }
+
+                    var archetypeModel = AOM.ArchetypeModel.from(sourceCons);
+                    if (archetypeModel.isSpecialized(cons)) {
+                        cons.node_id = archetypeModel.generateSpecializedTermId(cons.node_id)
+
+                        // copy the value set if needed
+                        if (cons["@type"] === "C_TERMINOLOGY_CODE") {
+                            if (cons.constraint) {
+                                var value_set = archetypeModel.data.terminology.value_sets[cons.constraint];
+                                if (value_set) {
+                                    var newValueSetId = archetypeModel.generateSpecializedTermId(cons.constraint);
+                                    var newValueSet = AmUtils.clone(value_set);
+                                    newValueSet.id = newValueSetId;
+                                    archetypeModel.data.terminology.value_sets[newValueSetId] = newValueSetId;
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (sourceCons.attributes) {
+                        for (var i = 0; i < sourceCons.attributes.length; i++) {
+                            var sourceAttr = sourceCons.attributes[i];
+                            var attr = cons.attributes[i];
+                            if (sourceAttr.children) {
+                                for (var j = 0; j < sourceAttr.children.length; j++) {
+                                    var sourceChildCons = sourceAttr.children[j];
+                                    var childCons = attr.children[j];
+                                    cloneCons(sourceChildCons, childCons);
+                                }
+                            }
+                        }
                     }
                 }
-                removeOrphanArchetypeModels();
-            }
 
-            if (AOM.mixin(cons).isAttribute()) return;
-            var consArchetypeModel = AOM.ArchetypeModel.from(cons);
-            if (cons[".parent"]) {
-                return consArchetypeModel.removeConstraint(cons);
-            } else if (cons[".templateArchetypeRoot"]) {
-                var parentArchetypeRoot = cons[".templateArchetypeRoot"];
-                var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
-                //removeArchetypeModel(consArchetypeModel);
-                var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot);
-                removeOrphanArchetypeModels();
+
+                var archetypeModel = AOM.ArchetypeModel.from(consToClone);
+                var newCons = AOM.impoverishedClone(consToClone);
+                cloneCons(consToClone, newCons);
+                var parent = consToClone[".parent"];
+                archetypeModel.addConstraint(parent, newCons);
+
+                var sourceIndex = parent.children.indexOf(consToClone);
+                if (sourceIndex < 0) throw "topCons is not a member of its parent";
+                var anchorCons = sourceIndex < parent.children.length - 2 ? parent.children[sourceIndex + 1] : undefined;
+                if (anchorCons) {
+                    archetypeModel.moveBefore(newCons, anchorCons);
+                }
+
+                return newCons;
+            };
+
+            function createRmTypesForArchetypesSet() {
+                var archetypeTypes = {};
+                for (var i in archetypeRepository.infoList) {
+                    archetypeTypes[archetypeRepository.infoList[i].rmType] = true;
+                }
+                var result = {};
+                for (var rmType in referenceModel.model.types) {
+                    for (var archetypeRmType in archetypeTypes) {
+                        if (referenceModel.isSubclass(rmType, archetypeRmType, true)) {
+                            result[rmType] = true;
+                            break;
+                        }
+                    }
+                }
                 return result;
             }
+
+
+            // init TemplateModel
+            // a set of all rmTypes that can be filled with an existing archetype
+            var rmTypesForArchetypesSet = createRmTypesForArchetypesSet();
+
+            enrichArchetypeModelsData();
         };
 
-        self.getConstraintLabel = function (cons, language) {
-            if (cons["@type"] === "C_ATTRIBUTE") return cons.rm_attribute_name;
-            if (cons["@type"] === "C_ARCHETYPE_ROOT") {
-                var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
-                return refArchetypeModel.getTermDefinitionText(refArchetypeModel.data.definition.node_id, language);
-            } else {
-                var label = AOM.ArchetypeModel.from(cons).getTermDefinitionText(cons.node_id, language);
-                if (!label) {
-                    label = cons.rm_type_name;
-                }
-                return label;
-            }
-        };
-
-        self.renameConstraint = function (cons, text, language) {
-            var archetypeModel = AOM.ArchetypeModel.from(cons);
-
-            if (cons["@type"] === "C_ARCHETYPE_ROOT") {
-                var refArchetypeModel = getArchetypeModel(cons.archetype_ref);
-                refArchetypeModel.setTermDefinition(refArchetypeModel.data.definition.node_id, language, text);
-            } else if (cons.node_id !== undefined) {
-                if (!archetypeModel.isSpecialized(cons)) return;
-                archetypeModel.setTermDefinition(cons.node_id, language, text);
-            }
+        /**
+         * @param {object} cons Constraint object
+         * @return {AOM.TemplateModel} template model for the given constraint, or undefined
+         */
+        my.TemplateModel.from = function (cons) {
+            while (cons[".parent"]) cons = cons[".parent"];
+            return cons[".templateModel"];
         };
 
 
         /**
-         * Creates a json representation of the template than can be stored via rest call to /rest/repo/template
-         * @return {object[]} list of archetype data, in serializable form.
+         * @param {object} params New template params
+         * @param {AOM.ArchetypeRepository} params.archetypeRepository Archetype repository to use
+         * @param {AOM.ReferenceModel} params.referenceModel Reference model to use
+         * @param {string} params.templateId Template id of the new template
+         * @param {string} params.parentArchetypeId Archetype id of the top level COMPOSITION archetype
+         * @param {function(AOM.TemplateModel)} params.callback callback called when the TemplateModel is created
          */
-        self.toSerializableForm = function () {
-            var result = [];
-            for (var i in archetypeModels) {
-                var archetypeModel = archetypeModels[i];
-                result.push(AOM.impoverishedClone(archetypeModel.data));
-            }
-            return result;
-        };
+        my.TemplateModel.createNew = function (params) {
+            params.archetypeRepository.loadArchetype(params.parentArchetypeId, function (parentData) {
+                var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
 
-        self.getArchetypeLanguageIntersection = function () {
-            var languageSet = AmUtils.listToSet(archetypeModels[0].allLanguages());
-            for (var i = 1; i < archetypeModels.length; i++) {
-                languageSet = AmUtils.intersectSet(languageSet, AmUtils.listToSet(archetypeModels[i].allLanguages()));
-            }
-            return AmUtils.keys(languageSet);
-        };
+                var archetypeModel = AOM.createSpecializedArchetype({
+                    archetypeId: params.templateId,
+                    parent: parentArchetypeModel
+                });
+                archetypeModel.data.is_template = true;
 
-        function createRmTypesForArchetypesSet() {
-            var archetypeTypes = {};
-            for (var i in archetypeRepository.infoList) {
-                archetypeTypes[archetypeRepository.infoList[i].rmType] = true;
-            }
-            var result = {};
-            for (var rmType in referenceModel.model.types) {
-                for (var archetypeRmType in archetypeTypes) {
-                    if (referenceModel.isSubclass(rmType, archetypeRmType, true)) {
-                        result[rmType] = true;
-                        break;
-                    }
-                }
-            }
-            return result;
-        }
-
-
-        // init TemplateModel
-        // a set of all rmTypes that can be filled with an existing archetype
-        var rmTypesForArchetypesSet = createRmTypesForArchetypesSet();
-
-        enrichArchetypeModelsData();
-    };
-
-    /**
-     * @param {object} cons Constraint object
-     * @return {AOM.TemplateModel} template model for the given constraint, or undefined
-     */
-    my.TemplateModel.from = function (cons) {
-
-        while (cons[".parent"]) cons = cons[".parent"];
-        return cons[".templateModel"];
-    };
-
-
-    /**
-     * @param {object} params New template params
-     * @param {AOM.ArchetypeRepository} params.archetypeRepository Archetype repository to use
-     * @param {AOM.ReferenceModel} params.referenceModel Reference model to use
-     * @param {string} params.templateId Template id of the new template
-     * @param {string} params.parentArchetypeId Archetype id of the top level COMPOSITION archetype
-     * @param {function(AOM.TemplateModel)} params.callback callback called when the TemplateModel is created
-     */
-    my.TemplateModel.createNew = function (params) {
-        params.archetypeRepository.loadArchetype(params.parentArchetypeId, function (parentData) {
-            var parentArchetypeModel = new AOM.ArchetypeModel(parentData);
-
-            var archetypeModel = AOM.createSpecializedArchetype({
-                archetypeId: params.templateId,
-                parent: parentArchetypeModel
+                var templateModel = new AOM.TemplateModel([archetypeModel], params.archetypeRepository, params.referenceModel);
+                params.callback(templateModel);
             });
-            archetypeModel.data.is_template = true;
+        };
 
-            var templateModel = new AOM.TemplateModel([archetypeModel], params.archetypeRepository, params.referenceModel);
-            params.callback(templateModel);
-        });
-    };
-
-    /**
-     * Creates a new template model from the serialized form (a list of archetypes). The serialized form is loaded
-     * from template repository or obtained by calling templateModel.toSerializedForm().
-     *
-     * @param params Load template params
-     * @param {AOM.ArchetypeRepository} params.archetypeRepository Archetype repository to use
-     * @param {AOM.ReferenceModel} params.referenceModel Reference model to use
-     * @param {object} params.data serialized form of the template (as loaded from repository)
-     * @param {function(AOM.TemplateModel)} params.callback callback called when the template model is created
-     */
-    my.TemplateModel.createFromSerialized = function (params) {
-        buildArchetypeModels(params.data, params.archetypeRepository, function (archetypeModels) {
-            var templateModel = new AOM.TemplateModel(archetypeModels, params.archetypeRepository, params.referenceModel);
-            params.callback(templateModel);
-        });
-    };
+        /**
+         * Creates a new template model from the serialized form (a list of archetypes). The serialized form is loaded
+         * from template repository or obtained by calling templateModel.toSerializedForm().
+         *
+         * @param params Load template params
+         * @param {AOM.ArchetypeRepository} params.archetypeRepository Archetype repository to use
+         * @param {AOM.ReferenceModel} params.referenceModel Reference model to use
+         * @param {object} params.data serialized form of the template (as loaded from repository)
+         * @param {function(AOM.TemplateModel)} params.callback callback called when the template model is created
+         */
+        my.TemplateModel.createFromSerialized = function (params) {
+            buildArchetypeModels(params.data, params.archetypeRepository, function (archetypeModels) {
+                var templateModel = new AOM.TemplateModel(archetypeModels, params.archetypeRepository, params.referenceModel);
+                params.callback(templateModel);
+            });
+        };
 
 
-    return my;
-}(AOM)
+        return my;
+    }
+    (AOM)
 )
 ;
