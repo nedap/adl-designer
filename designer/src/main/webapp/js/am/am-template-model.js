@@ -502,7 +502,7 @@ AOM = (function (AOM) {
                 var archetypeModel = AOM.ArchetypeModel.from(consToClone);
                 var newCons = AOM.impoverishedClone(consToClone);
                 cloneCons(consToClone, newCons);
-                var parent = consToClone[".parent"];
+                var parent = self.getConstraintParent(consToClone);
                 archetypeModel.addConstraint(parent, newCons);
 
                 var sourceIndex = parent.children.indexOf(consToClone);
@@ -513,6 +513,59 @@ AOM = (function (AOM) {
                 }
 
                 return newCons;
+            };
+
+            self.canMoveBefore = function (cons, anchorCons) {
+                var archetypeModel = AOM.ArchetypeModel.from(cons);
+                if (!AOM.mixin(cons).isConstraint() || !archetypeModel.isSpecialized(cons)) {
+                    return false;
+                }
+
+                if (anchorCons && self.getConstraintParent(anchorCons) !== self.getConstraintParent(cons)) {
+                    return false;
+                }
+
+                return true;
+            };
+
+
+            /**
+             * Moves a constraint cons before a constraint anchorCons. Moving has some limitations:
+             * cons must be specialized, cons must be a constraint, cons and anchorCons
+             * must have the same parent.
+             *
+             * @param {object} cons Constraint to move
+             * @param {object?} anchorCons constraint before which to move. If undefined, move to the end of list
+             * @return {boolean} True if the move was successful
+             */
+            self.moveBefore = function (cons, anchorCons) {
+
+                function moveCArchetypeRoot() {
+                    var parent = self.getConstraintParent(cons);
+                    var consArchetypeRoot = cons[".templateArchetypeRoot"];
+                    var anchorConsArchetypeRoot = anchorCons && anchorCons[".templateArchetypeRoot"];
+                    var consIndexOf = parent.children.indexOf(consArchetypeRoot);
+                    if (consIndexOf < 0) throw "archetype root does not have an anchor";
+                    parent.children.splice(consIndexOf, 1);
+                    if (anchorConsArchetypeRoot) {
+                        var anchorIndexOf = parent.children.indexOf(anchorConsArchetypeRoot);
+                        if (anchorIndexOf < 0) throw "anchor archetype root is not present in cons parent children";
+                        parent.children.splice(anchorIndexOf, 0, consArchetypeRoot);
+                    } else {
+                        parent.children.push(consArchetypeRoot);
+                    }
+                }
+
+
+                if (!self.canMoveBefore(cons, anchorCons)) {
+                    return false;
+                }
+                if (cons[".templateArchetypeRoot"]) {
+                    return moveCArchetypeRoot()
+                } else {
+                    var archetypeModel = AOM.ArchetypeModel.from(cons);
+                    return archetypeModel.moveBefore(cons, anchorCons);
+                }
             };
 
             function createRmTypesForArchetypesSet() {
