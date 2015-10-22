@@ -1166,7 +1166,9 @@ var AOM = (function () {
 
                 self.specializeConstraint = function (cons) {
                     if (self.isSpecialized(cons)) return;
-                    if (my.mixin(cons).isPrimitive()) return; // do not specialize primitive nodes
+                    var mixin = my.mixin(cons);
+                    if (mixin.isPrimitive()) return; // do not specialize primitive nodes
+                    if (mixin.isSlot()) return; // do not specilize slots
 
                     var originalNodeId = cons.node_id;
                     var specializedNodeId = self.generateSpecializedTermId(cons.node_id || "id");

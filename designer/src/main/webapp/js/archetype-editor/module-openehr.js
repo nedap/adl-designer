@@ -1183,7 +1183,7 @@
                         var value = {
                             active: true,
                             value: tuple["value"].constraint[0],
-                            term_id: tuple["symbol"].constraint[0],
+                            term_id: tuple["symbol"].constraint,
                             term: term
                         };
                         context.values.push(value);
@@ -1243,7 +1243,7 @@
                             for (var i in context.values) {
                                 var contextValue = context.values[i];
                                 activeValuesOptions.items.push({
-                                    label: contextValue.value + ": " + stage.archetypeModel.getTermDefinitionText(contextValue.term_id, stage.language),
+                                    label: contextValue.term.text + ": " + stage.archetypeModel.getTermDefinitionText(contextValue.term_id, stage.language),
                                     checked: contextValue.active,
                                     code: contextValue.term_id
                                 });
