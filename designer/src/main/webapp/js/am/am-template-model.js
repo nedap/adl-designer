@@ -163,7 +163,7 @@ AOM = (function (AOM) {
 
                     function getParentSlot(slotIdToSlot, archetypeRootCons) {
                         for (var slotId in slotIdToSlot) {
-                            if (my.nodeIdMatches(archetypeRootCons.node_id, slotId, {matchParent: true})) {
+                            if (my.nodeIdMatches(slotId, archetypeRootCons.node_id, {matchParent: true})) {
                                 return slotIdToSlot[slotId];
                             }
                         }
@@ -357,17 +357,6 @@ AOM = (function (AOM) {
 
                 }
 
-                function removeArchetypeModel(archetypeModel) {
-
-                    for (var i in archetypeModels) {
-                        var candidate = archetypeModels[i];
-                        if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
-                            archetypeModels.splice(Number(i), 1);
-                        }
-                    }
-                    removeOrphanArchetypeModels();
-                }
-
                 if (AOM.mixin(cons).isAttribute()) return;
                 var consArchetypeModel = AOM.ArchetypeModel.from(cons);
                 if (cons[".parent"]) {
@@ -375,8 +364,7 @@ AOM = (function (AOM) {
                 } else if (cons[".templateArchetypeRoot"]) {
                     var parentArchetypeRoot = cons[".templateArchetypeRoot"];
                     var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
-                    //removeArchetypeModel(consArchetypeModel);
-                    var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot);
+                    var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot, true);
                     removeOrphanArchetypeModels();
                     return result;
                 }
@@ -477,7 +465,7 @@ AOM = (function (AOM) {
 
                         archetypeModels.push(newArchetypeModel);
                         cons.archetype_ref = newArchetypeModel.getArchetypeId();
-                        cons.node_id = newArchetypeModel.getArchetypeId();
+                        //cons.node_id = newArchetypeModel.getArchetypeId();
                         return;
                     }
 
