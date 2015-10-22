@@ -135,13 +135,13 @@ AOM = (function (AOM) {
 
             self.getConstraintParent = function (cons) {
                 function findArchetypeSlot(archetypeRoot) {
-                    if (!archetypeRoot.slot_node_id) return null;
+                    if (!archetypeRoot.node_id) return null;
 
                     var parentAttr = archetypeRoot[".parent"];
                     for (var i in parentAttr.children) {
                         var consChild = parentAttr.children[i];
                         if (consChild["@type"] === "ARCHETYPE_SLOT") {
-                            if (my.nodeIdMatches(archetypeRoot.slot_node_id, consChild.node_id, {matchParent: true})) {
+                            if (my.nodeIdMatches(archetypeRoot.node_id, consChild.node_id, {matchParent: true})) {
                                 return consChild;
                             }
                         }
@@ -160,12 +160,31 @@ AOM = (function (AOM) {
 
             self.getConstraintChildren = function (cons) {
                 function constraintChildren(children) {
+
+                    function getParentSlot(slotIdToSlot, archetypeRootCons) {
+                        for (var slotId in slotIdToSlot) {
+                            if (my.nodeIdMatches(archetypeRootCons.node_id, slotId, {matchParent: true})) {
+                                return slotIdToSlot[slotId];
+                            }
+                        }
+                        return null;
+                    }
+
+                    var slotIdToSlot={};
+                    children.forEach(function(cons) {
+                        if (cons["@type"]==="ARCHETYPE_SLOT") {
+                            slotIdToSlot[cons.node_id]=cons;
+                        }
+                    });
+
+
+
                     var result = [];
                     for (var i in children) {
                         var consChild = children[i];
                         var amType = consChild["@type"];
                         if (amType === "C_ARCHETYPE_ROOT") {
-                            if (consChild.slot_node_id === undefined) {
+                            if (!getParentSlot(slotIdToSlot, consChild)) {
                                 // only show the archetype_root if it is directly under attribute, instead of under slot
                                 result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
                             }
@@ -183,7 +202,7 @@ AOM = (function (AOM) {
                     for (var i in parentAttrCons.children) {
                         var consChild = parentAttrCons.children[i];
                         if (consChild["@type"] === "C_ARCHETYPE_ROOT") {
-                            if (my.nodeIdMatches(consChild.slot_node_id, cons.node_id, {matchSpecialized: true})) {
+                            if (my.nodeIdMatches(consChild.node_id, cons.node_id, {matchSpecialized: true})) {
                                 result.push(getArchetypeModel(consChild.archetype_ref).data.definition);
                             }
                         }
@@ -258,23 +277,23 @@ AOM = (function (AOM) {
                     return archetypeModel;
                 }
 
+                var targetArchetypeModel = AOM.ArchetypeModel.from(targetCons);
                 var mixin = AOM.mixin(targetCons);
-                var targetAttribute = targetCons;
-                if (mixin.isSlot()) {
-                    targetAttribute = targetCons[".parent"];
-                }
+                var targetAttribute = mixin.isSlot() ? targetCons[".parent"] : targetCons;
 
                 var newArchetypeModel = createNewOverlayArchetypeModel(flatParentArchetypeData);
                 enrichArchetypeModelData(newArchetypeModel);
 
                 var newConstraint = AOM.newCArchetypeRoot(
                     newArchetypeModel.data.definition.rm_type_name,
-                    newArchetypeModel.getArchetypeId(),
-                    mixin.isSlot() ? targetCons.node_id : undefined);
+                    mixin.isSlot() ?
+                        targetArchetypeModel.generateSpecializedTermId(targetCons.node_id) :
+                        targetArchetypeModel.generateSpecializedTermId("id"),
+                    newArchetypeModel.getArchetypeId()
+                );
 
                 newArchetypeModel.data.definition[".templateArchetypeRoot"] = newConstraint;
 
-                var targetArchetypeModel = AOM.ArchetypeModel.from(targetAttribute);
 
                 // add constraint to the target attribute and model to the models list
                 targetArchetypeModel.addConstraint(targetAttribute, newConstraint);

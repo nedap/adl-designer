@@ -187,13 +187,12 @@ AOM = (function (AOM) {
         return result;
     };
 
-    my.newCArchetypeRoot = function (rm_type, node_id, slot_node_id) {
+    my.newCArchetypeRoot = function (rm_type, node_id, archetype_ref) {
         var result = {
             "@type": "C_ARCHETYPE_ROOT",
             rm_type_name: rm_type,
             node_id: node_id,
-            archetype_ref: node_id,
-            slot_node_id: slot_node_id,
+            archetype_ref: archetype_ref,
             occurrences: AmInterval.of(0, 1, "MULTIPLICITY_INTERVAL")
         };
         return result;
