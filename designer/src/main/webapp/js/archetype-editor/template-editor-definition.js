@@ -511,7 +511,7 @@
 
                     };
                     var context = rmTypeHandler.createContext(stage, cons, parentCons);
-                    console.log(context);
+
                 }
                 if (!archetypeModel.isSpecialized(cons)) return label;
 
@@ -948,8 +948,6 @@
                 var jsonTreeRoot = buildTreeJson(templateModel.getRootArchetypeModel().data.definition, showStructure);
                 var jsonTreeTarget = [jsonTreeRoot];
                 styleJson(jsonTreeTarget);
-                var oldnode;
-                var lastSelected;
                 targetElement.empty();
                 targetElement.jstree("destroy");
                 targetElement.jstree(
@@ -968,13 +966,7 @@
                                         console.log(err);
                                         return false;
                                     }
-                                   /* console.log(cons);
-                                    console.log(anchorCons);*/
                                     if(typeof cons != 'undefined' && typeof anchorCons != 'undefined'){
-                                        console.log("entered");
-                                        console.log(cons);
-                                        console.log(anchorCons);
-
                                         return templateModel.canMoveBefore(cons,anchorCons);
                                     }
                                     return false;
@@ -990,19 +982,23 @@
                             "contextmenu", "dnd", "search",
                             "state", "types", "wholerow"
                         ],
+                        "search": {
+                            "case_insensitive": true,
+                            "show_only_matches" : true
+                        },
                         "contextmenu":{
                             "items": customMenu
                         },
+
                     })
                     .on('loaded.jstree', function () {
+                        $(".search-input").keyup(function() {
+                            var searchString = $(this).val();
+                            $('.treejsc').jstree('search', searchString);
+                        });
                         targetElement.jstree('open_all');
                         var superRootNode = targetElement.jstree('get_node', '#');
                         targetElement.jstree('select_node', superRootNode.children[0]);
-                        /*$(".treejsc a").hover(
-                            function(){
-                                $('.treejsc').jstree("show_contextmenu", $(this));
-                            }
-                        );*/
                         if (callback) {
                             callback();
                         }
@@ -1044,7 +1040,7 @@
 
                     })
                     .on("deselect_all.jstree", function(e, treeEvent){
-                        //alert("Q");
+
                         $('.openC').remove();
                         $('.movertb').remove();
 
@@ -1052,32 +1048,14 @@
                     on("move_node.jstree", function(node, parent){
 
                         var treeNode = self.targetElement.jstree('get_node', parent.old_parent);
-
-
-                        console.log(node);
-                        console.log(parent);
-
-
                         var cons = treeData[treeNode.children[parent["position"]]].cons;
                         var anchorCons = treeData[treeNode.children[parent["old_position"]]].cons;
-                    /*    console.log(cons);
-                        console.log(anchorCons);*/
                         if(typeof cons != 'undefined' && typeof anchorCons != 'undefined') {
 
                             templateModel.moveBefore(cons, anchorCons);
                         }
 
                     })
-                   /* .on("hover_node.jstree", function(e, treeEvent){
-                        //$('#'+treeEvent.node.id+'_anchor').append("<button style='heigth: 5px; width: 5px' class='btn-sm movertb'><span class='glyphicon glyphicon-plus'></span></button>");
-                        createToolbar(treeEvent);
-
-                    })
-                    .on("dehover_node.jstree", function(e, treeEvent){
-                        $('.movertb').remove();
-
-
-                    });*/
 
                 var oldnode;
                 var ctr = 0;
@@ -1095,14 +1073,14 @@
 
                     if($('#'+treeEvent.node.id+'_anchor')[0].innerHTML.indexOf('openC') === -1){
                         $('#'+treeEvent.node.id+'_anchor').append(
-                            "<span class='openC'><span class='glyphicon glyphicon-chevron-right'></span></span>")
+                            "<span class='openC'><span class='glyphicon glyphicon-chevron-left'></span></span>")
                     }
 
 
                         if(state)
-                        $('.openC')[0].innerHTML = '<span class="glyphicon glyphicon-chevron-left"></span>';
+                        $('.openC')[0].innerHTML = ' <span class="glyphicon glyphicon-chevron-right"></span>';
                         else
-                        $('.openC')[0].innerHTML = '<span class="glyphicon glyphicon-chevron-right"></span>';
+                        $('.openC')[0].innerHTML = ' <span class="glyphicon glyphicon-chevron-left"></span>';
 
 
                     if(!state){
@@ -1117,7 +1095,7 @@
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary prohibToolbar'> Prohibit</span>" +
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary unprohibToolbar'> Unprohibit</span>" +
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary renameToolbar'><span class='glyphicon glyphicon-edit'></span> Rename</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary cloneToolbar'><span class='glyphicon glyphicon-plus'></span> Clone</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary cloneToolbar'><span class='fa fa-clone'></span> Clone</span>" +
                             "</span>");
                     }
 
@@ -1128,13 +1106,12 @@
                     var templateModel = AOM.TemplateModel.from(cons);
                     if (!templateModel.canAddArchetype(cons)){
                         $('.addArc').prop('disabled', true);
-                        //$('#addArche').unbind('click').hide();
                         $(document).off('click', '#addArche');
                         $('.addArche').hide();
-                        //$('#addArcheq').unbind('click').hide();
+
                     }
                     else{
-                        //$('#addArche').unbind('click').click(function() { info.tree.addArchetype() });
+
                         $(document).off('click', '.addArche').on('click', '.addArche', function() { info.tree.addArchetype() });
                         $('.addArche').show();
                         $('.addArc').prop('disabled', false);
@@ -1252,24 +1229,14 @@
                             }
                         },
                         cloneItem: { // The "Clone" menu item
-                            label: "Clone ?",
+                            label: "Clone",
                             "separator_before": true,
                             action: function()
                             {
-                                console.log(node);
-                                //var t = templateModel.getConstraintParent();
                                templateModel.cloneConstraint(treeData[node.id].cons);
-                                self.createTree();
-                                /*$(".treejsc").jstree("copy");
-                                $(".treejsc").jstree("select_node","#"+node.parent);
-                                $(".treejsc").jstree("paste");
-                                $(".treejsc").jstree("deselect_node","#"+node.parent)
-                                $(".treejsc").jstree("deselect_node", "#"+node.id)
-                                $(".treejsc").jstree("select_node","#copy_"+node.id);*/
-                                //var parentNode = $('.treejsc').('select');
-                               // console.log(treeData[node.id]);
-                                //console.log(node.id);
-                            }
+                               self.createTree();
+                            },
+                            icon: false
                         }
                     };
 

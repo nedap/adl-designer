@@ -163,9 +163,12 @@ var TemplateEditor = (function () {
 
     my.saveCurrentTemplateWithNotification = function () {
         my.saveCurrentTemplate(function () {
-            GuiUtils.alert({type: 'success', title: 'Template Saved'});
+            //GuiUtils.alert({type: 'success', title: 'Template Saved'});
+
+           toastr.success("Template saved", "",{positionClass: "toast-bottom-full-width"})
         }, function (status) {
-            GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
+            toastr.error("Error saving template", "",{positionClass: "toast-bottom-full-width"})
+            //GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
         })
     };
 
