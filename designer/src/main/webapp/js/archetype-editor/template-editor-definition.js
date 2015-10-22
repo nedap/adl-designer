@@ -1085,6 +1085,7 @@
                 function createToolbar(treeEvent, state){
 
                     if(oldnode != treeEvent.node.id)
+
                     ctr = 0;
                     if($('#'+treeEvent.node.id+'_anchor')[0].innerHTML.indexOf('movertb') != -1)
                     return;
@@ -1116,12 +1117,12 @@
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary prohibToolbar'> Prohibit</span>" +
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary unprohibToolbar'> Unprohibit</span>" +
                                 "<span style='margin-left: 10px' class='btn-sm btn-primary renameToolbar'><span class='glyphicon glyphicon-edit'></span> Rename</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary Clone'><span class='glyphicon glyphicon-plus'></span> Clone</span>" +
+                                "<span style='margin-left: 10px' class='btn-sm btn-primary cloneToolbar'><span class='glyphicon glyphicon-plus'></span> Clone</span>" +
                             "</span>");
                     }
 
 
-                    console.log($('#'+treeEvent.node.id+'_anchor')[0].innerHTML.indexOf('openC') === -1)
+
                     //
                     var cons = data.cons||data.attr;
                     var templateModel = AOM.TemplateModel.from(cons);
@@ -1168,7 +1169,11 @@
                         info.tree.renameConstraint();
                     });
 
-                    $('.cloneToolbar').unbind('click').click(function() { toastr.info("not implemeted") });
+                    $('.cloneToolbar').unbind('click').click(function() {
+                        templateModel.cloneConstraint(cons);
+                        self.createTree(); });
+                    $('.cloneToolbar').show();
+                    $('.renameToolbar').show();
 
                     $('.unprohibToolbar').unbind('click').click(function() {
                         self.SpecializeAndProhibit(treeEvent.node,'unprohibit');
@@ -1194,6 +1199,12 @@
                             $('.unprohibToolbar').hide();
                             $('.prohibToolbar').show();
                         }
+                    }
+                    else if(cons["@type"]=='ARCHETYPE_SLOT' || cons["@type"] == "C_ATTRIBUTE"){
+                        $('.unprohibToolbar').hide();
+                        $('.prohibToolbar').hide();
+                        $('.renameToolbar').hide();
+                        $('.cloneToolbar').hide();
                     }
                     else{
                         $('.unprohibToolbar').hide();
@@ -1236,7 +1247,6 @@
                             label: "Prohibit",
                             action: function()
                             {
-
                                 self.SpecializeAndProhibit(node,'prohibit');
                                 styleNodeJson(node);
                             }
@@ -1333,7 +1343,6 @@
                                 if(treeData[node].cons.occurrences.upper === 0 && treeData[node].cons.occurrences.lower === 0)
                                 ProhibitedIDs.push(node);
                             }
-
                 }
                 if(status){
                     for(var i=0; i<ProhibitedIDs.length; i++)
@@ -1348,7 +1357,6 @@
                         instance.hide_node(ProhibitedIDs[i]);
                     }
                 }
-
             }
 
             self.changeShowStructure = function (showStructure) {
