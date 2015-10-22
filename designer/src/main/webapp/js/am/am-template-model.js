@@ -416,7 +416,7 @@ AOM = (function (AOM) {
                 if (!consMixin.isConstraint()) return false;
                 if (consMixin.isSlot()) return false;
                 if (cons.occurrences && cons.occurrences.upper === 1) return false;
-                if (!cons[".parent"]) return false;
+                if (!self.getConstraintParent(cons)) return false;
 
                 var archetypeModel = AOM.ArchetypeModel.from(cons);
                 if (!archetypeModel.isSpecialized(cons)) return false;

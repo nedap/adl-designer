@@ -974,8 +974,8 @@
                                         console.log("entered");
                                         console.log(cons);
                                         console.log(anchorCons);
-                                        var archetypeModel = AOM.ArchetypeModel.from(cons);
-                                        return archetypeModel.moveBeforeChecker(cons,anchorCons);
+
+                                        return templateModel.canMoveBefore(cons,anchorCons);
                                     }
                                     return false;
 
@@ -1063,8 +1063,8 @@
                     /*    console.log(cons);
                         console.log(anchorCons);*/
                         if(typeof cons != 'undefined' && typeof anchorCons != 'undefined') {
-                            var archetypeModel = AOM.ArchetypeModel.from(cons);
-                            archetypeModel.moveBefore(cons, anchorCons);
+
+                            templateModel.moveBefore(cons, anchorCons);
                         }
 
                     })
@@ -1123,8 +1123,9 @@
 
                     console.log($('#'+treeEvent.node.id+'_anchor')[0].innerHTML.indexOf('openC') === -1)
                     //
-                    var templateModel = AOM.TemplateModel.from(data.cons);
-                    if (!templateModel.canAddArchetype(data.cons)){
+                    var cons = data.cons||data.attr;
+                    var templateModel = AOM.TemplateModel.from(cons);
+                    if (!templateModel.canAddArchetype(cons)){
                         $('.addArc').prop('disabled', true);
                         //$('#addArche').unbind('click').hide();
                         $(document).off('click', '#addArche');
@@ -1139,7 +1140,7 @@
                     }
 
 
-                        if(data.cons[".templateArchetypeRoot"]){
+                        if(cons[".templateArchetypeRoot"]){
                         $('#deleteArcheToolbar').unbind('click').click(function() { info.tree.removeConstraint() }).text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
                         $('.deleteArche').click(function() { info.tree.removeConstraint()}).show();
                         $('#editArcheToolbar').unbind('click').click(function() {
@@ -1157,7 +1158,7 @@
                         $('#deleteArcheToolbar').hide();
                         $('#editArcheToolbar').unbind('click').hide();
                     }
-                    if(data.cons.rm_type_name == 'ELEMENT')
+                    if(cons.rm_type_name == 'ELEMENT')
                         $('#deleteArcheToolbar').show().text("").append("<span class='glyphicon glyphicon-refresh'></span> Reset to Default")
                     //$('#deleteToolbar').unbind('click').click(function() { info.tree.removeConstraint() });
 
@@ -1184,8 +1185,8 @@
                         $('.prohibToolbar').hide();
                     })
 
-                    if(data.cons.occurrences) {
-                        if(data.cons.occurrences.lower === 0 && data.cons.occurrences.upper === 0){
+                    if(cons.occurrences) {
+                        if(cons.occurrences.lower === 0 && cons.occurrences.upper === 0){
                             $('.unprohibToolbar').show();
                             $('.prohibToolbar').hide();
                         }
@@ -1245,9 +1246,19 @@
                             "separator_before": true,
                             action: function()
                             {
+                                console.log(node);
+                                //var t = templateModel.getConstraintParent();
+                               templateModel.cloneConstraint(treeData[node.id].cons);
+                                self.createTree();
+                                /*$(".treejsc").jstree("copy");
+                                $(".treejsc").jstree("select_node","#"+node.parent);
+                                $(".treejsc").jstree("paste");
+                                $(".treejsc").jstree("deselect_node","#"+node.parent)
+                                $(".treejsc").jstree("deselect_node", "#"+node.id)
+                                $(".treejsc").jstree("select_node","#copy_"+node.id);*/
                                 //var parentNode = $('.treejsc').('select');
-                                console.log(treeData[node.id]);
-                                console.log(node.id);
+                               // console.log(treeData[node.id]);
+                                //console.log(node.id);
                             }
                         }
                     };
