@@ -275,6 +275,9 @@
                     // add global handlers
                     if (!specialized) {
                         var dataElements = targetElement.find(".data");
+                        $('.data').children().css('background-color','#dddddd');
+                        targetElement.prop("disabled", true);
+                        targetElement.css('background-color','#dddddd');
                         dataElements.prop("disabled", true);
                         saveButton.prop('disabled', true);
                     }
@@ -528,6 +531,7 @@
                         }
                     }
                 }
+                currentLanguage = language;
 
                 var treeRoot = info.tree.targetElement.jstree('get_node', '#');
                 var node = info.tree.targetElement.jstree('get_node', treeRoot.children[0]);
@@ -536,7 +540,6 @@
                 info.tree.targetElement.jstree('redraw', true);
                 info.toolbar.languageSelect.val(language);
 
-                currentLanguage = language;
             };
 
 
@@ -607,9 +610,7 @@
                         cons: cons
                     };
 
-                    if (!consJson.text) {
-                        consJson.text = self.extractConstraintName(cons, currentLanguage);
-                    }
+                    consJson.text = self.extractConstraintName(cons, currentLanguage);
 
                     // only add attributes if no custom handler for this type
                     if (!ArchetypeEditor.getRmTypeHandler(cons)) {
@@ -857,7 +858,12 @@
                         'multiple': false,
                         'check_callback': true
 
-                    }
+                    },
+                    "plugins" : [
+                        "contextmenu", "dnd", "search",
+                        "state", "types", "wholerow"
+                    ],
+
                 }).on('loaded.jstree', function () {
                     targetElement.jstree('open_all');
                     var superRootNode = targetElement.jstree('get_node', '#');

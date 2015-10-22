@@ -229,6 +229,7 @@ select.big-lines > option {
 
 .show-scrollbar {
 	overflow: auto;
+    max-height: 70%!important;
 }
 
 .tab-pane.panel {
@@ -409,7 +410,9 @@ a.definition-tree-node.specialized.prohibited {
     color: black !important;
     text-decoration: line-through;
 }
-
+.prohibToolbar, .unprohibToolbar{
+    text-decoration: none!important;
+}
 pre.display {
     width: 100%;
     height: 100%;
