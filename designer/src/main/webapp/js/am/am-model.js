@@ -1437,6 +1437,28 @@ var AOM = (function () {
                     } else {
                         parentAttr.children.push(cons);
                     }
+                    toastr.success("Reorder successful!");
+                    return true;
+
+                };
+                self.moveBeforeChecker = function(cons, anchorCons){
+                    if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
+                        console.error("Only specialized constraints can be moved");
+                        toastr.error("Only specialized constraints can be moved");
+                        return false;
+                    }
+
+                    if (anchorCons && anchorCons[".parent"] !== cons[".parent"]) {
+                        console.error("Can only move before a constraint on the same level");
+                        toastr.error("You can only move constraints on the same level");
+                        return false;
+                    }
+
+                  /*  if (!self.isSpecialized(cons[".parent"])) {
+                        console.error("Can only move constraints on a specialized parent");
+                        toastr.error("You can only move constraints which are on a specialized parent");
+                        return false;
+                    }*/
                     return true;
 
                 };

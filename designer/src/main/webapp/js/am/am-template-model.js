@@ -357,17 +357,30 @@ AOM = (function (AOM) {
 
                 }
 
+                function removeArchetypeModel(archetypeModel) {
+
+                    for (var i in archetypeModels) {
+                        var candidate = archetypeModels[i];
+                        if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
+                            archetypeModels.splice(Number(i), 1);
+                        }
+                    }
+                    removeOrphanArchetypeModels();
+                }
+
                 if (AOM.mixin(cons).isAttribute()) return;
                 var consArchetypeModel = AOM.ArchetypeModel.from(cons);
                 if (cons[".parent"]) {
-                    return consArchetypeModel.removeConstraint(cons);
+                    return consArchetypeModel.removeConstraint(cons, cons[".clone"]);
                 } else if (cons[".templateArchetypeRoot"]) {
                     var parentArchetypeRoot = cons[".templateArchetypeRoot"];
                     var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
+                    //removeArchetypeModel(consArchetypeModel);
                     var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot, true);
                     removeOrphanArchetypeModels();
                     return result;
                 }
+
             };
 
             self.getConstraintLabel = function (cons, language) {
@@ -465,7 +478,6 @@ AOM = (function (AOM) {
 
                         archetypeModels.push(newArchetypeModel);
                         cons.archetype_ref = newArchetypeModel.getArchetypeId();
-                        //cons.node_id = newArchetypeModel.getArchetypeId();
                         return;
                     }
 
@@ -506,20 +518,24 @@ AOM = (function (AOM) {
                     }
                 }
 
+                var actualConsToClone = consToClone[".templateArchetypeRoot"] || consToClone;
 
-                var archetypeModel = AOM.ArchetypeModel.from(consToClone);
-                var newCons = AOM.impoverishedClone(consToClone);
-                cloneCons(consToClone, newCons);
-                var parent = self.getConstraintParent(consToClone);
+                var archetypeModel = AOM.ArchetypeModel.from(actualConsToClone);
+                var newCons = AOM.impoverishedClone(actualConsToClone);
+                cloneCons(actualConsToClone, newCons);
+                var parent = self.getConstraintParent(actualConsToClone);
                 archetypeModel.addConstraint(parent, newCons);
 
-                var sourceIndex = parent.children.indexOf(consToClone);
+                var sourceIndex = parent.children.indexOf(actualConsToClone);
                 if (sourceIndex < 0) throw "topCons is not a member of its parent";
                 var anchorCons = sourceIndex < parent.children.length - 2 ? parent.children[sourceIndex + 1] : undefined;
                 if (anchorCons) {
                     archetypeModel.moveBefore(newCons, anchorCons);
                 }
-
+                if (consToClone[".templateArchetypeRoot"]) {
+                    newCons = getArchetypeModel(newCons.archetype_ref).data.definition;
+                }
+                newCons[".clone"]=true;
                 return newCons;
             };
 
