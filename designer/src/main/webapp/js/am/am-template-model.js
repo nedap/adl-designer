@@ -279,6 +279,10 @@ AOM = (function (AOM) {
                     delete archetypeModel.data.description;
                     delete archetypeModel.data.original_language;
                     delete archetypeModel.data.translations;
+                    delete archetypeModel.data.adl_version;
+                    delete archetypeModel.data.rm_release;
+                    delete archetypeModel.data.is_generated;
+                    delete archetypeModel.data.other_metadata;
                     return archetypeModel;
                 }
 
