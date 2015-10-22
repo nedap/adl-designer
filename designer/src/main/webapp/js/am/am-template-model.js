@@ -274,6 +274,11 @@ AOM = (function (AOM) {
                         parent: parentArchetypeModel
                     });
                     archetypeModel.data.is_overlay = true;
+                    delete archetypeModel.data.concept;
+                    delete archetypeModel.data.concept;
+                    delete archetypeModel.data.description;
+                    delete archetypeModel.data.original_language;
+                    delete archetypeModel.data.translations;
                     return archetypeModel;
                 }
 
