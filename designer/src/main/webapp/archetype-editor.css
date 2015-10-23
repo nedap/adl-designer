@@ -586,6 +586,7 @@ ul.dropdown-menu-form {
     border-top: 3px solid #3c8dbc!important;
 }
 .openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
+.openehr-rm-icon.archetype_slot { background: url("images/icons/archetype_slot.png") no-repeat !important; }
 .openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }
 .openehr-rm-icon.admin_entry { background: url("images/icons/admin_entry.png") no-repeat !important; }
 .openehr-rm-icon.admin_entry.slot { background: url("images/icons/admin_entry_slot.png") no-repeat !important; }

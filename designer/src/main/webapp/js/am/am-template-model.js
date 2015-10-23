@@ -548,6 +548,8 @@ AOM = (function (AOM) {
                 if (anchorCons && self.getConstraintParent(anchorCons) !== self.getConstraintParent(cons)) {
                     return false;
                 }
+                if(cons[".parent"]!=anchorCons[".parent"])
+                    return false;
 
                 return true;
             };

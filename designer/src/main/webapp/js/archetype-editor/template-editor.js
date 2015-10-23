@@ -53,7 +53,7 @@ var TemplateEditor = (function () {
                         callback: function (content) {
                             var templateId = templateIdSelect.val();
                             $.getJSON("rest/repo/template/" + encodeURIComponent(templateId)).success(function (templateData) {
-                                //alert ("Loaded template: " + templateId);
+                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"})
                                 AOM.TemplateModel.createFromSerialized({
                                     archetypeRepository: my.archetypeRepository,
                                     referenceModel: my.referenceModel,

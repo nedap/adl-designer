@@ -18,79 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//function tryq(){
-//
-//    function archetypes()
-//    {
-//
-//            var list = [];
-//            for(var i=0; i<TemplateEditor.archetypeRepository.infoList.length; i++)
-//            {
-//                var archetypeId = TemplateEditor.archetypeRepository.infoList[i].archetypeId;
-//                list.push(archetypeId);
-//            }
-//
-//            return list;
-//    }
-//    $('#testTree').jstree(
-//        {
-//            'core': {
-//                'data': archetypes(),
-//
-//                'check_callback': true
-//
-//            },
-//            "plugins" : [
-//                "contextmenu", "dnd", "search",
-//                "state", "types", "wholerow",'crrm','html_data'
-//            ],
-//            "dnd" : {
-//                "always_copy": true
-//
-//            },
-//
-//            "search": {
-//
-//                "case_insensitive": true,
-//                "show_only_matches" : true
-//
-//
-//            },
-//
-//            //'types' : {
-//            //        'default' : {
-//            //            'icon' : {
-//            //                'image' : 'glyphicon glyphicon-plus'
-//            //            },
-//            //            'valid_children' : 'default'
-//            //        }
-//            //    }
-//
-//
-//        }).on('copy_node.jstree', function(e,h){
-//            console.log("Moved.....................");
-//        })
-//
-//    $(document).on('dnd_start.vakata',function(event,data) {
-//            //console.log("Moving.........");
-//            //console.log(event);
-//            //console.log(data);
-//        })
-//        .on('dnd_stop.vakata', function(event, data) {
-//            //console.log("Stopping...")
-//            //console.log(event);
-//            //console.log(data);
-//        })
-//
-//
-//    $(".search-input").keyup(function() {
-//
-//        var searchString = $(this).val();
-//
-//        $('#testTree').jstree('search', searchString);
-//    });
-//
-//}
+
 (function (TemplateEditor) {
     TemplateEditor.Definition = function () {
         var my = {};
@@ -379,7 +307,7 @@
                 }
 
                 var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
-                var prohibitCheckbox = footerDiv.find('#' + footerContext.footer_id + '_prohibit')
+
                 disableIfSpecialized();
                 setTimeout(disableIfSpecialized, 100);
 
@@ -678,7 +606,10 @@
                         treeNodeJson.icon += " slot";
                     }
                 }
-
+                else{
+                    if(cons.rm_attribute_name && templateModel.canAddArchetype(cons))
+                        treeNodeJson.icon = "openehr-rm-icon archetype_slot";
+                }
                 treeNodeJson.a_attr = treeNodeJson.a_attr || {};
                 treeNodeJson.a_attr.class = 'definition-tree-node ' + (isAttr ? 'attribute' : 'constraint');
                 if (isSpecialized) {
@@ -967,6 +898,8 @@
                                         return false;
                                     }
                                     if(typeof cons != 'undefined' && typeof anchorCons != 'undefined'){
+                                        console.log(cons);
+                                        console.log(anchorCons);
                                         return templateModel.canMoveBefore(cons,anchorCons);
                                     }
                                     return false;
@@ -1047,6 +980,8 @@
                     }).
                     on("move_node.jstree", function(node, parent){
 
+
+
                         var treeNode = self.targetElement.jstree('get_node', parent.old_parent);
                         var cons = treeData[treeNode.children[parent["position"]]].cons;
                         var anchorCons = treeData[treeNode.children[parent["old_position"]]].cons;
@@ -1073,14 +1008,14 @@
 
                     if($('#'+treeEvent.node.id+'_anchor')[0].innerHTML.indexOf('openC') === -1){
                         $('#'+treeEvent.node.id+'_anchor').append(
-                            "<span class='openC'><span class='glyphicon glyphicon-chevron-left'></span></span>")
+                            "<span class='openC'><span class='fa fa-chevron-left'></span></span>")
                     }
 
 
                         if(state)
-                        $('.openC')[0].innerHTML = ' <span class="glyphicon glyphicon-chevron-right"></span>';
+                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-right"></span>';
                         else
-                        $('.openC')[0].innerHTML = ' <span class="glyphicon glyphicon-chevron-left"></span>';
+                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-left"></span>';
 
 
                     if(!state){
@@ -1090,12 +1025,13 @@
                         $('#'+treeEvent.node.id+'_anchor').append(
 
                             " <span class='movertb'>" +
-                                "<span style='margin-left: 30px' class='btn-sm btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
-                                "<span style='margin-left: 30px; display: none' class='btn-sm btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary prohibToolbar'> Prohibit</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary unprohibToolbar'> Unprohibit</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary renameToolbar'><span class='glyphicon glyphicon-edit'></span> Rename</span>" +
-                                "<span style='margin-left: 10px' class='btn-sm btn-primary cloneToolbar'><span class='fa fa-clone'></span> Clone</span>" +
+                                "<span style='margin-left: 30px' class='btn btn-xs btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
+                                "<span style='margin-left: 30px; display: none' class='btn-xs btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
+                                "<span style='margin-left: 10px' class='btn btn-xs btn-primary prohibToolbar'> Prohibit</span>" +
+                                "<span style='margin-left: 10px' class='btn btn-xs btn-primary unprohibToolbar'> Unprohibit</span>" +
+                                "<span style='margin-left: 10px' class='btn btn-xs btn-primary renameToolbar'><span class='fa fa-pencil-square-o'></span> Rename</span>" +
+                                "<span style='margin-left: 10px' class='btn btn-xs btn-primary cloneToolbar'><span class='fa fa-clone'></span> Clone</span>" +
+                                "<span style='margin-left: 10px' class='btn btn-xs btn-primary resetDelete'><span class='fa fa-refresh'></span> Reset to default</span>" +
                             "</span>");
                     }
 
@@ -1119,8 +1055,10 @@
 
 
                         if(cons[".templateArchetypeRoot"]){
-                        $('#deleteArcheToolbar').unbind('click').click(function() { info.tree.removeConstraint() }).text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
-                        $('.deleteArche').click(function() { info.tree.removeConstraint()}).show();
+                        $('.resetDelete').text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
+                        $(document).off('click', '.resetDelete').on('click', '.resetDelete', function() { info.tree.removeConstraint() })
+
+                        //$('.deleteArche').click(function() { info.tree.removeConstraint()}).show();
                         $('#editArcheToolbar').unbind('click').click(function() {
                             if (info.tree.current) {
                                 var cons = info.tree.current.data.cons || info.tree.current.data.attr;
@@ -1133,11 +1071,14 @@
                         }).show();
                     }
                     else {
-                        $('#deleteArcheToolbar').hide();
+                        $('.resetDelete').hide();
                         $('#editArcheToolbar').unbind('click').hide();
                     }
-                    if(cons.rm_type_name == 'ELEMENT')
-                        $('#deleteArcheToolbar').show().text("").append("<span class='glyphicon glyphicon-refresh'></span> Reset to Default")
+                    if(cons.rm_type_name == 'ELEMENT'){
+                        $('.resetDelete').show().text("").append("<span class='fa fa-refresh'></span> Reset to Default")
+                        //$('#deleteArcheToolbar').show().text("").append("<span class='fa fa-refresh'></span> Reset to Default")
+                    }
+
                     //$('#deleteToolbar').unbind('click').click(function() { info.tree.removeConstraint() });
 
                     $('.renameToolbar').unbind('click').click(function() {
@@ -1191,7 +1132,6 @@
 
 
                 }
-
 
                 self.jstree = targetElement.jstree(true);
                 self.targetElement = targetElement;
