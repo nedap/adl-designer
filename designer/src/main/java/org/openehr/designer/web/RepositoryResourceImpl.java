@@ -262,4 +262,8 @@ public class RepositoryResourceImpl implements RepositoryResource {
         return new ErrorResponse(e.getMessage());
     }
 
+    @RequestMapping(value = "/template-editor", method = RequestMethod.GET, produces = "text/html")
+    public void GetTemplateHTML(){
+        LOG.error("Something");
+    }
 }

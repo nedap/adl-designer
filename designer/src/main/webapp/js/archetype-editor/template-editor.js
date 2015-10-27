@@ -35,6 +35,7 @@ var TemplateEditor = (function () {
                         var templateInfo = templateInfoList[i];
                         var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name + ")");
                         templateIdSelect.append(option);
+
                     }
                 }
 
@@ -47,13 +48,14 @@ var TemplateEditor = (function () {
 
                 GuiUtils.openSimpleDialog(
                     {
-                        title: "Create new template",
+                        title: "Load existing template",
                         buttons: {"load": "Load"},
                         content: content,
                         callback: function (content) {
                             var templateId = templateIdSelect.val();
                             $.getJSON("rest/repo/template/" + encodeURIComponent(templateId)).success(function (templateData) {
-                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"})
+                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
+                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                                 AOM.TemplateModel.createFromSerialized({
                                     archetypeRepository: my.archetypeRepository,
                                     referenceModel: my.referenceModel,
@@ -66,6 +68,52 @@ var TemplateEditor = (function () {
             });
 
         });
+       /* $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes?access_token="+token).success(function (templateInfoList) {
+
+            var context = {
+                panel_id: GuiUtils.generateId()
+            };
+            GuiUtils.applyTemplate("template-editor|loadTemplateDialog", context, function (htmlString) {
+
+                function populateTemplateIdSelect() {
+                    templateIdSelect.empty();
+                    for (var i in templateInfoList) {
+                        var templateInfo = templateInfoList[i];
+                        var option = $("<option>").attr("value", templateInfo.name).text(templateInfo.name);
+                        templateIdSelect.append(option);
+
+                    }
+                }
+
+                var content = $(htmlString);
+
+                var templateIdSelect = content.find('#' + context.panel_id + "_template_id");
+
+                populateTemplateIdSelect();
+
+
+                GuiUtils.openSimpleDialog(
+                    {
+                        title: "Load existing template",
+                        buttons: {"load": "Load"},
+                        content: content,
+                        callback: function (content) {
+                            var templateId = templateIdSelect.val();
+                            $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes/openEHR-DEMOGRAPHIC-ADDRESS.address-provider.v1.adls?access_token="+token).success(function (templateData) {
+                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
+                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
+                                AOM.TemplateModel.createFromSerialized({
+                                    archetypeRepository: my.archetypeRepository,
+                                    referenceModel: my.referenceModel,
+                                    data: templateData,
+                                    callback: my.useTemplate
+                                });
+                            });
+                        }
+                    });
+            });
+
+        });*/
     };
 
     my.openCreateNewTemplateDialog = function () {
@@ -152,6 +200,7 @@ var TemplateEditor = (function () {
                             templateId: templateId,
                             parentArchetypeId: parentArchetypeIdSelect.val(),
                             callback: function (templateModel) {
+                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                                 my.useTemplate(templateModel);
                             }
                         });

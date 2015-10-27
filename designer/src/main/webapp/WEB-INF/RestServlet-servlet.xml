@@ -42,9 +42,16 @@
     <context:annotation-config/>
 
 
+    <bean id="wtUser" class="org.openehr.designer.web.UserResourceImpl"/>
     <bean id="wtResource" class="org.openehr.designer.web.RepositoryResourceImpl"/>
     <bean id="wtSupport" class="org.openehr.designer.web.SupportResourceImpl"/>
     <bean id="wtReferenceModel" class="org.openehr.designer.web.ReferenceModelResourceImpl"/>
-
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass"
+                  value="org.springframework.web.servlet.view.JstlView" />
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
 
 </beans>

@@ -53,8 +53,6 @@
 
         function getCandidateArchetypesToAdd(cons) {
 
-
-
             function getCandidateArchetypesMatchingRmType(rmType) {
                 var result = [];
                 for (var i in TemplateEditor.archetypeRepository.infoList) {
@@ -98,8 +96,7 @@
         }
 
         function openAddArchetypeDialog(targetCons, callback) {
-            //console.log(targetCons);
-            //console.log(callback);
+
 
             var templateModel = AOM.TemplateModel.from(targetCons);
 
@@ -157,20 +154,6 @@
                     });
             });
         }
-
-       /* function AddArchetypeOnDrop(targetCons, callback) {
-
-            var templateModel = AOM.TemplateModel.from(targetCons);
-            if (!templateModel.canAddArchetype(targetCons)) {
-                return;
-            }
-            openAddArchetypeDialog(targetCons, function (newCons) {
-
-                addConstraintTreeNode(self.current.treeNode, newCons);
-                populateLanguageSelect(info.toolbar.languageSelect, templateModel);
-            });
-        }*/
-
 
         function populateLanguageSelect(languageSelect, templateModel) {
             var lastVal = languageSelect.val();
@@ -659,7 +642,7 @@
 
             self.renameConstraint = function () {
                 var targetCons = self.current.data.cons;
-                console.log(targetCons);
+
                 if (!targetCons || !targetCons.node_id) {
                     return;
                 }
@@ -790,7 +773,7 @@
 
             self.SpecializeAndProhibit = function(treeEventNode, event) {
 
-                console.log(info);
+
 
                 var data = treeData[treeEventNode.id];
                 //var existence = info.referenceModel.getExistence(data.cons);
@@ -894,12 +877,11 @@
                                         var anchorCons = treeData[node_parent.children[node_position]].cons;
                                     }
                                     catch(err){
-                                        console.log(err);
+
                                         return false;
                                     }
                                     if(typeof cons != 'undefined' && typeof anchorCons != 'undefined'){
-                                        console.log(cons);
-                                        console.log(anchorCons);
+
                                         return templateModel.canMoveBefore(cons,anchorCons);
                                     }
                                     return false;
@@ -1206,29 +1188,6 @@
                     return items;
                 }
 
-                ///**/targetElement.
-
-               /* targetElement.on('dnd_stop.vakata', function (event, treeEvent) {
-                    var data = treeData[treeEvent.node.id];
-                    self.currentDrag = {
-                        treeNode: treeEvent.node,
-                        data: data
-                    };
-                    //console.log(data);
-                    //console.log("C");
-                    //var constraintData = {
-                    //    info: info,
-                    //    cons: data.cons
-                    //};
-                    //constraintData.specializeCallback = function () {
-                    //    specializeConstraint(constraintData, treeEvent.node);
-                    //};
-                    //constraintData.saveCallback = function() {
-                    //    info.tree.styleNodes(treeEvent.node.id);
-                    //};
-                    //
-                    //info.propertiesPanel.show(constraintData);
-                });*/
             };
 
             self.filterProhibited = function(status) {
