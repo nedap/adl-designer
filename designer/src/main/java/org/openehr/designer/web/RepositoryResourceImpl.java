@@ -120,7 +120,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
         List<Archetype> sourceArchetypes = differentiator.differentiate(referenceModels.getDefaultReferenceModel(), archetypes);
         sourceArchetypes.forEach(a -> {
-            if (a.getRmRelease() == null) {
+            if (!a.isIsOverlay() && a.getRmRelease() == null) {
                 a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
             }
         });
