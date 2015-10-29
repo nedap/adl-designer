@@ -291,7 +291,15 @@ var AOM = (function () {
 
             my.ArchetypeModel = function (data, parentArchetypeModel) {
 
-                var defaultLanguage = data.original_language.code_string;
+                var defaultLanguage;
+                if (data.original_language) {
+                    defaultLanguage = data.original_language.code_string;
+                } else {
+                    // overlays have no original_language, so just take the first language from the terminology
+                    // since defaultLanguage is not used on everlays, just choose the first language in terminology
+                    // as default
+                    defaultLanguage = AmUtils.keys(data.terminology.term_definitions)[0];
+                }
                 var self = this;
 
                 function getTermDefinition(node_id, language) {
@@ -503,15 +511,10 @@ var AOM = (function () {
 
 
                 /**
-                 * @returns {Array} all languages present in the archetype. First language is always the main language
+                 * @returns {Array} all languages present in the archetype.
                  */
                 self.allLanguages = function () {
-                    var result = [];
-                    result.push(defaultLanguage);
-                    for (var i in self.translations) {
-                        result.push(self.translations[i]);
-                    }
-                    return result;
+                    return AmUtils.keys(self.data.terminology.term_definitions);
                 };
 
                 /**

@@ -406,8 +406,8 @@
                 }
 
 
-                var term = archetypeModel.getTermDefinitionText(cons.node_id);
-                var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id);
+                var term = archetypeModel.getTermDefinitionText(cons.node_id, language);
+                var parentTerm = archetypeModel.parentArchetypeModel.getTermDefinitionText(parentCons.node_id, language);
                 if (term !== parentTerm) {
                     deltas.push("NAME: from '" + parentTerm + '"');
                 }
@@ -470,7 +470,7 @@
                         cons: cons
                     };
                     if (!consJson.text) {
-                        consJson.text = self.extractConstraintName(cons);
+                        consJson.text = self.extractConstraintName(cons, currentLanguage);
                     }
                     if (cons["@type"] === "ARCHETYPE_SLOT" || !ArchetypeEditor.getRmTypeHandler(cons)) {
                         consJson.children = [];
@@ -556,7 +556,7 @@
                     }
                 }
                 if (cons) {
-                    treeNodeJson.text = self.extractConstraintName(cons);
+                    treeNodeJson.text = self.extractConstraintName(cons, currentLanguage);
                 }
 
             }
@@ -789,6 +789,7 @@
                 }
 
                 var oldCurrentCons = self.current && (self.current.data.cons || self.current.data.attr);
+
                 self.createTree(showStructure, function () {
                     while (oldCurrentCons) {
                         var newTreeNodeId = findTreeNode(oldCurrentCons);
@@ -800,10 +801,10 @@
                     }
                 });
             };
+            currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
 
             self.createTree();
 
-            currentLanguage = templateModel.getRootArchetypeModel().defaultLanguage;
         };
 
         my.show = function (templateModel, referenceModel, targetElement) {
@@ -859,6 +860,7 @@
 
 
                 targetElement.append(html);
+
             });
         };
 
