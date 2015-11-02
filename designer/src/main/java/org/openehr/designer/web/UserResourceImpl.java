@@ -102,7 +102,7 @@ public class UserResourceImpl implements UserResource {
                     File myfile = new File(git.getRepository().getDirectory().getParent(), "tester.txt");
                     myfile.createNewFile();
                     // run the add-call
-                    // test
+                    // test1
                     git.add()
                             .addFilepattern("tester.txt")
                             .call();
