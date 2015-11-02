@@ -40,7 +40,10 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -51,7 +54,9 @@ public class FileTemplateRepository implements TemplateRepository {
     private static final Logger LOG = LoggerFactory.getLogger(FileTemplateRepository.class);
 
     private Path repositoryLocation;
+
     private ConcurrentHashMap<String, List<Archetype>> templateMap = new ConcurrentHashMap<>();
+    private Map<String, ConcurrentHashMap<String, List<Archetype>>> map = new HashMap<>();
 
     @Required
     public void setRepositoryLocation(String repositoryLocation) {
@@ -62,12 +67,14 @@ public class FileTemplateRepository implements TemplateRepository {
     public void init() throws IOException {
         Files.createDirectories(repositoryLocation);
 
+
         Files.list(repositoryLocation)
                 .filter(path -> path.getFileName().toString().endsWith(".adlt") && !Files.isDirectory(path))
                 .forEach(path -> {
                     try {
                         List<Archetype> archetypes = TemplateDeserializer.deserialize(Files.newInputStream(path));
                         templateMap.put(archetypes.get(0).getArchetypeId().getValue(), archetypes);
+
                     } catch (Exception e) {
                         LOG.error("Error parsing template {}. Will be ignored", path.getFileName(), e);
                     }

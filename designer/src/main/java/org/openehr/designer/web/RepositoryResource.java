@@ -25,6 +25,7 @@ import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.jaxb.am.Archetype;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -41,18 +42,18 @@ public interface RepositoryResource {
 
 //    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 
-    void saveTemplate(List<Archetype> archetypeList);
+    void saveTemplate(List<Archetype> archetypeList, HttpSession session);
 
-    List<TemplateInfo> listTemplates();
+    List<TemplateInfo> listTemplates(HttpSession session);
 
-    List<Archetype> loadTemplate(String templateId);
+    List<Archetype> loadTemplate(String templateId, HttpSession session);
 
-    ResponseEntity<byte[]> exportSavedOpt14(String templateId);
+    ResponseEntity<byte[]> exportSavedOpt14(String templateId, HttpSession session);
 
     ResponseEntity<byte[]> exportProvidedOpt14(List<Archetype> flatArchetypeList);
 
 
-    ResponseEntity<byte[]> exportAdlt(String templateId);
+    ResponseEntity<byte[]> exportAdlt(String templateId, HttpSession session);
 
     String displayArchetypeAdlSource(Archetype archetype);
 

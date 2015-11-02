@@ -1,3 +1,4 @@
+<%@ page import="org.springframework.web.servlet.ModelAndView" %>
 <!--
   ~ ADL Designer
   ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
@@ -129,7 +130,7 @@
 
         });
     </script>
-    <script>
+  <%--  <script>
         var token;
         function LoginGitHub(){
             var code = window.location.search.substring(window.location.search.indexOf("code=")+5);
@@ -153,15 +154,12 @@
                 console.log(data);
             });
         }
-    </script>
+    </script>--%>
 </head>
 <body class="hold-transition skin-blue sidebar-mini" style="overflow:auto;">
 <div class="wrapper">
 
     <header class="main-header">
-        <a href="https://github.com/login/oauth/authorize?client_id=d0b3c06d13fdfabf0c88&scope=user,repo">Click here</a> to begin!</a>
-        <button onclick="LoginGitHub()">Get Code</button>
-        <button onclick="GetArchetypeNamesFromFork()">Get archetypes from  Fork</button>
 
         <!-- Logo -->
         <a href="index2.html" class="logo">
@@ -258,7 +256,7 @@
                                     <a href="#" class="btn btn-default btn-flat">Profile</a>
                                 </div>
                                 <div class="pull-right">
-                                    <a href="#" class="btn btn-default btn-flat">Sign out</a>
+                                    <a href="/designer/Logout" class="btn btn-default btn-flat">Sign out</a>
                                 </div>
                             </li>
                         </ul>

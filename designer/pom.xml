@@ -88,7 +88,22 @@
             <version>3.7.0.201502260915-r</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.kevinsawicki</groupId>
+            <artifactId>http-request</artifactId>
+            <version>6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20150729</version>
+        </dependency>
 
+        
+        <dependency>
+            <groupId>org.eclipse.mylyn.github</groupId>
+            <artifactId>org.eclipse.egit.github.core</artifactId>
+        </dependency>
         <!-- Logging -->
         <dependency>
             <groupId>log4j</groupId>

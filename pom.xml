@@ -64,7 +64,11 @@
                 <artifactId>adl-parser</artifactId>
                 <version>${adl2-core.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.eclipse.mylyn.github</groupId>
+                <artifactId>org.eclipse.egit.github.core</artifactId>
+                <version>2.1.5</version>
+            </dependency>
             <dependency>
                 <groupId>com.marand.adltools</groupId>
                 <artifactId>opt-exporter-14</artifactId>
@@ -178,7 +182,16 @@
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.0.1</version>
             </dependency>
-
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>javax.servlet.jsp-api</artifactId>
+                <version>2.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>jstl</artifactId>
+                <version>1.2</version>
+            </dependency>
             <!-- test -->
             <dependency>
                 <groupId>org.testng</groupId>

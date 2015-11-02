@@ -39,9 +39,11 @@
     <bean id="archetypeRepository" class="org.openehr.designer.repository.ArchetypeRepositoryFactoryBean"
             />
 
-    <bean id="templateRepository" class="org.openehr.designer.repository.file.FileTemplateRepository"
-            p:repositoryLocation="${template.repository.location}"
+    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.TemplateRepositoryProvider"
+          p:baseRepositoryLocation="${template.repository.location}"
+
             />
+
 
 
 

@@ -65,8 +65,14 @@
         <servlet-name>RestServlet</servlet-name>
         <url-pattern>/template-editor</url-pattern>
     </servlet-mapping>
-
-
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/GithubCallback</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/Logout</url-pattern>
+    </servlet-mapping>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

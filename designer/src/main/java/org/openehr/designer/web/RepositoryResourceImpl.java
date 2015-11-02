@@ -21,6 +21,7 @@
 package org.openehr.designer.web;
 
 import com.google.common.base.Charsets;
+import jdk.nashorn.internal.ir.RuntimeNode;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     private ArchetypeRepository archetypeRepository;
 
     @Resource
-    private TemplateRepository templateRepository;
+    private TemplateRepositoryProvider templateRepositoryProvider;
     @Resource
     private ReferenceModels referenceModels;
 
@@ -116,7 +118,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/template", method = RequestMethod.POST)
     @Override
-    public void saveTemplate(@RequestBody List<Archetype> archetypes) {
+    public void saveTemplate(@RequestBody List<Archetype> archetypes, HttpSession session) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
         List<Archetype> sourceArchetypes = differentiator.differentiate(referenceModels.getDefaultReferenceModel(), archetypes);
         sourceArchetypes.forEach(a -> {
@@ -124,18 +126,26 @@ public class RepositoryResourceImpl implements RepositoryResource {
                 a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
             }
         });
+        String username = session.getAttribute("Username").toString();
+        TemplateRepository templateRepository = templateRepositoryProvider.getRepositoryForUser(username);
         templateRepository.saveTemplate(sourceArchetypes);
     }
 
     @RequestMapping(value = "/template", method = RequestMethod.GET)
     @Override
-    public List<TemplateInfo> listTemplates() {
+    public List<TemplateInfo> listTemplates(HttpSession session) {
+
+        String username = session.getAttribute("Username").toString();
+        TemplateRepository templateRepository = templateRepositoryProvider.getRepositoryForUser(username);
         return templateRepository.listTemplates();
     }
 
     @RequestMapping(value = "/template/{templateId}", method = RequestMethod.GET)
     @Override
-    public List<Archetype> loadTemplate(@PathVariable String templateId) {
+    public List<Archetype> loadTemplate(@PathVariable String templateId, HttpSession session) {
+        String username = session.getAttribute("Username").toString();
+        TemplateRepository templateRepository = templateRepositoryProvider.getRepositoryForUser(username);
+
         List<Archetype> differentials = templateRepository.loadTemplate(templateId);
         FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(flatArchetypeRepository,
                 referenceModels.getDefaultReferenceModel(), differentials);
@@ -150,7 +160,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
     @Override
-    public ResponseEntity<byte[]> exportSavedOpt14(@PathVariable String templateId) {
+    public ResponseEntity<byte[]> exportSavedOpt14(@PathVariable String templateId, HttpSession session) {
+        String username = session.getAttribute("Username").toString();
+        TemplateRepository templateRepository = templateRepositoryProvider.getRepositoryForUser(username);
         List<Archetype> templateArchetypes = templateRepository.loadTemplate(templateId);
 
         OptBuilder.Opt opt = optBuilder.build(templateArchetypes);
@@ -181,7 +193,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     @RequestMapping(value = "/export/adlt/{templateId}", method = RequestMethod.GET)
     @Override
-    public ResponseEntity<byte[]> exportAdlt(@PathVariable String templateId) {
+    public ResponseEntity<byte[]> exportAdlt(@PathVariable String templateId, HttpSession session) {
+        String username = session.getAttribute("Username").toString();
+        TemplateRepository templateRepository = templateRepositoryProvider.getRepositoryForUser(username);
         List<Archetype> archetypes = templateRepository.loadTemplate(templateId);
         Archetype archetype = archetypes.get(0);
         ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(archetype);
@@ -223,7 +237,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     public String displayTemplateAdl(@RequestBody List<Archetype> flatArchetypeList) {
         TemplateDifferentiator differentiator = new TemplateDifferentiator(flatArchetypeRepository);
         List<Archetype> sourceArchetypes = differentiator.differentiate(
-                referenceModels.getDefaultReferenceModel(), flatArchetypeList);
+             /**/   referenceModels.getDefaultReferenceModel(), flatArchetypeList);
         return TemplateSerializer.serialize(sourceArchetypes);
     }
 
