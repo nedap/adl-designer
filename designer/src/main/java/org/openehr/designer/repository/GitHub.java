@@ -21,7 +21,11 @@ public class GitHub {
     public void setRepositoriesFolder(String repositoriesFolder) {
         this.repositoriesFolder = repositoriesFolder;
     }
-    public static void forkRepo(String token) throws IOException {
+
+
+
+
+/*    public static void forkRepo(String token) throws IOException {
         RepositoryService service = new RepositoryService();
         service.getClient().setOAuth2Token(token);
 
@@ -38,5 +42,5 @@ public class GitHub {
         clone.setDirectory(new File("C:/Users/Denko/Desktop/ADLDesigner/repository/templates/"+username+"/workingFiles"));
         clone.setBranch("master");
         clone.call();
-    }
+    }*/
 }

@@ -33,13 +33,8 @@
     <bean class="org.openehr.designer.spring.ReferenceModelConfiguration"/>
 
 
-    <bean id="optBuilder" class="org.openehr.designer.io.opt.OptBuilder"
-            />
 
-    <bean id="archetypeRepository" class="org.openehr.designer.repository.ArchetypeRepositoryFactoryBean"
-            />
-
-    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.TemplateRepositoryProvider"
+    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.RepositoryProvider"
           p:baseRepositoryLocation="${template.repository.location}"
 
             />

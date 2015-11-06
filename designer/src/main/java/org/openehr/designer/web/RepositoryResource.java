@@ -32,13 +32,13 @@ import java.util.List;
  * @author Marko Pipan
  */
 public interface RepositoryResource {
-    Archetype getSourceArchetype(String archetypeId);
+    Archetype getSourceArchetype(String archetypeId, HttpSession session);
 
-    Archetype getFlatArchetype(String archetypeId);
+    Archetype getFlatArchetype(String archetypeId, HttpSession session);
 
-    void saveFlatArchetype(String archetypeId, Archetype archetype);
+    void saveFlatArchetype(String archetypeId, Archetype archetype, HttpSession session);
 
-    List<ArchetypeInfo> listArchetypeInfos();
+    List<ArchetypeInfo> listArchetypeInfos(HttpSession session);
 
 //    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
 
@@ -50,16 +50,16 @@ public interface RepositoryResource {
 
     ResponseEntity<byte[]> exportSavedOpt14(String templateId, HttpSession session);
 
-    ResponseEntity<byte[]> exportProvidedOpt14(List<Archetype> flatArchetypeList);
+    ResponseEntity<byte[]> exportProvidedOpt14(List<Archetype> flatArchetypeList, HttpSession session);
 
 
     ResponseEntity<byte[]> exportAdlt(String templateId, HttpSession session);
 
-    String displayArchetypeAdlSource(Archetype archetype);
+    String displayArchetypeAdlSource(Archetype archetype, HttpSession session);
 
     String displayArchetypeAdlFlat(Archetype archetype);
 
-    String displayTemplateAdl(List<Archetype> archetypeList);
+    String displayTemplateAdl(List<Archetype> archetypeList, HttpSession session);
 
     void commit(CommitRequest commitRequest);
 

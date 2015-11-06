@@ -67,7 +67,15 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/GithubCallback</url-pattern>
+        <url-pattern>/RepositoryProvider</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/RepositoryChooser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/AddRepository</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>

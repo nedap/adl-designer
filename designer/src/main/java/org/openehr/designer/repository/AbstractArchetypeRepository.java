@@ -33,7 +33,7 @@ import java.util.ArrayList;
  * @author markopi
  */
 abstract public class AbstractArchetypeRepository implements ArchetypeRepository {
-    protected ArchetypeInfo createArchetypeInfo(Archetype archetype) {
+    public static ArchetypeInfo createArchetypeInfo(Archetype archetype) {
         ArchetypeInfo info = new ArchetypeInfo();
         info.setArchetypeId(archetype.getArchetypeId().getValue());
         info.setRmType(archetype.getDefinition().getRmTypeName());
@@ -53,7 +53,7 @@ abstract public class AbstractArchetypeRepository implements ArchetypeRepository
         return info;
     }
 
-    private String findTermText(Archetype archetype, String concept, String defaultLanguage) {
+    private static String findTermText(Archetype archetype, String concept, String defaultLanguage) {
         if (archetype.getTerminology() == null || archetype.getTerminology().getTermDefinitions() == null) return null;
         CodeDefinitionSet cds = archetype.getTerminology()
                 .getTermDefinitions()

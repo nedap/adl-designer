@@ -1,12 +1,19 @@
 <%--
   Created by IntelliJ IDEA.
   User: Denko
+  Date: 11/5/2015
+  Time: 1:54 PM
+  To change this template use File | Settings | File Templates.
+--%>
+<%--
+  Created by IntelliJ IDEA.
+  User: Denko
   Date: 10/27/2015
   Time: 12:28 PM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,11 +34,18 @@
     <!-- iCheck -->
     <link rel="stylesheet" href="plugins/iCheck/square/blue.css">
     <script>
-        function showProgress(){
+        function showProgress() {
             $('#fetchProgress').show();
         }
 
     </script>
+    <style>
+        .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+            background-color: #07c;
+            cursor: pointer !important;
+            color: white;
+        }
+    </style>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -42,43 +56,57 @@
 <div class="login-box">
     <div class="login-logo">
         <a href="../../index2.html"><b>template</b>Designer</a>
-    </div><!-- /.login-logo -->
+    </div>
+    <!-- /.login-logo -->
     <div class="login-box-body">
-        <p class="login-box-msg">Sign in to start your session</p>
-        <form action="../../index2.html" method="post">
-            <div class="form-group has-feedback">
-                <input type="email" class="form-control" placeholder="Email">
-                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
-            </div>
-            <div class="form-group has-feedback">
-                <input type="password" class="form-control" placeholder="Password">
-                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-            </div>
-            <div class="row">
-                <div class="col-xs-8">
+        <p class="login-box-msg">Choose a repository:</p>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <td>Name</td>
+                <td>Fork</td>
+            </tr>
+            </thead>
+            <tbody>
+            <c:forEach items="${Repositories}" var="repo">
+                <tr onclick="ChooseRepo('${repo.full_name}', ${repo.fork})">
+                    <td class="nr"><c:out value="${repo.full_name}"/></td>
+                    <c:choose>
+                        <c:when test="${repo.fork}">
+                            <td>Yes</td>
+                        </c:when>
+                        <c:otherwise>
+                            <td>No</td>
+                        </c:otherwise>
+                    </c:choose>
+                </tr>
+            </c:forEach>
+            </tbody>
+        </table>
 
-                </div><!-- /.col -->
-                <div class="col-xs-4">
-                    <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
-                </div><!-- /.col -->
-            </div>
-        </form>
 
-        <div class="social-auth-links text-center">
-            <p>- OR -</p>
-            <a onclick="showProgress()" href="https://github.com/login/oauth/authorize?client_id=d0b3c06d13fdfabf0c88&scope=user,repo" class="btn btn-lg btn-block btn-social btn-github btn-flat"><i class="fa fa-github"></i> Sign in using Github</a>
-        </div><!-- /.social-auth-links -->
         <div id="fetchProgress" hidden>
-            <p>Connecting.. Please wait</p>
+            <p>Fetching metadata from repository.. Please wait</p>
+
             <div class="progress progress-striped active">
-                <div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 100%">
                 </div>
             </div>
         </div>
 
-    </div><!-- /.login-box-body -->
-</div><!-- /.login-box -->
+    </div>
+    <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+<script>
+    function ChooseRepo(repo, fork) {
+        var url = '/designer/RepositoryProvider?repo=' + repo + '&fork=' + fork;
+        $('#fetchProgress').show();
+        window.location = url;
+    }
 
+</script>
 <!-- jQuery 2.1.4 -->
 <script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
 <!-- Bootstrap 3.3.5 -->
@@ -86,5 +114,3 @@
 <!-- iCheck -->
 
 
-</body>
-</html>

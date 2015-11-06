@@ -56,7 +56,8 @@ public class FileTemplateRepository implements TemplateRepository {
     private Path repositoryLocation;
 
     private ConcurrentHashMap<String, List<Archetype>> templateMap = new ConcurrentHashMap<>();
-    private Map<String, ConcurrentHashMap<String, List<Archetype>>> map = new HashMap<>();
+
+
 
     @Required
     public void setRepositoryLocation(String repositoryLocation) {
@@ -72,6 +73,7 @@ public class FileTemplateRepository implements TemplateRepository {
                 .filter(path -> path.getFileName().toString().endsWith(".adlt") && !Files.isDirectory(path))
                 .forEach(path -> {
                     try {
+
                         List<Archetype> archetypes = TemplateDeserializer.deserialize(Files.newInputStream(path));
                         templateMap.put(archetypes.get(0).getArchetypeId().getValue(), archetypes);
 
@@ -82,7 +84,7 @@ public class FileTemplateRepository implements TemplateRepository {
     }
 
     @Override
-    public List<TemplateInfo> listTemplates() {
+    public List<TemplateInfo>  listTemplates() {
         List<TemplateInfo> result = templateMap.entrySet().stream()
                 .map(e -> {
                     Archetype template = e.getValue().get(0);
@@ -100,7 +102,7 @@ public class FileTemplateRepository implements TemplateRepository {
     }
 
     @Override
-    public void saveTemplate(List<Archetype> archetypes) {
+        public void saveTemplate(List<Archetype> archetypes) {
         String templateId = archetypes.get(0).getArchetypeId().getValue();
         String adltContent = TemplateSerializer.serialize(archetypes);
         // Check to see if the template can still be deserialized
@@ -115,6 +117,22 @@ public class FileTemplateRepository implements TemplateRepository {
             throw new RuntimeException("Error saving template", e);
         }
     }
+  /*  public void saveTemplate(List<Archetype> archetypes) {
+        String templateId = archetypes.get(0).getArchetypeId().getValue();
+        String adltContent = TemplateSerializer.serialize(archetypes);
+        // Check to see if the template can still be deserialized
+        TemplateDeserializer.deserialize(adltContent);
+        try {
+            try (Writer w = new OutputStreamWriter(new FileOutputStream(repositoryLocation.resolve(templateId + ".adlt").toFile()),
+                    Charsets.UTF_8)) {
+                w.append(adltContent);
+            }
+            templateMap.put(templateId, archetypes);
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving template", e);
+        }
+    }*/
+
 
     @Override
     public List<Archetype> loadTemplate(String templateId) {

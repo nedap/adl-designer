@@ -1,4 +1,5 @@
 <%@ page import="org.springframework.web.servlet.ModelAndView" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!--
   ~ ADL Designer
   ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
@@ -107,6 +108,7 @@
     <!-- AdminLTE Skins. Choose a skin from the css/skins
          folder instead of downloading all of them to reduce the load. -->
     <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
+
     <script>
         $().ready(function () {
             $.fn.editable.defaults.mode = 'inline';
@@ -130,33 +132,8 @@
 
         });
     </script>
-  <%--  <script>
-        var token;
-        function LoginGitHub(){
-            var code = window.location.search.substring(window.location.search.indexOf("code=")+5);
-            $.post("https://github.com/login/oauth/access_token", { client_id : 'd0b3c06d13fdfabf0c88', client_secret:'3d9bece886ab0dc46202260248596421c1ce6712', code:code}, function(data){
-               token = data.substring(data.indexOf("access_token")+13, data.indexOf("&scope"));
-                $.get('https://api.github.com/user/emails?access_token='+token, function(data){ console.log(data)});
-            });
-
-        }
-        function CreateFork(){
-            $.post("https://api.github.com/repos/ehrscape/adl-models/forks?access_token="+token, function(data){ console.log(data)})
-        }
-        function GetArchetypeFromFork(){
-            $.get("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes/openEHR-DEMOGRAPHIC-ADDRESS.address-provider.v1.adls?access_token="+token, function(data){
-                $.get(data["download_url"], function success(data){ console.log (data)})
-                return data
-            })
-        }
-        function GetArchetypeNamesFromFork(){
-            $.get("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes?access_token="+token, function(data){
-                console.log(data);
-            });
-        }
-    </script>--%>
 </head>
-<body class="hold-transition skin-blue sidebar-mini" style="overflow:auto;">
+<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
 
     <header class="main-header">
@@ -270,6 +247,7 @@
 
         </nav>
     </header>
+
     <!-- Left side column. contains the logo and sidebar -->
     <aside class="main-sidebar">
         <!-- sidebar: style can be found in sidebar.less -->
@@ -340,11 +318,23 @@
                         <li><a href="pages/charts/inline.html"><i class="fa fa-circle-o"></i> t4</a></li>
                     </ul>
                 </li>
+                <li class="header">Repositories <i class="fa fa-plus pull-right" onclick="showNewRepoDialog()" style="color: green; cursor:pointer;"></i></li>
+                <li class="header" id="newRepo" style="display: none"><a id="repoName" href="#"></a></li>
+                <%--<span id="repoList">--%>
+                <c:forEach items="${Repositories}" var="repo">
+                        <c:choose>
+                            <c:when test="${repo.full_name == CurrentRepo}">
+                                <li onclick="ChooseRepo('${repo.full_name}', ${repo.fork})"><a href="#"><i class="fa fa-circle text-green"></i> <span>${repo.full_name}</span></a></li>
+                            </c:when>
+                            <c:otherwise>
+                                <li onclick="ChooseRepo('${repo.full_name}', ${repo.fork})"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>${repo.full_name}</span></a></li>
+                            </c:otherwise>
+                        </c:choose>
 
-                <li class="header">LABELS</li>
-                <li><a href="#"><i class="fa fa-circle-o text-red"></i> <span>Important</span></a></li>
-                <li><a href="#"><i class="fa fa-circle-o text-yellow"></i> <span>Warning</span></a></li>
-                <li><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>Information</span></a></li>
+                </c:forEach>
+
+               <%-- </span>--%>
+
             </ul>
         </section>
         <!-- /.sidebar -->
@@ -385,6 +375,7 @@
             </div>
             </div>
         </section><!-- /.content -->
+
     </div><!-- /.content-wrapper -->
 
     <footer class="main-footer">
@@ -576,9 +567,39 @@
 <script src="dist/js/pages/dashboard2.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="dist/js/demo.js"></script>
-</body>
-<body style="overflow:hidden">
+<script>
+    function ChooseRepo(repo, fork) {
+        var url = '/designer/RepositoryProvider?repo=' + repo + '&fork=' + fork;
+        $('#fetchProgress').show();
+        window.location = url;
+    }
+    function AddRepo(repo){
+        var url = '/designer/AddRepository' + repo;
+        window.location = url;
+    }
+    $.fn.editable.defaults.ajaxOptions = {type: "GET"};
+    $('#newRepo').editable({
+        type: 'text',
+        title: 'Enter repository name',
+        pk: 1,
+        url: '/designer/AddRepository',
+        success: function(success){
+            toastr.success(success);
+            var repo = $('#newRepo').editable('getValue').newRepo;
+            alert(repo);
+            var v = $('#newRepo')
+            var line = '<li onclick="ChooseRepo('+repo+')"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>'+repo+'</span></a></li>'
+            v.parent().append(line);
+            v.hide();
+        },
 
+    })
+
+    function showNewRepoDialog(){
+        $('#newRepo').show();
+        setTimeout(function(){$('#newRepo').editable('toggle')}, 100);
+    }
+</script>
 
 </body>
 

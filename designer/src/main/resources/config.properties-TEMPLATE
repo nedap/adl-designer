@@ -26,3 +26,6 @@ archetype.repository.git.uri=
 archetype.repository.file.location=
 template.repository.location=
 
+
+repositories.configuration=/Users/Denko/Desktop/Repositories.json
+
