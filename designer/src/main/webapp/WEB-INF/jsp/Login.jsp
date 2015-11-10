@@ -45,7 +45,7 @@
     </div><!-- /.login-logo -->
     <div class="login-box-body">
         <p class="login-box-msg">Sign in to start your session</p>
-        <form action="../../index2.html" method="post">
+     <%--   <form action="../../index2.html" method="post">
             <div class="form-group has-feedback">
                 <input type="email" class="form-control" placeholder="Email">
                 <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
@@ -62,10 +62,10 @@
                     <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
                 </div><!-- /.col -->
             </div>
-        </form>
+        </form>--%>
 
         <div class="social-auth-links text-center">
-            <p>- OR -</p>
+           <%-- <p>- OR -</p>--%>
             <a onclick="showProgress()" href="https://github.com/login/oauth/authorize?client_id=d0b3c06d13fdfabf0c88&scope=user,repo" class="btn btn-lg btn-block btn-social btn-github btn-flat"><i class="fa fa-github"></i> Sign in using Github</a>
         </div><!-- /.social-auth-links -->
         <div id="fetchProgress" hidden>

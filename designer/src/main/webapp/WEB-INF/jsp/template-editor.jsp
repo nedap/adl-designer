@@ -133,7 +133,7 @@
         });
     </script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini" style="overflow: hidden;">
 <div class="wrapper">
 
     <header class="main-header">
@@ -378,12 +378,12 @@
 
     </div><!-- /.content-wrapper -->
 
-    <footer class="main-footer">
+    <%--<footer class="main-footer">
         <div class="pull-right hidden-xs">
             <b>Version</b> 2.0.0
         </div>
         <strong>Copyright &copy; 2014-2015 <a href="http://www.marand.si">Marand</a>.</strong> All rights reserved.
-    </footer>
+    </footer>--%>
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">
@@ -396,7 +396,7 @@
         <div class="tab-content">
             <!-- Home tab content -->
             <div class="tab-pane" id="control-sidebar-home-tab">
-                <h3 class="control-sidebar-heading">Recent Activity</h3>
+            <%--    <h3 class="control-sidebar-heading">Recent Activity</h3>
                 <ul class="control-sidebar-menu">
                     <li>
                         <a href="javascript::;">
@@ -482,13 +482,13 @@
                             </div>
                         </a>
                     </li>
-                </ul><!-- /.control-sidebar-menu -->
+                </ul><!-- /.control-sidebar-menu -->--%>
 
             </div><!-- /.tab-pane -->
 
             <!-- Settings tab content -->
             <div class="tab-pane" id="control-sidebar-settings-tab">
-                <form method="post">
+               <%-- <form method="post">
                     <h3 class="control-sidebar-heading">General Settings</h3>
                     <div class="form-group">
                         <label class="control-sidebar-subheading">
@@ -542,7 +542,7 @@
                             <a href="javascript::;" class="text-red pull-right"><i class="fa fa-trash-o"></i></a>
                         </label>
                     </div><!-- /.form-group -->
-                </form>
+                </form>--%>
             </div><!-- /.tab-pane -->
         </div>
     </aside><!-- /.control-sidebar -->
@@ -577,6 +577,7 @@
         var url = '/designer/AddRepository' + repo;
         window.location = url;
     }
+    var a;
     $.fn.editable.defaults.ajaxOptions = {type: "GET"};
     $('#newRepo').editable({
         type: 'text',
@@ -584,13 +585,16 @@
         pk: 1,
         url: '/designer/AddRepository',
         success: function(success){
-            toastr.success(success);
-            var repo = $('#newRepo').editable('getValue').newRepo;
-            alert(repo);
+            toastr.success("Repository added successfully!");
+            a = success;
+            var obj = JSON.parse(success);
+            var repo = obj.full_name;
+            var fork = obj.fork;
             var v = $('#newRepo')
-            var line = '<li onclick="ChooseRepo('+repo+')"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>'+repo+'</span></a></li>'
+            var line = '<li id="'+repo.substr(1,3)+'" onclick="ChooseRepo("'+repo+'",'+fork+')"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>'+repo+'</span></a></li>'
             v.parent().append(line);
             v.hide();
+            $('#'+repo.substr(1,3)).click(function() { ChooseRepo(repo, fork) });
         },
 
     })

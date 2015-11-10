@@ -44,6 +44,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.swing.text.html.parser.Entity;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -118,11 +119,6 @@ public class UserResourceImpl implements UserResource {
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
             HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
 
-            ResponseEntity<Object[]> repoStructureCheck = restTemplate.exchange("https://api.github.com/repos/" + repo + "/contents", HttpMethod.GET, httpEntity, Object[].class);
-            for (Object o : repoStructureCheck.getBody()) {
-
-            }
-
             ResponseEntity<Object[]> response = restTemplate.exchange("https://api.github.com/repos/" + repo + "/contents/archetypes?ref=" + username, HttpMethod.GET, httpEntity, Object[].class);
             ResponseEntity<Map> existing;
             String content = "{}", sha = null;
@@ -149,15 +145,7 @@ public class UserResourceImpl implements UserResource {
             } catch (Exception e) {
                 //ignore, file does not exist.
             }
-            ;
 
-            //JSONObject metadata = new JSONObject();
-                /*try{
-                    metadata = new JSONObject(gson.toJson(downloadFileRaw("https://api.github.com/repos/"+repo+"/contents/metadata.json",token, username)));
-                }
-                catch(Exception e){
-
-                }*/
 
             Base64 k = new Base64();
             //String metadata = k.encodeToString(existing.getBody().get("content").toString().getBytes()).replace("\r", "").replace("\n", "");
@@ -204,7 +192,6 @@ public class UserResourceImpl implements UserResource {
                 } catch (AdlParserException e) {
                     //TODO: Clean the ones that failed from the folder
                     failed++;
-                    System.out.println("" + failed + ": " + name + ": " + e.getMessage());
                     LOG.warn("Error parsing archetype " + name, e);
                     fileIndex++;
                 } catch (FileNotFoundException e) {
@@ -363,52 +350,6 @@ public class UserResourceImpl implements UserResource {
             headers.setContentType(MediaType.APPLICATION_JSON);
             entity = new HttpEntity<>(r.toJSONString(), headers);
             restTemplate.exchange("https://api.github.com/repos/" + repo + "/contents/TemplatesMetadata.json", HttpMethod.PUT, entity, String.class);
-              /*  try{
-                    objx = new JSONObject(res);
-                    username = objx.getString("login");
-                }
-                catch(Exception e){
-                    throw new RuntimeException(e);
-                }*/
-            //try{GitHub.cloneForkToLocal(token, username);}catch(Exception e){};
-              /*      try{
-
-                        Git git = Git.init().setDirectory(new File(RepositoryProvider.baseRepositoryLocation + "/" + username + "h")).call();
-                        //git.checkout().setCreateBranch(true).setName("temp").call();
-                        StoredConfig config = git.getRepository().getConfig();
-                        config.setString("remote", "origin", "url", "https://github.com/ehrscape/adl-models.git");
-                        config.save();
-                        File myfile = new File(git.getRepository().getDirectory().getParent(), "tester.txt");
-                        myfile.createNewFile();
-                        // run the add-call
-                        // test1
-                        git.add()
-                                .addFilepattern("tester.txt")
-                                .call();
-                        git.commit().setMessage("Config file added by system").call();
-
-                        FetchCommand cmd = git.fetch();
-                        cmd.setRefSpecs(new RefSpec("refs/heads/master:refs/heads/update")).setCredentialsProvider(new UsernamePasswordCredentialsProvider(token, ""));
-
-                        FetchResult fetchRes = cmd.call();
-                        List<Ref> branches = git.branchList().call();
-                        git.checkout().setName("newbranch").call();
-                    String q = "Q";
-                    *//*Ref ref = git.checkout().setCreateBranch(true).setN
-                    ame("temp1").setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-                            .setStartPoint("master").call();*//*
-
-                    *//*MergeCommand mergeCmd = git.merge();
-                    mergeCmd.include(git.getRepository().getRef("denkomanceskihehe"))
-                            .setStrategy(MergeStrategy.OURS)
-                            .setMessage("Merged with ours")
-                            .call();*//*
-
-
-                }catch(Exception e){
-                    throw new RuntimeException(e);
-                }*/
-
 
             if (session.getAttribute("Token") != null) {
                 //user was already logged
@@ -433,7 +374,7 @@ public class UserResourceImpl implements UserResource {
         headers.set("Authorization", "Bearer " + token);
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
-        ResponseEntity<Object[]> repos;
+        ResponseEntity<Object[]> repos = null;
         Object[] directories;
         try {
             repos = restTemplate.exchange("https://api.github.com/repos/" + req.getParameter("value") + "/contents", HttpMethod.GET, httpEntity, Object[].class);
@@ -443,11 +384,12 @@ public class UserResourceImpl implements UserResource {
             return new ResponseEntity<>("The repository doesnt exist or You dont have access to it.", HttpStatus.NOT_ACCEPTABLE);
         }
 
-
+        boolean isFork = false;
         String k;
         JSONObject g;
-        JSONParser parser = new JSONParser();
         int validCheck = 0;
+        List arr = new ArrayList<>();
+        Map obj = null;
         for (Object dir : directories) {
             g = new JSONObject(gson.toJson(dir));
             k = g.get("name").toString();
@@ -455,7 +397,7 @@ public class UserResourceImpl implements UserResource {
             if (k.equals("templates")) validCheck++;
 
             if (validCheck == 2) {
-                Map obj;
+
                 try (FileReader in = new FileReader(Configuration.get("repositories.configuration"));
                 ) {
                     obj = (Map) objectMapper.readValue(in, Map.class);
@@ -465,14 +407,14 @@ public class UserResourceImpl implements UserResource {
                 JSONArray existingRepos = (JSONArray) jsonObject.get("Repositories");
                 for (int i = 0; i < existingRepos.length(); i++) {
                     if (existingRepos.getJSONObject(i).get("name").toString().equals(req.getParameter("value"))) {
-                        return new ResponseEntity<>("Repository already exists in the database", HttpStatus.NOT_ACCEPTABLE);
+                        return new ResponseEntity<>("Repository already exists!", HttpStatus.NOT_ACCEPTABLE);
                     }
                 }
-                List arr = (List) obj.get("Repositories");
+                arr = (List) obj.get("Repositories");
                 //arr.put()
                 arr.add(ImmutableMap.of("name", req.getParameter("value")));
 
-
+                isFork = Boolean.valueOf(req.getParameter("value").contains(session.getAttribute("Username").toString()));
                 existingRepos.put(new JSONObject(gson.toJson(dir)));
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(
                         new File(Configuration.get("repositories.configuration")), obj);
@@ -481,7 +423,13 @@ public class UserResourceImpl implements UserResource {
         if (validCheck < 2)
             return new ResponseEntity<>("The repository is not an openEHR repository.", HttpStatus.NOT_ACCEPTABLE);
 
-        return new ResponseEntity<>("Repository added successfully!", HttpStatus.OK);
+        Map resp = new HashMap<>();
+        resp.put("full_name",req.getParameter("value"));
+        resp.put("fork",isFork);
+        List<Object> filtered = (List)session.getAttribute("FilteredRepos");
+        filtered.add(resp);
+        session.setAttribute("FilteredRepos", filtered);
+        return new ResponseEntity<>(new JSONObject(resp).toString(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/RepositoryChooser")
