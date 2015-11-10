@@ -20,38 +20,60 @@
 
 package org.openehr.designer;
 
-
-import com.google.common.base.Charsets;
-
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
  * @author markopi
  */
 public class Configuration {
-    private static volatile Properties properties=null;
+    private static Path appHome = Paths.get(".").toAbsolutePath();
+    private volatile static Properties properties;
 
-    private static void initProperties() {
+    public static Path getAppHome() {
+        return appHome;
+    }
+
+    public static Path getConfDir() {
+        return appHome.resolve("conf");
+    }
+
+    public static void setAppHome(Path appHome) {
+        Configuration.appHome = appHome;
+    }
+
+    private static Properties loadProperties() {
         try {
-            if (properties==null) {
-                Properties props = new Properties();
-                props.load(new InputStreamReader(Configuration.class.getClassLoader()
-                        .getResourceAsStream("config.properties"), Charsets.UTF_8));
-                properties=props;
+            Properties props = new Properties();
+            try (InputStreamReader reader = new InputStreamReader(
+                    new FileInputStream(getConfDir().resolve("config.properties").toFile()),
+                    StandardCharsets.UTF_8)) {
+                props.load(reader);
             }
+            return props;
         } catch (IOException e) {
-            throw new RuntimeException("Error loading app properties", e);
+            throw new RuntimeException("Error loading configuration properties", e);
         }
     }
 
     public static String get(String property) {
-        initProperties();
+        if (properties == null) {
+            properties = loadProperties();
+        }
         String value = properties.getProperty(property);
-        if (value==null) {
-            throw new RuntimeException("No such property: " + property);
+        if (value == null) {
+            throw new RuntimeException("Missing property " + property + " in config.properties");
         }
         return value;
     }
+
+    public static int getInt(String property) {
+        return Integer.parseInt(get(property));
+    }
+
 }

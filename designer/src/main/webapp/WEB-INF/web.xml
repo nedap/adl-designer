@@ -19,10 +19,15 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>Ihe Connector Core</display-name>
+
+    <context-param>
+        <param-name>log4jConfiguration</param-name>
+        <param-value>file://${env:ADL_DESIGNER_APPHOME}/conf/log4j2.xml</param-value>
+    </context-param>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -37,7 +42,7 @@
     <!--</context-param>-->
 
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.openehr.designer.web.InitializationListener</listener-class>
     </listener>
 
 
@@ -83,8 +88,7 @@
     </servlet-mapping>
 
     <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
-        <welcome-file>designer.html</welcome-file>
+        <welcome-file>template-editor</welcome-file>
     </welcome-file-list>
 
 </web-app>

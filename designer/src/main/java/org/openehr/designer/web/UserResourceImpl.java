@@ -8,12 +8,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
-import com.jcraft.jsch.Session;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.openehr.adl.parser.AdlDeserializer;
@@ -22,11 +18,8 @@ import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.Configuration;
 import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.repository.AbstractArchetypeRepository;
-import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.jaxb.am.Archetype;
-import org.openehr.jaxb.am.Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -40,14 +33,12 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 import sun.misc.BASE64Decoder;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -141,15 +132,9 @@ public class UserResourceImpl implements UserResource {
             Set<String> names = new HashSet<>();
             Map<String, Map> metadata = objectMapper.readValue(content, Map.class);
 
-            try {
-
-                names = Sets.newHashSet(metadata.values().stream()
-                        .map(m -> (String) m.get("filename"))
-                        .collect(Collectors.toSet()));
-            } catch (Exception e) {
-                //ignore, file does not exist.
-            }
-            ;
+            names = Sets.newHashSet(metadata.values().stream()
+                    .map(m -> (String) m.get("filename"))
+                    .collect(Collectors.toSet()));
 
             //JSONObject metadata = new JSONObject();
                 /*try{
@@ -185,7 +170,7 @@ public class UserResourceImpl implements UserResource {
                             String id = v.getArchetypeId().getValue();
                             JSONObject currentArchetype = new JSONObject();
                             currentArchetype.put("id", i.getArchetypeId());
-                            currentArchetype.put("languages", new JSONArray(i.getLanguages()));
+                            currentArchetype.put("languages", new JSONArray(Lists.newArrayList(i.getLanguages())));
                             currentArchetype.put("rmType", i.getRmType());
                             currentArchetype.put("name", i.getName());
                             currentArchetype.put("filename", name);
@@ -262,15 +247,9 @@ public class UserResourceImpl implements UserResource {
             names = new HashSet<>();
             metadata = objectMapper.readValue(content, Map.class);
 
-            try {
-
-                names = Sets.newHashSet(metadata.values().stream()
-                        .map(m -> (String) m.get("filename"))
-                        .collect(Collectors.toSet()));
-            } catch (Exception e) {
-                //ignore, file does not exist.
-            }
-            ;
+            names = Sets.newHashSet(metadata.values().stream()
+                    .map(m -> (String) m.get("filename"))
+                    .collect(Collectors.toSet()));
 
             //JSONObject metadata = new JSONObject();
                 /*try{
@@ -363,51 +342,6 @@ public class UserResourceImpl implements UserResource {
             headers.setContentType(MediaType.APPLICATION_JSON);
             entity = new HttpEntity<>(r.toJSONString(), headers);
             restTemplate.exchange("https://api.github.com/repos/" + repo + "/contents/TemplatesMetadata.json", HttpMethod.PUT, entity, String.class);
-              /*  try{
-                    objx = new JSONObject(res);
-                    username = objx.getString("login");
-                }
-                catch(Exception e){
-                    throw new RuntimeException(e);
-                }*/
-            //try{GitHub.cloneForkToLocal(token, username);}catch(Exception e){};
-              /*      try{
-
-                        Git git = Git.init().setDirectory(new File(RepositoryProvider.baseRepositoryLocation + "/" + username + "h")).call();
-                        //git.checkout().setCreateBranch(true).setName("temp").call();
-                        StoredConfig config = git.getRepository().getConfig();
-                        config.setString("remote", "origin", "url", "https://github.com/ehrscape/adl-models.git");
-                        config.save();
-                        File myfile = new File(git.getRepository().getDirectory().getParent(), "tester.txt");
-                        myfile.createNewFile();
-                        // run the add-call
-                        // test1
-                        git.add()
-                                .addFilepattern("tester.txt")
-                                .call();
-                        git.commit().setMessage("Config file added by system").call();
-
-                        FetchCommand cmd = git.fetch();
-                        cmd.setRefSpecs(new RefSpec("refs/heads/master:refs/heads/update")).setCredentialsProvider(new UsernamePasswordCredentialsProvider(token, ""));
-
-                        FetchResult fetchRes = cmd.call();
-                        List<Ref> branches = git.branchList().call();
-                        git.checkout().setName("newbranch").call();
-                    String q = "Q";
-                    *//*Ref ref = git.checkout().setCreateBranch(true).setN
-                    ame("temp1").setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-                            .setStartPoint("master").call();*//*
-
-                    *//*MergeCommand mergeCmd = git.merge();
-                    mergeCmd.include(git.getRepository().getRef("denkomanceskihehe"))
-                            .setStrategy(MergeStrategy.OURS)
-                            .setMessage("Merged with ours")
-                            .call();*//*
-
-
-                }catch(Exception e){
-                    throw new RuntimeException(e);
-                }*/
 
 
             if (session.getAttribute("Token") != null) {

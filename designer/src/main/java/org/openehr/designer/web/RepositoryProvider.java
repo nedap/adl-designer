@@ -16,11 +16,6 @@ public class RepositoryProvider {
     public static Map<String, GithubTemplateRepository> userToTemplateRepositoryMap = Maps.newConcurrentMap();
     public static Map<String, GithubArchetypeRepository> userToArchetypeRepositoryMap = Maps.newConcurrentMap();
 
-    public static String baseRepositoryLocation;
-
-    public void setBaseRepositoryLocation(String baseRepositoryLocation) {
-        this.baseRepositoryLocation = baseRepositoryLocation;
-    }
 
     public TemplateRepository getTemplateRepositoryForUser(HttpSession session) {
         String username = session.getAttribute("Username").toString();

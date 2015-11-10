@@ -19,22 +19,16 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<beans
-        xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:context="http://www.springframework.org/schema/context"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
-        >
-
-    <context:annotation-config/>
-
-    <bean class="org.openehr.designer.spring.SupportConfiguration"/>
-    <bean class="org.openehr.designer.spring.ReferenceModelConfiguration"/>
-
-
-    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.RepositoryProvider"
-
-            />
-
-
-</beans>
+<!-- Used only during the initialization, before logging is configured from apphome file. -->
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} [%t] %-5level %logger{1} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
