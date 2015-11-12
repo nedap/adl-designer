@@ -44,8 +44,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko Pipan
@@ -57,10 +57,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
 
     @Resource
-    private RepositoryProvider repositoryProvider;
+    private GithubRepositoryProvider githubRepositoryProvider;
     @Resource
     private ReferenceModels referenceModels;
-
 
 
 
@@ -72,7 +71,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @Override
     public Archetype getSourceArchetype(@PathVariable("archetypeId") String archetypeId, HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
-        return repositoryProvider.getArchetypeRepositoryForUser(conf)
+        return githubRepositoryProvider.getArchetypeRepositoryForUser(conf)
                 .getDifferentialArchetype(archetypeId);
     }
 
@@ -93,7 +92,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
         Archetype differentialArchetype = ArchetypeDifferentiator.differentiate(
                 referenceModels.getDefaultReferenceModel(), getFlatArchetypeRepository(session), archetype);
         differentialArchetype.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
-        repositoryProvider.getArchetypeRepositoryForUser(conf).saveDifferentialArchetype(differentialArchetype);
+        githubRepositoryProvider.getArchetypeRepositoryForUser(conf).saveDifferentialArchetype(differentialArchetype);
     }
 
     @RequestMapping(value = "/list")
@@ -101,17 +100,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
     public List<ArchetypeInfo> listArchetypeInfos(HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
 
-        return repositoryProvider.getArchetypeRepositoryForUser(conf).getArchetypeInfos();
+        return githubRepositoryProvider.getArchetypeRepositoryForUser(conf).getArchetypeInfos();
     }
 
-
-//    @RequestMapping(value = "/rm/{modelName}/{modelVersion}")
-//    @Override
-//    public ReferenceModelData getRmModel(@PathVariable("modelName") String modelName, @PathVariable("modelVersion") String modelVersion) throws IOException {
-//
-//        ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
-//        return builder.build(referenceModels.getDefaultReferenceModel());
-//    }
 
     @RequestMapping(value = "/template", method = RequestMethod.POST)
     @Override
@@ -126,14 +117,14 @@ public class RepositoryResourceImpl implements RepositoryResource {
                 a.setRmRelease(ReferenceModelDataBuilder.RM_VERSION);
             }
         });
-        TemplateRepository templateRepository = repositoryProvider.getTemplateRepositoryForUser(conf);
+        TemplateRepository templateRepository = githubRepositoryProvider.getTemplateRepositoryForUser(conf);
         templateRepository.saveTemplate(sourceArchetypes);
     }
 
     private FlatArchetypeRepository getFlatArchetypeRepository(HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
         return new FlatArchetypeRepository(
-                    repositoryProvider.getArchetypeRepositoryForUser(conf),
+                    githubRepositoryProvider.getArchetypeRepositoryForUser(conf),
                     referenceModels.getDefaultReferenceModel());
     }
 
@@ -143,10 +134,9 @@ public class RepositoryResourceImpl implements RepositoryResource {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
 
 
-        TemplateRepository templateRepository = repositoryProvider.getTemplateRepositoryForUser(conf);
-        List<TemplateInfo> t = templateRepository.listTemplates();
+        TemplateRepository templateRepository = githubRepositoryProvider.getTemplateRepositoryForUser(conf);
 
-        return t;
+        return templateRepository.listTemplates();
     }
 
     @RequestMapping(value = "/template/{templateId}", method = RequestMethod.GET)
@@ -154,18 +144,15 @@ public class RepositoryResourceImpl implements RepositoryResource {
     public List<Archetype> loadTemplate(@PathVariable String templateId, HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
 
-        TemplateRepository templateRepository = repositoryProvider.getTemplateRepositoryForUser(conf);
+        TemplateRepository templateRepository = githubRepositoryProvider.getTemplateRepositoryForUser(conf);
 
         List<Archetype> differentials = templateRepository.loadTemplate(templateId);
         FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(getFlatArchetypeRepository(session),
                 referenceModels.getDefaultReferenceModel(), differentials);
 
-        List<Archetype> result = new ArrayList<>();
-        for (Archetype differential : differentials) {
-            result.add(flatArchetypeProvider.getFlatArchetype(differential.getArchetypeId().getValue()));
-        }
-
-        return result;
+        return differentials.stream()
+                .map(d -> flatArchetypeProvider.getFlatArchetype(d.getArchetypeId().getValue()))
+                .collect(Collectors.toList());
     }
 
     @RequestMapping(value = "/export/opt/14/{templateId}", method = RequestMethod.GET)
@@ -173,7 +160,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     public ResponseEntity<byte[]> exportSavedOpt14(@PathVariable String templateId, HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
 
-        TemplateRepository templateRepository = repositoryProvider.getTemplateRepositoryForUser(conf);
+        TemplateRepository templateRepository = githubRepositoryProvider.getTemplateRepositoryForUser(conf);
         List<Archetype> templateArchetypes = templateRepository.loadTemplate(templateId);
 
         OptBuilder.Opt opt = createOptBuilder(conf).build(templateArchetypes);
@@ -187,7 +174,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
 
     private OptBuilder createOptBuilder(SessionContext conf) {
         OptBuilder builder = new OptBuilder();
-        builder.setArchetypeRepository(repositoryProvider.getArchetypeRepositoryForUser(conf));
+        builder.setArchetypeRepository(githubRepositoryProvider.getArchetypeRepositoryForUser(conf));
         builder.init();
         return builder;
     }
@@ -215,7 +202,7 @@ public class RepositoryResourceImpl implements RepositoryResource {
     @Override
     public ResponseEntity<byte[]> exportAdlt(@PathVariable String templateId, HttpSession session) {
         SessionContext conf = WebAttributes.getSessionConfiguration(session);
-        TemplateRepository templateRepository = repositoryProvider.getTemplateRepositoryForUser(conf);
+        TemplateRepository templateRepository = githubRepositoryProvider.getTemplateRepositoryForUser(conf);
         List<Archetype> archetypes = templateRepository.loadTemplate(templateId);
         Archetype archetype = archetypes.get(0);
         ArchetypeWrapper archetypeWrapper = new ArchetypeWrapper(archetype);

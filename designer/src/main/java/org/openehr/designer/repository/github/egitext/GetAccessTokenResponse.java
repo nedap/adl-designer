@@ -18,28 +18,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.user;
+package org.openehr.designer.repository.github.egitext;
 
 /**
  * @author markopi
  */
-public class UserRepositoryConfiguration {
-    private String name;
-    private boolean fork;
+public class GetAccessTokenResponse {
+    private String accessToken;
+    private String scope;
+    private String tokenType;
 
-    public String getName() {
-        return name;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public boolean isFork() {
-        return fork;
+    public String getScope() {
+        return scope;
     }
 
-    public void setFork(boolean fork) {
-        this.fork = fork;
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
     }
 }

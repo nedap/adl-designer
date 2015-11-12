@@ -36,6 +36,7 @@ import sun.misc.BASE64Decoder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author markopi
@@ -57,10 +58,15 @@ public class AbstractGithubRepository extends AbstractRepository {
             githubRepositoryService = new PushRepositoryService(github);
 
             githubContentsService = new PushContentsService(github);
+
+
             String[] repos = repo.split("/");
             String repoOwner = repos[0];
             String repoName = repos[1];
             this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+
+            createBranchIfNeeded(branch);
+
         } catch (IOException e) {
             throw new RepositoryException(e);
         }
@@ -81,18 +87,20 @@ public class AbstractGithubRepository extends AbstractRepository {
         }
     }
 
-
-    protected RepositoryContents getFileContentsOrNull(String path) {
+    private Optional<RepositoryContents> getFileContents(String path) {
         try {
-            return Iterables.getOnlyElement(githubContentsService.getContents(githubRepository, path, branch));
+            return Optional.of(Iterables.getOnlyElement(githubContentsService.getContents(githubRepository, path, branch)));
         } catch (RequestException e) {
             if (e.getStatus() == 404) {
-                return null;
+                return Optional.empty();
             }
             throw new RepositoryException(e);
         } catch (IOException e) {
             throw new RepositoryException(e);
         }
+    }
+    protected RepositoryContents getFileContentsOrNull(String path) {
+        return getFileContents(path).orElse(null);
     }
 
     protected String decodeBase64(String content) {

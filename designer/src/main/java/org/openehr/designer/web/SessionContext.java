@@ -29,7 +29,6 @@ public class SessionContext {
     private String username;
     private String githubToken;
     private String githubRepository;
-    List<Object> filteredRepos;
 
     public String getUsername() {
         return username;
@@ -55,11 +54,4 @@ public class SessionContext {
         this.githubRepository = githubRepository;
     }
 
-    public List<Object> getFilteredRepos() {
-        return filteredRepos;
-    }
-
-    public void setFilteredRepos(List<Object> filteredRepos) {
-        this.filteredRepos = filteredRepos;
-    }
 }

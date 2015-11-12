@@ -68,7 +68,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
         try {
             return Optional.of(objectMapper.readValue(path.toFile(), result));
         } catch (IOException e) {
-            throw new RuntimeException("Error saving user configuration from file " + path, e);
+            throw new RuntimeException("Error saving user configuration to file " + path, e);
         }
 
     }
@@ -76,7 +76,16 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     @Override
     public UserRepositoriesConfiguration getRepositories(String username) {
         return readConfiguration(getRepositoriesConfigurationPath(username), UserRepositoriesConfiguration.class)
-                .orElseGet(UserRepositoriesConfiguration::new);
+                .orElseGet(this::createNewRepositoryConfiguration);
+    }
+
+    private UserRepositoriesConfiguration createNewRepositoryConfiguration() {
+        try {
+            Path defaultConf = Configuration.getAppHome().resolve("conf/default-repositories.json");
+            return objectMapper.readValue(defaultConf.toFile(), UserRepositoriesConfiguration.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

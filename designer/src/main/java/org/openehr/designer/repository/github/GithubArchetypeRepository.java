@@ -39,12 +39,15 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
     public void init(String branch, String accessToken, String repo) {
         super.init(branch, accessToken, repo);
 
+
         ArchetypesMetadata ams = getMetadataFile();
         if (updateMetadataFile(ams)) {
             saveMetadataFile(ams);
         }
 
         for (ArchetypeMetadata am : ams.archetypes) {
+            if (!am.isValid()) continue;
+
             ArchetypeInfo ai = new ArchetypeInfo(am.id, am.rmType, am.name);
             ai.setLanguages(am.languages);
             archetypeMap.put(am.id, ai);
@@ -85,6 +88,9 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
                     pathToMetadata.put(am.path, am);
                 }
                 if (!tc.getSha().equals(am.sha)) {
+                    am.sha = tc.getSha();
+                    am.path = tc.getPath();
+
                     LOG.debug("Updating metadata for {}", tc.getPath());
                     RepositoryContents fileTc = Iterables.getOnlyElement(
                             githubContentsService.getContents(githubRepository, tc.getPath(), branch));
@@ -93,16 +99,15 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
                         List<Archetype> archetypes = TemplateDeserializer.deserialize(adltContent);
                         Archetype a = archetypes.get(0);
 
-                        am.sha = tc.getSha();
-                        am.path = tc.getPath();
                         am.id = a.getArchetypeId().getValue();
                         am.name = findTermText(a, a.getDefinition().getNodeId());
                         am.rmType = a.getDefinition().getRmTypeName();
                         am.languages = extractLanguages(a);
-                        updated = true;
                     } catch (AdlParserException e) {
+                        am.id=null; // marks invalid archetype
                         LOG.error("Error parsing archetype " + tc.getPath() + ". It will not be present in the list of archetypes", e);
                     }
+                    updated = true;
                 }
                 existingPaths.add(tc.getPath());
             }
@@ -120,6 +125,9 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         }
     }
 
+    public boolean isFork() {
+        return githubRepository.isFork();
+    }
 
     private ArchetypesMetadata getMetadataFile() {
         try {
@@ -216,6 +224,10 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
 
         public ArchetypeMetadata(String path) {
             this.path = path;
+        }
+
+        private boolean isValid() {
+            return id!=null;
         }
     }
 }

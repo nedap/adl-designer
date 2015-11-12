@@ -69,8 +69,8 @@
             </thead>
             <tbody>
             <c:forEach items="${Repositories}" var="repo">
-                <tr onclick="ChooseRepo('${repo.full_name}', ${repo.fork})">
-                    <td class="nr"><c:out value="${repo.full_name}"/></td>
+                <tr onclick="ChooseRepo('${repo.name}', ${repo.fork})">
+                    <td class="nr"><c:out value="${repo.name}"/></td>
                     <c:choose>
                         <c:when test="${repo.fork}">
                             <td>Yes</td>

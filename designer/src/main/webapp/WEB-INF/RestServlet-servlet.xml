@@ -41,9 +41,6 @@
 
     <context:annotation-config/>
 
-    <bean id="wtGitHub" class="org.openehr.designer.repository.GitHub">
-        <property name="repositoriesFolder" value="${repositories.folder}"/>
-    </bean>
     <bean id="wtUser" class="org.openehr.designer.web.UserResourceImpl"/>
     <bean id="wtResource" class="org.openehr.designer.web.RepositoryResourceImpl"/>
     <bean id="wtSupport" class="org.openehr.designer.web.SupportResourceImpl"/>

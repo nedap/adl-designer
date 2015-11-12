@@ -13,6 +13,7 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.repository.ArtifactNotFoundException;
+import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
@@ -38,14 +39,14 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
     public void init(String branch, String accessToken, String repo) {
         super.init(branch, accessToken, repo);
 
-        createBranchIfNeeded(branch);
-
         TemplatesMetadata tms = getMetadataFile();
         if (updateMetadataFile(tms)) {
             saveMetadataFile(tms);
         }
 
         for (TemplateMetadata tm : tms.templates) {
+            if (!tm.isValid()) continue;
+
             templateMap.put(tm.id, new TemplateInfo(tm.id, tm.rmType, tm.name));
         }
     }
@@ -84,6 +85,9 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
                     pathToMetadata.put(tm.path, tm);
                 }
                 if (!tc.getSha().equals(tm.sha)) {
+                    tm.sha = tc.getSha();
+                    tm.path = tc.getPath();
+
                     LOG.debug("Updating metadata for {}", tc.getPath());
                     RepositoryContents fileTc = Iterables.getOnlyElement(
                             githubContentsService.getContents(githubRepository, tc.getPath(), branch));
@@ -92,15 +96,14 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
                         List<Archetype> archetypes = TemplateDeserializer.deserialize(adltContent);
                         Archetype a = archetypes.get(0);
 
-                        tm.sha = tc.getSha();
-                        tm.path = tc.getPath();
                         tm.id = a.getArchetypeId().getValue();
                         tm.name = findTermText(a, a.getDefinition().getNodeId());
                         tm.rmType = a.getDefinition().getRmTypeName();
-                        updated = true;
                     } catch (AdlException e) {
+                        tm.id=null;
                         LOG.error("Error parsing template " + tc.getPath()+". It will not be present in the list of templates", e);
                     }
+                    updated = true;
                 }
                 existingPaths.add(tc.getPath());
             }
@@ -134,8 +137,6 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
 
     @Override
     public List<TemplateInfo> listTemplates() {
-
-
         List<TemplateInfo> listTemplates = new ArrayList<>(templateMap.values());
         return listTemplates;
     }
@@ -212,5 +213,10 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
         private String path;
         @JsonProperty
         private String sha;
+
+        private boolean isValid() {
+            return id!=null;
+        }
+
     }
 }

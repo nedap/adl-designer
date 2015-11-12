@@ -323,11 +323,11 @@
                 <%--<span id="repoList">--%>
                 <c:forEach items="${Repositories}" var="repo">
                         <c:choose>
-                            <c:when test="${repo.full_name == CurrentRepo}">
-                                <li onclick="ChooseRepo('${repo.full_name}', ${repo.fork})"><a href="#"><i class="fa fa-circle text-green"></i> <span>${repo.full_name}</span></a></li>
+                            <c:when test="${repo.name == CurrentRepo}">
+                                <li onclick="ChooseRepo('${repo.name}', ${repo.fork})"><a href="#"><i class="fa fa-circle text-green"></i> <span>${repo.name}</span></a></li>
                             </c:when>
                             <c:otherwise>
-                                <li onclick="ChooseRepo('${repo.full_name}', ${repo.fork})"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>${repo.full_name}</span></a></li>
+                                <li onclick="ChooseRepo('${repo.name}', ${repo.fork})"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>${repo.name}</span></a></li>
                             </c:otherwise>
                         </c:choose>
 
@@ -583,10 +583,11 @@
         title: 'Enter repository name',
         pk: 1,
         url: '/designer/AddRepository',
-        success: function(success){
+        success: function(success, newValue){
             toastr.success(success);
-            var repo = $('#newRepo').editable('getValue').newRepo;
-            alert(repo);
+            //var repo = $('#newRepo').editable('getValue').newRepo;
+            var repo = newValue;
+            //alert(repo);
             var v = $('#newRepo')
             var line = '<li onclick="ChooseRepo('+repo+')"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>'+repo+'</span></a></li>'
             v.parent().append(line);

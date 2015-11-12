@@ -40,7 +40,7 @@
 
     <bean id="userService" class="org.openehr.designer.user.UserConfigurationServiceImpl"/>
 
-    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.RepositoryProvider"
+    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.GithubRepositoryProvider"
 
             />
 
