@@ -275,9 +275,7 @@
                     // add global handlers
                     if (!specialized) {
                         var dataElements = targetElement.find(".data");
-                        $('.data').children().css('background-color','#dddddd');
                         targetElement.prop("disabled", true);
-                        targetElement.css('background-color','#dddddd');
                         dataElements.prop("disabled", true);
                         saveButton.prop('disabled', true);
                     }

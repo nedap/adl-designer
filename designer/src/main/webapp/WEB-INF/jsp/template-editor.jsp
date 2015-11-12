@@ -1,5 +1,3 @@
-<%@ page import="org.springframework.web.servlet.ModelAndView" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!--
   ~ ADL Designer
   ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
@@ -24,7 +22,7 @@
 <head>
     <title>Template Editor</title>
 
-    <link rel="icon" href="favicon-96x96.png">
+
     <!-- jquery -->
     <script src="lib/jquery/jquery-1.11.1.js"></script>
 
@@ -97,18 +95,6 @@
 
     <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
 
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- jvectormap -->
-    <link rel="stylesheet" href="plugins/jvectormap/jquery-jvectormap-1.2.2.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
-    <!-- AdminLTE Skins. Choose a skin from the css/skins
-         folder instead of downloading all of them to reduce the load. -->
-    <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
-
     <script>
         $().ready(function () {
             $.fn.editable.defaults.mode = 'inline';
@@ -126,481 +112,46 @@
 
             TemplateEditor.initialize(function () {
             });
-            window.addEventListener("beforeunload", function(event) {
-                event.returnValue = "Please save your work. Any unsaved changes will be deleted.";
-            });
+
 
         });
     </script>
+
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
-<div class="wrapper">
+<body style="overflow:hidden">
+<div id="archetype-editor-main">
+	  <nav class="navbar navbar-default navbar-static-top">
+	    <div class="container-fluid">
+	      <ul class="nav navbar-nav">
+	        <li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>
+	        <li><a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">Load</a></li>
+	        <li><a href="#" onclick="TemplateEditor.saveCurrentTemplateWithNotification()">Save</a></li>
+	      </ul>
+		    <ul class="nav navbar-nav navbar-right">
+		      <li><a href="#" onclick="TemplateEditor.exportToOpt14()">Export to Opt 1.4</a></li>
+		    </ul>
+	    </div>
+	  </nav>
+    <div id="archetype-editor-archetype-id-main"></div>
+    <div id="archetype-editor-archetype-tabs" class="tab-pane">
 
-    <header class="main-header">
-
-        <!-- Logo -->
-        <a href="index2.html" class="logo">
-            <!-- mini logo for sidebar mini 50x50 pixels -->
-            <span class="logo-mini"><b>EHR</b></span>
-            <!-- logo for regular state and mobile devices -->
-            <span class="logo-lg"><b>open</b>EHR</span>
-        </a>
-
-        <!-- Header Navbar: style can be found in header.less -->
-        <nav class="navbar navbar-static-top" role="navigation">
-            <!-- Sidebar toggle button-->
-            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-                <span class="sr-only">Toggle navigation</span>
-            </a>
-            <!-- Navbar Right Menu -->
-            <div class="navbar-custom-menu">
-                <ul class="nav navbar-nav">
-                    <!-- Messages: style can be found in dropdown.less-->
-                    <!--<li class="dropdown messages-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-envelope-o"></i>
-                            <span class="label label-success">4</span>
-                        </a>-->
-
-                    <!-- Notifications: style can be found in dropdown.less -->
-                    <li class="dropdown notifications-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-bell-o"></i>
-                            <span class="label label-danger">10</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li class="header">You have 10 notifications</li>
-                            <li>
-                                <!-- inner menu: contains the actual data -->
-                                <ul class="menu">
-                                    <li>
-                                        <a href="#">
-                                            <i class="fa fa-users text-aqua"></i> Last template update was done by Someone
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the page and may cause design problems
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <i class="fa fa-users text-red"></i> Template XYZ deleted successfully
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <i class="fa fa-user text-red"></i> Maybe something else
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="footer"><a href="#">View all</a></li>
-                        </ul>
-                    </li>
-                    <!-- Tasks: style can be found in dropdown.less -->
-
-                    <!-- User Account: style can be found in dropdown.less -->
-                    <li class="dropdown user user-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <img src="http://i.imgur.com/1U2MVuG.png" class="user-image" alt="User Image">
-                            <span class="hidden-xs">Denko Mancheski</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <!-- User image -->
-                            <li class="user-header">
-                                <img src="http://i.imgur.com/1U2MVuG.png" class="img-circle" alt="User Image">
-                                <p>
-                                    Denko Mancheski - Web Developer
-                                    <small>Member since Oct. 2015</small>
-                                </p>
-                            </li>
-                            <!-- Menu Body -->
-                            <li class="user-body">
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Followers</a>
-                                </div>
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Sales</a>
-                                </div>
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Friends</a>
-                                </div>
-                            </li>
-                            <!-- Menu Footer-->
-                            <li class="user-footer">
-                                <div class="pull-left">
-                                    <a href="#" class="btn btn-default btn-flat">Profile</a>
-                                </div>
-                                <div class="pull-right">
-                                    <a href="/designer/Logout" class="btn btn-default btn-flat">Sign out</a>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                    <!-- Control Sidebar Toggle Button -->
-                    <li>
-                        <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
-                    </li>
-                </ul>
-            </div>
-
-        </nav>
-    </header>
-
-    <!-- Left side column. contains the logo and sidebar -->
-    <aside class="main-sidebar">
-        <!-- sidebar: style can be found in sidebar.less -->
-        <section class="sidebar">
-            <!-- Sidebar user panel -->
-            <div class="user-panel">
-                <div class="pull-left image">
-                    <img src="http://i.imgur.com/1U2MVuG.png" class="img-circle" alt="User Image">
-                </div>
-                <div class="pull-left info">
-                    <p>Denko Mancheski</p>
-                    <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
-                </div>
-            </div>
-            <!-- search form -->
-             <!--   <form action="#" method="get" class="sidebar-form">
-                    <div class="input-group">
-                        <input type="text" name="q" class="form-control" placeholder="Search...">
-                  <span class="input-group-btn">
-                    <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
-                  </span>
-                    </div>
-                </form>-->
-            <!-- /.search form -->
-            <!-- sidebar menu: : style can be found in sidebar.less -->
-            <ul class="sidebar-menu">
-                <li class="header">MAIN ACTIONS</li>
-
-
-
-                <li>
-                    <a href="#"onclick="TemplateEditor.openCreateNewTemplateDialog()">
-                        <i class="fa fa-file-text-o"></i> <span>New template</span>
-
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">
-                        <i class="fa fa-folder-open-o"></i> <span>Load template</span>
-
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="TemplateEditor.saveCurrentTemplateWithNotification()">
-                        <i class="fa fa-floppy-o"></i> <span>Save template</span>
-
-                    </a>
-                </li>
-
-                <li class="header">OPT 1.4</li>
-                <li>
-                    <a href="#"  onclick="TemplateEditor.exportToOpt14()">
-                        <i class="fa fa-upload"></i> <span>Export to Opt 1.4</span>
-
-                    </a>
-                </li>
-                <li><a href="documentation/index.html"><i class="fa fa-book"></i> <span>Documentation</span></a></li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-pie-chart"></i>
-                        <span>Recent Projects</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li><a href="pages/charts/chartjs.html"><i class="fa fa-circle-o"></i> t1</a></li>
-                        <li><a href="pages/charts/morris.html"><i class="fa fa-circle-o"></i> t2</a></li>
-                        <li><a href="pages/charts/flot.html"><i class="fa fa-circle-o"></i> t3</a></li>
-                        <li><a href="pages/charts/inline.html"><i class="fa fa-circle-o"></i> t4</a></li>
-                    </ul>
-                </li>
-                <li class="header">Repositories <i class="fa fa-plus pull-right" onclick="showNewRepoDialog()" style="color: green; cursor:pointer;"></i></li>
-                <li class="header" id="newRepo" style="display: none"><a id="repoName" href="#"></a></li>
-                <%--<span id="repoList">--%>
-                <c:forEach items="${Repositories}" var="repo">
-                        <c:choose>
-                            <c:when test="${repo.name == CurrentRepo}">
-                                <li onclick="ChooseRepo('${repo.name}', ${repo.fork})"><a href="#"><i class="fa fa-circle text-green"></i> <span>${repo.name}</span></a></li>
-                            </c:when>
-                            <c:otherwise>
-                                <li onclick="ChooseRepo('${repo.name}', ${repo.fork})"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>${repo.name}</span></a></li>
-                            </c:otherwise>
-                        </c:choose>
-
-                </c:forEach>
-
-               <%-- </span>--%>
-
-            </ul>
-        </section>
-        <!-- /.sidebar -->
-    </aside>
-
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-
-
-        <!-- Main content -->
-        <section class="content">
-            <!-- Info boxes -->
-            <div class="container-fluid" >
-            <div class="row">
-                <div id="archetype-editor-main">
-
-                    <div id="archetype-editor-archetype-id-main"></div>
-                    <div id="archetype-editor-archetype-tabs" class="tab-pane">
-
-                        <ul class="nav nav-tabs nav-justified">
-                            <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
-                            <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
-                            <li role="presentation"><a href="#archetype-editor-main-tabs-display">Display</a></li>
-                        </ul>
-                        <div class="tab-content" style="border: 1px solid #ddd; box-shadow: 10px 10px 5px #888888;">
-
-                            <div role="tabpanel" class="tab-pane active container-fluid" id="archetype-editor-main-tabs-description">
-                            </div>
-                            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
-                            </div>
-                            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-display">
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </section><!-- /.content -->
-
-    </div><!-- /.content-wrapper -->
-
-    <footer class="main-footer">
-        <div class="pull-right hidden-xs">
-            <b>Version</b> 2.0.0
-        </div>
-        <strong>Copyright &copy; 2014-2015 <a href="http://www.marand.si">Marand</a>.</strong> All rights reserved.
-    </footer>
-
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-        <!-- Create the tabs -->
-        <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
-            <li><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
-            <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+        <ul class="nav nav-tabs">
+            <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
+            <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
+            <li role="presentation"><a href="#archetype-editor-main-tabs-display">Display</a></li>
         </ul>
-        <!-- Tab panes -->
         <div class="tab-content">
-            <!-- Home tab content -->
-            <div class="tab-pane" id="control-sidebar-home-tab">
-                <h3 class="control-sidebar-heading">Recent Activity</h3>
-                <ul class="control-sidebar-menu">
-                    <li>
-                        <a href="javascript::;">
-                            <i class="menu-icon fa fa-birthday-cake bg-red"></i>
-                            <div class="menu-info">
-                                <h4 class="control-sidebar-subheading">Langdon's Birthday</h4>
-                                <p>Will be 23 on April 24th</p>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <i class="menu-icon fa fa-user bg-yellow"></i>
-                            <div class="menu-info">
-                                <h4 class="control-sidebar-subheading">Frodo Updated His Profile</h4>
-                                <p>New phone +1(800)555-1234</p>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <i class="menu-icon fa fa-envelope-o bg-light-blue"></i>
-                            <div class="menu-info">
-                                <h4 class="control-sidebar-subheading">Nora Joined Mailing List</h4>
-                                <p>nora@example.com</p>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <i class="menu-icon fa fa-file-code-o bg-green"></i>
-                            <div class="menu-info">
-                                <h4 class="control-sidebar-subheading">Cron Job 254 Executed</h4>
-                                <p>Execution time 5 seconds</p>
-                            </div>
-                        </a>
-                    </li>
-                </ul><!-- /.control-sidebar-menu -->
 
-                <h3 class="control-sidebar-heading">Tasks Progress</h3>
-                <ul class="control-sidebar-menu">
-                    <li>
-                        <a href="javascript::;">
-                            <h4 class="control-sidebar-subheading">
-                                Custom Template Design
-                                <span class="label label-danger pull-right">70%</span>
-                            </h4>
-                            <div class="progress progress-xxs">
-                                <div class="progress-bar progress-bar-danger" style="width: 70%"></div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <h4 class="control-sidebar-subheading">
-                                Update Resume
-                                <span class="label label-success pull-right">95%</span>
-                            </h4>
-                            <div class="progress progress-xxs">
-                                <div class="progress-bar progress-bar-success" style="width: 95%"></div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <h4 class="control-sidebar-subheading">
-                                Laravel Integration
-                                <span class="label label-warning pull-right">50%</span>
-                            </h4>
-                            <div class="progress progress-xxs">
-                                <div class="progress-bar progress-bar-warning" style="width: 50%"></div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript::;">
-                            <h4 class="control-sidebar-subheading">
-                                Back End Framework
-                                <span class="label label-primary pull-right">68%</span>
-                            </h4>
-                            <div class="progress progress-xxs">
-                                <div class="progress-bar progress-bar-primary" style="width: 68%"></div>
-                            </div>
-                        </a>
-                    </li>
-                </ul><!-- /.control-sidebar-menu -->
+            <div role="tabpanel" class="tab-pane active container-fluid" id="archetype-editor-main-tabs-description">
+            </div>
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
+            </div>
+            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-display">
+            </div>
 
-            </div><!-- /.tab-pane -->
-
-            <!-- Settings tab content -->
-            <div class="tab-pane" id="control-sidebar-settings-tab">
-                <form method="post">
-                    <h3 class="control-sidebar-heading">General Settings</h3>
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Report panel usage
-                            <input type="checkbox" class="pull-right" checked>
-                        </label>
-                        <p>
-                            Some information about this general settings option
-                        </p>
-                    </div><!-- /.form-group -->
-
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Allow mail redirect
-                            <input type="checkbox" class="pull-right" checked>
-                        </label>
-                        <p>
-                            Other sets of options are available
-                        </p>
-                    </div><!-- /.form-group -->
-
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Expose author name in posts
-                            <input type="checkbox" class="pull-right" checked>
-                        </label>
-                        <p>
-                            Allow the user to show his name in blog posts
-                        </p>
-                    </div><!-- /.form-group -->
-
-                    <h3 class="control-sidebar-heading">Chat Settings</h3>
-
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Show me as online
-                            <input type="checkbox" class="pull-right" checked>
-                        </label>
-                    </div><!-- /.form-group -->
-
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Turn off notifications
-                            <input type="checkbox" class="pull-right">
-                        </label>
-                    </div><!-- /.form-group -->
-
-                    <div class="form-group">
-                        <label class="control-sidebar-subheading">
-                            Delete chat history
-                            <a href="javascript::;" class="text-red pull-right"><i class="fa fa-trash-o"></i></a>
-                        </label>
-                    </div><!-- /.form-group -->
-                </form>
-            </div><!-- /.tab-pane -->
         </div>
-    </aside><!-- /.control-sidebar -->
-    <!-- Add the sidebar's background. This div must be placed
-         immediately after the control sidebar -->
-    <div class="control-sidebar-bg"></div>
-
-</div><!-- ./wrapper -->
-
-<!-- jQuery 2.1.4 -->
-
-<!-- AdminLTE App -->
-<script src="dist/js/app.min.js"></script>
-<!-- Sparkline -->
-
-<!-- jvectormap -->
-
-<!-- SlimScroll 1.3.0 -->
-<script src="plugins/slimScroll/jquery.slimscroll.min.js"></script>
-
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="dist/js/pages/dashboard2.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<script>
-    function ChooseRepo(repo, fork) {
-        var url = '/designer/RepositoryProvider?repo=' + repo + '&fork=' + fork;
-        $('#fetchProgress').show();
-        window.location = url;
-    }
-    function AddRepo(repo){
-        var url = '/designer/AddRepository' + repo;
-        window.location = url;
-    }
-    $.fn.editable.defaults.ajaxOptions = {type: "GET"};
-    $('#newRepo').editable({
-        type: 'text',
-        title: 'Enter repository name',
-        pk: 1,
-        url: '/designer/AddRepository',
-        success: function(success, newValue){
-            toastr.success(success);
-            //var repo = $('#newRepo').editable('getValue').newRepo;
-            var repo = newValue;
-            //alert(repo);
-            var v = $('#newRepo')
-            var line = '<li onclick="ChooseRepo('+repo+')"><a href="#"><i class="fa fa-circle-o text-aqua"></i> <span>'+repo+'</span></a></li>'
-            v.parent().append(line);
-            v.hide();
-        },
-
-    })
-
-    function showNewRepoDialog(){
-        $('#newRepo').show();
-        setTimeout(function(){$('#newRepo').editable('toggle')}, 100);
-    }
-</script>
+    </div>
+</div>
 
 </body>
 
