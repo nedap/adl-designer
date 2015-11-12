@@ -18,8 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer;
+package org.openehr.designer.util;
 
+import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang.CharSet;
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -37,6 +40,9 @@ import java.util.function.Predicate;
  * @author Marko Pipan
  */
 public class WtUtils {
+    public static final char FILENAME_ESCAPE_CHAR = '#';
+    private static final CharSet EXTRA_VALID_CHARS = CharSet.getInstance("-=.,#$");
+
     private static DocumentBuilder documentBuilder;
     public static final Logger LOG = LoggerFactory.getLogger(WtUtils.class);
 
@@ -102,6 +108,43 @@ public class WtUtils {
      */
     public static <T> int indexOf(List<T> list, Predicate<T> predicate) {
         return indexOf(list, predicate, 0);
+    }
+
+    public static String sanitizeFilename(String filename) {
+        StringBuilder result = new StringBuilder();
+        final int length = filename.length();
+        for (int i = 0; i < length; i++) {
+            char c = filename.charAt(i);
+            if (c != FILENAME_ESCAPE_CHAR && isValidFilenameChar(c)) {
+                result.append(c);
+            } else {
+                result.append(FILENAME_ESCAPE_CHAR).append(toUnicodeString(c));
+            }
+        }
+        if (SystemUtils.IS_OS_WINDOWS) {
+            if (ImmutableSet.of("con", "prn", "aux").contains(result.toString().toLowerCase())) {
+                result.append(FILENAME_ESCAPE_CHAR);
+            }
+        }
+
+        return result.toString();
+    }
+
+    private static String toUnicodeString(char c) {
+        StringBuilder response = new StringBuilder();
+        String resp = Integer.toHexString(c);
+        for (int i = 0; i < 4 - resp.length(); i++) {
+            response.append(0);
+        }
+        response.append(resp);
+        return response.toString();
+    }
+
+
+    private static boolean isValidFilenameChar(char c) {
+        if (Character.isJavaIdentifierPart(c)) return true;
+        if (EXTRA_VALID_CHARS.contains(c)) return true;
+        return false;
     }
 
 }

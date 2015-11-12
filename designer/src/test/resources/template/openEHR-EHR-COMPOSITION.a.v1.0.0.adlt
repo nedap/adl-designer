@@ -1,0 +1,195 @@
+template (adl_version=1.5.1; rm_release=1.0.2; generated)
+    openEHR-EHR-COMPOSITION.a.v1.0.0
+
+specialize
+    openEHR-EHR-COMPOSITION.adverse_reaction_list.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    
+description
+    details = <
+        ["en"] = <
+            keywords = <"adverse", "reaction", "allergy", "intolerance", "effect", "hypersensitivity", "list", "side">
+            language = <[ISO_639-1::en]>
+            misuse = <"">
+            purpose = <"To record a persistent and managed list of all known adverse reactions experienced by the subject, or statements about positive exclusion or actual absence of information about adverse reactions, that may influence clinical decision-making and care provision.">
+            use = <"Use to record a persistent and managed list of all known adverse reactions (including allergies, hypersensitivities, side effects or intolerances) experienced by the subject, or statements about positive exclusion or actual absence of information about adverse reactions, that may influence clinical decision-making and care provision. 
+
+This list can be utilised as a source of up-to-date adverse reaction data for exchange or as the basis for decision support. 
+
+This list can be comprised of three types of archetype:
+- statements about the positive use of medications are recorded using the EVALUATION.adverse_reaction archetype; OR
+- a statement about the positive exclusion of medication use can be recorded using the specific EVALUATION.exclusion-adverse_reaction archetype - for example: \"No known adverse reactions\"; OR
+- a statement about no information being available - neither a positive and known presence of an adverse reaction nor a positive exclusion - can be recorded using the EVALUATION.absence archetype.
+
+In order for this list to be accurate and safe to use as the basis for decision support activities and for exchange, this list should ideally be curated by a clinician responsible for the health record, rather than managed automatically by the clinical system through business rules alone.">
+        >
+    >
+    lifecycle_state = <"unmanaged">
+    original_author = <
+        ["name"] = <"Heather Leslie">
+        ["organisation"] = <"Ocean Informatics">
+        ["email"] = <"heather.leslie@oceaninformatics.com">
+        ["date"] = <"2013-03-14">
+    >
+    other_contributors = <"Ian McNicoll, Ocean Informatics, United Kingdom (Editor)", "Sam Heard, Ocean Informatics, Australia", "Sistine Barretto-Daniels, Ocean Informatics, Australia">
+
+definition
+    COMPOSITION[id1.1] matches {    -- Adverse Reaction List
+        content cardinality matches {1..*; unordered} matches {
+            use_archetype EVALUATION[id3.1, openEHR-EHR-EVALUATION.ovl-a-adverse_reaction-001.v1.0.0]
+            use_archetype EVALUATION[id3.2, openEHR-EHR-EVALUATION.ovl-a-adverse_reaction-002.v1.0.0]
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                text = <"Adverse Reaction List">
+                description = <"A persistent and managed list of adverse reactions experienced by the subject that may influence clinical decision-making and care provision.">
+            >
+        >
+    >
+
+
+---------------------------------------------------------------------------------
+template_overlay (adl_version=2.0.5; rm_release=1.0.2; generated)
+    openEHR-EHR-EVALUATION.ovl-a-adverse_reaction-001.v1.0.0
+
+specialize
+    openEHR-EHR-EVALUATION.adverse_reaction.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    
+description
+    copyright = <"copyright (c) 2010 NEHTA">
+    details = <
+        ["en"] = <
+            keywords = <"reaction", "allergy", "allergic", "adverse", "event", "effect", "sensitivity", "intolerance", "hypersensitivity", "side effect", "toxicity", "interaction", "drug", "food", "medication", "agent", "substance">
+            language = <[ISO_639-1::en]>
+            misuse = <"Not to be used for recording the absence (or negative presence) of a reaction to 'any substances' or to identified substances – use the EVALUATION.exclusion family of archetypes to express a positive statement of exclusion.
+
+Not to be used for recording that no information was able to be obtained about the Adverse Reaction status of a patient. Use the EVALUATION.absent_information family of archetypes to record a positive statement of absent information about Adverse Reactions was able to be obtained, for example, if a non-cooperative patient refuses to answer questions.
+
+Not to be used to record adverse events, including failures of clinical process, interventions or products. For example: abnormal use or mistakes/errors made in administration of an agent or substance; mislabelling; harm or injury caused by an intervention or procedure; overdose etc.
+
+Not to be use for recording alerts.">
+            purpose = <"To record health information that will inform a clinical assessment of the propensity of an individual for a future reaction to a substance, class of substance or agent.
+
+To record information about exposure events to a substance, building up a persisting and evolving summary over time.">
+            use = <"Use to record all information about adverse reactions that are required to support direct clinical care of an individual, safe exchange of information about adverse reactions and to enable computerised knowledge-based activities such as clinical decision support and alerts.
+
+Use to provide a single place within the health record to record a range of clinical statements about adverse reactions, including:  
+-  record cumulative information about each exposure to a known substance, class of substance or agent; and 
+-  record a clinician's opinion that administration of, or exposure to, a substance or agent is absolutely contraindicated.
+
+Use to record the information about an adverse reaction that might be exchanged with other systems, including as part of an adverse reaction report sent to statutory authorities. It is likely that a formal Adverse Reaction report will require additional information that will be captured in the health record using other archetypes, for example medication and problem/diagnosis etc .
+
+This archetype has been designed to allow recording of information about a more generic substance, class of substance or agent, and then allow more specific details to be recorded including identification of the specific substance on a per exposure basis, including links to other parts of the health record where further details may be located. Note:  it is possible on second or subsequent exposures to a previously identified substance for a reaction not to occur and this archetype allows for these events to be closely linked in a way that will assist in determining if the adverse reaction has been incorrectly identified.
+
+In addition, it is anticipated that in some very specific clinical situations, such as immunologist assessment or for use in clinical trials, more information about the adverse reaction may be required. Additional details can be added as cluster archetypes using the ‘Further Exposure Details’ and ‘Further Reaction Details’ slots. Similarly, additional details that are required only for reporting can be added using the ‘Reporting Details’ slot.
+
+The act of recording an adverse reaction in the health record implies there is a potential hazard for the individual if they are exposed to the same substance/agent in the future - a relative contraindication. If a clinician considers that it is not safe for the individual to be deliberately re-exposed to the substance/agent again, for example, following a manifestation of anaphylaxis, the 'Absolute contraindication' data flag should be recorded as ‘True’. Note: Conversely, a statement about ‘Severity’ of propensity (with possible values such as Mild, Moderate and Severe) has deliberately not been modelled explicitly. Prediction or estimating the grade of possible severity of a future reaction is not safe to record and persist in data, except where it is absolutely clear that the risk of deliberate re-exposure is unacceptable and highly likely to cause significant harm, such as a previous manifestation of anaphylaxis, and in this case the ‘Absolute contraindication’ data flag should be used. 
+
+Valuable first-level information that could be presented to the clinician when they need to assess propensity for future reactions are:
+- statements about previous clinical manifestations following exposure,
+- source of the information/reporter, and
+- a flag for absolute contra-indication. 
+Second-level information can be drawn from each exposure event and links to additional detailed information such as history, examination and diagnoses stored elsewhere in the record, if it is available.">
+        >
+    >
+    lifecycle_state = <"unmanaged">
+    original_author = <
+        ["name"] = <"Heather Leslie">
+        ["organisation"] = <"NEHTA">
+        ["email"] = <"heather.leslie@oceaninformatics.com">
+        ["date"] = <"8/11/2010">
+    >
+    other_contributors = <"John Bennett, NEHTA, Australia", "Rong Chen, Cambio Healthcare System, Sweden", "Stephen Chu, NEHTA, Australia (Editor)", "Matthew Cordell, NEHTA, Australia", "David Evans, Queensland Health, Australia", "Shahla Foozonkhah, Ocean Informatics, Australia", "Sarah Gaunt, NEHTA, Australia", "Heather Grain, Llewelyn Grain Informatics, Australia", "Grahame Grieve, Australia", "Sam Heard, Ocean Informatics, Australia", "Andrew James, University of Toronto, Canada", "Julie James, Blue Wave Informatics LLP, United Kingdom", "Mary Kelaher, NEHTA, Australia", "diane kirkham, nehta, Australia", "Robert L'egan, NEHTA, Australia", "Jobst Landgrebe, ii4sm, Switzerland", "Heather Leslie, Ocean Informatics, Australia (Editor)", "Hugh Leslie, Ocean Informatics, Australia", "Rikard Lovstrom, Swedish Medical Association, Sweden", "Sarah Mahoney, Australia", "David McKillop, NEHTA, Australia", "Ian McNicoll, Ocean Informatics, United Kingdom", "Chris Mitchell, RACGP, Australia", "Jörg Niggemann, Compugroup, Germany", "General Practice Computing Group, Australia", "Camilla Preeston, Royal Australian College of General Practitioners, Australia", "Cathy Richardson, NEHTA, Australia", "Peter Scott, Medical Objects, Australia", "Elena Shabanova, UMMSSOft, Russian Federation", "Hwei-Yee Tai, Tan Tock Seng Hospital, Singapore", "John Taylor, NEHTA, Australia", "Kylie Young, The Royal Australian College of General Practitioners, Australia">
+
+definition
+    EVALUATION[id1.1]     -- Adverse Reaction 1
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                text = <"Adverse Reaction 1">
+                description = <"A harmful or undesirable effect associated with exposure to any substance or agent, including food, plants, animals, insect stings or a medication at therapeutic doses. The range of Adverse Reactions includes both Immune mediated reactions Types I-IV (including allergies and hypersensitivities) and Non-immune mediated reactions (including pseudoallergic reactions, side effects, intolerances, drug toxicities (eg Gentamycin), drug-drug interactions, food-drug interactions, drug-disease interactions and idiosyncratic reactions).">
+            >
+        >
+    >
+
+
+---------------------------------------------------------------------------------
+template_overlay (adl_version=2.0.5; rm_release=1.0.2; generated)
+    openEHR-EHR-EVALUATION.ovl-a-adverse_reaction-002.v1.0.0
+
+specialize
+    openEHR-EHR-EVALUATION.adverse_reaction.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+    
+description
+    copyright = <"copyright (c) 2010 NEHTA">
+    details = <
+        ["en"] = <
+            keywords = <"reaction", "allergy", "allergic", "adverse", "event", "effect", "sensitivity", "intolerance", "hypersensitivity", "side effect", "toxicity", "interaction", "drug", "food", "medication", "agent", "substance">
+            language = <[ISO_639-1::en]>
+            misuse = <"Not to be used for recording the absence (or negative presence) of a reaction to 'any substances' or to identified substances – use the EVALUATION.exclusion family of archetypes to express a positive statement of exclusion.
+
+Not to be used for recording that no information was able to be obtained about the Adverse Reaction status of a patient. Use the EVALUATION.absent_information family of archetypes to record a positive statement of absent information about Adverse Reactions was able to be obtained, for example, if a non-cooperative patient refuses to answer questions.
+
+Not to be used to record adverse events, including failures of clinical process, interventions or products. For example: abnormal use or mistakes/errors made in administration of an agent or substance; mislabelling; harm or injury caused by an intervention or procedure; overdose etc.
+
+Not to be use for recording alerts.">
+            purpose = <"To record health information that will inform a clinical assessment of the propensity of an individual for a future reaction to a substance, class of substance or agent.
+
+To record information about exposure events to a substance, building up a persisting and evolving summary over time.">
+            use = <"Use to record all information about adverse reactions that are required to support direct clinical care of an individual, safe exchange of information about adverse reactions and to enable computerised knowledge-based activities such as clinical decision support and alerts.
+
+Use to provide a single place within the health record to record a range of clinical statements about adverse reactions, including:  
+-  record cumulative information about each exposure to a known substance, class of substance or agent; and 
+-  record a clinician's opinion that administration of, or exposure to, a substance or agent is absolutely contraindicated.
+
+Use to record the information about an adverse reaction that might be exchanged with other systems, including as part of an adverse reaction report sent to statutory authorities. It is likely that a formal Adverse Reaction report will require additional information that will be captured in the health record using other archetypes, for example medication and problem/diagnosis etc .
+
+This archetype has been designed to allow recording of information about a more generic substance, class of substance or agent, and then allow more specific details to be recorded including identification of the specific substance on a per exposure basis, including links to other parts of the health record where further details may be located. Note:  it is possible on second or subsequent exposures to a previously identified substance for a reaction not to occur and this archetype allows for these events to be closely linked in a way that will assist in determining if the adverse reaction has been incorrectly identified.
+
+In addition, it is anticipated that in some very specific clinical situations, such as immunologist assessment or for use in clinical trials, more information about the adverse reaction may be required. Additional details can be added as cluster archetypes using the ‘Further Exposure Details’ and ‘Further Reaction Details’ slots. Similarly, additional details that are required only for reporting can be added using the ‘Reporting Details’ slot.
+
+The act of recording an adverse reaction in the health record implies there is a potential hazard for the individual if they are exposed to the same substance/agent in the future - a relative contraindication. If a clinician considers that it is not safe for the individual to be deliberately re-exposed to the substance/agent again, for example, following a manifestation of anaphylaxis, the 'Absolute contraindication' data flag should be recorded as ‘True’. Note: Conversely, a statement about ‘Severity’ of propensity (with possible values such as Mild, Moderate and Severe) has deliberately not been modelled explicitly. Prediction or estimating the grade of possible severity of a future reaction is not safe to record and persist in data, except where it is absolutely clear that the risk of deliberate re-exposure is unacceptable and highly likely to cause significant harm, such as a previous manifestation of anaphylaxis, and in this case the ‘Absolute contraindication’ data flag should be used. 
+
+Valuable first-level information that could be presented to the clinician when they need to assess propensity for future reactions are:
+- statements about previous clinical manifestations following exposure,
+- source of the information/reporter, and
+- a flag for absolute contra-indication. 
+Second-level information can be drawn from each exposure event and links to additional detailed information such as history, examination and diagnoses stored elsewhere in the record, if it is available.">
+        >
+    >
+    lifecycle_state = <"unmanaged">
+    original_author = <
+        ["name"] = <"Heather Leslie">
+        ["organisation"] = <"NEHTA">
+        ["email"] = <"heather.leslie@oceaninformatics.com">
+        ["date"] = <"8/11/2010">
+    >
+    other_contributors = <"John Bennett, NEHTA, Australia", "Rong Chen, Cambio Healthcare System, Sweden", "Stephen Chu, NEHTA, Australia (Editor)", "Matthew Cordell, NEHTA, Australia", "David Evans, Queensland Health, Australia", "Shahla Foozonkhah, Ocean Informatics, Australia", "Sarah Gaunt, NEHTA, Australia", "Heather Grain, Llewelyn Grain Informatics, Australia", "Grahame Grieve, Australia", "Sam Heard, Ocean Informatics, Australia", "Andrew James, University of Toronto, Canada", "Julie James, Blue Wave Informatics LLP, United Kingdom", "Mary Kelaher, NEHTA, Australia", "diane kirkham, nehta, Australia", "Robert L'egan, NEHTA, Australia", "Jobst Landgrebe, ii4sm, Switzerland", "Heather Leslie, Ocean Informatics, Australia (Editor)", "Hugh Leslie, Ocean Informatics, Australia", "Rikard Lovstrom, Swedish Medical Association, Sweden", "Sarah Mahoney, Australia", "David McKillop, NEHTA, Australia", "Ian McNicoll, Ocean Informatics, United Kingdom", "Chris Mitchell, RACGP, Australia", "Jörg Niggemann, Compugroup, Germany", "General Practice Computing Group, Australia", "Camilla Preeston, Royal Australian College of General Practitioners, Australia", "Cathy Richardson, NEHTA, Australia", "Peter Scott, Medical Objects, Australia", "Elena Shabanova, UMMSSOft, Russian Federation", "Hwei-Yee Tai, Tan Tock Seng Hospital, Singapore", "John Taylor, NEHTA, Australia", "Kylie Young, The Royal Australian College of General Practitioners, Australia">
+
+definition
+    EVALUATION[id1.1]     -- Adverse Reaction 2
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1.1"] = <
+                text = <"Adverse Reaction 2">
+                description = <"A harmful or undesirable effect associated with exposure to any substance or agent, including food, plants, animals, insect stings or a medication at therapeutic doses. The range of Adverse Reactions includes both Immune mediated reactions Types I-IV (including allergies and hypersensitivities) and Non-immune mediated reactions (including pseudoallergic reactions, side effects, intolerances, drug toxicities (eg Gentamycin), drug-drug interactions, food-drug interactions, drug-disease interactions and idiosyncratic reactions).">
+            >
+        >
+    >
+

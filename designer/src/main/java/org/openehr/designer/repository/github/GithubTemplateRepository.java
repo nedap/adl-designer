@@ -1,75 +1,137 @@
 package org.openehr.designer.repository.github;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import org.apache.commons.codec.binary.*;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
-import org.openehr.adl.util.ArchetypeWrapper;
+import org.eclipse.egit.github.core.RepositoryContents;
+import org.openehr.adl.AdlException;
+import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
+import org.openehr.designer.repository.ArchetypeNotFoundException;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
+import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
-import org.openehr.jaxb.am.Template;
-import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-import sun.misc.BASE64Decoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.*;
 
 /**
  * Created by Denko on 11/4/2015.
  */
-public class GithubTemplateRepository implements TemplateRepository {
+// todo templates under subfolders
+public class GithubTemplateRepository extends AbstractGithubRepository implements TemplateRepository {
+    public static final Logger LOG = LoggerFactory.getLogger(GithubTemplateRepository.class);
+
 
     private Map<String, TemplateInfo> templateMap = new HashMap<>();
-    private RestTemplate restTemplate = new RestTemplate();
     private ObjectMapper objectMapper = new ObjectMapper();
-    private String username;
-    private String token;
-    private String repo;
-    public void init(String username, String accessToken, String repo) throws Exception{
-        this.username = username;
-        this.token = accessToken;
-        this.repo = repo;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+accessToken);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
 
-        ResponseEntity<Map> existing;
-        String content="{}", sha=null;
-        try {
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/TemplatesMetadata.json?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            content = decodeContent(existing.getBody().get("content").toString().replace("\n", "").replace("\r", ""));
-            //sha = existing.getBody().get("sha").toString();
-        }catch (HttpClientErrorException e){
-            if (e.getStatusCode().value() != 404) {
-                throw e;
-            }/**/
-            //We need to create it
+
+    public void init(String branch, String accessToken, String repo) throws IOException {
+        super.init(branch, accessToken, repo);
+
+        createBranchIfNeeded(branch);
+
+        TemplatesMetadata tms = getMetadataFile();
+        if (updateMetadataFile(tms)) {
+            saveMetadataFile(tms);
         }
 
+        for (TemplateMetadata tm : tms.templates) {
+            templateMap.put(tm.id, new TemplateInfo(tm.id, tm.rmType, tm.name));
+        }
+    }
 
-        Map<String, Map> metadata = objectMapper.readValue(content, Map.class);
-        Iterator it = metadata.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Map from = (Map) pair.getValue();
-            System.out.println(pair.getKey() + " = " + from);
-            TemplateInfo ti = new TemplateInfo();
-            ti.setName((String) from.get("name"));
-            ti.setRmType((String) from.get("rmType"));
-            ti.setTemplateId((String) from.get("id"));
-            templateMap.put(pair.getKey().toString(), ti);
+
+    private void saveMetadataFile(TemplatesMetadata tms) {
+        try {
+            PushContentsData data = new PushContentsData();
+            data.setMessage("Update templates metadata by adl-designer");
+            data.setContent(encodeBase64(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(tms)));
+            data.setSha(tms.existingSha);
+            data.setBranch(branch);
+
+            githubContentsService.pushContents(githubRepository, "TemplatesMetadata.json", data);
+            // todo tms.existingSha=
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private boolean updateMetadataFile(TemplatesMetadata tms) {
+        boolean updated = false;
+        Map<String, TemplateMetadata> pathToMetadata = Maps.newHashMap(Maps.uniqueIndex(tms.templates, (v) -> v.path));
+        Set<String> existingPaths = new HashSet<>();
+        try {
+            List<RepositoryContents> templatesContents = githubContentsService.getContents(githubRepository, "templates", branch);
+            for (RepositoryContents tc : templatesContents) {
+                if (!tc.getPath().endsWith(".adlt")) continue;
+
+                TemplateMetadata tm = pathToMetadata.get(tc.getPath());
+                if (tm == null) {
+                    tm = new TemplateMetadata();
+                    tm.path = tc.getPath();
+                    tms.templates.add(tm);
+                    pathToMetadata.put(tm.path, tm);
+                }
+                if (!tc.getSha().equals(tm.sha)) {
+                    LOG.debug("Updating metadata for {}", tc.getPath());
+                    RepositoryContents fileTc = Iterables.getOnlyElement(
+                            githubContentsService.getContents(githubRepository, tc.getPath(), branch));
+                    String adltContent = new String(Base64.decodeBase64(fileTc.getContent()), Charsets.UTF_8);
+                    try {
+                        List<Archetype> archetypes = TemplateDeserializer.deserialize(adltContent);
+                        Archetype a = archetypes.get(0);
+
+                        tm.sha = tc.getSha();
+                        tm.path = tc.getPath();
+                        tm.id = a.getArchetypeId().getValue();
+                        tm.name = findTermText(a, a.getDefinition().getNodeId());
+                        tm.rmType = a.getDefinition().getRmTypeName();
+                        updated = true;
+                    } catch (AdlException e) {
+                        LOG.error("Error parsing template " + tc.getPath()+". It will not be present in the list of templates", e);
+                    }
+                }
+                existingPaths.add(tc.getPath());
+            }
+            for (Iterator<TemplateMetadata> iterator = tms.templates.iterator(); iterator.hasNext(); ) {
+                TemplateMetadata template = iterator.next();
+                if (!existingPaths.contains(template.path)) {
+                    iterator.remove();
+                    updated = true;
+                }
+            }
+            return updated;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private TemplatesMetadata getMetadataFile() {
+        try {
+            RepositoryContents repositoryContents = getFileContentsOrNull("TemplatesMetadata.json");
+            if (repositoryContents == null) return new TemplatesMetadata();
+
+            TemplatesMetadata result = objectMapper.readValue(Base64.decodeBase64(repositoryContents.getContent()),
+                    TemplatesMetadata.class);
+            result.existingSha = repositoryContents.getSha();
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
+
     @Override
     public List<TemplateInfo> listTemplates() {
 
@@ -80,83 +142,75 @@ public class GithubTemplateRepository implements TemplateRepository {
 
     @Override
     public void saveTemplate(List<Archetype> archetypes) {
-        String templateId = archetypes.get(0).getArchetypeId().getValue();
-        String rmType = archetypes.get(0).getDefinition().getRmTypeName();
-        ArchetypeWrapper wrapper = new ArchetypeWrapper(archetypes.get(0));
-        String namex = wrapper.getTermText(archetypes.get(0).getDefinition().getNodeId());
+        Archetype a = archetypes.get(0);
+        String templateId = a.getArchetypeId().getValue();
+
         String adltContent = TemplateSerializer.serialize(archetypes);
-        TemplateInfo templateInfo = new TemplateInfo();
-        if(!templateMap.containsValue(templateInfo)) {
-            templateInfo.setTemplateId(templateId);
-            templateInfo.setName(namex);
-            templateInfo.setRmType(rmType);
-            templateMap.put(templateId,templateInfo);
-        }
-
-
-        ResponseEntity<Map> existing;
-        Base64 k = new Base64();
-        String encoded = k.encodeToString(adltContent.toString().getBytes()).replace("\r", "").replace("\n", "");
-        String content="{}", sha=null;
-        org.json.simple.JSONObject r = new org.json.simple.JSONObject();
-        r.put("message", "Created on: " + new Date().toString() + " by "+username);
-        r.put("content", encoded);
-        r.put("branch", username);
-        r.put("sha", "");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<?> httpEntity = new HttpEntity<>(r.toJSONString(), headers);
-
-        try {
-
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/templates/"+templateId+".adlt?ref="+username, HttpMethod.PUT, httpEntity, Map.class);
-
-        }catch (HttpClientErrorException e){
-
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/templates/"+templateId+".adlt?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            r.put("message", "Updated on: " + new Date().toString() + " by "+username);
-            r.put("sha", existing.getBody().get("sha").toString());
-            httpEntity = new HttpEntity<>(r.toJSONString(), headers);
-           existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/templates/"+templateId+".adlt?ref="+username, HttpMethod.PUT, httpEntity, Map.class);
-            //We need to create it
-        }
-
-
-
         // Check to see if the template can still be deserialized
         TemplateDeserializer.deserialize(adltContent);
 
 
+        String path = createPath(templateId);
+        RepositoryContents existing = getFileContentsOrNull(path);
+        PushContentsData pushData = new PushContentsData();
+        pushData.setMessage("Committed through adl-designer");
+        pushData.setContent(encodeBase64(adltContent));
+        pushData.setSha(existing != null ? existing.getSha() : null);
+        pushData.setBranch(branch);
+        try {
+            githubContentsService.pushContents(githubRepository, path, pushData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        TemplateInfo i = templateMap.get(templateId);
+        if (i == null) {
+            String rmType = a.getDefinition().getRmTypeName();
+            i = new TemplateInfo();
+            i.setTemplateId(templateId);
+            i.setRmType(rmType);
+            templateMap.put(templateId, i);
+        }
+        i.setName(findTermText(a, a.getDefinition().getNodeId()));
+
     }
+
 
     @Override
     public List<Archetype> loadTemplate(String templateId) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+token);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
-        ResponseEntity<Map> existing;
-        //String path = templateMap.get(templateId);
-        String content="{}", sha=null;
-        try {
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/templates/"+templateId+".adlt?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            content = decodeContent(existing.getBody().get("content").toString().replace("\n", "").replace("\r", ""));
-            //sha = existing.getBody().get("sha").toString();
-        }catch (HttpClientErrorException e){
-            //Template does not exist
+        String path = createPath(templateId);
+        RepositoryContents rc = getFileContentsOrNull(path);
+        if (rc == null) {
+            throw new ArchetypeNotFoundException(templateId);
         }
-        return TemplateDeserializer.deserialize(content);
+        String adltContent = decodeBase64(rc.getContent());
+        return TemplateDeserializer.deserialize(adltContent);
     }
-    public String decodeContent(String content) {
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] decodedBytes;
-        try {
-            decodedBytes = decoder.decodeBuffer(content);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return new String(decodedBytes);
+
+    private String createPath(String templateId) {
+        String interfaceTemplateId = ArchetypeIdInfo.parse(templateId).toInterfaceString();
+        return "templates/" + interfaceTemplateId + ".adlt";
+    }
+
+
+    private static class TemplatesMetadata {
+        @JsonProperty
+        List<TemplateMetadata> templates = new ArrayList<>();
+        @JsonIgnore
+        String existingSha;
+    }
+
+    private static class TemplateMetadata {
+        @JsonProperty
+        private String id;
+        @JsonProperty
+        private String rmType;
+        @JsonProperty
+        private String name;
+        @JsonProperty
+        private String path;
+        @JsonProperty
+        private String sha;
     }
 }

@@ -26,13 +26,14 @@ import org.openehr.jaxb.am.ArchetypeTerm;
 import org.openehr.jaxb.am.CodeDefinitionSet;
 import org.openehr.jaxb.rm.StringDictionaryItem;
 import org.openehr.jaxb.rm.TranslationDetails;
+import sun.reflect.generics.repository.*;
 
 import java.util.ArrayList;
 
 /**
  * @author markopi
  */
-abstract public class AbstractArchetypeRepository implements ArchetypeRepository {
+abstract public class AbstractArchetypeRepository extends AbstractRepository implements ArchetypeRepository {
     public static ArchetypeInfo createArchetypeInfo(Archetype archetype) {
         ArchetypeInfo info = new ArchetypeInfo();
         info.setArchetypeId(archetype.getArchetypeId().getValue());
@@ -46,27 +47,8 @@ abstract public class AbstractArchetypeRepository implements ArchetypeRepository
         String defaultLanguage = archetype.getOriginalLanguage().getCodeString();
         info.setName(findTermText(archetype, mainNodeId, defaultLanguage));
         info.setLanguages(new ArrayList<>());
-        info.getLanguages().add(defaultLanguage);
-        for (TranslationDetails details : archetype.getTranslations()) {
-            info.getLanguages().add(details.getLanguage().getCodeString());
-        }
+        info.setLanguages(extractLanguages(archetype));
         return info;
-    }
-
-    private static String findTermText(Archetype archetype, String concept, String defaultLanguage) {
-        if (archetype.getTerminology() == null || archetype.getTerminology().getTermDefinitions() == null) return null;
-        CodeDefinitionSet cds = archetype.getTerminology()
-                .getTermDefinitions()
-                .stream()
-                .filter((t) -> t.getLanguage().equals(defaultLanguage))
-                .findFirst().orElse(null);
-        if (cds == null) return null;
-
-        ArchetypeTerm at = cds.getItems().stream().filter((t) -> t.getCode().equals(concept)).findFirst().orElse(null);
-        if (at == null) return null;
-
-        return at.getItems().stream().filter((t) -> t.getId().equals("text")).map(StringDictionaryItem::getValue).findFirst().orElse(null);
-
     }
 
 

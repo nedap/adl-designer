@@ -27,7 +27,7 @@ import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.BomSupportingReader;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.designer.ArchetypeInfo;
-import org.openehr.designer.WtUtils;
+import org.openehr.designer.util.WtUtils;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
