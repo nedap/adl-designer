@@ -23,12 +23,12 @@ package org.openehr.designer.repository;
 /**
  * @author markopi
  */
-public class ArchetypeRepositoryScmException extends ArchetypeRepositoryException {
-    public ArchetypeRepositoryScmException(String message) {
+public class RepositoryScmException extends RepositoryException {
+    public RepositoryScmException(String message) {
         super(message);
     }
 
-    public ArchetypeRepositoryScmException(String message, Throwable cause) {
+    public RepositoryScmException(String message, Throwable cause) {
         super(message, cause);
     }
 }

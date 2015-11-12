@@ -12,7 +12,7 @@ import org.openehr.adl.AdlException;
 import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
-import org.openehr.designer.repository.ArchetypeNotFoundException;
+import org.openehr.designer.repository.ArtifactNotFoundException;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
@@ -35,7 +35,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public void init(String branch, String accessToken, String repo) throws IOException {
+    public void init(String branch, String accessToken, String repo) {
         super.init(branch, accessToken, repo);
 
         createBranchIfNeeded(branch);
@@ -182,7 +182,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
         String path = createPath(templateId);
         RepositoryContents rc = getFileContentsOrNull(path);
         if (rc == null) {
-            throw new ArchetypeNotFoundException(templateId);
+            throw new ArtifactNotFoundException(templateId);
         }
         String adltContent = decodeBase64(rc.getContent());
         return TemplateDeserializer.deserialize(adltContent);

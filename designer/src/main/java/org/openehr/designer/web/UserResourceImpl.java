@@ -54,39 +54,27 @@ public class UserResourceImpl implements UserResource {
 
     @RequestMapping(method = RequestMethod.GET, value = "/template-editor")
     public ModelAndView displayTemplateEditor(HttpSession session) {
-//        SessionConfiguration conf = WebAttributes.getSessionConfiguration(session);
+        SessionContext ctx = WebAttributes.getSessionConfiguration(session);
 
-        if (session.getAttribute("Token") == null || session.getAttribute("Repo") == null) {
+        if (ctx == null || ctx.getGithubRepository()==null) {
             ModelAndView result = new ModelAndView("Login");
             return result;
         }
 
         ModelAndView result = new ModelAndView("template-editor");
-        result.addObject("Repositories", session.getAttribute("FilteredRepos"));
-        result.addObject("CurrentRepo", session.getAttribute("Repo"));
+        result.addObject("Repositories", ctx.getFilteredRepos());
+        result.addObject("CurrentRepo", ctx.getGithubRepository());
         return result;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/RepositoryProvider")
     public ModelAndView displayTest(HttpServletRequest req, @RequestParam String repo) throws Exception {
-        HttpSession session = req.getSession();
-//        String repo = req.getParameter("repo");
-
-        String token = req.getSession().getAttribute("Token").toString();
-
-        session.setAttribute("Repo", repo);
-
+        SessionContext ctx = WebAttributes.getSessionConfiguration(req.getSession());
+        ctx.setGithubRepository(repo);
 
         // trigger repository init if needed
-        repositoryProvider.getArchetypeRepositoryForUser(session);
-        repositoryProvider.getTemplateRepositoryForUser(session);
-
-//            if (session.getAttribute("Token") != null) {
-//                //user was already logged
-//            } else {
-//                session.setAttribute("Token", token);
-//                session.setAttribute("Username", username);
-//            }
+        repositoryProvider.getArchetypeRepositoryForUser(ctx);
+        repositoryProvider.getTemplateRepositoryForUser(ctx);
 
         return new ModelAndView("redirect:/template-editor");
 
@@ -95,10 +83,10 @@ public class UserResourceImpl implements UserResource {
     @RequestMapping(method = RequestMethod.GET, value = "/AddRepository")
     public ResponseEntity<String> RepoAdder(HttpServletRequest req) throws Exception {
         //if(true)return new ResponseEntity<>("Repository added successfully!",HttpStatus.OK);
+        SessionContext ctx = WebAttributes.getSessionConfiguration(req.getSession());
         HttpSession session = req.getSession();
         HttpHeaders headers = new HttpHeaders();
-        String token = session.getAttribute("Token").toString();
-        headers.set("Authorization", "Bearer " + token);
+        headers.set("Authorization", "Bearer " + ctx.getGithubToken());
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
         ResponseEntity<Object[]> repos;
@@ -153,9 +141,10 @@ public class UserResourceImpl implements UserResource {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/RepositoryChooser")
-    public ModelAndView repoChooser(HttpServletRequest req) throws Exception {
-        HttpSession session = req.getSession();
-        String githubCode = req.getParameter("code");
+    public ModelAndView repoChooser(HttpServletRequest req, @RequestParam String code) throws Exception {
+        SessionContext ctx = new SessionContext();
+
+        //String code = req.getParameter("code");
         String tokenResult;
         String token = "";
         List<String> repoNames = new ArrayList<>();
@@ -181,13 +170,13 @@ public class UserResourceImpl implements UserResource {
 
 
         ResponseEntity<Object[]> repos = null;
-        if (req.getSession().getAttribute("Token") == null) {
-            if (githubCode != null) {
+        if (ctx.getGithubToken() == null) {
+            if (code != null) {
                 RestTemplate restTemplate = new RestTemplate();
                 MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
                 map.add("client_id", "d0b3c06d13fdfabf0c88");
                 map.add("client_secret", "3d9bece886ab0dc46202260248596421c1ce6712");
-                map.add("code", githubCode);
+                map.add("code", code);
                 tokenResult = restTemplate.postForObject("https://github.com/login/oauth/access_token/", map, String.class);
                 int a = tokenResult.indexOf("=");
                 int b = tokenResult.indexOf("&scope");
@@ -204,16 +193,14 @@ public class UserResourceImpl implements UserResource {
         }
 
         // setting session attributes
-        session.setAttribute("Token", token);
+        ctx.setGithubToken(token);
+
 
         GitHubClient github = new GitHubClient();
         github.setOAuth2Token(token);
         UserService userService = new UserService(github);
         User user = userService.getUser();
-        session.setAttribute("Username", user.getLogin());
-
-
-        ModelAndView view = new ModelAndView("RepositoryChooser");
+        ctx.setUsername(user.getLogin());
 
         // parsing JSON
         Object[] repositories = repos.getBody();
@@ -230,7 +217,10 @@ public class UserResourceImpl implements UserResource {
                 filtered.add(repo);
             }
         }
-        session.setAttribute("FilteredRepos", filtered);
+
+        ModelAndView view = new ModelAndView("RepositoryChooser");
+        req.getSession().setAttribute(WebAttributes.SESSION_CONTEXT, ctx);
+        ctx.setFilteredRepos(filtered);
         view.addObject("Repositories", filtered.toArray());
         return view;
     }
@@ -238,8 +228,7 @@ public class UserResourceImpl implements UserResource {
     @RequestMapping(method = RequestMethod.GET, value = "/Logout")
     public ModelAndView Logout(HttpServletRequest req) {
         ModelAndView view = new ModelAndView("Login");
-        HttpSession session = req.getSession();
-        session.invalidate();
+        req.getSession().invalidate();
         return view;
     }
 

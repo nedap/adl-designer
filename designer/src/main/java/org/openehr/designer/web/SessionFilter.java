@@ -25,11 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * @author markopi
  */
 public class SessionFilter implements Filter {
+    private static final Pattern RES_PATTERN=Pattern.compile("(?<ext>\\.[\\w\\d]+$)");
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -38,9 +40,10 @@ public class SessionFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
+//        Matcher m = req.getServletPath().;
 
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute(WebAttributes.SESSION_CONFIGURATION) == null) {
+        if (session == null || session.getAttribute(WebAttributes.SESSION_CONTEXT) == null) {
             resp.sendRedirect(getLoginPath(req));
         } else {
             chain.doFilter(request, response);

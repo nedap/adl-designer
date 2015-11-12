@@ -26,10 +26,10 @@ import javax.servlet.http.HttpSession;
  * @author markopi
  */
 public class WebAttributes {
-    public static final String SESSION_CONFIGURATION = "SessionConfiguration";
+    public static final String SESSION_CONTEXT = SessionContext.class.getName();
 
 
-    public static SessionConfiguration getSessionConfiguration(HttpSession session) {
-        return (SessionConfiguration) session.getAttribute(SESSION_CONFIGURATION);
+    public static SessionContext getSessionConfiguration(HttpSession session) {
+        return (SessionContext) session.getAttribute(SESSION_CONTEXT);
     }
 }

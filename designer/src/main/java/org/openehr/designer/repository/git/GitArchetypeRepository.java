@@ -37,7 +37,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.openehr.designer.repository.AbstractFileBasedArchetypeRepository;
-import org.openehr.designer.repository.ArchetypeRepositoryScmException;
+import org.openehr.designer.repository.RepositoryScmException;
 import org.openehr.designer.repository.ScmEnabled;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
@@ -151,7 +151,7 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
 
             LOG.debug("New repository status: " + git.getRepository().getRepositoryState());
         } catch (GitAPIException | IOException e) {
-            throw new ArchetypeRepositoryScmException("Could not update from remote repository", e);
+            throw new RepositoryScmException("Could not update from remote repository", e);
         }
     }
 
@@ -170,7 +170,7 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
             }
             return result;
         } catch (IOException | GitAPIException e) {
-            throw new ArchetypeRepositoryScmException("Couldn't diff", e);
+            throw new RepositoryScmException("Couldn't diff", e);
         }
     }
 
@@ -205,7 +205,7 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
                     .setAll(true)
                     .call();
         } catch (GitAPIException e) {
-            throw new ArchetypeRepositoryScmException("Could not execute git commit", e);
+            throw new RepositoryScmException("Could not execute git commit", e);
         }
     }
 
@@ -214,7 +214,7 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
             git.push()
                     .call();
         } catch (GitAPIException e) {
-            throw new ArchetypeRepositoryScmException("Could not execute git push", e);
+            throw new RepositoryScmException("Could not execute git push", e);
         }
     }
 
@@ -236,7 +236,7 @@ public class GitArchetypeRepository extends AbstractFileBasedArchetypeRepository
                     .addFilepattern(localArchetypeInfo.getPath().toString().replaceAll("\\\\", "/"))
                     .call();
         } catch (GitAPIException e) {
-            throw new ArchetypeRepositoryScmException("Could not add file to git", e);
+            throw new RepositoryScmException("Could not add file to git", e);
         }
     }
 

@@ -127,7 +127,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
                     Files.newInputStream(adlFile),
                     Charsets.UTF_8));
         } catch (IOException e) {
-            throw new ArchetypeRepositoryException("Could not read archetype from file " + adlFile, e);
+            throw new RepositoryException("Could not read archetype from file " + adlFile, e);
         }
     }
 
@@ -201,10 +201,10 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
             } else {
                 return updateArchetype(archetype, adl);
             }
-        } catch (ArchetypeRepositoryException e) {
+        } catch (RepositoryException e) {
             throw e;
         } catch (Exception e) {
-            throw new ArchetypeRepositoryException("Could not archetype to file", e);
+            throw new RepositoryException("Could not archetype to file", e);
         }
     }
 
@@ -212,7 +212,7 @@ abstract public class AbstractFileBasedArchetypeRepository extends AbstractArche
         LocalArchetypeInfo localArchetypeInfo = getLocalArchetypeInfo(archetypeId);
 
         if (localArchetypeInfo == null) {
-            throw new ArchetypeNotFoundException(archetypeId);
+            throw new ArtifactNotFoundException(archetypeId);
         }
         String adl = readArchetype(getRepositoryLocation().resolve(localArchetypeInfo.getPath()));
         return deserializer.parse(adl);

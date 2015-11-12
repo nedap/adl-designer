@@ -29,6 +29,7 @@ import org.eclipse.egit.github.core.RepositoryContents;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.openehr.designer.repository.AbstractRepository;
+import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.github.egitext.PushContentsService;
 import org.openehr.designer.repository.github.egitext.PushRepositoryService;
 import sun.misc.BASE64Decoder;
@@ -48,17 +49,21 @@ public class AbstractGithubRepository extends AbstractRepository {
 
     protected Repository githubRepository;
 
-    protected void init(String branch, String accessToken, String repo) throws IOException {
-        this.branch = branch;
-        github = new GitHubClient();
-        github.setCredentials(branch, accessToken);
-        githubRepositoryService = new PushRepositoryService(github);
+    protected void init(String branch, String accessToken, String repo) {
+        try {
+            this.branch = branch;
+            github = new GitHubClient();
+            github.setCredentials(branch, accessToken);
+            githubRepositoryService = new PushRepositoryService(github);
 
-        githubContentsService = new PushContentsService(github);
-        String[] repos = repo.split("/");
-        String repoOwner = repos[0];
-        String repoName = repos[1];
-        this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+            githubContentsService = new PushContentsService(github);
+            String[] repos = repo.split("/");
+            String repoOwner = repos[0];
+            String repoName = repos[1];
+            this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+        } catch (IOException e) {
+            throw new RepositoryException(e);
+        }
     }
 
     protected void createBranchIfNeeded(String branch) {
@@ -72,7 +77,7 @@ public class AbstractGithubRepository extends AbstractRepository {
                 githubRepositoryService.createBranch(githubRepository, branch, masterBranch.getCommit().getSha());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
     }
 
@@ -84,9 +89,9 @@ public class AbstractGithubRepository extends AbstractRepository {
             if (e.getStatus() == 404) {
                 return null;
             }
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
     }
 
@@ -96,7 +101,7 @@ public class AbstractGithubRepository extends AbstractRepository {
         try {
             decodedBytes = decoder.decodeBuffer(content);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
         return new String(decodedBytes);
     }

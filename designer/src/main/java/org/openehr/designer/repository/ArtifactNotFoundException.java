@@ -23,10 +23,10 @@ package org.openehr.designer.repository;
 /**
  * @author markopi
  */
-public class ArchetypeNotFoundException extends ArchetypeRepositoryException {
+public class ArtifactNotFoundException extends RepositoryException {
     private final String archetypeId;
 
-    public ArchetypeNotFoundException(String archetypeId) {
+    public ArtifactNotFoundException(String archetypeId) {
         super("Archetype not found: " + archetypeId);
         this.archetypeId = archetypeId;
     }

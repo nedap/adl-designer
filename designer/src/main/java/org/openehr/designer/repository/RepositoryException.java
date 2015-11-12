@@ -23,13 +23,17 @@ package org.openehr.designer.repository;
 /**
  * @author markopi
  */
-public class ArchetypeRepositoryException extends RuntimeException {
+public class RepositoryException extends RuntimeException {
 
-    public ArchetypeRepositoryException(String message) {
+    public RepositoryException(String message) {
         super(message);
     }
 
-    public ArchetypeRepositoryException(String message, Throwable cause) {
+    public RepositoryException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public RepositoryException(Throwable cause) {
+        super(cause);
     }
 }

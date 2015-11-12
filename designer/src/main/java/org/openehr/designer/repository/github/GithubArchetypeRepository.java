@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.eclipse.egit.github.core.RepositoryContents;
@@ -14,8 +13,9 @@ import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.designer.repository.ArchetypeNotFoundException;
+import org.openehr.designer.repository.ArtifactNotFoundException;
 import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
     private AdlDeserializer deserializer = new AdlDeserializer();
 
 
-    public void init(String branch, String accessToken, String repo) throws IOException {
+    public void init(String branch, String accessToken, String repo) {
         super.init(branch, accessToken, repo);
 
         ArchetypesMetadata ams = getMetadataFile();
@@ -61,7 +61,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
 
             githubContentsService.pushContents(githubRepository, "ArchetypesMetadata.json", data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
 
     }
@@ -116,7 +116,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
             }
             return updated;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
     }
 
@@ -131,7 +131,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
             result.existingSha = repositoryContents.getSha();
             return result;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
 
     }
@@ -141,7 +141,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         String path = createPath(archetypeId);
         RepositoryContents rc = getFileContentsOrNull(path);
         if (rc == null) {
-            throw new ArchetypeNotFoundException(archetypeId);
+            throw new ArtifactNotFoundException(archetypeId);
         }
         String adlsContent = decodeBase64(rc.getContent());
         return deserializer.parse(adlsContent);
@@ -171,7 +171,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         try {
             githubContentsService.pushContents(githubRepository, path, pushData);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
 
         ArchetypeInfo i = archetypeMap.get(archetypeId);

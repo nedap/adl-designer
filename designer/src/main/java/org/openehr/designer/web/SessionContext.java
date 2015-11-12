@@ -20,15 +20,16 @@
 
 package org.openehr.designer.web;
 
-import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * @author markopi
  */
-public class SessionConfiguration {
+public class SessionContext {
     private String username;
     private String githubToken;
-    private String repository;
+    private String githubRepository;
+    List<Object> filteredRepos;
 
     public String getUsername() {
         return username;
@@ -46,11 +47,19 @@ public class SessionConfiguration {
         this.githubToken = githubToken;
     }
 
-    public String getRepository() {
-        return repository;
+    public String getGithubRepository() {
+        return githubRepository;
     }
 
-    public void setRepository(String repository) {
-        this.repository = repository;
+    public void setGithubRepository(String githubRepository) {
+        this.githubRepository = githubRepository;
+    }
+
+    public List<Object> getFilteredRepos() {
+        return filteredRepos;
+    }
+
+    public void setFilteredRepos(List<Object> filteredRepos) {
+        this.filteredRepos = filteredRepos;
     }
 }
