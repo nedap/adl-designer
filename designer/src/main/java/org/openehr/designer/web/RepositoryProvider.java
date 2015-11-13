@@ -1,20 +1,29 @@
 package org.openehr.designer.web;
 
-import com.google.common.collect.Maps;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.openehr.designer.repository.ArchetypeRepository;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.repository.github.GithubArchetypeRepository;
 import org.openehr.designer.repository.github.GithubTemplateRepository;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Denko on 10/28/2015.
  */
 public class RepositoryProvider {
-    public static Map<RepoKey, GithubTemplateRepository> userToTemplateRepositoryMap = Maps.newConcurrentMap();
-    public static Map<RepoKey, GithubArchetypeRepository> userToArchetypeRepositoryMap = Maps.newConcurrentMap();
+    public static Cache<RepoKey, GithubTemplateRepository> userToTemplateRepositoryMap =
+            CacheBuilder.<RepoKey, GithubTemplateRepository>newBuilder()
+                    .expireAfterAccess(1, TimeUnit.DAYS)
+                    .build();
+    public static Cache<RepoKey, GithubArchetypeRepository> userToArchetypeRepositoryMap =
+            CacheBuilder.<RepoKey, GithubArchetypeRepository>newBuilder()
+                    .expireAfterAccess(1, TimeUnit.DAYS)
+                    .build();
 
 
     public TemplateRepository getTemplateRepository(SessionContext conf) {
@@ -25,8 +34,20 @@ public class RepositoryProvider {
         return getArchetypeRepository(conf, conf.getGithubRepository());
     }
 
+    private <K, V> V computeIfAbsent(Cache<K, V> cache, K key, Callable<V> supplier) {
+        try {
+            return cache.get(key, supplier);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public TemplateRepository getTemplateRepository(SessionContext conf, String repositoryName) {
-        return userToTemplateRepositoryMap.computeIfAbsent(new RepoKey(conf.getUsername(), repositoryName), (u) -> {
+        return computeIfAbsent(userToTemplateRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
             GithubTemplateRepository r = new GithubTemplateRepository();
             r.init(conf.getUsername(), conf.getGithubToken(), repositoryName);
             return r;
@@ -35,7 +56,7 @@ public class RepositoryProvider {
 
     public ArchetypeRepository getArchetypeRepository(SessionContext conf, String repositoryName) {
 
-        return userToArchetypeRepositoryMap.computeIfAbsent(new RepoKey(conf.getUsername(), repositoryName), (u) -> {
+        return computeIfAbsent(userToArchetypeRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
             GithubArchetypeRepository r = new GithubArchetypeRepository();
             r.init(conf.getUsername(), conf.getGithubToken(), repositoryName);
             return r;
