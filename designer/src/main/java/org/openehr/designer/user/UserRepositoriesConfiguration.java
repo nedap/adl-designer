@@ -20,8 +20,6 @@
 
 package org.openehr.designer.user;
 
-import com.google.common.collect.FluentIterable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +29,15 @@ import java.util.Optional;
  */
 public class UserRepositoriesConfiguration {
     private List<UserRepositoryConfiguration> repositories;
+    private String lastRepository;
+
+    public String getLastRepository() {
+        return lastRepository;
+    }
+
+    public void setLastRepository(String lastRepository) {
+        this.lastRepository = lastRepository;
+    }
 
     public List<UserRepositoryConfiguration> getRepositories() {
         if (repositories == null) {

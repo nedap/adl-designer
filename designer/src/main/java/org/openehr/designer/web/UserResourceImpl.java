@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Denko on 10/27/2015.
@@ -35,8 +36,6 @@ import java.util.List;
 @Controller
 public class UserResourceImpl implements UserResource {
     private static final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
-
-    private Gson gson = new Gson();
 
     @Resource
     private GithubRepositoryProvider githubRepositoryProvider;
@@ -115,12 +114,15 @@ public class UserResourceImpl implements UserResource {
         User user = userService.getUser();
         ctx.setUsername(user.getLogin());
 
-        List<UserRepositoryConfiguration> repositories = userConfigurationService.getRepositories(ctx.getUsername()).getRepositories();
+        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositories(ctx.getUsername());
 
+        String lastRepository = repositories.findByName(repositories.getLastRepository())
+                .orElse(repositories.getRepositories().get(0)).getName();
+        ctx.setGithubRepository(lastRepository);
 
-        ModelAndView view = new ModelAndView("RepositoryChooser");
         req.getSession().setAttribute(WebAttributes.SESSION_CONTEXT, ctx);
-        view.addObject("Repositories", repositories);
+
+        ModelAndView view = new ModelAndView("template-editor");
         return view;
     }
 
