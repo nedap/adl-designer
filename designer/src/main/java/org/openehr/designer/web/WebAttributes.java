@@ -20,16 +20,10 @@
 
 package org.openehr.designer.web;
 
-import javax.servlet.http.HttpSession;
-
 /**
  * @author markopi
  */
 public class WebAttributes {
     public static final String SESSION_CONTEXT = SessionContext.class.getName();
 
-
-    public static SessionContext getSessionConfiguration(HttpSession session) {
-        return (SessionContext) session.getAttribute(SESSION_CONTEXT);
-    }
 }

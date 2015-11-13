@@ -26,6 +26,7 @@ import java.util.List;
  * @author markopi
  */
 public class SessionContext {
+
     private String username;
     private String githubToken;
     private String githubRepository;

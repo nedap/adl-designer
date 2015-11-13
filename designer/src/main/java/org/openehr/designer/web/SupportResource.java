@@ -21,14 +21,26 @@
 package org.openehr.designer.web;
 
 import org.openehr.designer.support.units.Property;
+import org.openehr.designer.support.units.UnitsProvider;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
  * @author markopi
  */
-public interface SupportResource {
-    public List<Property> getUnits();
+@RestController
+@RequestMapping(value = "/support")
+public class SupportResource {
 
+    @Resource
+    private UnitsProvider unitsProvider;
 
+    @RequestMapping(value = "/units", method = RequestMethod.GET)
+    public List<Property> getUnits() {
+        return unitsProvider.getProperties();
+    }
 }

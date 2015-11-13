@@ -17,15 +17,15 @@ public class GithubRepositoryProvider {
     public static Map<RepoKey, GithubArchetypeRepository> userToArchetypeRepositoryMap = Maps.newConcurrentMap();
 
 
-    public TemplateRepository getTemplateRepositoryForUser(SessionContext conf) {
-        return getTemplateRepositoryForUser(conf, conf.getGithubRepository());
+    public TemplateRepository getTemplateRepository(SessionContext conf) {
+        return getTemplateRepository(conf, conf.getGithubRepository());
     }
 
-    public ArchetypeRepository getArchetypeRepositoryForUser(SessionContext conf) {
-        return getArchetypeRepositoryForUser(conf, conf.getGithubRepository());
+    public ArchetypeRepository getArchetypeRepository(SessionContext conf) {
+        return getArchetypeRepository(conf, conf.getGithubRepository());
     }
 
-    public TemplateRepository getTemplateRepositoryForUser(SessionContext conf, String repositoryName) {
+    public TemplateRepository getTemplateRepository(SessionContext conf, String repositoryName) {
         return userToTemplateRepositoryMap.computeIfAbsent(new RepoKey(conf.getUsername(), repositoryName), (u) -> {
             GithubTemplateRepository r = new GithubTemplateRepository();
             r.init(conf.getUsername(), conf.getGithubToken(), repositoryName);
@@ -33,7 +33,7 @@ public class GithubRepositoryProvider {
         });
     }
 
-    public ArchetypeRepository getArchetypeRepositoryForUser(SessionContext conf, String repositoryName) {
+    public ArchetypeRepository getArchetypeRepository(SessionContext conf, String repositoryName) {
 
         return userToArchetypeRepositoryMap.computeIfAbsent(new RepoKey(conf.getUsername(), repositoryName), (u) -> {
             GithubArchetypeRepository r = new GithubArchetypeRepository();

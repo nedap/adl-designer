@@ -20,18 +20,21 @@
 
 package org.openehr.designer.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 /**
  * @author markopi
  */
-public class SessionFilter implements Filter {
-    private static final Pattern RES_PATTERN=Pattern.compile("(?<ext>\\.[\\w\\d]+$)");
+public class AuthorizationFilter implements Filter {
+    public static final Logger LOG = LoggerFactory.getLogger(AuthorizationFilter.class);
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -40,18 +43,24 @@ public class SessionFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
-//        Matcher m = req.getServletPath().;
 
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute(WebAttributes.SESSION_CONTEXT) == null) {
-            resp.sendRedirect(getLoginPath(req));
+        boolean authorized = session != null && session.getAttribute(WebAttributes.SESSION_CONTEXT) != null;
+        // LOG.debug("Authorized: {} for servlet {}", authorized, req.getRequestURI() );
+        if (!authorized) {
+            req.getRequestDispatcher("/WEB-INF/html/login.html").forward(request, response);
         } else {
-            chain.doFilter(request, response);
+            SessionContextHolder.SESSION_CONTEXT.set((SessionContext) session.getAttribute(WebAttributes.SESSION_CONTEXT));
+            try {
+                chain.doFilter(request, response);
+            } finally {
+                SessionContextHolder.SESSION_CONTEXT.remove();
+            }
         }
     }
 
     private String getLoginPath(HttpServletRequest req) {
-        return req.getContextPath() + "/login.html";
+        return req.getContextPath();
     }
 
     @Override

@@ -20,28 +20,14 @@
 
 package org.openehr.designer.web;
 
-import org.openehr.designer.support.units.Property;
-import org.openehr.designer.support.units.UnitsProvider;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Resource;
-import java.util.List;
-
 /**
  * @author markopi
  */
-@RestController
-@RequestMapping(value = "/support")
-public class SupportResourceImpl implements SupportResource {
+public class SessionContextHolder {
+    static ThreadLocal<SessionContext> SESSION_CONTEXT = new ThreadLocal<>();
 
-    @Resource
-    private UnitsProvider unitsProvider;
-
-    @RequestMapping(value = "/units", method = RequestMethod.GET)
-    @Override
-    public List<Property> getUnits() {
-        return unitsProvider.getProperties();
+    public static SessionContext get() {
+        return SESSION_CONTEXT.get();
     }
+
 }

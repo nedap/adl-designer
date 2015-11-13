@@ -21,16 +21,50 @@
 package org.openehr.designer.web;
 
 import org.openehr.designer.ReferenceModelData;
+import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.rm.ReferenceModelInfo;
+import org.openehr.designer.rm.ReferenceModels;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * @author markopi
  */
-public interface ReferenceModelResource {
-    List<ReferenceModelInfo> list();
+@RestController
+@RequestMapping(value = "/rm")
+public class ReferenceModelResource {
+    public static final Logger LOG = LoggerFactory.getLogger(ReferenceModelResource.class);
 
-    ReferenceModelData getRmModel(String modelName, String modelVersion) throws IOException;
+    @Resource
+    private ReferenceModels referenceModels;
+
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public List<ReferenceModelInfo> list() {
+        return referenceModels.listModels();
+    }
+
+    @RequestMapping(value = "/{name}/{version}", method = RequestMethod.GET)
+    public ReferenceModelData getRmModel(@PathVariable String name, @PathVariable String version) throws IOException {
+        ReferenceModelDataBuilder builder = new ReferenceModelDataBuilder();
+        try {
+            return builder.build(referenceModels.getReferenceModel(name, version));
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+    }
+
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseBody
+    public ErrorResponse handleException(NotFoundException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
 }

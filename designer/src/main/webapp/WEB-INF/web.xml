@@ -37,8 +37,8 @@
     </context-param>
 
     <!--<context-param>-->
-        <!--<param-name>resteasy.servlet.mapping.prefix</param-name>-->
-        <!--<param-value>/rest</param-value>-->
+    <!--<param-name>resteasy.servlet.mapping.prefix</param-name>-->
+    <!--<param-value>/rest</param-value>-->
     <!--</context-param>-->
 
     <listener>
@@ -46,46 +46,40 @@
     </listener>
 
 
-    <!--<filter>-->
-        <!--<filter-name>ApiOriginFilter</filter-name>-->
-        <!--<filter-class>si.marand.openehr.tadapt.web.ApiOriginFilter</filter-class>-->
-    <!--</filter>-->
-    <!--<filter-mapping>-->
-        <!--<filter-name>ApiOriginFilter</filter-name>-->
-        <!--<url-pattern>/*</url-pattern>-->
-    <!--</filter-mapping>-->
+    <filter>
+        <filter-name>AuthorizationFilter</filter-name>
+        <filter-class>org.openehr.designer.web.AuthorizationFilter</filter-class>
+    </filter>
 
 
     <servlet>
-        <servlet-name>RestServlet</servlet-name>
+        <servlet-name>dispatcher</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
+        <servlet-name>dispatcher</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
+        <servlet-name>dispatcher</servlet-name>
         <url-pattern>/template-editor</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/RepositoryProvider</url-pattern>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/app/*</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/RepositoryChooser</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/AddRepository</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/Logout</url-pattern>
-    </servlet-mapping>
+
+
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/rest/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/template-editor</url-pattern>
+    </filter-mapping>
 
     <welcome-file-list>
         <welcome-file>template-editor</welcome-file>
