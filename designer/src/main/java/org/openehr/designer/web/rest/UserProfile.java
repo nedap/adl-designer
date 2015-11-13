@@ -18,48 +18,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.repository;
+package org.openehr.designer.web.rest;
+
+import org.openehr.designer.user.UserRepositoryConfiguration;
 
 import java.util.List;
 
 /**
  * @author markopi
  */
-public interface ScmEnabled {
-    public void commit(String message);
+public class UserProfile {
+    private String username;
+    private String repository;
 
-    public void update();
-
-    public List<DiffItem> status();
-
-
-    public static enum ChangeType {
-        ADD, MODIFY, DELETE
+    public String getUsername() {
+        return username;
     }
 
-    public static class DiffItem {
-        private String path;
-        private ChangeType changeType;
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-        public String getPath() {
-            return path;
-        }
+    public String getRepository() {
+        return repository;
+    }
 
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        public ChangeType getChangeType() {
-            return changeType;
-        }
-
-        public void setChangeType(ChangeType changeType) {
-            this.changeType = changeType;
-        }
-
-        @Override
-        public String toString() {
-            return (changeType != null ? changeType.name().substring(0,1) : "?") + " " + path;
-        }
+    public void setRepository(String repository) {
+        this.repository = repository;
     }
 }

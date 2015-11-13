@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +50,14 @@ abstract public class AbstractResource {
         return result;
     }
 
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public ResponseEntity<RestErrorResponseBody> handleException(HttpServletRequest req, ServletRequestBindingException e) {
+
+        LOG.warn("Rest binding error for {}: {}", req.getRequestURI(), e.getMessage());
+        RestErrorResponseBody m = new RestErrorResponseBody();
+        m.setMessage(e.getMessage());
+        return new ResponseEntity<>(m, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestErrorResponseBody> handleException(HttpServletRequest req, Exception e) {
 

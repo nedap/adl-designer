@@ -1,10 +1,30 @@
+{>main}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description" data-toggle="tab">Description</a>
+    </li>
+    <li role="presentation"><a href="#archetype-editor-main-tabs-definition" data-toggle="tab">Definition</a></li>
+    <li role="presentation"><a href="#archetype-editor-main-tabs-display" data-toggle="tab">Display</a></li>
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active container-fluid"
+         id="archetype-editor-main-tabs-description">
+    </div>
+    <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
+    </div>
+    <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-display">
+    </div>
+</div>
+
+
+
 {>createNewTemplateDialog}
 <div class="row properties-line no-border">
     <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template Id</label></div>
     <div class="properties-value"><p id="{{panel_id}}_template_id" class="form-control-static"></p></div>
 </div>
 <div class="row properties-line no-border">
-    <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Parent Archetype Id</label></div>
+    <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Parent Archetype
+        Id</label></div>
     <div class="properties-value"><select id="{{panel_id}}_archetype_id" class="form-control input-sm"></select></div>
 </div>
 <div class="row properties-line no-border">
@@ -23,7 +43,8 @@
         <div class="panel panel-default horizontal-stretch">
             <div class="panel-heading row">
                 <div class="col-sm-4 properties-line no-border">
-                    <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+                    <div class="properties-label"><label for="{{panel_id}}_language"
+                                                         class="control-label">Language</label></div>
                     <div class="properties-value">
                         <select id="{{panel_id}}_language" class="form-control input-sm" style="max-width: 100px">
                             <option value="en">en</option>
@@ -37,7 +58,8 @@
                             <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
                         </label>
                         <label class="btn btn-primary active">
-                            <input id="{{panel_id}}_filterProhibited" checked="checked" type="checkbox">Show prohibited nodes
+                            <input id="{{panel_id}}_filterProhibited" checked="checked" type="checkbox">Show prohibited
+                            nodes
                         </label>
                     </div>
                 </div>
@@ -46,16 +68,27 @@
                     <div class="col-xs-12">
                         <div class="btn-toolbar">
                             <div class="btn-group btn-group-sm">
-                                <button id="addArche" class="btn btn-primary addArche"><span class="glyphicon glyphicon-plus"></span> Add Archetype</button>
+                                <button id="addArche" class="btn btn-primary addArche"><span
+                                        class="glyphicon glyphicon-plus"></span> Add Archetype
+                                </button>
                                 <button id="prohibToolbar" class="btn btn-default prohibToolbar">Prohibit</button>
                                 <button id="unprohibToolbar" class="btn btn-default unprohibToolbar">Unprohibit</button>
-                                <button id="renameToolbar" class="btn  btn-primary renameToolbar"><span class="fa fa-pencil-square-o"></span> Rename</button>
-                                <button id="cloneToolbar" class="btn btn-info cloneToolbar"><span class="fa fa-clone"></span> Clone</button>
-                                <button id="deleteArcheToolbar" class="btn btn-danger resetDelete"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-                                <button id="editArcheToolbar" class="btn btn-warning"><span class="fa fa-pencil-square-o"></span> Edit</button>
+                                <button id="renameToolbar" class="btn  btn-primary renameToolbar"><span
+                                        class="fa fa-pencil-square-o"></span> Rename
+                                </button>
+                                <button id="cloneToolbar" class="btn btn-info cloneToolbar"><span
+                                        class="fa fa-clone"></span> Clone
+                                </button>
+                                <button id="deleteArcheToolbar" class="btn btn-danger resetDelete"><span
+                                        class="glyphicon glyphicon-remove"></span> Delete
+                                </button>
+                                <button id="editArcheToolbar" class="btn btn-warning"><span
+                                        class="fa fa-pencil-square-o"></span> Edit
+                                </button>
 
                             </div>
-                            <input type="text" class="search-input form-control" placeholder="Filter by name" style="float: right; max-width: 200px"/>
+                            <input type="text" class="search-input form-control" placeholder="Filter by name"
+                                   style="float: right; max-width: 200px"/>
                         </div>
                     </div>
                 </div>
@@ -66,7 +99,9 @@
             </div>
             <div class="panel-footer">
                 <div class="btn-toolbar pull-right" role="toolbar">
-                    <button id="{{panel_id}}_addChild" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-cloud"></span> Export to Opt 1.4</button>
+                    <button id="{{panel_id}}_addChild" type="button" class="btn btn-primary"><span
+                            class="glyphicon glyphicon-cloud"></span> Export to Opt 1.4
+                    </button>
                 </div>
             </div>
         </div>
@@ -74,100 +109,44 @@
     <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
     </div>
 </div>
-<!--<div class="vertical-stretch xcontainer-fluid">
-  <div class="horizontal-stretch col-sm-5 row-children">
-    <div class="panel panel-default horizontal-stretch">
-      <div class="panel-heading row">
-        <div class="col-sm-3 properties-line no-border">
-          <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
-          <div class="properties-value">
-            <select id="{{panel_id}}_language" class="form-control input-sm" style="width: 60px">
-                <option value="en">en</option>
-                <option value="sl">sl</option>
-            </select>
-          </div>
-        </div>
-        <div class="col-sm-4 pull-right">
-
-          <div class="btn-group pull-right" data-toggle="buttons">
-            <label class="btn btn-primary">
-                <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
-            </label>
-            <label class="btn btn-primary active">
-                <input id="{{panel_id}}_filterProhibited" checked="checked" type="checkbox">Show prohibited nodes
-            </label>
-          </div>
-        </div>
-          <div class="row" style="margin-left: -25px">
-              <div class="col-xs-12">
-                  <div class="btn-toolbar">
-                      <div class="btn-group btn-group-xss">
-                          <button id="addArche" class="btn-sm btn-primary addArche"><span class="glyphicon glyphicon-plus"></span> Add Archetype</button>
-                          <button id="prohibToolbar" class="btn-sm btn-default prohibToolbar">Prohibit</button>
-                          <button id="unprohibToolbar" class="btn-sm btn-default unprohibToolbar">Unprohibit</button>
-                          <button id="renameToolbar" class="btn-sm btn-primary renameToolbar"><span class="glyphicon glyphicon-edit"></span> Rename</button>
-                          <button id="cloneToolbar" class="btn-sm btn-info">Clone</button>
-
-
-                          <button id="deleteArcheToolbar" class="btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-                          <button id="editArcheToolbar" class="btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-      </div>
-       <div class="panel-body horizontal-stretch bottom-space-medium no-padding show-scrollbar">
-            <div id="{{panel_id}}_tree" class="definition-tree treejsc"></div>
-      </div>
-
-        <div class="panel-footer">
-            <div class="btn-toolbar pull-right" role="toolbar">
-                <button id="{{panel_id}}_expor" type="button" class="btn btn-default"><span class="glyphicon glyphicon-cloud"></span> Import to EHRScape</button>
-            </div>
-        </div>
-    </div>
-  </div>
-
-  <div id="{{panel_id}}_constraints_panel" class="col-sm-4 constraint-properties">
-  </div>
-</div>-->
 
 
 {>addArchetypeDialog}
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Archetype Id</label></div>
-   <div class="properties-value">
-       <select id="{{panel_id}}_archetype_id" class="form-control input-sm" data-live-search="true">
-       {{#each candidateArches}}
-           <option value="{{archetypeId}}">{{archetypeId}}</option>
-       {{/each}}
-       </select>
-   </div>
+    <div class="properties-label"><label for="{{panel_id}}_archetype_id" class="control-label">Archetype Id</label>
+    </div>
+    <div class="properties-value">
+        <select id="{{panel_id}}_archetype_id" class="form-control input-sm" data-live-search="true">
+            {{#each candidateArches}}
+                <option value="{{archetypeId}}">{{archetypeId}}</option>
+            {{/each}}
+        </select>
+    </div>
 </div>
 
 {>loadTemplateDialog}
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template</label></div>
-   <div class="properties-value"><select id="{{panel_id}}_template_id" class="form-control input-sm"></select></div>
+    <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template</label></div>
+    <div class="properties-value"><select id="{{panel_id}}_template_id" class="form-control input-sm"></select></div>
 </div>
 
 {>renameConstraintDialog}
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
-   <div class="properties-value"><p id="{{panel_id}}_language" class="form-control form-control-static">{{language}}</p></div>
+    <div class="properties-label"><label for="{{panel_id}}_language" class="control-label">Language</label></div>
+    <div class="properties-value"><p id="{{panel_id}}_language"
+                                     class="form-control form-control-static">{{language}}</p></div>
 </div>
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_text" class="control-label">Text</label></div>
-   <div class="properties-value"><input id="{{panel_id}}_text" class="form-control input-sm"/></div>
+    <div class="properties-label"><label for="{{panel_id}}_text" class="control-label">Text</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_text" class="form-control input-sm"/></div>
 </div>
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_description" class="control-label">Description</label></div>
-   <div class="properties-value"><input id="{{panel_id}}_description" class="form-control input-sm"/></div>
+    <div class="properties-label"><label for="{{panel_id}}_description" class="control-label">Description</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_description" class="form-control input-sm"/></div>
 </div>
 <div class="row properties-line no-border">
-   <div class="properties-label"><label for="{{panel_id}}_comment" class="control-label">Comment</label></div>
-   <div class="properties-value"><input id="{{panel_id}}_comment" class="form-control input-sm"/></div>
+    <div class="properties-label"><label for="{{panel_id}}_comment" class="control-label">Comment</label></div>
+    <div class="properties-value"><input id="{{panel_id}}_comment" class="form-control input-sm"/></div>
 </div>
 
 {>constraintTop}
@@ -188,7 +167,7 @@
         <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
     </div>
     <div class="col-sm-1">
-        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number" placeholder = 'min'>
+        <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number" placeholder='min'>
     </div>
     <div class="col-sm-1">
         <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number" placeholder='max'>

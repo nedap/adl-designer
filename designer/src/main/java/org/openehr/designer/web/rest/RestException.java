@@ -48,6 +48,10 @@ public class RestException extends RuntimeException {
         return new Builder(status);
     }
 
+    public static Builder badRequest() {
+        return of(HttpStatus.BAD_REQUEST);
+    }
+
 
     public static class Builder {
         RestErrorResponseBody m = new RestErrorResponseBody();
@@ -56,11 +60,11 @@ public class RestException extends RuntimeException {
 
         public Builder(HttpStatus status) {
             this.status = status;
-            m.setMessage(status.toString()+": " + status.getReasonPhrase());
         }
 
         public Builder causedBy(Throwable cause) {
             this.cause = cause;
+            m.setMessage(cause.getMessage());
             return this;
         }
 
@@ -75,6 +79,10 @@ public class RestException extends RuntimeException {
         }
 
         public RestException build() {
+            if (m.getMessage()==null) {
+                m.setMessage(status.toString() + ": " + status.getReasonPhrase());
+            }
+
             return new RestException(status, m, cause);
         }
     }

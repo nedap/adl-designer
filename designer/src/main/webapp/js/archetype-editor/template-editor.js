@@ -68,52 +68,6 @@ var TemplateEditor = (function () {
             });
 
         });
-       /* $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes?access_token="+token).success(function (templateInfoList) {
-
-            var context = {
-                panel_id: GuiUtils.generateId()
-            };
-            GuiUtils.applyTemplate("template-editor|loadTemplateDialog", context, function (htmlString) {
-
-                function populateTemplateIdSelect() {
-                    templateIdSelect.empty();
-                    for (var i in templateInfoList) {
-                        var templateInfo = templateInfoList[i];
-                        var option = $("<option>").attr("value", templateInfo.name).text(templateInfo.name);
-                        templateIdSelect.append(option);
-
-                    }
-                }
-
-                var content = $(htmlString);
-
-                var templateIdSelect = content.find('#' + context.panel_id + "_template_id");
-
-                populateTemplateIdSelect();
-
-
-                GuiUtils.openSimpleDialog(
-                    {
-                        title: "Load existing template",
-                        buttons: {"load": "Load"},
-                        content: content,
-                        callback: function (content) {
-                            var templateId = templateIdSelect.val();
-                            $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes/openEHR-DEMOGRAPHIC-ADDRESS.address-provider.v1.adls?access_token="+token).success(function (templateData) {
-                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
-                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
-                                AOM.TemplateModel.createFromSerialized({
-                                    archetypeRepository: my.archetypeRepository,
-                                    referenceModel: my.referenceModel,
-                                    data: templateData,
-                                    callback: my.useTemplate
-                                });
-                            });
-                        }
-                    });
-            });
-
-        });*/
     };
 
     my.openCreateNewTemplateDialog = function () {
@@ -284,22 +238,29 @@ var TemplateEditor = (function () {
     };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(4);
-        my.referenceModel = new AOM.ReferenceModel(latch.countDown);
-        my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+        GuiUtils.applyTemplate("template-editor|main", {}, function(html) {
+            var $templateEditorContainer = $('#archetype-editor-archetype-tabs');
+            $templateEditorContainer.empty();
+            $templateEditorContainer.html(html);
 
-        // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
-        GuiUtils.preloadTemplates([
-                "util",
-                "properties/constraint-common",
-                "terminology/terms"
-            ],
-            latch.countDown);
+            var latch = new CountdownLatch(4);
+            my.referenceModel = new AOM.ReferenceModel(latch.countDown);
+            my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+
+            // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
+            GuiUtils.preloadTemplates([
+                    "util",
+                    "properties/constraint-common",
+                    "terminology/terms"
+                ],
+                latch.countDown);
 
 
-        ArchetypeEditor.initialize(latch.countDown);
+            ArchetypeEditor.initialize(latch.countDown);
 
-        latch.execute(callback);
+            $templateEditorContainer.find();
+            latch.execute(callback);
+        });
     };
 
     return my;

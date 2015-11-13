@@ -20,12 +20,18 @@
 
 package org.openehr.designer.web.rest;
 
+import org.openehr.designer.repository.RepositoryNotFoundException;
+import org.openehr.designer.repository.github.GithubArchetypeRepository;
 import org.openehr.designer.user.UserConfigurationService;
 import org.openehr.designer.user.UserRepositoriesConfiguration;
+import org.openehr.designer.user.UserRepositoryConfiguration;
+import org.openehr.designer.util.LockProvider;
+import org.openehr.designer.web.RepositoryProvider;
 import org.openehr.designer.web.SessionContext;
 import org.openehr.designer.web.SessionContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -37,12 +43,84 @@ import javax.annotation.Resource;
 @RestController
 public class UserResource extends AbstractResource {
     @Resource
-    UserConfigurationService userConfigurationService;
+    RepositoryProvider repositoryProvider;
 
-    @RequestMapping(value = "/repositories", method = RequestMethod.GET)
-    public UserRepositoriesConfiguration getRepositoryConfiguration() {
+    @Resource
+    UserConfigurationService userConfigurationService;
+    @Resource(name = "usernameLockProvider")
+    LockProvider<String> usernameLockProvider;
+
+
+    @RequestMapping(value = "/profile", method = RequestMethod.GET)
+    public UserProfile getUserProfile() {
         SessionContext ctx = SessionContextHolder.get();
-        return userConfigurationService.getRepositories(ctx.getUsername());
+        UserProfile info = new UserProfile();
+        info.setUsername(ctx.getUsername());
+        info.setRepository(ctx.getGithubRepository());
+
+        return info;
     }
+
+    @RequestMapping(value = "/repository/info", method = RequestMethod.GET)
+    public UserRepositoriesConfiguration getRepositoriesConfiguration() {
+        SessionContext ctx = SessionContextHolder.get();
+        return userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+    }
+
+    @RequestMapping(value = "/repository/delete", method = RequestMethod.POST)
+    public void deleteRepository(@RequestParam String name) {
+        SessionContext ctx = SessionContextHolder.get();
+        userConfigurationService.deleteRepositoryByName(ctx.getUsername(), name);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/repository/add")
+    public UserRepositoryConfiguration addRepository(@RequestParam String name)  {
+
+        SessionContext ctx = SessionContextHolder.get();
+        return usernameLockProvider.with(ctx.getUsername(), () -> {
+            UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+            UserRepositoryConfiguration existing = repositories.findByName(name).orElse(null);
+            if (existing != null) {
+                return existing;
+            }
+            // create repository and maybe metadata
+            GithubArchetypeRepository archetypeRepository = null;
+            try {
+                archetypeRepository = (GithubArchetypeRepository)
+                        repositoryProvider.getArchetypeRepository(ctx, name);
+                repositoryProvider.getTemplateRepository(ctx, name);
+            } catch (RepositoryNotFoundException e) {
+                throw RestException.badRequest().causedBy(e).build();
+            }
+
+            UserRepositoryConfiguration repo = new UserRepositoryConfiguration();
+            repo.setName(name);
+            repo.setFork(archetypeRepository.isFork());
+            userConfigurationService.saveRepository(ctx.getUsername(), repo);
+            return repo;
+        });
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/repository/choose")
+    public UserRepositoryConfiguration chooseRepository(@RequestParam String name) throws Exception {
+        SessionContext ctx = SessionContextHolder.get();
+        return usernameLockProvider.with(ctx.getUsername(), ()->{
+            UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+
+            UserRepositoryConfiguration repo = repositories.findByName(name)
+                    .orElseThrow(() -> RestException.badRequest()
+                            .message("No such repository: %s", name).build());
+
+            repositoryProvider.getArchetypeRepository(ctx, name);
+            repositoryProvider.getTemplateRepository(ctx, name);
+
+            repositories.setLastRepository(name);
+            userConfigurationService.setRepositoriesConfiguration(ctx.getUsername(), repositories);
+
+            ctx.setGithubRepository(name);
+            return repo;
+        });
+    }
+
 
 }

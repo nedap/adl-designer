@@ -585,6 +585,7 @@ ul.dropdown-menu-form {
 .nav-tabs>li.active>a{
     border-top: 3px solid #3c8dbc!important;
 }
+
 .openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
 .openehr-rm-icon.archetype_slot { background: url("images/icons/archetype_slot.png") no-repeat !important; }
 .openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }

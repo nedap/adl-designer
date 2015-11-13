@@ -30,6 +30,7 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.openehr.designer.repository.AbstractRepository;
 import org.openehr.designer.repository.RepositoryException;
+import org.openehr.designer.repository.RepositoryNotFoundException;
 import org.openehr.designer.repository.github.egitext.PushContentsService;
 import org.openehr.designer.repository.github.egitext.PushRepositoryService;
 import sun.misc.BASE64Decoder;
@@ -63,7 +64,14 @@ public class AbstractGithubRepository extends AbstractRepository {
             String[] repos = repo.split("/");
             String repoOwner = repos[0];
             String repoName = repos[1];
-            this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+            try {
+                this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+            } catch (RequestException e) {
+                if (e.getStatus()==404) {
+                    throw new RepositoryNotFoundException("Repository does not exist or is hidden: " + repo);
+                }
+                throw e;
+            }
 
             createBranchIfNeeded(branch);
 

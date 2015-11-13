@@ -18,35 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.util;
-
-import java.util.concurrent.locks.Lock;
-import java.util.function.Supplier;
+package org.openehr.designer.repository;
 
 /**
  * @author markopi
- * @since 27.2.2013
  */
-public interface LockProvider<K> {
-    Lock getLock(K key);
-
-    default <T> T with(K key, Supplier<T> s) {
-        Lock lock = getLock(key);
-        lock.lock();
-        try {
-            return s.get();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    default void with(K key, Runnable r) {
-        Lock lock = getLock(key);
-        lock.lock();
-        try {
-            r.run();
-        } finally {
-            lock.unlock();
-        }
+public class RepositoryNotFoundException extends RepositoryException {
+    public RepositoryNotFoundException(String message) {
+        super(message);
     }
 }
