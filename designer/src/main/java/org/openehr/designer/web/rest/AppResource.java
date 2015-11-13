@@ -18,28 +18,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.web;
+package org.openehr.designer.web.rest;
 
-import org.openehr.designer.user.UserConfigurationService;
-import org.openehr.designer.user.UserRepositoriesConfiguration;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import org.openehr.designer.Configuration;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author markopi
  */
-@RequestMapping("/user")
+@RequestMapping("/app")
 @RestController
-public class UserResource extends AbstractResource {
-    @Resource
-    UserConfigurationService userConfigurationService;
-    @RequestMapping(value = "/repositories", method = RequestMethod.GET)
-    public UserRepositoriesConfiguration getRepositoryConfiguration() {
-        SessionContext ctx = SessionContextHolder.get();
-        return userConfigurationService.getRepositories(ctx.getUsername());
-    }
+public class AppResource {
 
+    @RequestMapping(value = "/configuration", method = RequestMethod.GET)
+    public Map<String, Object> getAppConfiguration() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        ImmutableList.of("github.api.auth.client_id")
+                .forEach((k) -> result.put(k, Configuration.get(k)));
+        return result;
+    }
 }

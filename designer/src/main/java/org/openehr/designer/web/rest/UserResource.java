@@ -18,29 +18,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.web;
+package org.openehr.designer.web.rest;
 
-import org.openehr.designer.support.units.Property;
-import org.openehr.designer.support.units.UnitsProvider;
+import org.openehr.designer.user.UserConfigurationService;
+import org.openehr.designer.user.UserRepositoriesConfiguration;
+import org.openehr.designer.web.SessionContext;
+import org.openehr.designer.web.SessionContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author markopi
  */
+@RequestMapping("/user")
 @RestController
-@RequestMapping(value = "/support")
-public class SupportResource extends AbstractResource {
-
+public class UserResource extends AbstractResource {
     @Resource
-    private UnitsProvider unitsProvider;
+    UserConfigurationService userConfigurationService;
 
-    @RequestMapping(value = "/units", method = RequestMethod.GET)
-    public List<Property> getUnits() {
-        return unitsProvider.getProperties();
+    @RequestMapping(value = "/repositories", method = RequestMethod.GET)
+    public UserRepositoriesConfiguration getRepositoryConfiguration() {
+        SessionContext ctx = SessionContextHolder.get();
+        return userConfigurationService.getRepositories(ctx.getUsername());
     }
+
 }

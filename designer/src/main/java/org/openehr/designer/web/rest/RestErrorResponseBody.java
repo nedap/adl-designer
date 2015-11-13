@@ -18,28 +18,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.web;
-
-import org.openehr.designer.Configuration;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
+package org.openehr.designer.web.rest;
 
 /**
  * @author markopi
  */
-@RequestMapping("/app")
-@RestController
-public class AppResource {
+public class RestErrorResponseBody {
+    public String message;
 
-    @RequestMapping(value = "/configuration", method = RequestMethod.GET)
-    public Map<String, Object> getAppConfiguration() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("github.api.auth.client_id", Configuration.get("github.api.auth.client_id"));
-        return result;
+    public RestErrorResponseBody() {
+    }
+
+    public RestErrorResponseBody(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

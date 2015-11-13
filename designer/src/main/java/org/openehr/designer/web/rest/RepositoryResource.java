@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.web;
+package org.openehr.designer.web.rest;
 
 import com.google.common.base.Charsets;
 import org.openehr.adl.FlatArchetypeProvider;
@@ -33,6 +33,9 @@ import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
 import org.openehr.designer.rm.ReferenceModels;
+import org.openehr.designer.web.GithubRepositoryProvider;
+import org.openehr.designer.web.SessionContext;
+import org.openehr.designer.web.SessionContextHolder;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

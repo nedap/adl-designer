@@ -18,26 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.web;
+package org.openehr.designer.web.rest;
+
+import org.openehr.designer.support.units.Property;
+import org.openehr.designer.support.units.UnitsProvider;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author markopi
  */
-public class RestErrorResponseBody {
-    public String message;
+@RestController
+@RequestMapping(value = "/support")
+public class SupportResource extends AbstractResource {
 
-    public RestErrorResponseBody() {
-    }
+    @Resource
+    private UnitsProvider unitsProvider;
 
-    public RestErrorResponseBody(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+    @RequestMapping(value = "/units", method = RequestMethod.GET)
+    public List<Property> getUnits() {
+        return unitsProvider.getProperties();
     }
 }

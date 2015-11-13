@@ -20,6 +20,7 @@
 
 package org.openehr.designer.web;
 
+import org.openehr.designer.web.rest.RestException;
 import org.springframework.http.HttpStatus;
 
 /**
