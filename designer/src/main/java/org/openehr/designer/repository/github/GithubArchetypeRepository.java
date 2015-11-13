@@ -11,7 +11,7 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.repository.ArtifactNotFoundException;
 import org.openehr.designer.repository.ArchetypeRepository;

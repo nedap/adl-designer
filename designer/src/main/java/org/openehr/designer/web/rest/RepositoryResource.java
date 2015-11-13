@@ -24,7 +24,7 @@ import com.google.common.base.Charsets;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.ArchetypeInfo;
+import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.FlatArchetypeProviderOverlay;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;

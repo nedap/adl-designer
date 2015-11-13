@@ -20,13 +20,7 @@
 
 package org.openehr.designer.repository;
 
-import org.openehr.designer.ArchetypeInfo;
 import org.openehr.jaxb.am.Archetype;
-import org.openehr.jaxb.am.ArchetypeTerm;
-import org.openehr.jaxb.am.CodeDefinitionSet;
-import org.openehr.jaxb.rm.StringDictionaryItem;
-import org.openehr.jaxb.rm.TranslationDetails;
-import sun.reflect.generics.repository.*;
 
 import java.util.ArrayList;
 
