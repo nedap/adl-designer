@@ -49,7 +49,10 @@ public class AuthorizationFilter implements Filter {
         boolean authorized = ctx!=null;
         //LOG.debug("Authorized: {} for servlet {}", authorized, req.getRequestURI() );
         if (!authorized && !req.getServletPath().equals("/rest")) {
-            req.getRequestDispatcher("/WEB-INF/html/login.html").forward(request, response);
+            resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            resp.setHeader("Pragma", "no-cache");
+            resp.setHeader("Expires", "0");
+            req.getRequestDispatcher("/WEB-INF/html/login.html").include(request, response);
         } else {
             SessionContextHolder.SESSION_CONTEXT.set(ctx);
             try {

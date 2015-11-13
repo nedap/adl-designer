@@ -39,7 +39,10 @@ public class AppController {
     private UserConfigurationService userConfigurationService;
 
     @RequestMapping(method = RequestMethod.GET, value = "/template-editor")
-    public String displayTemplateEditor(HttpSession session) {
+    public String displayTemplateEditor(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setHeader("Expires", "0");
         return "template-editor";
     }
 
