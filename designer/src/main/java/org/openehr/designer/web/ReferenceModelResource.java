@@ -38,7 +38,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/rm")
-public class ReferenceModelResource {
+public class ReferenceModelResource extends AbstractResource {
     public static final Logger LOG = LoggerFactory.getLogger(ReferenceModelResource.class);
 
     @Resource
@@ -55,16 +55,10 @@ public class ReferenceModelResource {
         try {
             return builder.build(referenceModels.getReferenceModel(name, version));
         } catch (IllegalArgumentException e) {
-            throw new NotFoundException(e.getMessage());
+            throw RestException.of(HttpStatus.BAD_REQUEST).message(e.getMessage()).build();
         }
     }
 
 
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NotFoundException.class)
-    @ResponseBody
-    public ErrorResponse handleException(NotFoundException e) {
-        return new ErrorResponse(e.getMessage());
-    }
 
 }

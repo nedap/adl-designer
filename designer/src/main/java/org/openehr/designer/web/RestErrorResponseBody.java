@@ -23,10 +23,13 @@ package org.openehr.designer.web;
 /**
  * @author markopi
  */
-public class ErrorResponse {
+public class RestErrorResponseBody {
     public String message;
 
-    public ErrorResponse(String message) {
+    public RestErrorResponseBody() {
+    }
+
+    public RestErrorResponseBody(String message) {
         this.message = message;
     }
 

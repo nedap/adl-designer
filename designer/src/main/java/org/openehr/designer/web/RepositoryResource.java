@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(value = "/repo")
-public class RepositoryResource {
+public class RepositoryResource extends AbstractResource {
     private static final Logger LOG = LoggerFactory.getLogger(RepositoryResource.class);
 
 
@@ -235,25 +235,25 @@ public class RepositoryResource {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "No such archetype")
     @ExceptionHandler(ArtifactNotFoundException.class)
     @ResponseBody
-    public ErrorResponse handleArchetypeNotFoundException(ArtifactNotFoundException e) {
+    public RestErrorResponseBody handleArchetypeNotFoundException(ArtifactNotFoundException e) {
         LOG.error("Bad Request", e);
-        return new ErrorResponse(e.getMessage());
+        return new RestErrorResponseBody(e.getMessage());
     }
 
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ErrorResponse handleException(Exception e) {
+    public RestErrorResponseBody handleException(Exception e) {
         LOG.error("Internal server error", e);
-        return new ErrorResponse(e.getMessage());
+        return new RestErrorResponseBody(e.getMessage());
     }
 
     @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED)
     @ExceptionHandler(UnsupportedOperationException.class)
     @ResponseBody
-    public ErrorResponse handleException(UnsupportedOperationException e) {
+    public RestErrorResponseBody handleException(UnsupportedOperationException e) {
         LOG.error("Unsupported operation", e);
-        return new ErrorResponse(e.getMessage());
+        return new RestErrorResponseBody(e.getMessage());
     }
 
     @RequestMapping(value = "/template-editor", method = RequestMethod.GET, produces = "text/html")

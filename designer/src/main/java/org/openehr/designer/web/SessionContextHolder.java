@@ -20,6 +20,8 @@
 
 package org.openehr.designer.web;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * @author markopi
  */
@@ -27,7 +29,11 @@ public class SessionContextHolder {
     static ThreadLocal<SessionContext> SESSION_CONTEXT = new ThreadLocal<>();
 
     public static SessionContext get() {
-        return SESSION_CONTEXT.get();
+        SessionContext ctx = SESSION_CONTEXT.get();
+        if (ctx==null) {
+            throw RestException.of(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ctx;
     }
 
 }

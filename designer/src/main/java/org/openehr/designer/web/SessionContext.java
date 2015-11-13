@@ -20,8 +20,6 @@
 
 package org.openehr.designer.web;
 
-import java.util.List;
-
 /**
  * @author markopi
  */

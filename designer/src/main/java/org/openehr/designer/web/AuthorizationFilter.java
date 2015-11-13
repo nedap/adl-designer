@@ -44,13 +44,14 @@ public class AuthorizationFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        HttpSession session = req.getSession(false);
-        boolean authorized = session != null && session.getAttribute(WebAttributes.SESSION_CONTEXT) != null;
-        // LOG.debug("Authorized: {} for servlet {}", authorized, req.getRequestURI() );
-        if (!authorized) {
+        HttpSession session = req.getSession();
+        SessionContext ctx = (SessionContext) session.getAttribute(WebAttributes.SESSION_CONTEXT);
+        boolean authorized = ctx!=null;
+        //LOG.debug("Authorized: {} for servlet {}", authorized, req.getRequestURI() );
+        if (!authorized && !req.getServletPath().equals("/rest")) {
             req.getRequestDispatcher("/WEB-INF/html/login.html").forward(request, response);
         } else {
-            SessionContextHolder.SESSION_CONTEXT.set((SessionContext) session.getAttribute(WebAttributes.SESSION_CONTEXT));
+            SessionContextHolder.SESSION_CONTEXT.set(ctx);
             try {
                 chain.doFilter(request, response);
             } finally {
@@ -59,9 +60,6 @@ public class AuthorizationFilter implements Filter {
         }
     }
 
-    private String getLoginPath(HttpServletRequest req) {
-        return req.getContextPath();
-    }
 
     @Override
     public void destroy() {

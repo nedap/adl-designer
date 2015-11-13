@@ -74,11 +74,11 @@
 
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/rest/*</url-pattern>
+        <url-pattern>/template-editor</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/template-editor</url-pattern>
+        <url-pattern>/rest/*</url-pattern>
     </filter-mapping>
 
     <welcome-file-list>

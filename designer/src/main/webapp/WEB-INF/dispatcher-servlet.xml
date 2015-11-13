@@ -40,11 +40,13 @@
     </mvc:annotation-driven>
 
     <context:annotation-config/>
+    <context:component-scan base-package="org.openehr.designer.web"/>
 
-    <bean id="wtUser" class="org.openehr.designer.web.AppController"/>
-    <bean id="wtResource" class="org.openehr.designer.web.RepositoryResource"/>
-    <bean id="wtSupport" class="org.openehr.designer.web.SupportResource"/>
-    <bean id="wtReferenceModel" class="org.openehr.designer.web.ReferenceModelResource"/>
+    <!--<bean id="wtUser" class="org.openehr.designer.web.AppController"/>-->
+    <!--<bean id="wtResource" class="org.openehr.designer.web.RepositoryResource"/>-->
+    <!--<bean id="wtSupport" class="org.openehr.designer.web.SupportResource"/>-->
+    <!--<bean id="wtReferenceModel" class="org.openehr.designer.web.ReferenceModelResource"/>-->
+
     <bean id="viewResolver"
           class="org.springframework.web.servlet.view.UrlBasedViewResolver">
         <property name="viewClass"

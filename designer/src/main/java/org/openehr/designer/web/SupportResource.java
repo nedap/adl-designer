@@ -34,7 +34,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/support")
-public class SupportResource {
+public class SupportResource extends AbstractResource {
 
     @Resource
     private UnitsProvider unitsProvider;

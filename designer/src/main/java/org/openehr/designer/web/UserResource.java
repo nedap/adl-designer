@@ -20,11 +20,26 @@
 
 package org.openehr.designer.web;
 
+import org.openehr.designer.user.UserConfigurationService;
+import org.openehr.designer.user.UserRepositoriesConfiguration;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+
 /**
  * @author markopi
  */
-public class NotFoundException extends RuntimeException {
-    public NotFoundException(String message) {
-        super(message);
+@RequestMapping("/user")
+@RestController
+public class UserResource extends AbstractResource {
+    @Resource
+    UserConfigurationService userConfigurationService;
+    @RequestMapping(value = "/repositories", method = RequestMethod.GET)
+    public UserRepositoriesConfiguration getRepositoryConfiguration() {
+        SessionContext ctx = SessionContextHolder.get();
+        return userConfigurationService.getRepositories(ctx.getUsername());
     }
+
 }
