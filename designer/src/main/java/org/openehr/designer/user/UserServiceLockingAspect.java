@@ -25,7 +25,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.openehr.designer.util.CachedLockProvider;
 import org.openehr.designer.util.LockProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 
+import javax.annotation.Resource;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -33,7 +36,13 @@ import java.util.concurrent.locks.Lock;
  */
 @Aspect
 public class UserServiceLockingAspect {
-    private final LockProvider<String> usernameLockProvider = new CachedLockProvider<>();
+
+    private LockProvider<String> usernameLockProvider = new CachedLockProvider<>();
+
+    @Resource(name = "usernameLockProvider")
+    public void setUsernameLockProvider(LockProvider<String> usernameLockProvider) {
+        this.usernameLockProvider = usernameLockProvider;
+    }
 
     @Around("target(org.openehr.designer.user.UserConfigurationService) && args(username,..)")
     public Object lockAround(ProceedingJoinPoint joinPoint, String username) throws Throwable {

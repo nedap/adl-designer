@@ -38,12 +38,12 @@
     <script src="lib/jquery/toastr/bower_components/toastr/toastr.min.js"></script>
 
 
-
     <!-- Bootstrap -->
     <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-3.3.2/js/bootstrap.js"></script>
 
-    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
+          rel="stylesheet"/>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <!-- Bootstrap Table -->
     <link href="lib/bootstrap-table-1.6.0/bootstrap-table.min.css" rel="stylesheet" type="text/css"/>
@@ -92,6 +92,7 @@
     <script src="js/archetype-editor/template-editor-definition.js"></script>
     <script src="js/archetype-editor/template-editor-constraints.js"></script>
     <script src="js/archetype-editor/template-editor-display.js"></script>
+    <script src="js/archetype-editor/user.js"></script>
 
     <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
 
@@ -113,6 +114,10 @@
             TemplateEditor.initialize(function () {
             });
 
+            $.getJSON("rest/user/profile").done(function (data) {
+                $('#profileHeader').text(data.username);
+            });
+
 
         });
     </script>
@@ -120,37 +125,21 @@
 </head>
 <body style="overflow:hidden">
 <div id="archetype-editor-main">
-	  <nav class="navbar navbar-default navbar-static-top">
-	    <div class="container-fluid">
-	      <ul class="nav navbar-nav">
-	        <li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>
-	        <li><a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">Load</a></li>
-	        <li><a href="#" onclick="TemplateEditor.saveCurrentTemplateWithNotification()">Save</a></li>
-	      </ul>
-		    <ul class="nav navbar-nav navbar-right">
-		      <li><a href="#" onclick="window.location.href='app/logout'">Logout</a></li>
-		    </ul>
-	    </div>
-	  </nav>
-    <div id="archetype-editor-archetype-id-main"></div>
-    <div id="archetype-editor-archetype-tabs" class="tab-pane">
-
-        <ul class="nav nav-tabs">
-            <li role="presentation" class="active"><a href="#archetype-editor-main-tabs-description">Description</a></li>
-            <li role="presentation"><a href="#archetype-editor-main-tabs-definition">Definition</a></li>
-            <li role="presentation"><a href="#archetype-editor-main-tabs-display">Display</a></li>
-        </ul>
-        <div class="tab-content">
-
-            <div role="tabpanel" class="tab-pane active container-fluid" id="archetype-editor-main-tabs-description">
-            </div>
-            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-definition">
-            </div>
-            <div role="tabpanel" class="tab-pane fade container-fluid" id="archetype-editor-main-tabs-display">
-            </div>
-
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav">
+                <li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>
+                <li><a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">Load</a></li>
+                <li><a href="#" onclick="TemplateEditor.saveCurrentTemplateWithNotification()">Save</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a id="profileHeader" href="#" onclick="UserModule.showProfile()">(user)</a></li>
+                <li><a href="#" onclick="window.location.href='app/logout'">Logout</a></li>
+            </ul>
         </div>
-    </div>
+    </nav>
+    <div id="archetype-editor-archetype-id-main"></div>
+    <div id="archetype-editor-archetype-tabs" class="tab-pane" ></div>
 </div>
 
 </body>

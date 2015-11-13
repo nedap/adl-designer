@@ -74,9 +74,14 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     }
 
     @Override
-    public UserRepositoriesConfiguration getRepositories(String username) {
+    public UserRepositoriesConfiguration getRepositoriesConfiguration(String username) {
         return readConfiguration(getRepositoriesConfigurationPath(username), UserRepositoriesConfiguration.class)
                 .orElseGet(this::createNewRepositoryConfiguration);
+    }
+
+    @Override
+    public void setRepositoriesConfiguration(String username, UserRepositoriesConfiguration configuration) {
+        writeConfiguration(getRepositoriesConfigurationPath(username), configuration);
     }
 
     private UserRepositoriesConfiguration createNewRepositoryConfiguration() {
@@ -91,7 +96,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
     @Override
     public void saveRepository(String username, UserRepositoryConfiguration configuration) {
-        UserRepositoriesConfiguration conf = getRepositories(username);
+        UserRepositoriesConfiguration conf = getRepositoriesConfiguration(username);
         int existingIndex = Iterables.indexOf(conf.getRepositories(), r -> r.getName().equals(configuration.getName()));
         if (existingIndex >= 0) {
             conf.getRepositories().set(existingIndex, configuration);
@@ -104,7 +109,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
     @Override
     public boolean deleteRepositoryByName(String username, String name) {
-        UserRepositoriesConfiguration conf = getRepositories(username);
+        UserRepositoriesConfiguration conf = getRepositoriesConfiguration(username);
         int existingIndex = Iterables.indexOf(conf.getRepositories(), r -> r.getName().equals(name));
         if (existingIndex < 0) return false;
 

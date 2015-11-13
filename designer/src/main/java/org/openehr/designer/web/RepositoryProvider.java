@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * Created by Denko on 10/28/2015.
  */
-public class GithubRepositoryProvider {
+public class RepositoryProvider {
     public static Map<RepoKey, GithubTemplateRepository> userToTemplateRepositoryMap = Maps.newConcurrentMap();
     public static Map<RepoKey, GithubArchetypeRepository> userToArchetypeRepositoryMap = Maps.newConcurrentMap();
 

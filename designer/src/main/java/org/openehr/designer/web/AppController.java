@@ -16,13 +16,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -34,7 +32,7 @@ public class AppController {
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
     @Resource
-    private GithubRepositoryProvider githubRepositoryProvider;
+    private RepositoryProvider repositoryProvider;
     @Resource
     private UserConfigurationService userConfigurationService;
 
@@ -63,7 +61,7 @@ public class AppController {
 //    public ResponseEntity<String> RepoAdder(HttpServletRequest req, @RequestParam String value) throws Exception {
 //        SessionContext ctx = WebAttributes.getSessionConfiguration(req.getSession());
 //
-//        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositories(ctx.getUsername());
+//        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
 //        if (repositories.findByName(value).isPresent()) {
 //            return new ResponseEntity<>("Repository already in repository list", HttpStatus.BAD_REQUEST);
 //        }
@@ -103,11 +101,11 @@ public class AppController {
         User user = userService.getUser();
         ctx.setUsername(user.getLogin());
 
-        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositories(ctx.getUsername());
-
-        String lastRepository = repositories.findByName(repositories.getLastRepository())
-                .orElse(repositories.getRepositories().get(0)).getName();
-        ctx.setGithubRepository(lastRepository);
+        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+        String repoName = repositories.findByName(repositories.getLastRepository())
+                .orElse(repositories.getRepositories().get(0))
+                .getName();
+        ctx.setGithubRepository(repoName);
 
         req.getSession().setAttribute(WebAttributes.SESSION_CONTEXT, ctx);
 

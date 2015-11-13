@@ -28,7 +28,8 @@ public interface UserConfigurationService {
 
     void setConfiguration(String username, UserConfiguration configuration);
 
-    UserRepositoriesConfiguration getRepositories(String username);
+    UserRepositoriesConfiguration getRepositoriesConfiguration(String username);
+    void setRepositoriesConfiguration(String username, UserRepositoriesConfiguration configuration);
 
     void saveRepository(String username, UserRepositoryConfiguration configuration);
 

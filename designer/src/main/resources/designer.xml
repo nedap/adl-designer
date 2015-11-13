@@ -24,6 +24,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:context="http://www.springframework.org/schema/context"
         xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:p="http://www.springframework.org/schema/p"
         xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
@@ -32,16 +33,18 @@
 
     <context:annotation-config/>
     <aop:aspectj-autoproxy/>
+    <bean id="usernameLockProvider" class="org.openehr.designer.util.CachedLockProvider"/>
 
     <bean class="org.openehr.designer.spring.SupportConfiguration"/>
     <bean class="org.openehr.designer.spring.ReferenceModelConfiguration"/>
 
-    <bean class="org.openehr.designer.user.UserServiceLockingAspect"/>
+    <bean class="org.openehr.designer.user.UserServiceLockingAspect"
+            p:usernameLockProvider-ref="usernameLockProvider"
+            />
 
     <bean id="userService" class="org.openehr.designer.user.UserConfigurationServiceImpl"/>
 
-    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.GithubRepositoryProvider"
-
+    <bean id="templateRepositoryProvider" class="org.openehr.designer.web.RepositoryProvider"
             />
 
 
