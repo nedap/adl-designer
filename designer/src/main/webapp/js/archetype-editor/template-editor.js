@@ -35,6 +35,7 @@ var TemplateEditor = (function () {
                         var templateInfo = templateInfoList[i];
                         var option = $("<option>").attr("value", templateInfo.templateId).text(templateInfo.templateId + " (" + templateInfo.name + ")");
                         templateIdSelect.append(option);
+
                     }
                 }
 
@@ -47,13 +48,14 @@ var TemplateEditor = (function () {
 
                 GuiUtils.openSimpleDialog(
                     {
-                        title: "Create new template",
+                        title: "Load existing template",
                         buttons: {"load": "Load"},
                         content: content,
                         callback: function (content) {
                             var templateId = templateIdSelect.val();
                             $.getJSON("rest/repo/template/" + encodeURIComponent(templateId)).success(function (templateData) {
-                                //alert ("Loaded template: " + templateId);
+                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
+                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                                 AOM.TemplateModel.createFromSerialized({
                                     archetypeRepository: my.archetypeRepository,
                                     referenceModel: my.referenceModel,
@@ -152,6 +154,7 @@ var TemplateEditor = (function () {
                             templateId: templateId,
                             parentArchetypeId: parentArchetypeIdSelect.val(),
                             callback: function (templateModel) {
+                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                                 my.useTemplate(templateModel);
                             }
                         });
@@ -163,9 +166,12 @@ var TemplateEditor = (function () {
 
     my.saveCurrentTemplateWithNotification = function () {
         my.saveCurrentTemplate(function () {
-            GuiUtils.alert({type: 'success', title: 'Template Saved'});
+            //GuiUtils.alert({type: 'success', title: 'Template Saved'});
+
+           toastr.success("Template saved", "",{positionClass: "toast-bottom-full-width"})
         }, function (status) {
-            GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
+            toastr.error("Error saving template", "",{positionClass: "toast-bottom-full-width"})
+            //GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
         })
     };
 
@@ -232,22 +238,29 @@ var TemplateEditor = (function () {
     };
 
     my.initialize = function (callback) {
-        var latch = new CountdownLatch(4);
-        my.referenceModel = new AOM.ReferenceModel(latch.countDown);
-        my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+        GuiUtils.applyTemplate("template-editor|main", {}, function(html) {
+            var $templateEditorContainer = $('#archetype-editor-archetype-tabs');
+            $templateEditorContainer.empty();
+            $templateEditorContainer.html(html);
 
-        // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
-        GuiUtils.preloadTemplates([
-                "util",
-                "properties/constraint-common",
-                "terminology/terms"
-            ],
-            latch.countDown);
+            var latch = new CountdownLatch(4);
+            my.referenceModel = new AOM.ReferenceModel(latch.countDown);
+            my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+
+            // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
+            GuiUtils.preloadTemplates([
+                    "util",
+                    "properties/constraint-common",
+                    "terminology/terms"
+                ],
+                latch.countDown);
 
 
-        ArchetypeEditor.initialize(latch.countDown);
+            ArchetypeEditor.initialize(latch.countDown);
 
-        latch.execute(callback);
+            $templateEditorContainer.find();
+            latch.execute(callback);
+        });
     };
 
     return my;

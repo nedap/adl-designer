@@ -291,15 +291,7 @@ var AOM = (function () {
 
             my.ArchetypeModel = function (data, parentArchetypeModel) {
 
-                var defaultLanguage;
-                if (data.original_language) {
-                    defaultLanguage = data.original_language.code_string;
-                } else {
-                    // overlays have no original_language, so just take the first language from the terminology
-                    // since defaultLanguage is not used on everlays, just choose the first language in terminology
-                    // as default
-                    defaultLanguage = AmUtils.keys(data.terminology.term_definitions)[0];
-                }
+                var defaultLanguage = data.original_language.code_string;
                 var self = this;
 
                 function getTermDefinition(node_id, language) {
@@ -511,10 +503,15 @@ var AOM = (function () {
 
 
                 /**
-                 * @returns {Array} all languages present in the archetype.
+                 * @returns {Array} all languages present in the archetype. First language is always the main language
                  */
                 self.allLanguages = function () {
-                    return AmUtils.keys(self.data.terminology.term_definitions);
+                    var result = [];
+                    result.push(defaultLanguage);
+                    for (var i in self.translations) {
+                        result.push(self.translations[i]);
+                    }
+                    return result;
                 };
 
                 /**
@@ -1398,21 +1395,25 @@ var AOM = (function () {
                  * @return {boolean} True if the move was successful
                  */
                 self.moveBefore = function (cons, anchorCons) {
+
                     if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
                         console.error("Only specialized constraints can be moved");
+                        toastr.error("Only specialized nodes can be moved.");
                         return false;
                     }
 
 
                     if (anchorCons && anchorCons[".parent"] !== cons[".parent"]) {
                         console.error("Can only move before a constraint on the same level");
+                        toastr.error("You can only move before a specialized constraint on the same level");
                         return false;
                     }
 
-                    if (!self.isSpecialized(cons[".parent"])) {
+                   /* if (!self.isSpecialized(cons[".parent"])) {
                         console.error("Can only move constraints on a specialized parent");
+                        toastr.error("The parent must be specialied to move this node.");
                         return false;
-                    }
+                    }*/
 
                     var parentAttr = cons[".parent"];
                     var found=false;
@@ -1423,7 +1424,10 @@ var AOM = (function () {
                             found=true;
                         }
                     }
-                    if (!found) throw "cons is not a child of its own parent";
+                    if (!found) {
+                        toastr.error("Reorder not valid");
+                        throw "cons is not a child of its own parent";
+                    }
 
                     if (anchorCons) {
                         var found=false;
@@ -1435,9 +1439,13 @@ var AOM = (function () {
                                 break;
                             }
                         }
-                        if (!found) throw "targetCons is not a child of its own parent";
+                        if (!found) {
+                            toastr.error("Reorder not valid");
+                            throw "targetCons is not a child of its own parent";
+                        }
 
                     } else {
+
                         parentAttr.children.push(cons);
                     }
                     toastr.success("Reorder successful!");
@@ -1463,8 +1471,7 @@ var AOM = (function () {
                         return false;
                     }*/
                     return true;
-
-                };
+                }
 
                 self.getArchetypeId = function () {
                     return data.archetype_id.value;

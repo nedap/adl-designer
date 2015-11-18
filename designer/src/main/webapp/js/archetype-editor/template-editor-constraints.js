@@ -157,6 +157,7 @@
             };
 
             handler.updateConstraint = function (stage, context, cons) {
+
                 cons.occurrences =
                     AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
             };

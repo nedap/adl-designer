@@ -18,28 +18,70 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 {>top}
-<div class="row properties-line">
-    <div class="properties-label"><label>Node Id</label></div>
-    <div class="properties-value data">{{node_id}}</div>
-</div>
-<div class="row properties-line">
-    <div class="properties-label"><label>Path</label></div>
-    <div class="properties-value data">{{rmPath}}</div>
-</div>
-<div class="row properties-line">
-    <div class="properties-label"><label for="occurrences">Occurrences</label></div>
-    <div class="properties-value">
-      <div class="properties-value-item">
-          <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
-      </div>
-      <div class="properties-value-item">
-          <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
-      </div>
-      <div class="properties-value-item small">
-          <input id="{{panel_id}}_multiplicity_bound" class="form-control input-sm data" type="number">
-      </div>
+<div>
+  <!--  <div class="row properties-line">
+        <div class="properties-label"><label>Node Id</label></div>
+        <div class="properties-value data">{{node_id}}</div>
     </div>
+    <div class="row properties-line">
+        <div class="properties-label"><label>Path</label></div>
+        <div class="properties-value data">{{rmPath}}</div>
+    </div>-->
+  <!--<div class="row properties-line">
+        <div class="properties-label"><label for="occurrences">Occurrences</label></div>
+        <div class="properties-value">
+          <div class="properties-value-item">
+              <select id="{{panel_id}}_existence" class="form-control input-sm data"></select>
+          </div>
+          <div class="properties-value-item">
+              <select id="{{panel_id}}_multiplicity" class="form-control input-sm data"></select>
+          </div>
+        </div>
+    </div>-->
+   <!-- <div class="row properties-line">
+        <div class="properties-label"><label for="occurrences">Occurrences</label></div>
+        <div class="properties-value">
+            <a href="#" id="{{panel_id}}_minMaxF" class="minMaxF"></a>
+        </div>
+    </div>-->
+    <table class="table table-bordered table-hover table-responsive">
+        <tr>
+            <td><b>Node Id</b></td>
+            <td>{{node_id}}</td>
+        </tr>
+        <tr>
+            <td><b>Path</b></td>
+            <td>{{rmPath}}</td>
+        </tr>
+        <tr>
+            <td><b>Occurrences</b></td>
+            <td><a href="#" id="{{panel_id}}_minMaxF" class="minMaxF"></a></td>
+        </tr>
+    </table>
 </div>
+   <!-- <div class="row form-horizontal" style='padding-top: 10px'>
+      <div class="form-group">
+        <div class="col-xs-2" style='padding: 5px'>
+
+        &lt;!&ndash;<label style='margin-top: 30px'>Occurrences: </label>
+        </div>
+         <div class="col-xs-2">
+             <label>Min</label>
+             <a href="#" id="{{panel_id}}_minMaxF" class="minMaxF"></a>
+          &lt;!&ndash;<label>Min</label>
+          <input id="{{panel_id}}_minOccur" class="form-control input-sm data tryqq" type="number">&ndash;&gt;
+
+
+          </div>&ndash;&gt;
+       &lt;!&ndash; <div class="col-xs-2">
+
+            <label>Max</label>
+            <input id="{{panel_id}}_maxOccur" class="form-control input-sm data"  type="text">
+            </div>
+      </div>&ndash;&gt;
+       <hr>
+   </div>-->
+
 
 {>main}
 <div id="{{panel_id}}">
@@ -51,6 +93,7 @@
 
 {>footer}
 <div>
+
     {{#unless specialized}}
         <button id="{{footer_id}}_specialize" class="btn btn-primary">Specialize</button>
     {{/unless}}
@@ -67,17 +110,18 @@
 {>ARCHETYPE_SLOT}
 <div class="row properties-line">
   <div class="properties-label align-top"><label>Include</label></div>
-  <div id="{{panel_id}}_includes" class="properties-value"></div>
+  <div id="{{panel_id}}_includes" class="properties-value data"></div>
 </div>
 <div class="row properties-line">
   <div class="properties-label align-top"><label>Exclude</label></div>
-  <div id="{{panel_id}}_excludes" class="properties-value"></div>
+  <div id="{{panel_id}}_excludes" class="properties-value data"></div>
 </div>
+
 
 {>ARCHETYPE_SLOT/assertionList}
 <div class="properties-line no-border">
   <div class="properties-value">
-    <select id="{{panel_id}}_list" size="10" style="width:100%" multiple></select>
+    <select id="{{panel_id}}_list" size="10" style="width:100%" class="data" multiple></select>
     <div class="btn-group-vertical left-space-small" role="group">
         <button id="{{panel_id}}_add" type="button" class="btn btn-default data" title="add">
             <span class="glyphicon glyphicon-plus"></span>

@@ -1,0 +1,117 @@
+/*
+ * ADL Designer
+ * Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+ *
+ * This file is part of ADL2-tools.
+ *
+ * ADL2-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+body {
+    font-family: Raleway, Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+}
+
+.background-header {
+    background-color: #126180;
+    flex: 0 0 120px;
+    color: #FFF;
+    border-bottom: 30px solid #18789b;
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+}
+
+.background-header > img {
+    flex: 0 0 80px;
+    height: 50px;
+}
+
+.background-header > h1 {
+    flex: 1 0;
+    font-size: 48px;
+}
+
+.background {
+    background-color: #0D98B9;
+    flex: 1 1;
+}
+
+.background-footer {
+    background-color: #0D98B9;
+    flex: 0 0 75px;
+    padding: 0px 20px;
+    color: #FFF;
+    display: flex;
+    flex-direction: row;
+}
+
+#app-version-panel {
+    flex: 1 1;
+    font-weight: normal;
+}
+
+.background-footer a {
+    color: #FFF;
+    text-decoration: none;
+}
+
+.login {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -150px;
+    margin-left: -200px;
+    width:  400px;
+    height: 180px;
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+}
+
+.panel-heading {
+    flex: 0 0 75px;
+}
+
+.panel-body {
+    flex: 1 0;
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+}
+
+.login-subtitle {
+    flex: 1 0;
+    color: #126180;
+}
+
+.login-subtitle img {
+    height: 40px;
+    width: 49px;
+}
+
+.login-blue {
+    border: 1px solid #126180;
+}
+
+.login-button {
+    flex: 0 0 50px;
+}

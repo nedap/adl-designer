@@ -1,0 +1,86 @@
+{>profile}
+<div class="modal xfade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Profile</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-responsive no-bottom-margin">
+                    <tr>
+                        <td><b>Username</b></td>
+                        <td>{{username}}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Github</b></td>
+                        <td><button type="button" name="repositories" class="btn btn-sm btn-primary">Manage repositories</button></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{>repositories}
+<div class="modal xfade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Profile</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover table-responsive">
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>Repository</th>
+                        <th>Fork</th>
+                        <th>
+                            <div class="btn-group pull-right" role="group">
+                                <button type="button" data-action='add'
+                                        class="btn btn-sm btn-default" title="add repository">
+                                    &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
+                                </button>
+                            </div>
+                        </th>
+                    </tr>
+                    {{#each repositories}}
+                        <tr>
+                            <td>&nbsp;
+                                {{#if current}}
+                                    <span class="glyphicon glyphicon-ok" title="Currently selected"></span>
+                                {{/if}}
+                            </td>
+                            <td><a target='_blank' href='https://github.com/{{name}}'>{{name}}</a></td>
+                            <td>{{fork}}</td>
+                            <td>
+                                <div class="btn-group pull-right" role="group">
+                                    {{#unless current}}
+                                        <button type="button" data-action='choose' data-name='{{name}}'
+                                                class="btn btn-sm btn-default" title="choose">
+                                            &nbsp;<span class="glyphicon glyphicon-ok"></span>&nbsp;
+                                        </button>
+                                        <button type="button" data-action='remove' data-name='{{name}}'
+                                                class="btn btn-sm btn-default"
+                                                title="remove">
+                                            &nbsp;<span class="glyphicon glyphicon-remove"></span>&nbsp;
+                                        </button>
+                                    {{/unless}}
+                                </div>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

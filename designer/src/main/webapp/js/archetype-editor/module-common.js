@@ -42,7 +42,7 @@
                     context.parent = h.createContext(stage, parentCons);
                 }
             }
-            if (stage.templateModel) {
+            if (AOM.TemplateModel.from(cons)) {
                 context.isTemplate=true;
             }
             context.isParentConstrained = context.isTemplate && !!context.parent;
@@ -221,6 +221,129 @@
                     var multiplicitySelect = html.find('#' + context.panel_id + "_multiplicity");
                     var multiplicityBoundInput = html.find('#' + context.panel_id + "_multiplicity_bound");
 
+                    var minV = ( parentOcc.lower_included ? 1 : 0)
+                    var maxV = ( parentOcc.upper_unbounded ? '*' : 1)
+                    if( typeof parentOcc.lower != 'undefined'&& typeof parentOcc.upper != 'undefined'){
+                        minV = parentOcc.lower;
+                        maxV = parentOcc.upper;
+                    }
+
+                    if( typeof occ.lower != 'undefined'&& typeof occ.upper != 'undefined'){
+                        minV = occ.lower;
+                        maxV = occ.upper;
+                    }
+
+                    html.find('#' + context.panel_id + "_minOccur").val(minV);
+                    var oldValue = minV+'..'+maxV;
+                    html.find('#' + context.panel_id + "_minMaxF").editable({
+                        value: minV+'..'+maxV,
+
+                        tpl: "<input type='text' style='width: 100px'>",
+                        success: function(response, newValue) {
+                            var formatted = '';
+                            if(newValue==''){
+                                toastr.error("You cannot leave occurrences empty! Changes are reverted");
+                                return {newValue: oldValue};
+                            }
+                            newValue = newValue.replace(/\s+/g, '');
+                            switch(newValue)
+                            {
+                                case '1':
+                                    formatted = 0 + '..' + 1;
+                                    oldValue = 0+'..'+1;
+                                    return {newValue: formatted};
+                                    break;
+                                case '0':
+                                    formatted = 0 + '..' + 0;
+                                    oldValue = 0+'..'+0;
+                                    return {newValue: formatted};
+                                    break;
+                                case '*':
+                                    formatted = 0 + '..' + '*';
+                                    oldValue = 0+'..*';
+                                    return {newValue: formatted};
+                                    break;
+                                default:
+                                    if(!isNaN(newValue) && newValue % 1 == 0){
+                                        formatted = '0..'+newValue+'';
+                                        oldValue = 0+'..'+newValue;
+                                        return {newValue: formatted};
+                                        break;
+                                    }
+                                    else {
+                                            if(newValue.indexOf('[') != -1)
+                                            {
+                                                newValue = newValue.substr(newValue.indexOf('[')+1);
+                                            }
+                                            if(newValue.indexOf(']') != -1)
+                                            {
+                                                newValue = newValue.substr(0,newValue.indexOf(']'));
+                                            }
+                                        var parse = newValue.indexOf('..');
+                                        if(parse==-1){
+                                            toastr.error("Please insert a valid format: ex. x..y");
+                                            return {newValue: oldValue};
+                                            break;
+                                        }
+                                        var minR = newValue.substring(0, parse);
+                                        var maxR = newValue.substring(parse+2);
+
+                                        formatted = minR + '..' + maxR;
+
+                                        if(minR > maxR){
+                                            toastr.error("Min value cannot be bigger than max value");
+                                            return {newValue: oldValue};
+                                        }
+                                        oldValue = minR+'..'+maxR;
+                                        return {newValue: formatted};
+                                        break;
+                                    }
+
+                            }
+
+                            toastr.error("Please insert a valid format: ex. [x..y]");
+                            return {newValue: oldValue};
+
+
+
+                        }
+                    })
+                    /*.on('shown', function(e, editable) {
+                        editable.input.$input.val(editable["value"].substr(1,editable["value"].length-2));
+                    });*/
+
+                    //html.find('#' + context.panel_id + "_minMaxF").text('[ '+minV+'..'+maxV+' ]');
+
+                   /* $("#minOccurq").attr('href', "qqw");
+                    html.find('#' + context.panel_id + "_maxOccur").val(maxV);
+                    $('#minOccurq').editable({
+                        success: function(response, newValue) {
+                            switch(newValue)
+                            {
+                                case '1':
+                                    toastr.success('[' + 0 + '..' + 1 + ']');
+                                    break;
+                                case '0':
+                                    toastr.success('[' + 0 + '..' + 0 + ']');
+                                    break;
+                                case '*':
+                                    toastr.success('[' + 0 + '..' + '*' + ']');
+                                    break;
+                                default:
+                                    var parse = newValue.indexOf('..');
+                                    var minR = newValue.substring(0, parse-1);
+                                    var maxR = newValue.substring(parse+2, newValue.length-1);
+                                    toastr.success('[' + minR + '..' + maxR + ']');
+                                    break;
+                            }
+                        }
+                    });*/
+
+
+
+
+
+
                     fillSelectOptions(existenceSelect, existenceMap);
                     fillSelectOptions(multiplicitySelect, multiplicityMap);
 
@@ -242,11 +365,59 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                var existenceSelect = targetElement.find('#' + context.panel_id + "_existence");
+               /* var existenceSelect = targetElement.find('#' + context.panel_id + "_existence");
                 var multiplicitySelect = targetElement.find('#' + context.panel_id + "_multiplicity");
                 var multiplicityBoundInput = targetElement.find('#' + context.panel_id + "_multiplicity_bound");
+                var minRange = targetElement.find('#' + context.panel_id + "_minOccur").val();
+                var maxRange = targetElement.find('#' + context.panel_id + "_maxOccur").val();*/
 
-                var existence = existenceSelect.val();
+                var minmaxRange = $('.minMaxF').text();
+                context.occurrences = '['+minmaxRange+']';
+
+                /*var minR, maxR;
+                switch(minmaxRange)
+                {
+                    case '1':
+                        context.occurrences = '[' + 0 + '..' + 1 + ']';
+                        break;
+                    case '0':
+                        context.occurrences = '[' + 0 + '..' + 0 + ']';
+                        break;
+                    case '*':
+                        context.occurrences = '[' + 0 + '..' + '*' + ']';
+                        break;
+                    default:
+                        var parse = minmaxRange.indexOf('..');
+                        minR = minmaxRange.substring(0, parse-1);
+                        maxR = minmaxRange.substring(parse+2, minmaxRange.length-1);
+                        context.occurrences = '[' + minR + '..' + maxR + ']';
+                        break;
+                }
+                toastr.success(context.occurrences);
+                if(minmaxRange === '1')
+                {
+                    context.occurrences = '[' + minRange + '..' + maxRange + ']';
+                }
+                if(min)
+
+                if(!minRange || isNaN(minRange)) {
+                    toastr.error("Please set a valid min range");
+                    minRange = 0;
+                }
+                if(!maxRange) {
+                    if(!isNaN(maxRange) && maxRange != '*')
+                    maxRange = '*';
+                }
+                if(!isNaN(minRange) && !isNaN(maxRange))
+                {
+                    if(maxRange < minRange)
+                    //alert("The minimum occurrence range cannot be bigger than the maximum");
+                    toastr.error("The minimum occurrence range cannot be bigger than the maximum");
+                }
+
+                context.occurrences = '[' + minRange + '..' + maxRange + ']';*/
+
+               /* var existence = existenceSelect.val();
                 if (existence === 'prohibited') {
                     context.occurrences = '[0..0]';
                 } else {
@@ -264,17 +435,21 @@
                         high = '*';
                     }
                     context.occurrences = '[' + low + '..' + high + ']';
-                }
+                }*/
             };
 
             handler.validate = function (stage, context, errors) {
                 var occ = AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
 
-                if (!errors.validate(occ, "Invalid occurrences format", "occurrences")) return;
+                if (!errors.validate(occ, "Invalid occurrences format", "occurrences")){
+                    toastr.error("Invalid occurrances format!");
+                    return;
+                }
                 if (stage.templateModel) {
                     var parentOcc = AmInterval.parseContainedString(context.parent.occurrences);
                     if (!AmInterval.contains(parentOcc, occ)) {
                         errors.add('Occurrences ' + AmInterval.toContainedString(occ) + ' do not conform to parent occurrences ' + AmInterval.toContainedString(parentOcc), 'occurrences');
+                        toastr.error('Occurrences ' + AmInterval.toContainedString(occ) + ' do not conform to parent occurrences ' + AmInterval.toContainedString(parentOcc), 'occurrences');
                     }
                 }
             };

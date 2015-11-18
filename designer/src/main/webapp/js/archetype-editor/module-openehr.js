@@ -982,6 +982,19 @@
 
                 context.isCoded = context.type === "DV_CODED_TEXT";
 
+             /*   if(context.isCoded && context.defining_code.value_set_code != undefined)
+                {
+                    var selectedID = $('.treejsc').jstree('get_selected')[0];
+                    if(selectedID){
+                        var selected = $('.treejsc').jstree('get_node', selectedID);
+                        if(context.isCoded && selected.text.indexOf(" <-- Coded text") == -1) $('.treejsc').jstree(true).rename_node(selected, selected.text + " <-- Coded text");
+                        else if(!context.isCoded){
+                            var nr = selected.text.indexOf(" <-- Coded text");
+                            $('.treejsc').jstree(true).rename_node(selected, selected.text.slice(0,nr)+selected.text.slice(nr+15, selected.text.length));
+                        }
+                    }
+
+                }*/
                 return context;
             };
 
@@ -999,6 +1012,13 @@
                         codedTextCheckbox.click(
                             function () {
                                 context.isCoded = codedTextCheckbox.prop('checked');
+                               /* var selectedID = $('.treejsc').jstree('get_selected')[0];
+                                var selected = $('.treejsc').jstree('get_node', selectedID);
+                                if(context.isCoded && selected.text.indexOf(" <-- Coded text") == -1) $('.treejsc').jstree(true).rename_node(selected, selected.text + " <-- Coded text");
+                                else if(!context.isCoded){
+                                    var nr = selected.text.indexOf(" <-- Coded text");
+                                    $('.treejsc').jstree(true).rename_node(selected, selected.text.slice(0,nr)+selected.text.slice(nr+15, selected.text.length));
+                                }*/
                                 GuiUtils.setVisible(definingCodeDiv, context.isCoded);
                             });
 

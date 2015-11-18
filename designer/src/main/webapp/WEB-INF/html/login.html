@@ -1,0 +1,74 @@
+<!--
+  ~ ADL Designer
+  ~ Copyright (c) 2013-2014 Marand d.o.o. (www.marand.com)
+  ~
+  ~ This file is part of ADL2-tools.
+  ~
+  ~ ADL2-tools is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Template Editor - Sign in</title>
+    <!-- jquery -->
+    <script src="lib/jquery/jquery-1.11.1.js"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+    <link href="css/login.css" rel="stylesheet" type="text/css"/>
+    <link href="css/bootstrap-social.css" rel="stylesheet" type="text/css"/>
+    <link href="css/fonts/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="css/font-awesome.css" rel="stylesheet" type="text/css" />
+</head>
+<script>
+    $().ready(function () {
+        $.getJSON("rest/app/configuration", null, function (data) {
+            var version = data["app.implementation.version"];
+            $("#app-version-panel").text("Version: " + version);
+        });
+    });
+    function loginWithGithub() {
+        $.getJSON("rest/app/configuration", null, function (data) {
+            var client_id = data["github.api.auth.client_id"];
+            window.location.href = 'https://github.com/login/oauth/authorize?client_id='
+                    + client_id
+                    + '&scope=user,repo';
+        });
+    }
+</script>
+
+<body>
+<div class="background-header">
+    <h1 class="text-center">ADL Designer</h1>
+</div>
+<div class="background">
+    <div class="login panel panel-primary">
+        <div class="panel-body">
+            <div class="login-subtitle text-center">
+                <h3><img src="images/logo.png" /> Please sign in</h3>
+                <hr class="login-blue"/>
+            </div>
+            <div class="login-button">
+                <a class="btn btn-block btn-social btn-lg btn-github" onclick="loginWithGithub();"><i class="fa fa-github"></i>Sign in with GitHub</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="background-footer">
+    <h2 id="app-version-panel"></h2><h1><a href="http://www.marand.com"><img src="images/marand-white.png" /> </a></h1>
+</div>
+
+</body>
+</html>

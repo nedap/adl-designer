@@ -37,8 +37,11 @@ public class OptBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OptBuilder.class);
 
     private OptBuilderProxy proxy;
-    @Resource
     private ArchetypeRepository archetypeRepository;
+
+    public void setArchetypeRepository(ArchetypeRepository archetypeRepository) {
+        this.archetypeRepository = archetypeRepository;
+    }
 
     @PostConstruct
     public void init() {

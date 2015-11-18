@@ -16,21 +16,16 @@ Clone adl-designer from GitHub:
 git clone https://github.com/openEHR/adl-designer.git
 ```    
 
-Go to the newly created directory _adl-designer_. From there, go to _src/main/resources_ and copy configuration 
-template files to real configuration:
 
+Application is built as a war archive, but it also requires an external folder that holds the configuration and 
+workspace (This folder will be referred to as APPHOME). The application comes with a template for APPHOME folder in
+_adl-designer/apphome_. To avoid committing your local configuration and workspace to github repository, do not use
+this folder directly. Instead, copy _apphome_ to _apphome-work_, which is excluded in .gitignore: 
+ 
 ```bash
-cp config.properties-TEMPLATE config.properties
-cp log4j.properties-TEMPLATE log4j.properties
+cp -r apphome apphome-work
 ```
  
- In config.properties, update:
- 
-* archetype.repository.file.location - Path to the directory that contains archetype files. Directory must already exist.
-    Any file with .adls extension in this directory and any subfolder will be loaded as an archetype. For a repository with 
-    existing archetypes, you can try using a directory with contents of CKM_2013_12_09 Reference archetypes: 
-    https://github.com/openEHR/adl-archetypes/tree/master/Reference/CKM_2013_12_09
-* template.repository.location -  Path to the directory that contains template files. Directory must already exist.
   
   
 Back at _adl-designer_ directory, use Maven to build the project:  
@@ -40,20 +35,30 @@ mvn clean install
 ```
  
 This will generate a _designer.war_ file in _designer/target_, which can be deployed into any java web application server.
+When deploying the application, you will need to specify _ADL_DESIGNER_APPHOME_ environment variable that points to the 
+APPHOME folder. 
 
-For development purposes, you may also run the application with the embedded maven tomcat plugin.
-Go to directory _adl-designer_ and run:
+For development purposes, you may also run the application with the embedded maven tomcat plugin. This also assumes 
+that your APPHOME folder is _adl_designer/apphome-work_, as previously described. 
+Go to directory _adl-designer/designer_ and run:
 
 ```bash
 mvn tomcat7:run
 ```
 
-This will deploy the application on http://localhost:8080/designer and the endpoint urls will be:
+This will deploy the application on http://localhost:8080/designer.
 
-* http://localhost:8080/designer/archetype-editor.html - Archetype Editor
-* http://localhost:8080/designer/template-editor.html - Template Editor
 
- 
+### Running designer on a different host or port 
+
+For authenticating on GitHub, a GitHub application configuration is required. Template APPHOME is configured to use a
+development application that expects the adl-designer to run at http://localhost:8080/designer. If a different URl
+is needed, you will have to create a different GitHub application with a different callback url (Append /app/authorize 
+to the root url, development application url is http://localhost:8080/designer/app/authorize). 
+
+
+In config.properties, you will need to change _github.api.auth.client_id_ and _github.api.auth.secret_ to the new 
+application key.
  
 
 ## Archetype Editor
