@@ -25,7 +25,7 @@
     <groupId>org.openehr.adltools</groupId>
     <artifactId>adltools</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>${project.artifactId}</name>
     <properties>
         <java.version>1.8</java.version>
@@ -400,7 +400,10 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
+
+                    <!-- Only uses current branch, so avoid remote. You will need to push manually. -->
                     <pushChanges>false</pushChanges>
+                    <localCheckout>true</localCheckout>
                     <goals>install</goals>
                 </configuration>
             </plugin>
