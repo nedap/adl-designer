@@ -68,6 +68,10 @@ label {
   -webkit-flex-shrink: 1;
 }
 
+i.fa-github {
+    font-size: 18px;
+}
+
 .row {
   margin-right: 0px;
   margin-left: 0px;
@@ -475,6 +479,11 @@ form .table-layout .table-cell {
     padding: 4px 10px;
 }
 
+#archetype-editor-footer > a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+}
 
 #archetype-editor-main-tabs-definition .table-layout {
     height: 100%

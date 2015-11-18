@@ -74,7 +74,7 @@ var UserModule = (function () {
     }
 
     my.updateConnectedTo = function(repoName) {
-        $('#archetype-editor-footer').text("Connected to: " + repoName);
+        $('#archetype-editor-footer').html("<i class='fa fa-github'></i> <a target='_blank' href='https://github.com/" + repoName + "'>" + repoName + "</a>");
     }
 
     my.showProfile = function () {
