@@ -228,7 +228,9 @@
 
                         var panel = targetElement.find("#ConstraintPanel");
                         dataElements.css('cursor', 'not-allowed');
+
                         panel.css('cursor', 'not-allowed');
+                        panel.css('overflow', 'auto');
 
                         dataElements.prop("disabled", !specialized);
                         saveButton.prop('disabled', !specialized);

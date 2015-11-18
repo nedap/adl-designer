@@ -54,10 +54,13 @@ var UserModule = (function () {
 
                 modalBody.find("button[data-action='choose']").click(function () {
                     var repoName = $(this).data('name');
-                    $.post('rest/user/repository/choose', {name: repoName}).then(function () {
+                    showBlockingMask("Synchronizing with repository...");
+                    $.post('rest/user/repository/choose', {name: repoName}).then(function (data) {
                         TemplateEditor.initialize();
                         dialogElement.modal('hide');
-                        showRepositories();
+                        //showRepositories();
+                        UserModule.updateConnectedTo(data.name);
+                        $.unblockUI();
                     });
                 });
 
@@ -70,14 +73,18 @@ var UserModule = (function () {
         });
     }
 
+    my.updateConnectedTo = function(repoName) {
+        $('#archetype-editor-footer').text("Connected to: " + repoName);
+    }
+
     my.showProfile = function () {
         $.getJSON("rest/user/profile").done(function (profile) {
 
             GuiUtils.applyTemplate("user|profile", profile, function (html) {
                 var dialogElement = $(html);
 
-                var modalFooter = dialogElement.find(".modal-footer");
-                modalFooter.find("button[name]").click(function () {
+                //var modalFooter = dialogElement.find(".modal-footer");
+                dialogElement.find("button[name]").click(function () {
                     var buttonName = $(this).attr('name');
                     switch (buttonName) {
                         case 'repositories':
