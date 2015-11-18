@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.eclipse.egit.github.core.RepositoryContents;
@@ -11,10 +13,10 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.designer.repository.ArtifactNotFoundException;
+import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.ArtifactNotFoundException;
 import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
@@ -23,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Denko on 11/5/2015.
@@ -34,7 +38,9 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
     private Map<String, ArchetypeInfo> archetypeMap = new HashMap<>();
     private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
     private AdlDeserializer deserializer = new AdlDeserializer();
-
+    private final Cache<String, Archetype> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
 
     public void init(String branch, String accessToken, String repo) {
         super.init(branch, accessToken, repo);
@@ -104,7 +110,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
                         am.rmType = a.getDefinition().getRmTypeName();
                         am.languages = extractLanguages(a);
                     } catch (AdlParserException e) {
-                        am.id=null; // marks invalid archetype
+                        am.id = null; // marks invalid archetype
                         LOG.error("Error parsing archetype " + tc.getPath() + ". It will not be present in the list of archetypes", e);
                     }
                     updated = true;
@@ -146,13 +152,23 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
 
     @Override
     public Archetype getDifferentialArchetype(String archetypeId) {
-        String path = createPath(archetypeId);
-        RepositoryContents rc = getFileContentsOrNull(path);
-        if (rc == null) {
-            throw new ArtifactNotFoundException(archetypeId);
+        try {
+            return cache.get(archetypeId, () -> {
+                String path = createPath(archetypeId);
+                RepositoryContents rc = getFileContentsOrNull(path);
+                if (rc == null) {
+                    throw new ArtifactNotFoundException(archetypeId);
+                }
+                String adlsContent = decodeBase64(rc.getContent());
+                return deserializer.parse(adlsContent);
+            });
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException(e);
+            }
         }
-        String adlsContent = decodeBase64(rc.getContent());
-        return deserializer.parse(adlsContent);
 
     }
 
@@ -181,6 +197,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         } catch (IOException e) {
             throw new RepositoryException(e);
         }
+        cache.put(archetypeId, archetype);
 
         ArchetypeInfo i = archetypeMap.get(archetypeId);
         if (i == null) {
@@ -227,7 +244,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         }
 
         private boolean isValid() {
-            return id!=null;
+            return id != null;
         }
     }
 }

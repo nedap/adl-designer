@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
@@ -13,7 +15,6 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
 import org.openehr.designer.repository.ArtifactNotFoundException;
-import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.TemplateInfo;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
@@ -23,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Denko on 11/4/2015.
@@ -34,6 +37,9 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
 
     private Map<String, TemplateInfo> templateMap = new HashMap<>();
     private ObjectMapper objectMapper = new ObjectMapper();
+    private final Cache<String, List<Archetype>> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
 
 
     public void init(String branch, String accessToken, String repo) {
@@ -100,8 +106,8 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
                         tm.name = findTermText(a, a.getDefinition().getNodeId());
                         tm.rmType = a.getDefinition().getRmTypeName();
                     } catch (AdlException e) {
-                        tm.id=null;
-                        LOG.error("Error parsing template " + tc.getPath()+". It will not be present in the list of templates", e);
+                        tm.id = null;
+                        LOG.error("Error parsing template " + tc.getPath() + ". It will not be present in the list of templates", e);
                     }
                     updated = true;
                 }
@@ -163,6 +169,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        cache.put(templateId, archetypes);
 
         TemplateInfo i = templateMap.get(templateId);
         if (i == null) {
@@ -179,14 +186,23 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
 
     @Override
     public List<Archetype> loadTemplate(String templateId) {
-
-        String path = createPath(templateId);
-        RepositoryContents rc = getFileContentsOrNull(path);
-        if (rc == null) {
-            throw new ArtifactNotFoundException(templateId);
+        try {
+            return cache.get(templateId, () -> {
+                String path = createPath(templateId);
+                RepositoryContents rc = getFileContentsOrNull(path);
+                if (rc == null) {
+                    throw new ArtifactNotFoundException(templateId);
+                }
+                String adltContent = decodeBase64(rc.getContent());
+                return TemplateDeserializer.deserialize(adltContent);
+            });
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException(e);
+            }
         }
-        String adltContent = decodeBase64(rc.getContent());
-        return TemplateDeserializer.deserialize(adltContent);
     }
 
     private String createPath(String templateId) {
@@ -215,7 +231,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
         private String sha;
 
         private boolean isValid() {
-            return id!=null;
+            return id != null;
         }
 
     }
