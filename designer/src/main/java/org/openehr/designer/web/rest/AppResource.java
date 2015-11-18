@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -38,10 +39,16 @@ import java.util.Map;
 public class AppResource {
 
     @RequestMapping(value = "/configuration", method = RequestMethod.GET)
-    public Map<String, Object> getAppConfiguration() {
+    public Map<String, Object> getAppConfiguration(HttpServletRequest req) {
         Map<String, Object> result = new LinkedHashMap<>();
+        // add config keys
         ImmutableList.of("github.api.auth.client_id")
                 .forEach((k) -> result.put(k, Configuration.get(k)));
+
+        // add servlet parameters
+        ImmutableList.of("app.implementation.version")
+                .forEach((k) -> result.put(k, req.getServletContext().getInitParameter(k)));
+
         return result;
     }
 }

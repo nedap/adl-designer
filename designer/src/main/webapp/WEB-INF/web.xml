@@ -36,10 +36,10 @@
         </param-value>
     </context-param>
 
-    <!--<context-param>-->
-    <!--<param-name>resteasy.servlet.mapping.prefix</param-name>-->
-    <!--<param-value>/rest</param-value>-->
-    <!--</context-param>-->
+    <context-param>
+        <param-name>app.implementation.version</param-name>
+        <param-value>${project.version}</param-value>
+    </context-param>
 
     <listener>
         <listener-class>org.openehr.designer.web.InitializationListener</listener-class>
