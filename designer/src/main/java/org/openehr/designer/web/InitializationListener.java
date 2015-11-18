@@ -47,8 +47,11 @@ public class InitializationListener extends ContextLoaderListener implements Ser
 
         String appHomeStr = System.getenv(ENV_VAR);
         if (appHomeStr == null) {
-            LOG.error("Required environment variable not defined. Please define {} to point to the application home directory", ENV_VAR);
-            return;
+            appHomeStr = System.getProperty(ENV_VAR);
+            if (appHomeStr==null) {
+                LOG.error("Required environment variable not defined. Please define {} to point to the application home directory", ENV_VAR);
+                return;
+            }
         }
         Path appHome = Paths.get(appHomeStr);
         if (!Files.isDirectory(appHome) && !Files.exists(appHome.resolve("conf/config.properties"))) {

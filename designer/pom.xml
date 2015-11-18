@@ -150,6 +150,9 @@
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <configuration>
                     <path>/${project.artifactId}</path>
+                    <systemProperties>
+                        <ADL_DESIGNER_APPHOME>${basedir}/../apphome-work</ADL_DESIGNER_APPHOME>
+                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>
