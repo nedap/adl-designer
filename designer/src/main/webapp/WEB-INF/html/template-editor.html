@@ -37,14 +37,19 @@
     <link href="lib/jquery/toastr/bower_components/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
     <script src="lib/jquery/toastr/bower_components/toastr/toastr.min.js"></script>
 
+    <!-- blockui -->
+    <script src="lib/jquery/jquery-blockui/jquery.blockUI.js"></script>
+
+    <!-- spinner -->
+    <link rel="stylesheet" href="css/spinner.css" type="text/css">
 
     <!-- Bootstrap -->
     <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-3.3.2/js/bootstrap.js"></script>
 
-    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
+    <link href="lib/x-editable/bootstrap-editable.css"
           rel="stylesheet"/>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script src="lib/x-editable/bootstrap-editable.min.js"></script>
     <!-- Bootstrap Table -->
     <link href="lib/bootstrap-table-1.6.0/bootstrap-table.min.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-table-1.6.0/bootstrap-table.min.js"></script>
@@ -110,12 +115,14 @@
                 e.preventDefault();
                 $(this).tab('show');
             });
-
+            showBlockingMask("Synchronizing with repository...");
             TemplateEditor.initialize(function () {
+                $.unblockUI();
             });
 
             $.getJSON("rest/user/profile").done(function (data) {
                 $('#profileHeader').text(data.username);
+                UserModule.updateConnectedTo(data.repository);
             });
 
 
@@ -140,8 +147,8 @@
     </nav>
     <div id="archetype-editor-archetype-id-main"></div>
     <div id="archetype-editor-archetype-tabs" class="tab-pane" ></div>
+    <div id="archetype-editor-footer"></div>
 </div>
-
 </body>
 
 </html>
