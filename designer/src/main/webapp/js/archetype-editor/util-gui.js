@@ -39,10 +39,12 @@ var GuiUtils = (function () {
             }
         }
 
-
         if (compiledHandlebarTemplates[path]) {
             var template = compiledHandlebarTemplates[path];
+            var def = $.Deferred();
             applyTemplateAndCallback(template);
+            def.resolve();
+            return def.promise();
         } else {
             var pathobj;
             var pipePos = path.indexOf("|");
@@ -56,27 +58,35 @@ var GuiUtils = (function () {
                     path: path
                 }
             }
-            my.loadTemplates(pathobj.path, pipePos >= 0, function () {
+            var promise = my.loadTemplates(pathobj.path, pipePos >= 0);
+            promise.done(function () {
                 var template = compiledHandlebarTemplates[path];
                 if (!template) {
                     console.error("No handlebars template for path " + path);
                     return;
                 }
                 applyTemplateAndCallback(template)
-            })
+            });
+            return promise;
         }
     };
 
     my.preloadTemplates = function (paths, callback) {
-        var latch = new CountdownLatch(paths.length);
+//        var latch = new CountdownLatch(paths.length);
+        var array = [];
         for (var i in paths) {
-            my.loadTemplates(paths[i], true, latch.countDown)
+            array[i]=my.loadTemplates(paths[i], true);
         }
-        if (callback) {
-            latch.execute(callback);
-        }
+
+        return $.when.apply($, array).done(function() {
+            if (callback) {
+                callback();
+            }
+        });
+
+
     };
-    my.loadTemplates = function (path, multi, callback) {
+    my.loadTemplates = function (path, multi) {
         function splitTemplateStringById(string) {
             var hbs_id_re = /^{>.+}\s*$/;
 
@@ -102,7 +112,7 @@ var GuiUtils = (function () {
             return result;
         }
 
-        $.ajax({
+        return $.ajax({
             url: "templates/" + path + ".hbs",
             success: function (data) {
                 if (multi) {
@@ -111,11 +121,9 @@ var GuiUtils = (function () {
                         var template = Handlebars.compile(templatesById[id]);
                         compiledHandlebarTemplates[path + "|" + id] = template;
                     }
-                    callback();
                 } else {
                     var template = Handlebars.compile(data);
                     compiledHandlebarTemplates[path] = template;
-                    callback();
                 }
             }
         });

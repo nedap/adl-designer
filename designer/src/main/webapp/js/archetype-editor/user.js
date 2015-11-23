@@ -41,7 +41,8 @@ var UserModule = (function () {
                                 dialogElement.modal('hide');
                                 showRepositories();
                             });
-                        }});
+                        }
+                    });
                 });
 
                 modalBody.find("button[data-action='remove']").click(function () {
@@ -55,13 +56,13 @@ var UserModule = (function () {
                 modalBody.find("button[data-action='choose']").click(function () {
                     var repoName = $(this).data('name');
                     showBlockingMask("Synchronizing with repository...");
-                    $.post('rest/user/repository/choose', {name: repoName}).then(function (data) {
-                        TemplateEditor.initialize();
-                        dialogElement.modal('hide');
-                        //showRepositories();
-                        UserModule.updateConnectedTo(data.name);
-                        $.unblockUI();
-                    });
+                    $.post('rest/user/repository/choose', {name: repoName})
+                        .then(function (data) {
+                            dialogElement.modal('hide');
+                            //showRepositories();
+                            UserModule.updateConnectedTo(data.name);
+                            return TemplateEditor.initialize();
+                        }).always($.unblockUI)
                 });
 
                 dialogElement.on('hidden.bs.modal', function () {
@@ -73,7 +74,7 @@ var UserModule = (function () {
         });
     }
 
-    my.updateConnectedTo = function(repoName) {
+    my.updateConnectedTo = function (repoName) {
         $('#archetype-editor-footer').html("<i class='fa fa-github'></i> <a target='_blank' href='https://github.com/" + repoName + "'>" + repoName + "</a>");
     }
 

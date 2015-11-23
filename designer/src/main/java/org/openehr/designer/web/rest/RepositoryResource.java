@@ -243,21 +243,6 @@ public class RepositoryResource extends AbstractResource {
         return new RestErrorResponseBody(e.getMessage());
     }
 
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(Exception.class)
-    @ResponseBody
-    public RestErrorResponseBody handleException(Exception e) {
-        LOG.error("Internal server error", e);
-        return new RestErrorResponseBody(e.getMessage());
-    }
-
-    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED)
-    @ExceptionHandler(UnsupportedOperationException.class)
-    @ResponseBody
-    public RestErrorResponseBody handleException(UnsupportedOperationException e) {
-        LOG.error("Unsupported operation", e);
-        return new RestErrorResponseBody(e.getMessage());
-    }
 
     @RequestMapping(value = "/template-editor", method = RequestMethod.GET, produces = "text/html")
     public void GetTemplateHTML(){

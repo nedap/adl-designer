@@ -119,9 +119,7 @@
                 $(this).tab('show');
             });
             showBlockingMask("Synchronizing with repository...");
-            TemplateEditor.initialize(function () {
-                $.unblockUI();
-            });
+            TemplateEditor.initialize().always($.unblockUI);
 
             $.getJSON("rest/user/profile").done(function (data) {
                 $('#profileHeader').text(data.username);

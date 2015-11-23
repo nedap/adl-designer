@@ -854,7 +854,7 @@ var AOM = (function () {
                     return true;
                 };
 
-                self.getValueSet = function(valueSetId) {
+                self.getValueSet = function (valueSetId) {
                     var value_set = self.data.terminology.value_sets[valueSetId];
                     if (!value_set) return undefined;
                     return value_set;
@@ -865,7 +865,7 @@ var AOM = (function () {
                  * @param {string} path
                  * @return {object|undefined} found constraint
                  */
-                self.getConstraint = function(path) {
+                self.getConstraint = function (path) {
                     return my.AmQuery.get(self.data.definition, path);
                 };
 
@@ -1415,23 +1415,23 @@ var AOM = (function () {
                     }
 
                     var parentAttr = cons[".parent"];
-                    var found=false;
+                    var found = false;
                     for (var i in parentAttr.children) {
                         var consChild = parentAttr.children[i];
                         if (consChild === cons) {
                             parentAttr.children.splice(i, 1);
-                            found=true;
+                            found = true;
                         }
                     }
                     if (!found) throw "cons is not a child of its own parent";
 
                     if (anchorCons) {
-                        var found=false;
+                        var found = false;
                         for (var i in parentAttr.children) {
                             var consChild = parentAttr.children[i];
                             if (consChild === anchorCons) {
                                 parentAttr.children.splice(i, 0, cons);
-                                found=true;
+                                found = true;
                                 break;
                             }
                         }
@@ -1444,7 +1444,7 @@ var AOM = (function () {
                     return true;
 
                 };
-                self.moveBeforeChecker = function(cons, anchorCons){
+                self.moveBeforeChecker = function (cons, anchorCons) {
                     if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
                         console.error("Only specialized constraints can be moved");
                         toastr.error("Only specialized constraints can be moved");
@@ -1457,11 +1457,11 @@ var AOM = (function () {
                         return false;
                     }
 
-                  /*  if (!self.isSpecialized(cons[".parent"])) {
-                        console.error("Can only move constraints on a specialized parent");
-                        toastr.error("You can only move constraints which are on a specialized parent");
-                        return false;
-                    }*/
+                    /*  if (!self.isSpecialized(cons[".parent"])) {
+                     console.error("Can only move constraints on a specialized parent");
+                     toastr.error("You can only move constraints which are on a specialized parent");
+                     return false;
+                     }*/
                     return true;
 
                 };
@@ -1813,21 +1813,16 @@ var AOM = (function () {
 
             };
 
-            my.ArchetypeRepository = function (callback) {
+            my.ArchetypeRepository = function () {
                 var self = this;
-                self.state = undefined;
 
-                self.reload = function (callback) {
-                    $.getJSON("rest/repo/list").success(function (data) {
-                        self.state = "ok";
+                self.load = function () {
+                    return $.getJSON("rest/repo/list").done(function (data) {
                         self.infoList = data;
                         self.infoList.sort(function (a, b) {
                             return a.archetypeId < b.archetypeId ? -1 :
                                 a.archetypeId > b.archetypeId ? 1 : 0;
-                        });
-                        if (callback) callback(self);
-                    }).error(function () {
-                        self.state = "error";
+                        })
                     });
                 };
 
@@ -1842,33 +1837,22 @@ var AOM = (function () {
                         }
                     );
                 };
-
-                self.reload(callback);
             };
 
             /**
              * Creates a new reference model
              *
-             * @param {function|object} callback callback when loading is completed or preloaded reference model (for testing)
+             * @param {function|object} model callback when loading is completed or preloaded reference model (for testing)
              * @constructor
              */
-            my.ReferenceModel = function (callback) {
+            my.ReferenceModel = function (model) {
                 var self = this;
-                self.state = undefined;
 
-                if (typeof "callback" === "object") {
-                    self.state = "ok";
-                    self.model = callback;
-                } else {
-                    $.getJSON("rest/rm/openEHR/1.0.2").success(function (data) {
-                        self.state = "ok";
+                self.load = function () {
+                    return $.getJSON("rest/rm/openEHR/1.0.2").success(function (data) {
                         self.model = data;
-                        callback(self);
-                    }).error(function () {
-                        self.state = "error";
                     });
-
-                }
+                };
 
 
                 self.name = function () {
@@ -1930,6 +1914,13 @@ var AOM = (function () {
                     }
                     return result;
                 };
+
+
+                if (typeof "callback" === "object") {
+                    self.state = "ok";
+                    self.model = model;
+                }
+
             };
 
             my.UnitsModel = function (unitProperties) {

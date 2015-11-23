@@ -26,6 +26,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -66,6 +68,15 @@ abstract public class AbstractResource {
         m.setMessage(e.getMessage());
         return new ResponseEntity<>(m, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED)
+    @ExceptionHandler(UnsupportedOperationException.class)
+    @ResponseBody
+    public RestErrorResponseBody handleException(UnsupportedOperationException e) {
+        LOG.error("Unsupported operation", e);
+        return new RestErrorResponseBody(e.getMessage());
+    }
+
 
 
 }

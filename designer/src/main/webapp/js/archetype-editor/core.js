@@ -514,29 +514,27 @@ var ArchetypeEditor = (function () {
         })
     };
 
-    my.initialize = function (callback) {
-        var latch = new CountdownLatch(4);
+    my.initialize = function () {
 
 
-        my.referenceModel = new AOM.ReferenceModel(latch.countDown);
-        my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
-        // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
-        GuiUtils.preloadTemplates([
+        my.referenceModel = new AOM.ReferenceModel();
+        my.archetypeRepository = new AOM.ArchetypeRepository();
+
+        var defRefModel = my.referenceModel.load();
+        var defRepo = my.archetypeRepository.load();
+
+        var defTemplates = GuiUtils.preloadTemplates([
                 "util",
                 "properties/constraint-common",
                 "terminology/terms"
-            ],
-            latch.countDown);
+            ]);
 
-        $.get("rest/support/units").done(function (data) {
+        var defUnits = $.get("rest/support/units").done(function (data) {
             my.unitsModel = new AOM.UnitsModel(data);
-            latch.countDown();
         });
 
-        latch.execute(function () {
-            if (callback) {
-                callback();
-            }
+        return $.when(defRefModel, defRepo, defTemplates, defUnits).fail(function(jqXHR) {
+            toastr.error(JSON.parse(jqXHR.responseText).message);
         });
     };
 
