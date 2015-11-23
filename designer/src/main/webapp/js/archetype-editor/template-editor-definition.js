@@ -305,6 +305,9 @@
                         var errorsContext = {errors: errors.getErrors()};
                         GuiUtils.applyTemplate("properties/constraint-common|errors", errorsContext, errorsDiv);
                         console.error("There were validation errors:", errors.getErrors());
+                        errors.getErrors().forEach(function(e){
+                            toastr.error(e.error,  e.location);
+                        });
                         return;
                     }
 
