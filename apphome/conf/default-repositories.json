@@ -1,8 +1,8 @@
 {
   "repositories": [
     {
-      "name": "ehrscape/adl-models",
-      "fork": false
+      "name": "ehrscape/adl20-models-demo",
+      "writable": false
     }
   ]
 }

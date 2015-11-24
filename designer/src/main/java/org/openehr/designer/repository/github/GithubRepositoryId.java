@@ -20,30 +20,40 @@
 
 package org.openehr.designer.repository.github;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 /**
  * @author markopi
  */
-public class GithubArchetypeRepositoryTestManual {
-    private static final String BRANCH = "markopi64";
-    private static final String ACCESS_TOKEN = "685aa3ff4f98ec528229aa233c1d863be6a9431e";
-    private static final String REPO = "markopi64/adl-models";
+public class GithubRepositoryId {
+    private final String owner;
+    private final String name;
 
-
-    private GithubArchetypeRepository repository;
-
-    @Before
-    public void init() throws Exception {
-        repository = new GithubArchetypeRepository();
-        repository.init(BRANCH, ACCESS_TOKEN, REPO);
+    public GithubRepositoryId(String owner, String name) {
+        this.owner = owner;
+        this.name = name;
     }
 
-    @Test
-    public void testSaveDifferentialArchetype() throws Exception {
+    public String getOwner() {
+        return owner;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return owner + "/" + name;
+    }
+
+    public static  GithubRepositoryId parse(String repo) {
+        String[] repos = repo.split("/");
+        if (repos.length!=2) {
+            throw new IllegalArgumentException(repo);
+        }
+
+        String repoOwner = repos[0];
+        String repoName = repos[1];
+
+        return new GithubRepositoryId(repoOwner, repoName);
     }
 }

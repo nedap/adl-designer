@@ -45,40 +45,6 @@ public class AppController {
     }
 
 
-//    @RequestMapping(method = RequestMethod.GET, value = "/RepositoryProvider")
-//    public ModelAndView displayTest(HttpServletRequest req, @RequestParam String repo) throws Exception {
-//        SessionContext ctx = WebAttributes.getSessionConfiguration(req.getSession());
-//        ctx.setGithubRepository(repo);
-//
-//        // trigger repository init if needed
-//        githubRepositoryProvider.getArchetypeRepository(ctx);
-//        githubRepositoryProvider.getTemplateRepository(ctx);
-//
-//        return new ModelAndView("redirect:/template-editor");
-//    }
-//
-//    @RequestMapping(method = RequestMethod.GET, value = "/AddRepository")
-//    public ResponseEntity<String> RepoAdder(HttpServletRequest req, @RequestParam String value) throws Exception {
-//        SessionContext ctx = WebAttributes.getSessionConfiguration(req.getSession());
-//
-//        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
-//        if (repositories.findByName(value).isPresent()) {
-//            return new ResponseEntity<>("Repository already in repository list", HttpStatus.BAD_REQUEST);
-//        }
-//
-//        // tries to initialize the added repository as a way of validation
-//        githubRepositoryProvider.getTemplateRepository(ctx, value);
-//        GithubArchetypeRepository archetypeRepository = (GithubArchetypeRepository)
-//                githubRepositoryProvider.getArchetypeRepository(ctx, value);
-//
-//        UserRepositoryConfiguration repo = new UserRepositoryConfiguration();
-//        repo.setName(value);
-//        repo.setFork(archetypeRepository.isFork());
-//        userConfigurationService.saveRepository(ctx.getUsername(), repo);
-//
-//        return new ResponseEntity<>("Repository added successfully!", HttpStatus.OK);
-//    }
-
     @RequestMapping(method = RequestMethod.GET, value = "/authorize")
     public String authorize(HttpServletRequest req, @RequestParam String code) throws Exception {
         SessionContext ctx = new SessionContext();
@@ -101,12 +67,12 @@ public class AppController {
         User user = userService.getUser();
         ctx.setUsername(user.getLogin());
 
-        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
-        String repoName = repositories.findByName(repositories.getLastRepository())
-                .orElse(repositories.getRepositories().get(0))
-                .getName();
-        ctx.setGithubRepository(repoName);
-
+//        UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+//        String repoName = repositories.findByName(repositories.getLastRepository())
+//                .orElse(repositories.getRepositories().get(0))
+//                .getName();
+//        ctx.setGithubRepository(repoName);
+//
         req.getSession().setAttribute(WebAttributes.SESSION_CONTEXT, ctx);
 
         return "redirect:/";

@@ -46,7 +46,7 @@ public class AppResource {
                 .forEach((k) -> result.put(k, Configuration.get(k)));
 
         // add servlet parameters
-        ImmutableList.of("app.implementation.version")
+        ImmutableList.of("app.build.version")
                 .forEach((k) -> result.put(k, req.getServletContext().getInitParameter(k)));
 
         return result;

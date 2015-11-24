@@ -18,37 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.user;
+package org.openehr.designer.repository.github;
 
 /**
  * @author markopi
  */
-public class UserRepositoryConfiguration {
-    private String name;
-    private String forkOf;
-    private boolean writable;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getForkOf() {
-        return forkOf;
-    }
-
-    public void setForkOf(String forkOf) {
-        this.forkOf = forkOf;
-    }
-
-    public boolean isWritable() {
-        return writable;
-    }
-
-    public void setWritable(boolean writable) {
-        this.writable = writable;
-    }
+public class GithubUtils {
 }

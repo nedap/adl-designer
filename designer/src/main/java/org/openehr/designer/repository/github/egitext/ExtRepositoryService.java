@@ -21,7 +21,9 @@
 package org.openehr.designer.repository.github.egitext;
 
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
@@ -31,11 +33,11 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS
 /**
  * @author markopi
  */
-public class PushRepositoryService extends RepositoryService {
-    public PushRepositoryService() {
+public class ExtRepositoryService extends RepositoryService {
+    public ExtRepositoryService() {
     }
 
-    public PushRepositoryService(GitHubClient client) {
+    public ExtRepositoryService(GitHubClient client) {
         super(client);
     }
 
@@ -51,6 +53,16 @@ public class PushRepositoryService extends RepositoryService {
         postData.setSha(shaToBranchFrom);
 
         client.post(uri.toString(), postData, Object.class);
+    }
+
+    @Override
+    public ExtRepository getRepository(final IRepositoryIdProvider provider)
+            throws IOException {
+        final String id = getId(provider);
+        GitHubRequest request = createRequest();
+        request.setUri(SEGMENT_REPOS + '/' + id);
+        request.setType(ExtRepository.class);
+        return (ExtRepository) client.get(request).getBody();
     }
 
 

@@ -18,37 +18,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openehr.designer.user;
+package org.openehr.designer.repository.github.egitext;
 
 /**
  * @author markopi
  */
-public class UserRepositoryConfiguration {
-    private String name;
-    private String forkOf;
-    private boolean writable;
+public class ExtPermissions {
+    private boolean admin;
+    private boolean push;
+    private boolean pull;
 
-    public String getName() {
-        return name;
+    public boolean isAdmin() {
+        return admin;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
-    public String getForkOf() {
-        return forkOf;
+    public boolean isPush() {
+        return push;
     }
 
-    public void setForkOf(String forkOf) {
-        this.forkOf = forkOf;
+    public void setPush(boolean push) {
+        this.push = push;
     }
 
-    public boolean isWritable() {
-        return writable;
+    public boolean isPull() {
+        return pull;
     }
 
-    public void setWritable(boolean writable) {
-        this.writable = writable;
+    public void setPull(boolean pull) {
+        this.pull = pull;
     }
 }

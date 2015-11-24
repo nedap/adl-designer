@@ -8,6 +8,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryContents;
 import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
@@ -42,13 +43,14 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
             .expireAfterAccess(1, TimeUnit.HOURS)
             .build();
 
-    public void init(String branch, String accessToken, String repo) {
-        super.init(branch, accessToken, repo);
-
+    public void init(String username, String accessToken, String repo, String branch) {
+        super.init(username, accessToken, repo, branch);
 
         ArchetypesMetadata ams = getMetadataFile();
         if (updateMetadataFile(ams)) {
-            saveMetadataFile(ams);
+            if (isWritable()) {
+                saveMetadataFile(ams);
+            }
         }
 
         for (ArchetypeMetadata am : ams.archetypes) {
@@ -131,9 +133,6 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         }
     }
 
-    public boolean isFork() {
-        return githubRepository.isFork();
-    }
 
     private ArchetypesMetadata getMetadataFile() {
         try {

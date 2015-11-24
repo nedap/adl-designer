@@ -35,7 +35,7 @@
 <script>
     $().ready(function () {
         $.getJSON("rest/app/configuration", null, function (data) {
-            var version = data["app.implementation.version"];
+            var version = data["app.build.version"];
             $("#app-version-panel").text("Version: " + version);
         });
     });

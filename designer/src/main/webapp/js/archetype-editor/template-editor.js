@@ -260,6 +260,7 @@ var TemplateEditor = (function () {
         return $.when(defTemplate, defArchetype);
     };
 
+
     return my;
 
 

@@ -20,10 +20,25 @@
 var UserModule = (function () {
     var my = {};
 
-    function showRepositories() {
+    function chooseRepository(name) {
+        showBlockingMask("Synchronizing with repository...");
+        return $.post('rest/user/repository/choose', {name: name})
+            .then(function (data) {
+                UserModule.updateConnectedTo(data.name);
+                return TemplateEditor.initialize();
+            }).fail(function(xhr) {
+                toastr.error(JSON.parse(xhr.responseText).message);
+            }).always($.unblockUI);
+    }
+
+    /**
+     *
+     * @param {string} currentRepository Name of the currently used repository
+     */
+    function showRepositories(currentRepository) {
         $.getJSON("rest/user/repository/info").done(function (repos) {
             Stream(repos.repositories).forEach(function (r) {
-                r.current = r.name === repos.lastRepository;
+                r.current = r.name === currentRepository;
             });
 
             GuiUtils.applyTemplate("user|repositories", repos, function (html) {
@@ -37,32 +52,44 @@ var UserModule = (function () {
                         inputValue: "",
                         callback: function (content) {
                             var repoName = content.find("input").val().trim();
+                            showBlockingMask("Adding repository...");
                             $.post('rest/user/repository/add', {name: repoName}).done(function () {
                                 dialogElement.modal('hide');
-                                showRepositories();
-                            });
+                                showRepositories(currentRepository);
+                            }).fail(function (xhr) {
+                                toastr.error(JSON.parse(xhr.responseText).message);
+                            }).always($.unblockUI);
                         }
                     });
                 });
+
 
                 modalBody.find("button[data-action='remove']").click(function () {
                     var repoName = $(this).data('name');
                     $.post('rest/user/repository/delete', {name: repoName}).done(function () {
                         dialogElement.modal('hide');
-                        showRepositories();
+                        showRepositories(currentRepository);
                     });
                 });
 
                 modalBody.find("button[data-action='choose']").click(function () {
                     var repoName = $(this).data('name');
-                    showBlockingMask("Synchronizing with repository...");
-                    $.post('rest/user/repository/choose', {name: repoName})
+                    chooseRepository(repoName).done(function() {
+                        dialogElement.modal('hide');
+                    });
+                });
+
+                modalBody.find("button[data-action='fork']").click(function () {
+                    var repoName = $(this).data('name');
+                    showBlockingMask("Forking repository...");
+                    $.post('rest/user/repository/fork', {parent: repoName})
                         .then(function (data) {
                             dialogElement.modal('hide');
-                            //showRepositories();
-                            UserModule.updateConnectedTo(data.name);
-                            return TemplateEditor.initialize();
-                        }).always($.unblockUI)
+                            showRepositories(currentRepository);
+                        }).fail(function (xhr) {
+                            toastr.error(JSON.parse(xhr.responseText).message);
+                        })
+                        .always($.unblockUI)
                 });
 
                 dialogElement.on('hidden.bs.modal', function () {
@@ -89,7 +116,7 @@ var UserModule = (function () {
                     var buttonName = $(this).attr('name');
                     switch (buttonName) {
                         case 'repositories':
-                            showRepositories();
+                            my.manageRepositories();
                             break;
                     }
                     //dialogElement.modal('hide');
@@ -102,5 +129,24 @@ var UserModule = (function () {
             });
         });
     };
+
+    my.chooseLastRepository = function () {
+        $.getJSON("rest/user/repository/info").then(function (repos) {
+            if (repos.lastRepository) {
+                chooseRepository(repos.lastRepository);
+            } else {
+                my.manageRepositories();
+            }
+        });
+
+    };
+
+    my.manageRepositories = function () {
+        $.getJSON("rest/user/profile").done(function (profile) {
+            showRepositories(profile.repository);
+        });
+    };
+
+
     return my;
 }());

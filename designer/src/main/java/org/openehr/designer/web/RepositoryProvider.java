@@ -2,11 +2,18 @@ package org.openehr.designer.web;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.GitHubClient;
 import org.openehr.designer.repository.ArchetypeRepository;
+import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.TemplateRepository;
 import org.openehr.designer.repository.github.GithubArchetypeRepository;
+import org.openehr.designer.repository.github.GithubRepositoryId;
 import org.openehr.designer.repository.github.GithubTemplateRepository;
+import org.openehr.designer.repository.github.egitext.ExtRepositoryService;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +31,7 @@ public class RepositoryProvider {
             CacheBuilder.<RepoKey, GithubArchetypeRepository>newBuilder()
                     .expireAfterAccess(1, TimeUnit.DAYS)
                     .build();
-
+    public static final String BRANCH="master";
 
     public TemplateRepository getTemplateRepository(SessionContext conf) {
         return getTemplateRepository(conf, conf.getGithubRepository());
@@ -49,7 +56,7 @@ public class RepositoryProvider {
     public TemplateRepository getTemplateRepository(SessionContext conf, String repositoryName) {
         return computeIfAbsent(userToTemplateRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
             GithubTemplateRepository r = new GithubTemplateRepository();
-            r.init(conf.getUsername(), conf.getGithubToken(), repositoryName);
+            r.init(conf.getUsername(), conf.getGithubToken(), repositoryName, BRANCH);
             return r;
         });
     }
@@ -58,17 +65,31 @@ public class RepositoryProvider {
 
         return computeIfAbsent(userToArchetypeRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
             GithubArchetypeRepository r = new GithubArchetypeRepository();
-            r.init(conf.getUsername(), conf.getGithubToken(), repositoryName);
+            r.init(conf.getUsername(), conf.getGithubToken(), repositoryName, BRANCH);
             return r;
         });
+    }
+
+    public String forkRepository(SessionContext conf, String parentRepository) {
+        GitHubClient github = new GitHubClient();
+        github.setCredentials(conf.getUsername(), conf.getGithubToken());
+        ExtRepositoryService repositoryService = new ExtRepositoryService(github);
+        GithubRepositoryId repoId = GithubRepositoryId.parse(parentRepository);
+        try {
+            Repository repository = repositoryService.forkRepository(
+                    new RepositoryId(repoId.getOwner(), repoId.getName()));
+            return new GithubRepositoryId(repository.getOwner().getLogin(), repository.getName()).toString();
+        } catch (IOException e) {
+            throw new RepositoryException(e);
+        }
     }
 
     private static final class RepoKey {
         final String username;
         final String repositoryName;
 
-        RepoKey(String username, String repositoryName) {
-            this.username = username;
+        RepoKey(String branch, String repositoryName) {
+            this.username = branch;
             this.repositoryName = repositoryName;
         }
 

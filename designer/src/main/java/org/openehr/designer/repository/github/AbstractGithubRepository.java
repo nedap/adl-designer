@@ -26,13 +26,15 @@ import org.apache.commons.codec.binary.Base64;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryContents;
+import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.openehr.designer.repository.AbstractRepository;
 import org.openehr.designer.repository.RepositoryException;
 import org.openehr.designer.repository.RepositoryNotFoundException;
+import org.openehr.designer.repository.github.egitext.ExtRepository;
+import org.openehr.designer.repository.github.egitext.ExtRepositoryService;
 import org.openehr.designer.repository.github.egitext.PushContentsService;
-import org.openehr.designer.repository.github.egitext.PushRepositoryService;
 import sun.misc.BASE64Decoder;
 
 import java.io.IOException;
@@ -47,33 +49,34 @@ public class AbstractGithubRepository extends AbstractRepository {
     protected String branch;
     protected GitHubClient github;
     protected PushContentsService githubContentsService;
-    protected PushRepositoryService githubRepositoryService;
+    protected ExtRepositoryService githubRepositoryService;
 
-    protected Repository githubRepository;
+    protected ExtRepository githubRepository;
 
-    protected void init(String branch, String accessToken, String repo) {
+
+    protected void init(String username, String accessToken, String repo, String branch) {
         try {
             this.branch = branch;
             github = new GitHubClient();
-            github.setCredentials(branch, accessToken);
-            githubRepositoryService = new PushRepositoryService(github);
+            github.setCredentials(username, accessToken);
+            githubRepositoryService = new ExtRepositoryService(github);
 
             githubContentsService = new PushContentsService(github);
 
 
-            String[] repos = repo.split("/");
-            String repoOwner = repos[0];
-            String repoName = repos[1];
+            GithubRepositoryId repoId = GithubRepositoryId.parse(repo);
             try {
-                this.githubRepository = githubRepositoryService.getRepository(repoOwner, repoName);
+                this.githubRepository = githubRepositoryService.getRepository(
+                        new RepositoryId(repoId.getOwner(), repoId.getName()));
             } catch (RequestException e) {
-                if (e.getStatus()==404) {
+                if (e.getStatus() == 404) {
                     throw new RepositoryNotFoundException("Repository does not exist or is hidden: " + repo);
                 }
                 throw e;
             }
-
-            createBranchIfNeeded(branch);
+//            if (isWritable()) {
+//                createBranchIfNeeded(branch);
+//            }
 
         } catch (IOException e) {
             throw new RepositoryException(e);
@@ -107,6 +110,17 @@ public class AbstractGithubRepository extends AbstractRepository {
             throw new RepositoryException(e);
         }
     }
+
+
+    public String getParent() {
+        if (githubRepository.getParent() == null) return null;
+        return toName(githubRepository.getParent());
+    }
+
+    private String toName(Repository repository) {
+        return repository.getOwner().getLogin() + "/" + repository.getName();
+    }
+
     protected RepositoryContents getFileContentsOrNull(String path) {
         return getFileContents(path).orElse(null);
     }
@@ -120,6 +134,10 @@ public class AbstractGithubRepository extends AbstractRepository {
             throw new RepositoryException(e);
         }
         return new String(decodedBytes);
+    }
+
+    public boolean isWritable() {
+        return githubRepository.getPermissions().isPush();
     }
 
     protected String encodeBase64(byte[] bytes) {

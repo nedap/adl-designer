@@ -42,12 +42,14 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
             .build();
 
 
-    public void init(String branch, String accessToken, String repo) {
-        super.init(branch, accessToken, repo);
+    public void init(String username, String accessToken, String repo, String branch) {
+        super.init(username, accessToken, repo, branch);
 
         TemplatesMetadata tms = getMetadataFile();
         if (updateMetadataFile(tms)) {
-            saveMetadataFile(tms);
+            if (isWritable()) {
+                saveMetadataFile(tms);
+            }
         }
 
         for (TemplateMetadata tm : tms.templates) {

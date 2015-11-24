@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="css/spinner.css" type="text/css">
 
     <!-- font awesome -->
-    <link href="css/font-awesome.css" rel="stylesheet" type="text/css" />
+    <link href="css/font-awesome.css" rel="stylesheet" type="text/css"/>
 
     <!-- Bootstrap -->
     <link href="lib/bootstrap-3.3.2/css/bootstrap.css" rel="stylesheet" type="text/css"/>
@@ -118,13 +118,15 @@
                 e.preventDefault();
                 $(this).tab('show');
             });
-            showBlockingMask("Synchronizing with repository...");
-            TemplateEditor.initialize().always($.unblockUI);
+//            showBlockingMask("Synchronizing with repository...");
+//            TemplateEditor.initialize().always($.unblockUI);
 
             $.getJSON("rest/user/profile").done(function (data) {
                 $('#profileHeader').text(data.username);
                 UserModule.updateConnectedTo(data.repository);
             });
+
+            UserModule.chooseLastRepository();
 
 
         });
@@ -146,8 +148,11 @@
             </ul>
         </div>
     </nav>
-    <div id="archetype-editor-archetype-id-main"></div>
-    <div id="archetype-editor-archetype-tabs" class="tab-pane" ></div>
+    <div id="archetype-editor-archetype-id-main">
+    </div>
+    <div id="archetype-editor-archetype-tabs" class="tab-pane">
+        Please choose a repository.
+    </div>
     <div id="archetype-editor-footer"></div>
 </div>
 </body>

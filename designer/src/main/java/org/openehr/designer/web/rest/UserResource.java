@@ -22,6 +22,7 @@ package org.openehr.designer.web.rest;
 
 import org.openehr.designer.repository.RepositoryNotFoundException;
 import org.openehr.designer.repository.github.GithubArchetypeRepository;
+import org.openehr.designer.repository.github.GithubRepositoryId;
 import org.openehr.designer.user.UserConfigurationService;
 import org.openehr.designer.user.UserRepositoriesConfiguration;
 import org.openehr.designer.user.UserRepositoryConfiguration;
@@ -99,7 +100,8 @@ public class UserResource extends AbstractResource {
 
             UserRepositoryConfiguration repo = new UserRepositoryConfiguration();
             repo.setName(repoName);
-            repo.setFork(archetypeRepository.isFork());
+            repo.setForkOf(archetypeRepository.getParent());
+            repo.setWritable(archetypeRepository.isWritable());
             userConfigurationService.saveRepository(ctx.getUsername(), repo);
             return repo;
         });
@@ -122,6 +124,28 @@ public class UserResource extends AbstractResource {
             userConfigurationService.setRepositoriesConfiguration(ctx.getUsername(), repositories);
 
             ctx.setGithubRepository(name);
+            return repo;
+        });
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/repository/fork")
+    public UserRepositoryConfiguration forkRepository(@RequestParam String parent) throws Exception {
+        SessionContext ctx = SessionContextHolder.get();
+        return usernameLockProvider.with(ctx.getUsername(), ()->{
+            UserRepositoriesConfiguration repositories = userConfigurationService.getRepositoriesConfiguration(ctx.getUsername());
+            String newRepository = repositoryProvider.forkRepository(ctx, parent);
+
+
+            UserRepositoryConfiguration repo = repositories.findByName(newRepository).orElse(null);
+            if (repo==null) {
+                repo = new UserRepositoryConfiguration();
+                repo.setName(newRepository);
+                repo.setForkOf(parent);
+                repo.setWritable(true);
+
+                userConfigurationService.saveRepository(ctx.getUsername(), repo);
+            }
+
             return repo;
         });
     }

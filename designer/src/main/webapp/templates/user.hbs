@@ -28,19 +28,20 @@
 
 {>repositories}
 <div class="modal xfade" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="width:800px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span>
                 </button>
-                <h4 class="modal-title">Profile</h4>
+                <h4 class="modal-title">Manage Repositories</h4>
             </div>
             <div class="modal-body">
                 <table class="table table-bordered table-hover table-responsive">
                     <tr>
                         <th>&nbsp;</th>
                         <th>Repository</th>
-                        <th>Fork</th>
+                        <th>Fork parent</th>
+                        <th>Writable</th>
                         <th>
                             <div class="btn-group pull-right" role="group">
                                 <button type="button" data-action='add'
@@ -58,18 +59,27 @@
                                 {{/if}}
                             </td>
                             <td><a target='_blank' href='https://github.com/{{name}}'>{{name}}</a></td>
-                            <td>{{fork}}</td>
+                            <td>{{forkOf}}</td>
+                            <td>{{writable}}</td>
                             <td>
                                 <div class="btn-group pull-right" role="group">
                                     {{#unless current}}
-                                        <button type="button" data-action='choose' data-name='{{name}}'
-                                                class="btn btn-sm btn-default" title="choose">
-                                            &nbsp;<span class="glyphicon glyphicon-ok"></span>&nbsp;
-                                        </button>
+                                        {{#if writable}}
+                                            <button type="button" data-action='choose' data-name='{{name}}'
+                                                    class="btn btn-sm btn-default" title="choose">
+                                                &nbsp;<span class="glyphicon glyphicon-ok"></span>&nbsp;
+                                            </button>
+                                        {{/if}}
+                                        {{#unless writable}}
+                                            <button type="button" data-action='fork' data-name='{{name}}'
+                                                    class="btn btn-sm btn-default" title="fork">
+                                                &nbsp;<span class="glyphicon glyphicon-random"></span>&nbsp;
+                                            </button>
+                                        {{/unless}}
                                         <button type="button" data-action='remove' data-name='{{name}}'
                                                 class="btn btn-sm btn-default"
                                                 title="remove">
-                                            &nbsp;<span class="glyphicon glyphicon-remove"></span>&nbsp;
+                                            &nbsp;<span class="glyphicon glyphicon-trash"></span>&nbsp;
                                         </button>
                                     {{/unless}}
                                 </div>
