@@ -34,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -88,7 +89,7 @@ public class WtUtils {
     }
 
     public static <T> int indexOf(List<T> list, Predicate<T> predicate, int startIndex) {
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = startIndex; i < list.size(); i++) {
             T t = list.get(i);
             if (predicate.test(t)) {
                 return i;
@@ -145,6 +146,11 @@ public class WtUtils {
         if (Character.isJavaIdentifierPart(c)) return true;
         if (EXTRA_VALID_CHARS.contains(c)) return true;
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> uncheckedCast(Map<?, ?> map) {
+        return (Map)map;
     }
 
 }

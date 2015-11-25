@@ -21,15 +21,24 @@
 package org.openehr.designer.web.rest;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSortedMap;
 import org.openehr.designer.Configuration;
+import org.openehr.designer.util.WtUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.SortedMap;
 
 /**
  * @author markopi
@@ -37,18 +46,23 @@ import java.util.Map;
 @RequestMapping("/app")
 @RestController
 public class AppResource {
+    private Map<String, String> appProperties;
+
+    @PostConstruct
+    public void init() throws IOException {
+        Properties properties = new Properties();
+        try (InputStream appStream = getClass().getClassLoader().getResourceAsStream("app.properties");
+             Reader reader = new InputStreamReader(appStream, StandardCharsets.UTF_8)) {
+            properties.load(reader);
+            appProperties = ImmutableSortedMap.copyOf(WtUtils.uncheckedCast(properties));
+
+        }
+    }
 
     @RequestMapping(value = "/configuration", method = RequestMethod.GET)
     public Map<String, Object> getAppConfiguration(HttpServletRequest req) {
         Map<String, Object> result = new LinkedHashMap<>();
-        // add config keys
-        ImmutableList.of("github.api.auth.client_id")
-                .forEach((k) -> result.put(k, Configuration.get(k)));
-
-        // add servlet parameters
-        ImmutableList.of("app.build.version")
-                .forEach((k) -> result.put(k, req.getServletContext().getInitParameter(k)));
-
+        result.putAll(appProperties);
         return result;
     }
 }

@@ -18,7 +18,8 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses />.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -30,6 +31,11 @@
     <artifactId>designer</artifactId>
     <packaging>war</packaging>
     <name>${project.artifactId}</name>
+
+    <properties>
+        <build.date>${maven.build.timestamp}</build.date>
+        <maven.build.timestamp.format>dd.MM.yyyy</maven.build.timestamp.format>
+    </properties>
 
 
     <dependencies>
@@ -142,6 +148,7 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
@@ -155,14 +162,23 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
-                </configuration>
-            </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>app.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>app.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
     </build>
 
     <profiles>

@@ -36,7 +36,8 @@
     $().ready(function () {
         $.getJSON("rest/app/configuration", null, function (data) {
             var version = data["app.build.version"];
-            $("#app-version-panel").text("Version: " + version);
+            var date = data["app.build.date"];
+            $("#app-version-panel").text("Version: " + version + " ("+date+")" );
         });
     });
     function loginWithGithub() {
@@ -44,7 +45,7 @@
             var client_id = data["github.api.auth.client_id"];
             window.location.href = 'https://github.com/login/oauth/authorize?client_id='
                     + client_id
-                    + '&scope=user,repo';
+                    + '&scope=public_repo';
         });
     }
 </script>
