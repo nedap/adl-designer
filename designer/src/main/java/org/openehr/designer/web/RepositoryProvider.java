@@ -54,7 +54,7 @@ public class RepositoryProvider {
     }
 
     public TemplateRepository getTemplateRepository(SessionContext conf, String repositoryName) {
-        return computeIfAbsent(userToTemplateRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
+        return computeIfAbsent(userToTemplateRepositoryMap, new RepoKey(BRANCH, repositoryName), () -> {
             GithubTemplateRepository r = new GithubTemplateRepository();
             r.init(conf.getUsername(), conf.getGithubToken(), repositoryName, BRANCH);
             return r;
@@ -63,7 +63,7 @@ public class RepositoryProvider {
 
     public ArchetypeRepository getArchetypeRepository(SessionContext conf, String repositoryName) {
 
-        return computeIfAbsent(userToArchetypeRepositoryMap, new RepoKey(conf.getUsername(), repositoryName), () -> {
+        return computeIfAbsent(userToArchetypeRepositoryMap, new RepoKey(BRANCH, repositoryName), () -> {
             GithubArchetypeRepository r = new GithubArchetypeRepository();
             r.init(conf.getUsername(), conf.getGithubToken(), repositoryName, BRANCH);
             return r;
@@ -85,11 +85,11 @@ public class RepositoryProvider {
     }
 
     private static final class RepoKey {
-        final String username;
+        final String branch;
         final String repositoryName;
 
         RepoKey(String branch, String repositoryName) {
-            this.username = branch;
+            this.branch = branch;
             this.repositoryName = repositoryName;
         }
 
@@ -98,17 +98,13 @@ public class RepositoryProvider {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             RepoKey key = (RepoKey) o;
-            return Objects.equals(username, key.username) &&
+            return Objects.equals(branch, key.branch) &&
                     Objects.equals(repositoryName, key.repositoryName);
-        }
-
-        static RepoKey from(SessionContext ctx) {
-            return new RepoKey(ctx.getUsername(), ctx.getGithubRepository());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(username, repositoryName);
+            return Objects.hash(branch, repositoryName);
         }
     }
 }

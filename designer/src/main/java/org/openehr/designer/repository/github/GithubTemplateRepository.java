@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Denko on 11/4/2015.
@@ -39,6 +40,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
     private ObjectMapper objectMapper = new ObjectMapper();
     private final Cache<String, List<Archetype>> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.HOURS)
+            .softValues()
             .build();
 
 
@@ -77,13 +79,12 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
 
 
     private boolean updateMetadataFile(TemplatesMetadata tms) {
-        boolean updated = false;
+        AtomicBoolean updated = new AtomicBoolean(false);
         Map<String, TemplateMetadata> pathToMetadata = Maps.newHashMap(Maps.uniqueIndex(tms.templates, (v) -> v.path));
         Set<String> existingPaths = new HashSet<>();
         try {
-            List<RepositoryContents> templatesContents = githubContentsService.getContents(githubRepository, "templates", branch);
-            for (RepositoryContents tc : templatesContents) {
-                if (!tc.getPath().endsWith(".adlt")) continue;
+            githubRepositoryFileWalker(githubRepository, "templates", branch, (tc)->{
+                if (!tc.getPath().endsWith(".adlt")) return;
 
                 TemplateMetadata tm = pathToMetadata.get(tc.getPath());
                 if (tm == null) {
@@ -111,18 +112,19 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
                         tm.id = null;
                         LOG.error("Error parsing template " + tc.getPath() + ". It will not be present in the list of templates", e);
                     }
-                    updated = true;
+                    updated.set(true);
                 }
                 existingPaths.add(tc.getPath());
-            }
+            });
             for (Iterator<TemplateMetadata> iterator = tms.templates.iterator(); iterator.hasNext(); ) {
                 TemplateMetadata template = iterator.next();
                 if (!existingPaths.contains(template.path)) {
                     iterator.remove();
-                    updated = true;
+                    LOG.debug("Removing metadata for {}", template.path);
+                    updated.set(true);
                 }
             }
-            return updated;
+            return updated.get();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

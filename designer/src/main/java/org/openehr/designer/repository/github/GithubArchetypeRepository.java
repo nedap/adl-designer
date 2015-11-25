@@ -8,7 +8,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryContents;
 import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Denko on 11/5/2015.
@@ -41,6 +41,7 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
     private AdlDeserializer deserializer = new AdlDeserializer();
     private final Cache<String, Archetype> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.HOURS)
+            .softValues()
             .build();
 
     public void init(String username, String accessToken, String repo, String branch) {
@@ -78,56 +79,58 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
     }
 
     private boolean updateMetadataFile(ArchetypesMetadata ams) {
-        boolean updated = false;
+        //boolean updated = false;
+        AtomicBoolean updated = new AtomicBoolean(false);
+
         Map<String, ArchetypeMetadata> pathToMetadata = Maps.newHashMap(Maps.uniqueIndex(ams.archetypes, (v) -> v.path));
         Set<String> existingPaths = new HashSet<>();
         try {
-            List<RepositoryContents> templatesContents = githubContentsService.getContents(githubRepository,
-                    "archetypes", branch);
+            AdlDeserializer adlDeserializer = new AdlDeserializer();
 
-            for (RepositoryContents tc : templatesContents) {
-                if (!tc.getPath().endsWith(".adls")) continue;
+            githubRepositoryFileWalker(githubRepository, "archetypes", branch, (tc) -> {
+                        if (!tc.getPath().endsWith(".adls")) return;
+                        ArchetypeMetadata am = pathToMetadata.get(tc.getPath());
+                        if (am == null) {
+                            am = new ArchetypeMetadata();
+                            am.path = tc.getPath();
+                            ams.archetypes.add(am);
+                            pathToMetadata.put(am.path, am);
+                        }
+                        if (!tc.getSha().equals(am.sha)) {
+                            am.sha = tc.getSha();
+                            am.path = tc.getPath();
 
-                ArchetypeMetadata am = pathToMetadata.get(tc.getPath());
-                if (am == null) {
-                    am = new ArchetypeMetadata();
-                    am.path = tc.getPath();
-                    ams.archetypes.add(am);
-                    pathToMetadata.put(am.path, am);
-                }
-                if (!tc.getSha().equals(am.sha)) {
-                    am.sha = tc.getSha();
-                    am.path = tc.getPath();
+                            LOG.debug("Updating metadata for {}", tc.getPath());
+                            RepositoryContents fileTc = Iterables.getOnlyElement(
+                                    githubContentsService.getContents(githubRepository, tc.getPath(), branch));
+                            String adlsContent = decodeBase64(fileTc.getContent());
+                            try {
+                                Archetype a = adlDeserializer.parse(adlsContent);
 
-                    LOG.debug("Updating metadata for {}", tc.getPath());
-                    RepositoryContents fileTc = Iterables.getOnlyElement(
-                            githubContentsService.getContents(githubRepository, tc.getPath(), branch));
-                    String adltContent = decodeBase64(fileTc.getContent());
-                    try {
-                        List<Archetype> archetypes = TemplateDeserializer.deserialize(adltContent);
-                        Archetype a = archetypes.get(0);
-
-                        am.id = a.getArchetypeId().getValue();
-                        am.name = findTermText(a, a.getDefinition().getNodeId());
-                        am.rmType = a.getDefinition().getRmTypeName();
-                        am.languages = extractLanguages(a);
-                    } catch (AdlParserException e) {
-                        am.id = null; // marks invalid archetype
-                        LOG.error("Error parsing archetype " + tc.getPath() + ". It will not be present in the list of archetypes", e);
+                                am.id = a.getArchetypeId().getValue();
+                                am.name = findTermText(a, a.getDefinition().getNodeId());
+                                am.rmType = a.getDefinition().getRmTypeName();
+                                am.languages = extractLanguages(a);
+                            } catch (AdlParserException e) {
+                                am.id = null; // marks invalid archetype
+                                LOG.error("Error parsing archetype " + tc.getPath() + ". It will not be present in the list of archetypes", e);
+                            }
+                            updated.set(true);
+                        }
+                        existingPaths.add(tc.getPath());
                     }
-                    updated = true;
-                }
-                existingPaths.add(tc.getPath());
-            }
+            );
+
             // remove deleted archetypes from metadata
             for (Iterator<ArchetypeMetadata> iterator = ams.archetypes.iterator(); iterator.hasNext(); ) {
                 ArchetypeMetadata archetype = iterator.next();
                 if (!existingPaths.contains(archetype.path)) {
                     iterator.remove();
-                    updated = true;
+                    LOG.debug("Removing metadata for {}", archetype.path);
+                    updated.set(true);
                 }
             }
-            return updated;
+            return updated.get();
         } catch (IOException e) {
             throw new RepositoryException(e);
         }

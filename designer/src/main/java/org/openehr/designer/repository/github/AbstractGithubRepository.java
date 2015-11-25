@@ -40,6 +40,7 @@ import sun.misc.BASE64Decoder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @author markopi
@@ -111,7 +112,17 @@ public class AbstractGithubRepository extends AbstractRepository {
         }
     }
 
-
+    protected void githubRepositoryFileWalker(ExtRepository repository, String path, String branch,
+                                                 ExceptionalConsumer<RepositoryContents, IOException> visitor) throws IOException {
+        List<RepositoryContents> contents = githubContentsService.getContents(repository, path, branch);
+        for (RepositoryContents tc : contents) {
+            if (tc.getType().equals("dir")) {
+                githubRepositoryFileWalker(repository, tc.getPath(), branch, visitor);
+            } else {
+                visitor.accept(tc);
+            }
+        }
+    }
     public String getParent() {
         if (githubRepository.getParent() == null) return null;
         return toName(githubRepository.getParent());
@@ -148,5 +159,7 @@ public class AbstractGithubRepository extends AbstractRepository {
         return encodeBase64(string.getBytes(Charsets.UTF_8));
     }
 
-
+    public interface ExceptionalConsumer<T, E extends Exception> {
+        void accept(T obj) throws E;
+    }
 }
