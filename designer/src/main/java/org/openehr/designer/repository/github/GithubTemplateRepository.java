@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by Denko on 11/4/2015.
  */
-// todo templates under subfolders
 public class GithubTemplateRepository extends AbstractGithubRepository implements TemplateRepository {
     public static final Logger LOG = LoggerFactory.getLogger(GithubTemplateRepository.class);
 

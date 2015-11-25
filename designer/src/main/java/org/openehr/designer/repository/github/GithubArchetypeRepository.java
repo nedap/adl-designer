@@ -238,13 +238,6 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         @JsonProperty
         List<String> languages;
 
-        public ArchetypeMetadata() {
-        }
-
-        public ArchetypeMetadata(String path) {
-            this.path = path;
-        }
-
         private boolean isValid() {
             return id != null;
         }
