@@ -62,6 +62,10 @@ public class AppResource {
     @RequestMapping(value = "/configuration", method = RequestMethod.GET)
     public Map<String, Object> getAppConfiguration(HttpServletRequest req) {
         Map<String, Object> result = new LinkedHashMap<>();
+        // add config keys
+        ImmutableList.of("github.api.auth.client_id")
+                .forEach((k) -> result.put(k, Configuration.get(k)));
+
         result.putAll(appProperties);
         return result;
     }
