@@ -22,7 +22,7 @@ package org.openehr.designer.support.units;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.openehr.designer.WtUtils;
+import org.openehr.designer.util.WtUtils;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

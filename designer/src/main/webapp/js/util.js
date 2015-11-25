@@ -722,3 +722,27 @@ var CountdownLatch = function (count) {
 
 };
 
+var showBlockingMask = function(message) {
+    $.blockUI({
+        message: "<div class='three-quarters-loader'>Loading…</div> <h1>" + message + "</h1>",
+        css : {
+            border : 'none',
+            padding : '30px',
+            backgroundColor : '#000',
+            '-webkit-border-radius' : '10px',
+            '-moz-border-radius' : '10px',
+            opacity : .5,
+            color : '#fff',
+            width: '40%',
+            top: '40%',
+            left: '30%'
+        },
+        overlayCSS : {
+            backgroundColor : '#000',
+            opacity : 0.3,
+            cursor : 'wait'
+        },
+        baseZ: 3000
+    });
+}
+

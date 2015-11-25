@@ -21,7 +21,6 @@
 package org.openehr.designer.repository;
 
 import org.openehr.adl.ArchetypeProvider;
-import org.openehr.designer.ArchetypeInfo;
 import org.openehr.jaxb.am.Archetype;
 
 import java.util.List;

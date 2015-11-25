@@ -54,7 +54,7 @@ var TemplateEditor = (function () {
                         callback: function (content) {
                             var templateId = templateIdSelect.val();
                             $.getJSON("rest/repo/template/" + encodeURIComponent(templateId)).success(function (templateData) {
-                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
+                                toastr.info("Loaded template " + templateId, "", {positionClass: "toast-bottom-full-width"});
                                 $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                                 AOM.TemplateModel.createFromSerialized({
                                     archetypeRepository: my.archetypeRepository,
@@ -68,52 +68,6 @@ var TemplateEditor = (function () {
             });
 
         });
-       /* $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes?access_token="+token).success(function (templateInfoList) {
-
-            var context = {
-                panel_id: GuiUtils.generateId()
-            };
-            GuiUtils.applyTemplate("template-editor|loadTemplateDialog", context, function (htmlString) {
-
-                function populateTemplateIdSelect() {
-                    templateIdSelect.empty();
-                    for (var i in templateInfoList) {
-                        var templateInfo = templateInfoList[i];
-                        var option = $("<option>").attr("value", templateInfo.name).text(templateInfo.name);
-                        templateIdSelect.append(option);
-
-                    }
-                }
-
-                var content = $(htmlString);
-
-                var templateIdSelect = content.find('#' + context.panel_id + "_template_id");
-
-                populateTemplateIdSelect();
-
-
-                GuiUtils.openSimpleDialog(
-                    {
-                        title: "Load existing template",
-                        buttons: {"load": "Load"},
-                        content: content,
-                        callback: function (content) {
-                            var templateId = templateIdSelect.val();
-                            $.getJSON("https://api.github.com/repos/denkomanceski/adl-models/contents/archetypes/openEHR-DEMOGRAPHIC-ADDRESS.address-provider.v1.adls?access_token="+token).success(function (templateData) {
-                                toastr.info("Loaded template "+templateId, "",{positionClass: "toast-bottom-full-width"});
-                                $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
-                                AOM.TemplateModel.createFromSerialized({
-                                    archetypeRepository: my.archetypeRepository,
-                                    referenceModel: my.referenceModel,
-                                    data: templateData,
-                                    callback: my.useTemplate
-                                });
-                            });
-                        }
-                    });
-            });
-
-        });*/
     };
 
     my.openCreateNewTemplateDialog = function () {
@@ -214,9 +168,9 @@ var TemplateEditor = (function () {
         my.saveCurrentTemplate(function () {
             //GuiUtils.alert({type: 'success', title: 'Template Saved'});
 
-           toastr.success("Template saved", "",{positionClass: "toast-bottom-full-width"})
+            toastr.success("Template saved", "", {positionClass: "toast-bottom-full-width"})
         }, function (status) {
-            toastr.error("Error saving template", "",{positionClass: "toast-bottom-full-width"})
+            toastr.error("Error saving template", "", {positionClass: "toast-bottom-full-width"})
             //GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
         })
     };
@@ -238,7 +192,9 @@ var TemplateEditor = (function () {
             if (successCallback) {
                 successCallback();
             }
-        }).fail(function (jxhr) { GuiUtils.processAjaxError(jxhr, errorCallback)});
+        }).fail(function (jxhr) {
+            GuiUtils.processAjaxError(jxhr, errorCallback)
+        });
 
     };
 
@@ -283,24 +239,27 @@ var TemplateEditor = (function () {
 
     };
 
-    my.initialize = function (callback) {
-        var latch = new CountdownLatch(4);
-        my.referenceModel = new AOM.ReferenceModel(latch.countDown);
-        my.archetypeRepository = new AOM.ArchetypeRepository(latch.countDown);
+    /**
+     * @return $.Deferred
+     */
+    my.initialize = function () {
+        var defTemplate = GuiUtils.applyTemplate("template-editor|main", {}, function(html) {
+            var $templateEditorContainer = $('#archetype-editor-archetype-tabs');
+            $templateEditorContainer.empty();
+            $templateEditorContainer.html(html);
+        });
+
+        // var latch = new CountdownLatch(4);
 
         // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
-        GuiUtils.preloadTemplates([
-                "util",
-                "properties/constraint-common",
-                "terminology/terms"
-            ],
-            latch.countDown);
+        var defArchetype = ArchetypeEditor.initialize().done(function () {
+            my.referenceModel = ArchetypeEditor.referenceModel;
+            my.archetypeRepository = ArchetypeEditor.archetypeRepository;
+        });
 
-
-        ArchetypeEditor.initialize(latch.countDown);
-
-        latch.execute(callback);
+        return $.when(defTemplate, defArchetype);
     };
+
 
     return my;
 

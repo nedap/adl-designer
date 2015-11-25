@@ -18,6 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+body {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+}
 
 label {
   xpadding: 10px 5px;	
@@ -47,6 +53,10 @@ label {
 	padding: 1px 5px;
 }
 
+.no-bottom-margin {
+  margin-bottom: 0px;
+}
+
 .container-fluid {
   margin-right: 0;
   margin-left: 0;
@@ -56,6 +66,10 @@ label {
   flex-shrink: 1;
   -webkit-flex-grow: 1;
   -webkit-flex-shrink: 1;
+}
+
+i.fa-github {
+    font-size: 18px;
 }
 
 .row {
@@ -154,8 +168,8 @@ label {
 }
 
 .vertical-stretch {
-  flex-grow: 1;
-  -webkit-flex-grow: 1; 
+  flex: 1 1;
+  -webkit-flex: 1 1;
 	display: flex;
 	display: -webkit-flex;
   align-content: stretch;
@@ -352,6 +366,10 @@ pre.display {
   -webkit-flex-shrink: 0;
 }
 
+.panel-body {
+    overflow: auto;
+}
+
 .hidden {
     display: none
 }
@@ -448,11 +466,23 @@ form .table-layout .table-cell {
 }
 
 #archetype-editor-main {
-  height: 90%;
   display: flex;
   display: -webkit-flex;
   flex-direction: column;
   -webkit-flex-direction: column;
+}
+
+#archetype-editor-footer {
+    background-color: #0D98B9;
+    flex: 0 0 30px;
+    color: #ffffff;
+    padding: 4px 10px;
+}
+
+#archetype-editor-footer > a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
 }
 
 #archetype-editor-main-tabs-definition .table-layout {
@@ -585,6 +615,7 @@ ul.dropdown-menu-form {
 .nav-tabs>li.active>a{
     border-top: 3px solid #3c8dbc!important;
 }
+
 .openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
 .openehr-rm-icon.archetype_slot { background: url("images/icons/archetype_slot.png") no-repeat !important; }
 .openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }

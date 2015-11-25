@@ -291,7 +291,15 @@ var AOM = (function () {
 
             my.ArchetypeModel = function (data, parentArchetypeModel) {
 
-                var defaultLanguage = data.original_language.code_string;
+                var defaultLanguage;
+                if (data.original_language) {
+                    defaultLanguage = data.original_language.code_string;
+                } else {
+                    // overlays have no original_language, so just take the first language from the terminology
+                    // since defaultLanguage is not used on everlays, just choose the first language in terminology
+                    // as default
+                    defaultLanguage = AmUtils.keys(data.terminology.term_definitions)[0];
+                }
                 var self = this;
 
                 function getTermDefinition(node_id, language) {
@@ -503,15 +511,10 @@ var AOM = (function () {
 
 
                 /**
-                 * @returns {Array} all languages present in the archetype. First language is always the main language
+                 * @returns {Array} all languages present in the archetype.
                  */
                 self.allLanguages = function () {
-                    var result = [];
-                    result.push(defaultLanguage);
-                    for (var i in self.translations) {
-                        result.push(self.translations[i]);
-                    }
-                    return result;
+                    return AmUtils.keys(self.data.terminology.term_definitions);
                 };
 
                 /**
@@ -851,7 +854,7 @@ var AOM = (function () {
                     return true;
                 };
 
-                self.getValueSet = function(valueSetId) {
+                self.getValueSet = function (valueSetId) {
                     var value_set = self.data.terminology.value_sets[valueSetId];
                     if (!value_set) return undefined;
                     return value_set;
@@ -862,7 +865,7 @@ var AOM = (function () {
                  * @param {string} path
                  * @return {object|undefined} found constraint
                  */
-                self.getConstraint = function(path) {
+                self.getConstraint = function (path) {
                     return my.AmQuery.get(self.data.definition, path);
                 };
 
@@ -1395,64 +1398,53 @@ var AOM = (function () {
                  * @return {boolean} True if the move was successful
                  */
                 self.moveBefore = function (cons, anchorCons) {
-
                     if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
                         console.error("Only specialized constraints can be moved");
-                        toastr.error("Only specialized nodes can be moved.");
                         return false;
                     }
 
 
                     if (anchorCons && anchorCons[".parent"] !== cons[".parent"]) {
                         console.error("Can only move before a constraint on the same level");
-                        toastr.error("You can only move before a specialized constraint on the same level");
                         return false;
                     }
 
-                   /* if (!self.isSpecialized(cons[".parent"])) {
+                    if (!self.isSpecialized(cons[".parent"])) {
                         console.error("Can only move constraints on a specialized parent");
-                        toastr.error("The parent must be specialied to move this node.");
                         return false;
-                    }*/
+                    }
 
                     var parentAttr = cons[".parent"];
-                    var found=false;
+                    var found = false;
                     for (var i in parentAttr.children) {
                         var consChild = parentAttr.children[i];
                         if (consChild === cons) {
                             parentAttr.children.splice(i, 1);
-                            found=true;
+                            found = true;
                         }
                     }
-                    if (!found) {
-                        toastr.error("Reorder not valid");
-                        throw "cons is not a child of its own parent";
-                    }
+                    if (!found) throw "cons is not a child of its own parent";
 
                     if (anchorCons) {
-                        var found=false;
+                        var found = false;
                         for (var i in parentAttr.children) {
                             var consChild = parentAttr.children[i];
                             if (consChild === anchorCons) {
                                 parentAttr.children.splice(i, 0, cons);
-                                found=true;
+                                found = true;
                                 break;
                             }
                         }
-                        if (!found) {
-                            toastr.error("Reorder not valid");
-                            throw "targetCons is not a child of its own parent";
-                        }
+                        if (!found) throw "targetCons is not a child of its own parent";
 
                     } else {
-
                         parentAttr.children.push(cons);
                     }
                     toastr.success("Reorder successful!");
                     return true;
 
                 };
-                self.moveBeforeChecker = function(cons, anchorCons){
+                self.moveBeforeChecker = function (cons, anchorCons) {
                     if (!AOM.mixin(cons).isConstraint() || !self.isSpecialized(cons)) {
                         console.error("Only specialized constraints can be moved");
                         toastr.error("Only specialized constraints can be moved");
@@ -1465,13 +1457,14 @@ var AOM = (function () {
                         return false;
                     }
 
-                  /*  if (!self.isSpecialized(cons[".parent"])) {
-                        console.error("Can only move constraints on a specialized parent");
-                        toastr.error("You can only move constraints which are on a specialized parent");
-                        return false;
-                    }*/
+                    /*  if (!self.isSpecialized(cons[".parent"])) {
+                     console.error("Can only move constraints on a specialized parent");
+                     toastr.error("You can only move constraints which are on a specialized parent");
+                     return false;
+                     }*/
                     return true;
-                }
+
+                };
 
                 self.getArchetypeId = function () {
                     return data.archetype_id.value;
@@ -1820,21 +1813,16 @@ var AOM = (function () {
 
             };
 
-            my.ArchetypeRepository = function (callback) {
+            my.ArchetypeRepository = function () {
                 var self = this;
-                self.state = undefined;
 
-                self.reload = function (callback) {
-                    $.getJSON("rest/repo/list").success(function (data) {
-                        self.state = "ok";
+                self.load = function () {
+                    return $.getJSON("rest/repo/list").done(function (data) {
                         self.infoList = data;
                         self.infoList.sort(function (a, b) {
                             return a.archetypeId < b.archetypeId ? -1 :
                                 a.archetypeId > b.archetypeId ? 1 : 0;
-                        });
-                        if (callback) callback(self);
-                    }).error(function () {
-                        self.state = "error";
+                        })
                     });
                 };
 
@@ -1849,33 +1837,22 @@ var AOM = (function () {
                         }
                     );
                 };
-
-                self.reload(callback);
             };
 
             /**
              * Creates a new reference model
              *
-             * @param {function|object} callback callback when loading is completed or preloaded reference model (for testing)
+             * @param {function|object} model callback when loading is completed or preloaded reference model (for testing)
              * @constructor
              */
-            my.ReferenceModel = function (callback) {
+            my.ReferenceModel = function (model) {
                 var self = this;
-                self.state = undefined;
 
-                if (typeof "callback" === "object") {
-                    self.state = "ok";
-                    self.model = callback;
-                } else {
-                    $.getJSON("rest/rm/openEHR/1.0.2").success(function (data) {
-                        self.state = "ok";
+                self.load = function () {
+                    return $.getJSON("rest/rm/openEHR/1.0.2").success(function (data) {
                         self.model = data;
-                        callback(self);
-                    }).error(function () {
-                        self.state = "error";
                     });
-
-                }
+                };
 
 
                 self.name = function () {
@@ -1937,6 +1914,13 @@ var AOM = (function () {
                     }
                     return result;
                 };
+
+
+                if (typeof "callback" === "object") {
+                    self.state = "ok";
+                    self.model = model;
+                }
+
             };
 
             my.UnitsModel = function (unitProperties) {

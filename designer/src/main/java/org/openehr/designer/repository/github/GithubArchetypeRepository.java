@@ -1,161 +1,245 @@
 package org.openehr.designer.repository.github;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import org.eclipse.egit.github.core.RepositoryContents;
 import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
-import org.openehr.adl.serializer.AdlStringBuilder;
+import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.adl.serializer.DAdlSerializer;
-import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.ArchetypeInfo;
 import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.designer.io.TemplateSerializer;
-import org.openehr.designer.repository.AbstractArchetypeRepository;
+import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.repository.ArchetypeRepository;
-import org.openehr.designer.repository.TemplateInfo;
+import org.openehr.designer.repository.ArtifactNotFoundException;
+import org.openehr.designer.repository.RepositoryException;
+import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
-import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-import sun.misc.BASE64Decoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
-import java.util.Base64;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Denko on 11/5/2015.
  */
-public class GithubArchetypeRepository extends AbstractArchetypeRepository implements ArchetypeRepository  {
+public class GithubArchetypeRepository extends AbstractGithubRepository implements ArchetypeRepository {
+    public static final Logger LOG = LoggerFactory.getLogger(GithubArchetypeRepository.class);
+
 
     private Map<String, ArchetypeInfo> archetypeMap = new HashMap<>();
-    private RestTemplate restTemplate = new RestTemplate();
-    private ObjectMapper objectMapper = new ObjectMapper();
-    AdlDeserializer serializer = new AdlDeserializer();
-    private String username;
-    private String token;
-    private String repo;
-    public void init(String username, String accessToken, String repo) throws Exception{
-        this.username = username;
-        this.token = accessToken;
-        this.repo = repo;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+accessToken);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
+    private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private AdlDeserializer deserializer = new AdlDeserializer();
+    private final Cache<String, Archetype> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .softValues()
+            .build();
 
-        ResponseEntity<Map> existing;
-        String content="{}", sha=null;
-        try {
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/ArchetypesMetadata.json?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            content = decodeContent(existing.getBody().get("content").toString().replace("\n", "").replace("\r", ""));
-            //sha = existing.getBody().get("sha").toString();
-        }catch (HttpClientErrorException e){
-            if (e.getStatusCode().value() != 404) {
-                throw e;
-            }/**/
-            //We need to create it
+    public void init(String username, String accessToken, String repo, String branch) {
+        super.init(username, accessToken, repo, branch);
+
+        ArchetypesMetadata ams = getMetadataFile();
+        if (updateMetadataFile(ams)) {
+            if (isWritable()) {
+                saveMetadataFile(ams);
+            }
         }
 
+        for (ArchetypeMetadata am : ams.archetypes) {
+            if (!am.isValid()) continue;
 
-        Map<String, Map> metadata = objectMapper.readValue(content, Map.class);
-        Iterator it = metadata.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Map from = (Map) pair.getValue();
-            System.out.println(pair.getKey() + " = " + from);
-            ArchetypeInfo ti = new ArchetypeInfo();
-            ti.setName((String) from.get("filename"));
-            ti.setRmType((String) from.get("rmType"));
-            ti.setArchetypeId((String) pair.getKey());
-            archetypeMap.put(pair.getKey().toString(), ti);
+            ArchetypeInfo ai = new ArchetypeInfo(am.id, am.rmType, am.name);
+            ai.setLanguages(am.languages);
+            archetypeMap.put(am.id, ai);
         }
     }
-    @Override
-    public Archetype getDifferentialArchetype(String archetypeId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+token);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> httpEntity = new HttpEntity<>("parameters", headers);
-        ResponseEntity<Map> existing;
-        //String path = templateMap.get(templateId);
-        String content="{}", sha=null;
-        String fileName = archetypeMap.get(archetypeId).getName();
+
+    private void saveMetadataFile(ArchetypesMetadata ams) {
         try {
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/archetypes/"+fileName+"?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            content = decodeContent(existing.getBody().get("content").toString().replace("\n", "").replace("\r", ""));
-            //sha = existing.getBody().get("sha").toString();
-        }catch (HttpClientErrorException e){
-            //Template does not exist
+            PushContentsData data = new PushContentsData();
+            data.setMessage("Update archetypes metadata by adl-designer");
+            data.setContent(encodeBase64(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(ams)));
+            data.setSha(ams.existingSha);
+            data.setBranch(branch);
+
+            githubContentsService.pushContents(githubRepository, "ArchetypesMetadata.json", data);
+        } catch (IOException e) {
+            throw new RepositoryException(e);
         }
 
-        return serializer.parse(content);
+    }
 
+    private boolean updateMetadataFile(ArchetypesMetadata ams) {
+        //boolean updated = false;
+        AtomicBoolean updated = new AtomicBoolean(false);
+
+        Map<String, ArchetypeMetadata> pathToMetadata = Maps.newHashMap(Maps.uniqueIndex(ams.archetypes, (v) -> v.path));
+        Set<String> existingPaths = new HashSet<>();
+        try {
+            AdlDeserializer adlDeserializer = new AdlDeserializer();
+
+            githubRepositoryFileWalker(githubRepository, "archetypes", branch, (tc) -> {
+                        if (!tc.getPath().endsWith(".adls")) return;
+                        ArchetypeMetadata am = pathToMetadata.get(tc.getPath());
+                        if (am == null) {
+                            am = new ArchetypeMetadata();
+                            am.path = tc.getPath();
+                            ams.archetypes.add(am);
+                            pathToMetadata.put(am.path, am);
+                        }
+                        if (!tc.getSha().equals(am.sha)) {
+                            am.sha = tc.getSha();
+                            am.path = tc.getPath();
+
+                            LOG.debug("Updating metadata for {}", tc.getPath());
+                            RepositoryContents fileTc = Iterables.getOnlyElement(
+                                    githubContentsService.getContents(githubRepository, tc.getPath(), branch));
+                            String adlsContent = decodeBase64(fileTc.getContent());
+                            try {
+                                Archetype a = adlDeserializer.parse(adlsContent);
+
+                                am.id = a.getArchetypeId().getValue();
+                                am.name = findTermText(a, a.getDefinition().getNodeId());
+                                am.rmType = a.getDefinition().getRmTypeName();
+                                am.languages = extractLanguages(a);
+                            } catch (AdlParserException e) {
+                                am.id = null; // marks invalid archetype
+                                LOG.error("Error parsing archetype " + tc.getPath() + ". It will not be present in the list of archetypes", e);
+                            }
+                            updated.set(true);
+                        }
+                        existingPaths.add(tc.getPath());
+                    }
+            );
+
+            // remove deleted archetypes from metadata
+            for (Iterator<ArchetypeMetadata> iterator = ams.archetypes.iterator(); iterator.hasNext(); ) {
+                ArchetypeMetadata archetype = iterator.next();
+                if (!existingPaths.contains(archetype.path)) {
+                    iterator.remove();
+                    LOG.debug("Removing metadata for {}", archetype.path);
+                    updated.set(true);
+                }
+            }
+            return updated.get();
+        } catch (IOException e) {
+            throw new RepositoryException(e);
+        }
+    }
+
+
+    private ArchetypesMetadata getMetadataFile() {
+        try {
+            RepositoryContents repositoryContents = getFileContentsOrNull("ArchetypesMetadata.json");
+            if (repositoryContents == null) return new ArchetypesMetadata();
+
+            ArchetypesMetadata result = objectMapper.readValue(decodeBase64(repositoryContents.getContent()),
+                    ArchetypesMetadata.class);
+            result.existingSha = repositoryContents.getSha();
+            return result;
+        } catch (IOException e) {
+            throw new RepositoryException(e);
+        }
+
+    }
+
+    @Override
+    public Archetype getDifferentialArchetype(String archetypeId) {
+        try {
+            return cache.get(archetypeId, () -> {
+                String path = createPath(archetypeId);
+                RepositoryContents rc = getFileContentsOrNull(path);
+                if (rc == null) {
+                    throw new ArtifactNotFoundException(archetypeId);
+                }
+                String adlsContent = decodeBase64(rc.getContent());
+                return deserializer.parse(adlsContent);
+            });
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    private String createPath(String archetypeId) {
+        String interfaceArchetypeId = ArchetypeIdInfo.parse(archetypeId).toInterfaceString();
+        return "archetypes/" + interfaceArchetypeId + ".adls";
     }
 
     @Override
     public void saveDifferentialArchetype(Archetype archetype) {
-        archetype.isIsDifferential(); // ?
-        ArchetypeIdInfo q = ArchetypeIdInfo.parse(archetype.getArchetypeId().getValue().toString());
-        q.setVersionMinor(null);
-        q.setVersionPatch(null);
         String archetypeId = archetype.getArchetypeId().getValue();
-        String rmType = archetype.getDefinition().getRmTypeName();
-        String name = archetype.getConcept();
-        String adltContent = ArchetypeSerializer.serialize(archetype);
-        ArchetypeInfo archetypeInfo = new ArchetypeInfo();
-        if(!archetypeMap.containsValue(archetypeInfo)) {
-            archetypeInfo.setArchetypeId(archetypeId);
-            archetypeInfo.setName(q.toString()+".adls");
-            archetypeInfo.setRmType(rmType);
-            archetypeInfo.setLanguages(archetypeInfo.getLanguages());
-            archetypeMap.put(archetypeId,archetypeInfo);
-        }
 
+        String adlsContent = ArchetypeSerializer.serialize(archetype);
+        // Check to see if the archetype can still be deserialized
+        deserializer.parse(adlsContent);
 
-        ResponseEntity<Map> existing;
-        org.apache.commons.codec.binary.Base64 k = new org.apache.commons.codec.binary.Base64();
-        String encoded = k.encodeToString(adltContent.toString().getBytes()).replace("\r", "").replace("\n", "");
-        String content="{}", sha=null;
-        org.json.simple.JSONObject r = new org.json.simple.JSONObject();
-        r.put("message", "Created on: " + new Date().toString() + " by "+username);
-        r.put("content", encoded);
-        r.put("branch", username);
-        r.put("sha", "");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<?> httpEntity = new HttpEntity<>(r.toJSONString(), headers);
-
+        String path = createPath(archetypeId);
+        RepositoryContents existing = getFileContentsOrNull(path);
+        PushContentsData pushData = new PushContentsData();
+        pushData.setMessage("Committed through adl-designer");
+        pushData.setContent(encodeBase64(adlsContent));
+        pushData.setSha(existing != null ? existing.getSha() : null);
+        pushData.setBranch(branch);
         try {
-
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/archetypes/"+q.toString()+".adls?ref="+username, HttpMethod.PUT, httpEntity, Map.class);
-
-        }catch (HttpClientErrorException e){
-
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/archetypes/"+q.toString()+".adls?ref="+username, HttpMethod.GET, httpEntity, Map.class);
-            r.put("message", "Updated on: " + new Date().toString() + " by "+username);
-            r.put("sha", existing.getBody().get("sha").toString());
-            httpEntity = new HttpEntity<>(r.toJSONString(), headers);
-            existing = restTemplate.exchange("https://api.github.com/repos/"+repo+"/contents/archetypes/"+q.toString()+".adlt?ref="+username, HttpMethod.PUT, httpEntity, Map.class);
-            //We need to create it
+            githubContentsService.pushContents(githubRepository, path, pushData);
+        } catch (IOException e) {
+            throw new RepositoryException(e);
         }
+        cache.put(archetypeId, archetype);
+
+        ArchetypeInfo i = archetypeMap.get(archetypeId);
+        if (i == null) {
+            String rmType = archetype.getDefinition().getRmTypeName();
+            i = new ArchetypeInfo(archetypeId, rmType, findTermText(archetype));
+            archetypeMap.put(archetypeId, i);
+        }
+        i.setName(findTermText(archetype));
 
     }
 
     @Override
     public List<ArchetypeInfo> getArchetypeInfos() {
-        List<ArchetypeInfo> listArchetypes = new ArrayList<>(archetypeMap.values());
-        return listArchetypes;
+        return new ArrayList<>(archetypeMap.values());
     }
-    public String decodeContent(String content) {
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] decodedBytes;
-        try {
-            decodedBytes = decoder.decodeBuffer(content);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+
+    private static class ArchetypesMetadata {
+        @JsonProperty
+        List<ArchetypeMetadata> archetypes = new ArrayList<>();
+        @JsonIgnore
+        String existingSha;
+    }
+
+    private static class ArchetypeMetadata {
+        @JsonProperty
+        String id;
+        @JsonProperty
+        String rmType;
+        @JsonProperty
+        String name;
+        @JsonProperty
+        String path;
+        @JsonProperty
+        String sha;
+        @JsonProperty
+        List<String> languages;
+
+        private boolean isValid() {
+            return id != null;
         }
-        return new String(decodedBytes);
     }
 }

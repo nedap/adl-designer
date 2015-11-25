@@ -105,27 +105,11 @@
                 $(this).tab('show');
             });
             
-            ArchetypeEditor.initialize(function () {
+            ArchetypeEditor.initialize().done(function () {
                 var params = AmUtils.extractParametersFromUrl(location.search);
                 if (params.archetypeId) {
                     ArchetypeEditor.loadArchetype(params.archetypeId, ArchetypeEditor.useArchetype);
                 }
-                // TODO: remove for production
-                // preloads a given archetype into the interface. Just for testing
-//                var archetypeId = "openEHR-EHR-OBSERVATION.body_weight.v1.0.0";
-//                var archetypeId = "openEHR-EHR-CLUSTER.coordination.v1.0.0";  // DV_ORDINAL, DV_TEXT, DV_CODED_TEXT
-//                var archetypeId = "openEHR-EHR-CLUSTER.device.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
-//                var archetypeId = "openEHR-EHR-OBSERVATION.apgar.v1.0.0"; // DV_COUNT, DV_DATE_TIME, element choice
-//                var archetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-//                var archetypeId="openEHR-EHR-COMPOSITION.problem_list.v1.0.0"; // slots
-//                ArchetypeEditor.loadArchetype(archetypeId, ArchetypeEditor.useArchetype);
-
-
-//                var parentArchetypeId = "openEHR-EHR-OBSERVATION.demo.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-//                var specArchetypeId = "openEHR-EHR-OBSERVATION.demo-spec.v1.0.0"; // DV_DURATION, DV_INTERVAL (of all types)
-//                ArchetypeEditor.createSpecializedArchetypeModel(parentArchetypeId, specArchetypeId, ArchetypeEditor.useArchetype);
-
-
             });
 
         });

@@ -1,0 +1,8 @@
+{
+  "repositories": [
+    {
+      "name": "ehrscape/adl20-models-demo",
+      "writable": false
+    }
+  ]
+}
