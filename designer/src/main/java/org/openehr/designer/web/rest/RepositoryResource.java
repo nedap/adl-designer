@@ -243,6 +243,14 @@ public class RepositoryResource extends AbstractResource {
         return new RestErrorResponseBody(e.getMessage());
     }
 
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(RepositoryAccessException.class)
+    @ResponseBody
+    public RestErrorResponseBody handleArchetypeNotFoundException(RepositoryAccessException e) {
+        LOG.warn("Cannot access repository", e);
+        return new RestErrorResponseBody(e.getMessage());
+    }
+
 
     @RequestMapping(value = "/template-editor", method = RequestMethod.GET, produces = "text/html")
     public void GetTemplateHTML(){

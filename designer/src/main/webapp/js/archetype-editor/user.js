@@ -25,10 +25,12 @@ var UserModule = (function () {
         return $.post('rest/user/repository/choose', {name: name})
             .then(function (data) {
                 UserModule.updateConnectedTo(data.name);
+                if (!data.writable) {
+                    toastr.warning("Currently selected repository is read-only", data.name)
+                }
                 return TemplateEditor.initialize();
-            }).fail(function(xhr) {
-                toastr.error(JSON.parse(xhr.responseText).message);
-            }).always($.unblockUI);
+            }).fail(GuiUtils.processAjaxError)
+            .always($.unblockUI);
     }
 
     /**

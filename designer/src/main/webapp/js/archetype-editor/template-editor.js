@@ -165,20 +165,15 @@ var TemplateEditor = (function () {
     };
 
     my.saveCurrentTemplateWithNotification = function () {
-        my.saveCurrentTemplate(function () {
-            //GuiUtils.alert({type: 'success', title: 'Template Saved'});
-
+        my.saveCurrentTemplate().done(function () {
             toastr.success("Template saved", "", {positionClass: "toast-bottom-full-width"})
-        }, function (status) {
-            toastr.error("Error saving template", "", {positionClass: "toast-bottom-full-width"})
-            //GuiUtils.alert({type: 'error', title: 'Error saving template', text: status.message})
-        })
+        });
     };
 
-    my.saveCurrentTemplate = function (successCallback, errorCallback) {
+    my.saveCurrentTemplate = function () {
         if (!my.templateModel) return;
 
-        jQuery.ajax({
+        return jQuery.ajax({
             'type': 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -188,19 +183,13 @@ var TemplateEditor = (function () {
             'contentType': 'application/json',
             'data': JSON.stringify(my.templateModel.toSerializableForm())/*,
              'dataType': 'text'*/
-        }).done(function () {
-            if (successCallback) {
-                successCallback();
-            }
-        }).fail(function (jxhr) {
-            GuiUtils.processAjaxError(jxhr, errorCallback)
-        });
+        }).fail(GuiUtils.processAjaxError);
 
     };
 
     my.exportToOpt14 = function () {
 
-        my.saveCurrentTemplate(function () {
+        my.saveCurrentTemplate().done(function () {
             var templateId = my.templateModel.getRootArchetypeModel().getArchetypeId();
             var url = "rest/repo/export/opt/14/" + encodeURIComponent(templateId);
 
@@ -243,7 +232,7 @@ var TemplateEditor = (function () {
      * @return $.Deferred
      */
     my.initialize = function () {
-        var defTemplate = GuiUtils.applyTemplate("template-editor|main", {}, function(html) {
+        var defTemplate = GuiUtils.applyTemplate("template-editor|main", {}, function (html) {
             var $templateEditorContainer = $('#archetype-editor-archetype-tabs');
             $templateEditorContainer.empty();
             $templateEditorContainer.html(html);

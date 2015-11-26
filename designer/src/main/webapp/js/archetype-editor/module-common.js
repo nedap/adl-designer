@@ -42,7 +42,7 @@
                     context.parent = h.createContext(stage, parentCons);
                 }
             }
-            if (AOM.TemplateModel.from(cons)) {
+            if (AOM.TemplateModel && AOM.TemplateModel.from(cons)) {
                 context.isTemplate=true;
             }
             context.isParentConstrained = context.isTemplate && !!context.parent;
@@ -221,12 +221,8 @@
                     var multiplicitySelect = html.find('#' + context.panel_id + "_multiplicity");
                     var multiplicityBoundInput = html.find('#' + context.panel_id + "_multiplicity_bound");
 
-                    var minV = ( parentOcc.lower_included ? 1 : 0)
-                    var maxV = ( parentOcc.upper_unbounded ? '*' : 1)
-                    if( typeof parentOcc.lower != 'undefined'&& typeof parentOcc.upper != 'undefined'){
-                        minV = parentOcc.lower;
-                        maxV = parentOcc.upper;
-                    }
+                    var minV =  (parentOcc&&parentOcc.lower) ? parentOcc.lower : 0;
+                    var maxV =  parentOcc&&parentOcc.upper ? parentOcc.upper : 1;
 
                     if( typeof occ.lower != 'undefined'&& typeof occ.upper != 'undefined'){
                         minV = occ.lower;
