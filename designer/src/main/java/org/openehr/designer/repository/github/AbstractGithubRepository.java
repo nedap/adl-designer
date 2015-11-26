@@ -128,7 +128,7 @@ public class AbstractGithubRepository extends AbstractRepository {
         return toName(githubRepository.getParent());
     }
 
-    private String toName(Repository repository) {
+    protected String toName(Repository repository) {
         return repository.getOwner().getLogin() + "/" + repository.getName();
     }
 

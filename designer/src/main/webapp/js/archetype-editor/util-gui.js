@@ -129,8 +129,7 @@ var GuiUtils = (function () {
         });
     };
 
-    my.processAjaxError = function (jxhr, errorCallback) {
-        if (!errorCallback) return;
+    my.processAjaxError = function (jxhr) {
         var status = {};
 
         status.status = jxhr.status;
@@ -142,7 +141,9 @@ var GuiUtils = (function () {
                 status.message = responseJson.message || jxhr.statusText;
             }
         }
-        errorCallback(status);
+        if (status && status.message) {
+            toastr.error(status.message);
+        }
 
     };
 

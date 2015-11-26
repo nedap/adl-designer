@@ -14,10 +14,7 @@ import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.designer.io.TemplateDeserializer;
-import org.openehr.designer.repository.ArchetypeInfo;
-import org.openehr.designer.repository.ArchetypeRepository;
-import org.openehr.designer.repository.ArtifactNotFoundException;
-import org.openehr.designer.repository.RepositoryException;
+import org.openehr.designer.repository.*;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
@@ -181,6 +178,11 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
 
     @Override
     public void saveDifferentialArchetype(Archetype archetype) {
+        if (!isWritable()) {
+            throw new RepositoryAccessException("User does not have write access to the repository "
+                    + toName(githubRepository));
+        }
+
         String archetypeId = archetype.getArchetypeId().getValue();
 
         String adlsContent = ArchetypeSerializer.serialize(archetype);

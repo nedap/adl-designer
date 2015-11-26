@@ -15,7 +15,11 @@
                     </tr>
                     <tr>
                         <td><b>Github</b></td>
-                        <td><button type="button" name="repositories" class="btn btn-sm btn-primary">Manage repositories</button></td>
+                        <td>
+                            <button type="button" name="repositories" class="btn btn-sm btn-primary">Manage
+                                repositories
+                            </button>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -45,7 +49,7 @@
                         <th>
                             <div class="btn-group pull-right" role="group">
                                 <button type="button" data-action='add'
-                                        class="btn btn-sm btn-default" title="add repository">
+                                        class="btn btn-sm btn-default" title="add existing repository">
                                     &nbsp;<span class="glyphicon glyphicon-plus"></span>&nbsp;
                                 </button>
                             </div>
@@ -64,18 +68,18 @@
                             <td>
                                 <div class="btn-group pull-right" role="group">
                                     {{#unless current}}
-                                        {{#if writable}}
-                                            <button type="button" data-action='choose' data-name='{{name}}'
-                                                    class="btn btn-sm btn-default" title="choose">
-                                                &nbsp;<span class="glyphicon glyphicon-ok"></span>&nbsp;
-                                            </button>
-                                        {{/if}}
-                                        {{#unless writable}}
-                                            <button type="button" data-action='fork' data-name='{{name}}'
-                                                    class="btn btn-sm btn-default" title="fork">
-                                                &nbsp;<span class="glyphicon glyphicon-random"></span>&nbsp;
-                                            </button>
-                                        {{/unless}}
+                                        <button type="button" data-action='choose' data-name='{{name}}'
+                                                class="btn btn-sm btn-default" title="choose">
+                                            &nbsp;<span class="glyphicon glyphicon-ok"></span>&nbsp;
+                                        </button>
+                                    {{/unless}}
+                                    {{#unless writable}}
+                                        <button type="button" data-action='fork' data-name='{{name}}'
+                                                class="btn btn-sm btn-default" title="fork">
+                                            &nbsp;<span class="glyphicon glyphicon-random"></span>&nbsp;
+                                        </button>
+                                    {{/unless}}
+                                    {{#unless current}}
                                         <button type="button" data-action='remove' data-name='{{name}}'
                                                 class="btn btn-sm btn-default"
                                                 title="remove">

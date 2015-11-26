@@ -10,13 +10,12 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.egit.github.core.RepositoryContents;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.openehr.adl.AdlException;
 import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.io.TemplateSerializer;
-import org.openehr.designer.repository.ArtifactNotFoundException;
-import org.openehr.designer.repository.TemplateInfo;
-import org.openehr.designer.repository.TemplateRepository;
+import org.openehr.designer.repository.*;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
@@ -82,7 +81,7 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
         Map<String, TemplateMetadata> pathToMetadata = Maps.newHashMap(Maps.uniqueIndex(tms.templates, (v) -> v.path));
         Set<String> existingPaths = new HashSet<>();
         try {
-            githubRepositoryFileWalker(githubRepository, "templates", branch, (tc)->{
+            githubRepositoryFileWalker(githubRepository, "templates", branch, (tc) -> {
                 if (!tc.getPath().endsWith(".adlt")) return;
 
                 TemplateMetadata tm = pathToMetadata.get(tc.getPath());
@@ -152,6 +151,10 @@ public class GithubTemplateRepository extends AbstractGithubRepository implement
 
     @Override
     public void saveTemplate(List<Archetype> archetypes) {
+        if (!isWritable()) {
+            throw new RepositoryAccessException("User does not have write access to the repository "
+                    + toName(githubRepository));
+        }
         Archetype a = archetypes.get(0);
         String templateId = a.getArchetypeId().getValue();
 
