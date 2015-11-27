@@ -38,7 +38,8 @@
                         .attr("style", "width:100%; height:100%")
                         .attr("class", "display cm-s-adl")
                     ;
-                CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                //CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                adlContainer.text(data);
                 targetElement.append(adlContainer);
             }).fail(function (errMsg) {
                 var errDiv = $("<div>").attr("class", "error");
@@ -62,7 +63,8 @@
                         .attr("style", "width:100%; height:100%")
                         .attr("class", "display cm-s-adl")
                     ;
-                CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                //CodeMirror.runMode(data, "adl",  adlContainer[0]);
+                adlContainer.text(data);
                 targetElement.append(adlContainer);
             }).fail(function (errMsg) {
                 var errDiv = $("<div>").attr("class", "error");
