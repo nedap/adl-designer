@@ -410,7 +410,7 @@ TABLE HACK - FIXED HEADER - END */
 
 
 a.definition-tree-node {
-    color: #AAA !important;
+    color: black !important;
 }
 
 a.definition-tree-node.attribute {
@@ -422,6 +422,7 @@ a.definition-tree-node.constraint {
 
 a.definition-tree-node.specialized {
     color: black !important;
+    font-weight: bold;
 }
 
 a.definition-tree-node.specialized.prohibited {
@@ -615,7 +616,20 @@ ul.dropdown-menu-form {
 .nav-tabs>li.active>a{
     border-top: 3px solid #3c8dbc!important;
 }
+.specialized{
+    font-weight: bold;
+}
+.splabel{
+    font-size: 15px!important;
+    float: left;
+}
+.handle {
+    width: 5px;
+    text-align: center;
+    color: white;
 
+    transition: all ease-in 0.1s;
+}
 .openehr-rm-icon.action { background: url("images/icons/action.png") no-repeat !important; }
 .openehr-rm-icon.archetype_slot { background: url("images/icons/archetype_slot.png") no-repeat !important; }
 .openehr-rm-icon.activity { background: url("images/icons/activity.png") no-repeat !important; }

@@ -43,10 +43,10 @@
             // did not work, so remove node_id from name
 //            definitionTree.jstree.rename_node(definitionTreeNode, definitionTree.extractConstraintName(cons));
             constraintData.info.tree.styleNodes(treeNode.id, 1);
-            var isSelected = constraintData.info.tree.targetElement.jstree('is_selected', treeNode);
-            if (isSelected) {
-                constraintData.info.propertiesPanel.show(constraintData);
-            }
+            //var isSelected = constraintData.info.tree.targetElement.jstree('is_selected', treeNode);
+            //if (isSelected) {
+            //    constraintData.info.propertiesPanel.show(constraintData);
+            //}
 
         }
 
@@ -202,6 +202,7 @@
                 return stage;
             }
 
+
             function clearConstraints(targetElement) {
                 if (templateHandler && templateHandler.hide) {
                     templateHandler.hide(stage, context, targetElement);
@@ -222,21 +223,24 @@
 
                 function disableIfSpecialized() {
                     // add global handlers
-                    if (!specialized) {
-                        $('.minMaxF').editable('option', 'disabled', true);
-                        var dataElements = targetElement.find(".data");
-
-                        var panel = targetElement.find("#ConstraintPanel");
-                        dataElements.css('cursor', 'not-allowed');
-
-                        panel.css('cursor', 'not-allowed');
-                        panel.css('overflow', 'auto');
-
-                        dataElements.prop("disabled", !specialized);
-                        saveButton.prop('disabled', !specialized);
+                    if (specialized) {
+                        $('.splabel').text("Specialized");
                     }
-                    var archetypeOnlyElements = targetElement.find(".archetype-only");
-                    archetypeOnlyElements.prop("disabled", true);
+                    /*   if (!specialized) {
+                     $('.minMaxF').editable('option', 'disabled', true);
+                     var dataElements = targetElement.find(".data");
+
+                     var panel = targetElement.find("#ConstraintPanel");
+                     dataElements.css('cursor', 'not-allowed');
+
+                     panel.css('cursor', 'not-allowed');
+                     panel.css('overflow', 'auto');
+
+                     dataElements.prop("disabled", !specialized);
+                     saveButton.prop('disabled', !specialized);
+                     }
+                     var archetypeOnlyElements = targetElement.find(".archetype-only");
+                     archetypeOnlyElements.prop("disabled", true);*/
                 }
 
                 clearConstraints(targetElement);
@@ -281,20 +285,31 @@
 
                 GuiUtils.applyTemplate("properties/constraint-common|footer", footerContext, footerDiv);
 
-                if (!specialized) {
-                    var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
-                    specializeButton.click(function () {
-                        constraintData.specializeCallback();
-                    });
-                }
+                /* if (!specialized) {
+                 var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
+                 specializeButton.click(function () {
+                 constraintData.specializeCallback();
+                 });
+                 }*/
 
                 var saveButton = footerDiv.find('#' + footerContext.footer_id + '_save');
 
+                //disableIfSpecialized();
+                //setTimeout(disableIfSpecialized, 100);
+
                 disableIfSpecialized();
-                setTimeout(disableIfSpecialized, 100);
-
-
                 saveButton.click(function () {
+
+                    console.log("Clicked");
+                    /* if (!specialized) {
+
+                     // var specializeButton = footerDiv.find('#' + footerContext.footer_id + '_specialize');
+                     // specializeButton.click(function () {
+                     constraintData.specializeCallback();
+
+                     //    specializeConstraint(constraintData, self.current.treeNode);
+                     // });
+                     }*/
                     var errors = new AmUtils.Errors();
 
                     templateHandler.updateContext(stage, context, targetElement);
@@ -305,19 +320,22 @@
                         var errorsContext = {errors: errors.getErrors()};
                         GuiUtils.applyTemplate("properties/constraint-common|errors", errorsContext, errorsDiv);
                         console.error("There were validation errors:", errors.getErrors());
-                        errors.getErrors().forEach(function(e){
-                            toastr.error(e.error,  e.location);
+                        errors.getErrors().forEach(function (e) {
+                            toastr.error(e.error, e.location);
                         });
                         return;
                     }
-
+//                    var context2=context;
+                    constraintData.specializeCallback();
                     console.debug("save changes from: ", cons);
 
                     templateHandler.updateConstraint(stage, context, cons, errors);
                     console.debug("save changes to:   ", cons);
+                    specialized = archetypeModel.isSpecialized(cons);
                     archetypeModel.enrichReplacementConstraint(cons);
                     constraintData.saveCallback();
-
+                    disableIfSpecialized();
+                    $('#' + constraintData.info.tree.current.treeNode.id).addClass('specialized');
                 });
 
             } // showConstraintProperties
@@ -604,6 +622,11 @@
                         treeNodeJson.a_attr.class -= "prohibited";
                     }
                 }
+                if (cons.node_id) {
+                    if (cons.node_id.indexOf('.') != -1)
+                        treeNodeJson.a_attr.class += ' specialized'
+                }
+
                 if (cons) {
                     treeNodeJson.text = self.extractConstraintName(cons, currentLanguage);
                 }
@@ -861,7 +884,6 @@
                     on('select_node.jstree', function (event, treeEvent) {
 
 
-
                         var data = treeData[treeEvent.node.id];
                         self.current = {
                             treeNode: treeEvent.node,
@@ -946,18 +968,21 @@
                         $('#' + treeEvent.node.id + '_anchor').append(
                             " <span class='movertb'>" +
                             "<span style='margin-left: 30px' class='btn btn-xs btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
-                            "<span style='margin-left: 30px; display: none' class='btn-xs btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
+                            "<span style='margin-left: 10px; display: none' class='btn-xs btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
                             "<span style='margin-left: 10px' class='btn btn-xs btn-primary prohibToolbar'> Prohibit</span>" +
                             "<span style='margin-left: 10px' class='btn btn-xs btn-primary unprohibToolbar'> Unprohibit</span>" +
                             "<span style='margin-left: 10px' class='btn btn-xs btn-primary renameToolbar'><span class='fa fa-pencil-square-o'></span> Rename</span>" +
                             "<span style='margin-left: 10px' class='btn btn-xs btn-primary cloneToolbar'><span class='fa fa-clone'></span> Clone</span>" +
                             "<span style='margin-left: 10px' class='btn btn-xs btn-primary resetDelete'><span class='fa fa-refresh'></span> Reset to default</span>" +
+                            "<span style='margin-left: 10px;' class='btn btn-xs btn-primary editArche'><span  class='glyphicon glyphicon-edit'></span> Edit Archetype</span>" +
                             "</span>");
                     }
 
 
                     //
                     var cons = data.cons || data.attr;
+
+
                     var templateModel = AOM.TemplateModel.from(cons);
                     if (!templateModel.canAddArchetype(cons)) {
                         $('.addArc').prop('disabled', true);
@@ -978,6 +1003,7 @@
                     if (cons[".templateArchetypeRoot"]) {
                         $('.resetDelete').text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
                         $(document).off('click', '.resetDelete').on('click', '.resetDelete', function () {
+                            console.log("Reseting to default");
                             info.tree.removeConstraint()
                         })
 
@@ -992,10 +1018,21 @@
                                 }
                             }
                         }).show();
+                        $('.editArche').unbind('click').click(function () {
+                            if (info.tree.current) {
+                                var cons = info.tree.current.data.cons || info.tree.current.data.attr;
+                                if (cons) {
+                                    var archetypeModelRoot = AOM.ArchetypeModel.from(cons);
+                                    var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
+                                    window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
+                                }
+                            }
+                        }).show();
                     }
                     else {
                         $('.resetDelete').hide();
                         $('#editArcheToolbar').unbind('click').hide();
+                        $('.editArche').unbind('click').hide();
                     }
                     if (cons.rm_type_name == 'ELEMENT') {
                         $('.resetDelete').show().text("").append("<span class='fa fa-refresh'></span> Reset to Default")
@@ -1015,6 +1052,7 @@
                         self.createTree();
                     });
                     $('.cloneToolbar').show();
+                    if(cons.node_id)
                     $('.renameToolbar').show();
 
                     $('.unprohibToolbar').unbind('click').click(function () {
@@ -1102,14 +1140,12 @@
 
                     var targetCons = self.current.data.cons || self.current.data.attr;
                     var templateModel = AOM.TemplateModel.from(targetCons);
+                    if(!targetCons['.templateArchetypeRoot'])
+                    delete items.deleteItem;
                     if (!templateModel.canAddArchetype(targetCons)) {
-                        items["addArchetype"] = { //Changing the "Add archetype" button
-                            label: "Cannot add archetype here",
-                            action: function () {
-                            },
-                            _disabled: true
-                        }
+                        delete items["addArchetype"];
                     }
+
                     if (treeData[node.id].cons.occurrences)
                         if (treeData[node.id].cons.occurrences.lower === 0 && treeData[node.id].cons.occurrences.upper === 0) {
                             items["prohibitItem"] = { //Changing the "Add archetype" button
@@ -1121,7 +1157,8 @@
                             }
 
                         }
-
+                    if(!node.id)
+                    delete items.renameItem;
 
                     return items;
                 }

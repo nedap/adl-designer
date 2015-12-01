@@ -29,6 +29,7 @@ var GuiUtils = (function () {
         return "gid_" + (nextGeneratedId++).toString(36);
     };
 
+
     my.applyTemplate = function (path, context, callback) {
         function applyTemplateAndCallback(template) {
             var html = template(context);

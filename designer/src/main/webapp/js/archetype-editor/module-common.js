@@ -495,7 +495,13 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+                var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                topHandler.updateContext(stage, context.top, targetElement);
+//                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+                if (context.constraint) {
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.cons);
+                    constraintHandler.updateContext(stage, context.constraint, targetElement);
+                }
             };
 
             handler.validate = function (stage, context, errors) {

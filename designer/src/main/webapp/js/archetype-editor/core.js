@@ -333,7 +333,7 @@ var ArchetypeEditor = (function () {
     my.applySubModulesUpdateContext = function (stage, generatedDom, context) {
         for (var key in context) {
             var prop = context[key];
-            if (typeof prop === "object") {
+            if (typeof prop === "object" && !prop["@type"]) {
                 if (prop.type && prop.panel_id) {
                     var handler = my.getRmTypeHandler(prop.type);
                     if (handler) {
