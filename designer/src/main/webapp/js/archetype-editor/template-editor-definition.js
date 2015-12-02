@@ -335,7 +335,7 @@
                     archetypeModel.enrichReplacementConstraint(cons);
                     constraintData.saveCallback();
                     disableIfSpecialized();
-                    $('#' + constraintData.info.tree.current.treeNode.id).addClass('specialized');
+                    //$('#' + constraintData.info.tree.current.treeNode.id).addClass('specialized');
                 });
 
             } // showConstraintProperties
@@ -899,6 +899,11 @@
                         };
                         self.current.constraintData.saveCallback = function () {
                             info.tree.styleNodes(treeEvent.node.id);
+                            info.tree.styleNodes(treeEvent.node.id, 1);
+                            var isSelected = info.tree.targetElement.jstree('is_selected', treeEvent.node);
+                            if (isSelected) {
+                                info.propertiesPanel.show(self.current.constraintData);
+                            }
                         };
 
                         if (oldnode != treeEvent.node.id)
@@ -940,6 +945,41 @@
 
                 function createToolbar(treeEvent, state, constraintData) {
 
+                    function createCallback(targetElement) {
+                        return function (html) {
+                            html = $(html);
+                            targetElement.append(html);
+                            html.find("#" + context.panel_id + "_reset").click(info.tree.removeConstraint);
+                            html.find("#" + context.panel_id + "_addArchetype").click(info.tree.addArchetype);
+                            html.find("#" + context.panel_id + "_rename").click(function () {
+                                specializeConstraint(constraintData, self.current.treeNode);
+                                info.tree.renameConstraint();
+                            });
+                            html.find("#" + context.panel_id + "_clone").click(function () {
+                                templateModel.cloneConstraint(cons);
+                                self.createTree();
+                            });
+                            if (prohibitFlag)
+                                html.find("#" + context.panel_id + "_unprohibit").click(function () {
+                                    self.SpecializeAndProhibit(constraintData, 'unprohibit');
+                                    styleNodeJson(treeEvent.node);
+                                })
+                            else
+                                html.find("#" + context.panel_id + "_prohibit").click(function () {
+                                    self.SpecializeAndProhibit(constraintData, 'prohibit');
+                                    styleNodeJson(treeEvent.node);
+                                });
+                            if (archetypeName)
+                                html.find("#" + context.panel_id + "_editArchetype").click(function () {
+                                    if (cons) {
+                                        var archetypeModelRoot = AOM.ArchetypeModel.from(cons);
+                                        var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
+                                        window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
+                                    }
+                                })
+                        }
+                    }
+
                     if (oldnode != treeEvent.node.id)
 
                         ctr = 0;
@@ -948,6 +988,9 @@
                     oldnode = treeEvent.node.id;
 
                     var data = treeData[treeEvent.node.id];
+                    var cons = data.cons || data.attr;
+                    var templateModel = AOM.TemplateModel.from(cons);
+
 
                     if ($('#' + treeEvent.node.id + '_anchor')[0].innerHTML.indexOf('openC') === -1) {
                         $('#' + treeEvent.node.id + '_anchor').append(
@@ -960,138 +1003,41 @@
                     else
                         $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-left"></span>';
 
+                    if (data.cons) {
+                        var renameFlag = AOM.ArchetypeModel.from(data.cons).getTermDefinition(data.cons.node_id, currentLanguage);
+                        if (renameFlag)
+                            var archetypeName = renameFlag.text;
+                    }
+                    if (cons.occurrences) {
+                        if (cons.occurrences.lower === 0 && cons.occurrences.upper === 0)
+                            var prohibitFlag = true;
+                    }
+                    else
+                        var prohibitFlag = false;
 
+
+                    var context = {
+                        panel_id: GuiUtils.generateId(),
+                        addArchetype: templateModel.canAddArchetype(cons),
+                        reset: true,
+                        archetypeName: archetypeName,
+                        archetypeHead: typeof cons[".templateArchetypeRoot"] != 'undefined',
+                        rename: typeof renameFlag !== 'undefined',
+                        clone: true,
+                        prohibit: !prohibitFlag,
+                        unprohibit: prohibitFlag,
+                        editArchetype: typeof archetypeName != 'undefined',
+                        cssClass: 'btn-xs'
+                    };
                     if (!state) {
                         $('.movertb').remove();
                     }
                     else {
-                        $('#' + treeEvent.node.id + '_anchor').append(
-                            " <span class='movertb'>" +
-                            "<span style='margin-left: 30px' class='btn btn-xs btn-primary addArche'><span  class='glyphicon glyphicon-plus'></span> Add Archetype</span>" +
-                            "<span style='margin-left: 10px; display: none' class='btn-xs btn-danger deleteArche'><span  class='glyphicon glyphicon-remove'></span> Delete Archetype</span>" +
-                            "<span style='margin-left: 10px' class='btn btn-xs btn-primary prohibToolbar'> Prohibit</span>" +
-                            "<span style='margin-left: 10px' class='btn btn-xs btn-primary unprohibToolbar'> Unprohibit</span>" +
-                            "<span style='margin-left: 10px' class='btn btn-xs btn-primary renameToolbar'><span class='fa fa-pencil-square-o'></span> Rename</span>" +
-                            "<span style='margin-left: 10px' class='btn btn-xs btn-primary cloneToolbar'><span class='fa fa-clone'></span> Clone</span>" +
-                            "<span style='margin-left: 10px' class='btn btn-xs btn-primary resetDelete'><span class='fa fa-refresh'></span> Reset to default</span>" +
-                            "<span style='margin-left: 10px;' class='btn btn-xs btn-primary editArche'><span  class='glyphicon glyphicon-edit'></span> Edit Archetype</span>" +
-                            "</span>");
+
+                        GuiUtils.applyTemplate("template-editor|inlineToolbar", context, createCallback($('#' + treeEvent.node.id + '_anchor')));
                     }
-
-
-                    //
-                    var cons = data.cons || data.attr;
-
-
-                    var templateModel = AOM.TemplateModel.from(cons);
-                    if (!templateModel.canAddArchetype(cons)) {
-                        $('.addArc').prop('disabled', true);
-                        $(document).off('click', '#addArche');
-                        $('.addArche').hide();
-
-                    }
-                    else {
-
-                        $(document).off('click', '.addArche').on('click', '.addArche', function () {
-                            info.tree.addArchetype()
-                        });
-                        $('.addArche').show();
-                        $('.addArc').prop('disabled', false);
-                    }
-
-
-                    if (cons[".templateArchetypeRoot"]) {
-                        $('.resetDelete').text("").append("<span class='glyphicon glyphicon-remove'></span> Delete Archetype").show();
-                        $(document).off('click', '.resetDelete').on('click', '.resetDelete', function () {
-                            console.log("Reseting to default");
-                            info.tree.removeConstraint()
-                        })
-
-                        //$('.deleteArche').click(function() { info.tree.removeConstraint()}).show();
-                        $('#editArcheToolbar').unbind('click').click(function () {
-                            if (info.tree.current) {
-                                var cons = info.tree.current.data.cons || info.tree.current.data.attr;
-                                if (cons) {
-                                    var archetypeModelRoot = AOM.ArchetypeModel.from(cons);
-                                    var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
-                                    window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
-                                }
-                            }
-                        }).show();
-                        $('.editArche').unbind('click').click(function () {
-                            if (info.tree.current) {
-                                var cons = info.tree.current.data.cons || info.tree.current.data.attr;
-                                if (cons) {
-                                    var archetypeModelRoot = AOM.ArchetypeModel.from(cons);
-                                    var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
-                                    window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
-                                }
-                            }
-                        }).show();
-                    }
-                    else {
-                        $('.resetDelete').hide();
-                        $('#editArcheToolbar').unbind('click').hide();
-                        $('.editArche').unbind('click').hide();
-                    }
-                    if (cons.rm_type_name == 'ELEMENT') {
-                        $('.resetDelete').show().text("").append("<span class='fa fa-refresh'></span> Reset to Default")
-                        //$('#deleteArcheToolbar').show().text("").append("<span class='fa fa-refresh'></span> Reset to Default")
-                    }
-
-                    //$('#deleteToolbar').unbind('click').click(function() { info.tree.removeConstraint() });
-
-                    $('.renameToolbar').unbind('click').click(function () {
-                        specializeConstraint(constraintData, self.current.treeNode);
-                        styleNodeJson(treeEvent.node);
-                        info.tree.renameConstraint();
-                    });
-
-                    $('.cloneToolbar').unbind('click').click(function () {
-                        templateModel.cloneConstraint(cons);
-                        self.createTree();
-                    });
-                    $('.cloneToolbar').show();
-                    if(cons.node_id)
-                    $('.renameToolbar').show();
-
-                    $('.unprohibToolbar').unbind('click').click(function () {
-                        self.SpecializeAndProhibit(constraintData, 'unprohibit');
-                        styleNodeJson(treeEvent.node);
-                        $('.prohibToolbar').show();
-                        $('.unprohibToolbar').hide();
-
-                    });
-
-                    $('.prohibToolbar').unbind('click').click(function () {
-                        self.SpecializeAndProhibit(constraintData, 'prohibit');
-                        styleNodeJson(treeEvent.node);
-                        $('.unprohibToolbar').show();
-                        $('.prohibToolbar').hide();
-                    });
-
-                    if (cons.occurrences) {
-                        if (cons.occurrences.lower === 0 && cons.occurrences.upper === 0) {
-                            $('.unprohibToolbar').show();
-                            $('.prohibToolbar').hide();
-                        }
-                        else {
-                            $('.unprohibToolbar').hide();
-                            $('.prohibToolbar').show();
-                        }
-                    }
-                    else if (cons["@type"] == 'ARCHETYPE_SLOT' || cons["@type"] == "C_ATTRIBUTE") {
-                        $('.unprohibToolbar').hide();
-                        $('.prohibToolbar').hide();
-                        $('.renameToolbar').hide();
-                        $('.cloneToolbar').hide();
-                    }
-                    else {
-                        $('.unprohibToolbar').hide();
-                        $('.prohibToolbar').show();
-                    }
-
-
+                    context.cssClass = '';
+                    GuiUtils.applyTemplate("template-editor|inlineToolbar", context, createCallback($('#topToolbar')));
                 }
 
                 self.jstree = targetElement.jstree(true);
@@ -1140,8 +1086,8 @@
 
                     var targetCons = self.current.data.cons || self.current.data.attr;
                     var templateModel = AOM.TemplateModel.from(targetCons);
-                    if(!targetCons['.templateArchetypeRoot'])
-                    delete items.deleteItem;
+                    if (!targetCons['.templateArchetypeRoot'])
+                        delete items.deleteItem;
                     if (!templateModel.canAddArchetype(targetCons)) {
                         delete items["addArchetype"];
                     }
@@ -1157,8 +1103,8 @@
                             }
 
                         }
-                    if(!node.id)
-                    delete items.renameItem;
+                    if (!node.id)
+                        delete items.renameItem;
 
                     return items;
                 }

@@ -888,6 +888,12 @@
                 };
                 constraintData.saveCallback = function() {
                     info.tree.styleNodes(treeEvent.node.id);
+                    constraintData.info.tree.styleNodes(treeEvent.node.id, 1);
+                    var isSelected = constraintData.info.tree.targetElement.jstree('is_selected', definitionTreeNode);
+                    if (isSelected) {
+                        constraintData.info.propertiesPanel.show(constraintData);
+                    }
+
                 };
                 info.propertiesPanel.show(constraintData);
             });

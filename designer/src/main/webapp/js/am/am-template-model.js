@@ -475,6 +475,7 @@ AOM = (function (AOM) {
              */
             self.cloneConstraint = function (consToClone) {
                 if (!self.canCloneConstraint(consToClone)) {
+                    toastr.error("Cannot clone this constraint");
                     return false;
                 }
 

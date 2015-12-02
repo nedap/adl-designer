@@ -16,7 +16,6 @@
 </div>
 
 
-
 {>createNewTemplateDialog}
 <div class="row properties-line no-border">
     <div class="properties-label"><label for="{{panel_id}}_template_id" class="control-label">Template Id</label></div>
@@ -54,12 +53,11 @@
                 </div>
                 <div class="col-sm-8 pull-right">
                     <div class="btn-group pull-right" data-toggle="buttons">
-                        <label class="btn btn-primary">
-                            <input id="{{panel_id}}_structure" type="checkbox">Show detailed structure
+                        <label class="btn btn-primary" title="Show detailed structure">
+                            <input id="{{panel_id}}_structure" type="checkbox"><span class="glyphicon glyphicon-filter"></span>
                         </label>
-                        <label class="btn btn-primary active">
-                            <input id="{{panel_id}}_filterProhibited" checked="checked" type="checkbox">Show prohibited
-                            nodes
+                        <label class="btn btn-warning active" title="Show Zero occurances">
+                            <input id="{{panel_id}}_filterProhibited"  checked="checked" type="checkbox"><span class="glyphicon glyphicon-eye-close"></span>
                         </label>
                     </div>
                 </div>
@@ -67,8 +65,8 @@
                 <div class="row" style="margin-left: -25px">
                     <div class="col-xs-12">
                         <div class="btn-toolbar">
-                            <div class="btn-group btn-group-sm">
-                                <button id="addArche" class="btn btn-primary addArche"><span
+                            <div class="btn-group btn-group-sm" id="topToolbar">
+                              <!--  <button id="addArche" class="btn btn-primary addArche"><span
                                         class="glyphicon glyphicon-plus"></span> Add Archetype
                                 </button>
                                 <button id="prohibToolbar" class="btn btn-default prohibToolbar">Prohibit</button>
@@ -84,7 +82,7 @@
                                 </button>
                                 <button id="editArcheToolbar" class="btn btn-warning"><span
                                         class="fa fa-pencil-square-o"></span> Edit
-                                </button>
+                                </button>-->
 
                             </div>
                             <input type="text" class="search-input form-control" placeholder="Filter by name"
@@ -188,3 +186,34 @@
     </div>
 </div>
 
+{>inlineToolbar}
+<span class='movertb'>
+    {{#if addArchetype}}
+        <span id="{{panel_id}}_addArchetype" class='btn {{cssClass}} btn-primary addArche'><span class='glyphicon glyphicon-plus'></span> Add Archetype</span>
+    {{/if}}
+    {{#if prohibit}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_prohibit"> Zero occurance</span>
+    {{/if}}
+    {{#if unprohibit}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_unprohibit"> Default occurance</span>
+    {{/if}}
+    {{#if rename}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_rename"><span class='fa fa-pencil-square-o'></span> Rename</span>
+    {{/if}}
+    {{#if clone}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_clone"><span class='fa fa-clone'></span> Clone</span>
+    {{/if}}
+    {{#if editArchetype}}
+        <span class='btn {{cssClass}} btn-warning' id="{{panel_id}}_editArchetype"><span class='glyphicon glyphicon-edit'></span> Edit '{{archetypeName}}'</span>
+    {{/if}}
+    {{#if reset}}
+        {{#if archetypeHead}}
+        <span class='btn {{cssClass}} btn-danger' id="{{panel_id}}_reset"><span class='fa fa-remove'></span> Delete '{{archetypeName}}'</span>
+        {{else}}
+        <span class='btn {{cssClass}} btn-success' id="{{panel_id}}_reset"><span class='fa fa-refresh'></span> Reset</span>
+        {{/if}}
+    {{/if}}
+
+
+
+</span>
