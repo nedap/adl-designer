@@ -630,8 +630,8 @@
                 if (cons) {
                     treeNodeJson.text = self.extractConstraintName(cons, currentLanguage);
                 }
-                if(typeof cons.is_multiple != 'undefined' && typeof treeNodeJson.icon != 'undefined')
-                    treeNodeJson.icon = "openehr-rm-icon.object_ref";
+                if(typeof cons.is_multiple != 'undefined' && typeof treeNodeJson.icon == 'undefined')
+                    treeNodeJson.icon = "openehr-rm-icon object_ref";
             }
 
 
