@@ -127,8 +127,6 @@
             });
 
             UserModule.chooseLastRepository();
-
-
         });
     </script>
 
@@ -138,9 +136,17 @@
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
             <ul class="nav navbar-nav">
-                <li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>
+                <!--<li><a href="#" onclick="TemplateEditor.openCreateNewTemplateDialog()">New</a></li>-->
+                <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                        aria-haspopup="true" aria-expanded="false">New <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="ArchetypeEditor.createNewArchetypeDialog()">Template</a></li>
+                        <li><a href="#" onclick="window.open('archetype-editor.html?action=new');">Archetype</a></li>
+                    </ul>
+                </li>
                 <li><a href="#" onclick="TemplateEditor.openLoadTemplateDialog()">Load</a></li>
                 <li><a href="#" onclick="TemplateEditor.saveCurrentTemplateWithNotification()">Save</a></li>
+
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a id="profileHeader" href="#" onclick="UserModule.showProfile()">(user)</a></li>

@@ -163,12 +163,29 @@
         $('.handle').drags();
     </script>
 
+    <script>
+        $(document).ready(function(){
 
+        })
+    </script>
 
 
     <script>
         $().ready(function () {
+            var getUrlParameter = function getUrlParameter(sParam) {
+                var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
 
+                for (i = 0; i < sURLVariables.length; i++) {
+                    sParameterName = sURLVariables[i].split('=');
+
+                    if (sParameterName[0] === sParam) {
+                        return sParameterName[1] === undefined ? true : sParameterName[1];
+                    }
+                }
+            };
             var mytab = $('#archetype-editor-archetype-tabs');
             var ul = mytab.find('ul');
 
@@ -183,6 +200,9 @@
                 var params = AmUtils.extractParametersFromUrl(location.search);
                 if (params.archetypeId) {
                     ArchetypeEditor.loadArchetype(params.archetypeId, ArchetypeEditor.useArchetype);
+                }
+                if(getUrlParameter('action') === 'new'){
+                    ArchetypeEditor.createNewArchetypeDialog();
                 }
             });
 
@@ -226,7 +246,13 @@
       <div class="container-fluid">
       <!-- main toolbar -->
         <ul class="nav navbar-nav">
-	        <li><a href="#" onclick="ArchetypeEditor.createNewArchetypeDialog()">New</a></li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                    aria-haspopup="true" aria-expanded="false">New <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#" onclick="window.open('/designer?action=new');">Template</a></li>
+                    <li><a href="#" onclick="ArchetypeEditor.createNewArchetypeDialog()">Archetype</a></li>
+                </ul>
+            </li>
 	        <li><a href="#" onclick="ArchetypeEditor.openLoadArchetypeDialog()">Load</a></li>
 	        <li><a href="#" onclick="ArchetypeEditor.saveCurrentArchetypeWithNotification()">Save</a></li>
 	        <li><a href="#" onclick="ArchetypeEditor.openSpecializeArchetypeDialog()">Specialize</a></li>

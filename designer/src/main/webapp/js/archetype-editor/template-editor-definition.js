@@ -777,6 +777,9 @@
                 var childJson = buildTreeJson(childCons);
                 var newTreeNodeId = self.targetElement.jstree('create_node', parentNode, childJson, pos);
                 self.styleNodes(parentNode.id);
+                self.targetElement.jstree("deselect_all");
+                self.targetElement.jstree('select_node', newTreeNodeId);
+                $('#'+newTreeNodeId).children('a').focus();
                 return newTreeNodeId;
             }
 
@@ -954,20 +957,24 @@
                             html.find("#" + context.panel_id + "_rename").click(function () {
                                 specializeConstraint(constraintData, self.current.treeNode);
                                 info.tree.renameConstraint();
+                                createToolbar(treeEvent, true, constraintData);
                             });
                             html.find("#" + context.panel_id + "_clone").click(function () {
                                 templateModel.cloneConstraint(cons);
                                 self.createTree();
+                                createToolbar(treeEvent, true, constraintData);
                             });
                             if (prohibitFlag)
                                 html.find("#" + context.panel_id + "_unprohibit").click(function () {
                                     self.SpecializeAndProhibit(constraintData, 'unprohibit');
                                     styleNodeJson(treeEvent.node);
+                                    createToolbar(treeEvent, true, constraintData);
                                 })
                             else
                                 html.find("#" + context.panel_id + "_prohibit").click(function () {
                                     self.SpecializeAndProhibit(constraintData, 'prohibit');
                                     styleNodeJson(treeEvent.node);
+                                    createToolbar(treeEvent, true, constraintData);
                                 });
                             if (archetypeName)
                                 html.find("#" + context.panel_id + "_editArchetype").click(function () {
@@ -976,6 +983,10 @@
                                         var archetypeId = archetypeModelRoot.parentArchetypeModel.getArchetypeId();
                                         window.open('archetype-editor.html?archetypeId=' + encodeURIComponent(archetypeId), '_blank');
                                     }
+                                })
+                            if(context.createArchetype)
+                                html.find("#"+context.panel_id+"_createArchetype").click(function(){
+                                    window.open('archetype-editor.html');
                                 })
                         }
                     }
@@ -1003,10 +1014,12 @@
                     else
                         $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-left"></span>';
 
+                    var isArchetype = false;
                     if (data.cons) {
                         var renameFlag = AOM.ArchetypeModel.from(data.cons).getTermDefinition(data.cons.node_id, currentLanguage);
                         if (renameFlag)
                             var archetypeName = renameFlag.text;
+                        isArchetype = typeof data.cons['.templateArchetypeRoot'] != 'undefined';
                     }
                     if (cons.occurrences) {
                         if (cons.occurrences.lower === 0 && cons.occurrences.upper === 0)
@@ -1016,6 +1029,7 @@
                         var prohibitFlag = false;
 
 
+
                     var context = {
                         panel_id: GuiUtils.generateId(),
                         addArchetype: templateModel.canAddArchetype(cons),
@@ -1023,10 +1037,11 @@
                         archetypeName: archetypeName,
                         archetypeHead: typeof cons[".templateArchetypeRoot"] != 'undefined',
                         rename: typeof renameFlag !== 'undefined',
-                        clone: true,
+                        clone: templateModel.canCloneConstraint(cons),
                         prohibit: !prohibitFlag,
                         unprohibit: prohibitFlag,
-                        editArchetype: typeof archetypeName != 'undefined',
+                        editArchetype: isArchetype,
+                        createArchetype: templateModel.canAddArchetype(cons),
                         cssClass: 'btn-xs'
                     };
                     if (!state) {
@@ -1037,7 +1052,8 @@
                         GuiUtils.applyTemplate("template-editor|inlineToolbar", context, createCallback($('#' + treeEvent.node.id + '_anchor')));
                     }
                     context.cssClass = '';
-                    GuiUtils.applyTemplate("template-editor|inlineToolbar", context, createCallback($('#topToolbar')));
+                    $('#topToolbar').empty();
+                    GuiUtils.applyTemplate("template-editor|topToolbar", context, createCallback($('#topToolbar')));
                 }
 
                 self.jstree = targetElement.jstree(true);
@@ -1077,7 +1093,8 @@
                             label: "Clone",
                             "separator_before": true,
                             action: function () {
-                                templateModel.cloneConstraint(treeData[node.id].cons);
+                                var temp = templateModel.cloneConstraint(treeData[node.id].cons);
+                                if(temp[".clone"])
                                 self.createTree();
                             },
                             icon: false
@@ -1091,7 +1108,8 @@
                     if (!templateModel.canAddArchetype(targetCons)) {
                         delete items["addArchetype"];
                     }
-
+                    if(!templateModel.canCloneConstraint(treeData[node.id].cons))
+                        delete items['cloneItem'];
                     if (treeData[node.id].cons.occurrences)
                         if (treeData[node.id].cons.occurrences.lower === 0 && treeData[node.id].cons.occurrences.upper === 0) {
                             items["prohibitItem"] = { //Changing the "Add archetype" button

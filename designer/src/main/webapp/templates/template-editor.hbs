@@ -189,7 +189,10 @@
 {>inlineToolbar}
 <span class='movertb'>
     {{#if addArchetype}}
-        <span id="{{panel_id}}_addArchetype" class='btn {{cssClass}} btn-primary addArche'><span class='glyphicon glyphicon-plus'></span> Add Archetype</span>
+        <span id="{{panel_id}}_addArchetype" class='btn {{cssClass}} btn-primary'><span class='glyphicon glyphicon-plus'></span> Add Archetype</span>
+    {{/if}}
+    {{#if createArchetype}}
+        <span id="{{panel_id}}_createArchetype" class='btn {{cssClass}} btn-primary'><span class='glyphicon glyphicon-file'></span> Create new Archetype</span>
     {{/if}}
     {{#if prohibit}}
         <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_prohibit"> Zero occurance</span>
@@ -213,7 +216,33 @@
         <span class='btn {{cssClass}} btn-success' id="{{panel_id}}_reset"><span class='fa fa-refresh'></span> Reset</span>
         {{/if}}
     {{/if}}
-
-
-
 </span>
+{>topToolbar}
+    {{#if addArchetype}}
+        <span id="{{panel_id}}_addArchetype" class='btn {{cssClass}} btn-primary'><span class='glyphicon glyphicon-plus'></span> Add Archetype</span>
+    {{/if}}
+    {{#if createArchetype}}
+        <span id="{{panel_id}}_createArchetype" class='btn {{cssClass}} btn-primary'><span class='glyphicon glyphicon-file'></span> Create new Archetype</span>
+    {{/if}}
+    {{#if prohibit}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_prohibit"> Zero occurance</span>
+    {{/if}}
+    {{#if unprohibit}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_unprohibit"> Default occurance</span>
+    {{/if}}
+    {{#if rename}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_rename"><span class='fa fa-pencil-square-o'></span> Rename</span>
+    {{/if}}
+    {{#if clone}}
+        <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_clone"><span class='fa fa-clone'></span> Clone</span>
+    {{/if}}
+    {{#if editArchetype}}
+        <span class='btn {{cssClass}} btn-warning' id="{{panel_id}}_editArchetype"><span class='glyphicon glyphicon-edit'></span> Edit '{{archetypeName}}'</span>
+    {{/if}}
+    {{#if reset}}
+        {{#if archetypeHead}}
+            <span class='btn {{cssClass}} btn-danger' id="{{panel_id}}_reset"><span class='fa fa-remove'></span> Delete '{{archetypeName}}'</span>
+        {{else}}
+            <span class='btn {{cssClass}} btn-success' id="{{panel_id}}_reset"><span class='fa fa-refresh'></span> Reset</span>
+        {{/if}}
+    {{/if}}

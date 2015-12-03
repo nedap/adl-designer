@@ -545,6 +545,7 @@ AOM = (function (AOM) {
                     newCons = getArchetypeModel(newCons.archetype_ref).data.definition;
                 }
                 newCons[".clone"]=true;
+
                 return newCons;
             };
 

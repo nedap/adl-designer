@@ -239,11 +239,27 @@ var TemplateEditor = (function () {
         });
 
         // var latch = new CountdownLatch(4);
+        var getUrlParameter = function getUrlParameter(sParam) {
+            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
 
+            for (i = 0; i < sURLVariables.length; i++) {
+                sParameterName = sURLVariables[i].split('=');
+
+                if (sParameterName[0] === sParam) {
+                    return sParameterName[1] === undefined ? true : sParameterName[1];
+                }
+            }
+        };
         // these templates are loaded at initialization, to avoid asynchronous callback and multiple retrieves
         var defArchetype = ArchetypeEditor.initialize().done(function () {
             my.referenceModel = ArchetypeEditor.referenceModel;
             my.archetypeRepository = ArchetypeEditor.archetypeRepository;
+            if(getUrlParameter('action') === 'new'){
+                ArchetypeEditor.createNewArchetypeDialog();
+            }
         });
 
         return $.when(defTemplate, defArchetype);

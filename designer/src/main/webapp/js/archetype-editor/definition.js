@@ -707,6 +707,9 @@
                 var childJson = target[0];
                 var newTreeNodeId = self.targetElement.jstree('create_node', parentNode, childJson, pos);
                 self.styleNodes(parentNode.id);
+                self.targetElement.jstree("deselect_all");
+                self.targetElement.jstree('select_node', newTreeNodeId);
+                $('#'+newTreeNodeId).children('a').focus();
                 return newTreeNodeId;
             }
 
