@@ -41,7 +41,7 @@ var ArchetypeEditor = (function () {
                     content: content,
                     callback: function (content) {
                         var archetypeId = content.find('#' + loadArchetypeContext.panel_id + '_archetype').val();
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.loadArchetype(archetypeId, my.useArchetype);
                     }
                 });
@@ -82,7 +82,7 @@ var ArchetypeEditor = (function () {
                         if (existing) {
                             return "Specialized archetype id already exists";
                         }
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.createSpecializedArchetypeModel(parentArchetypeId, specializedArchetypeId, my.useArchetype);
                     }
                 });
@@ -184,7 +184,7 @@ var ArchetypeEditor = (function () {
                             definition_text: rawConcept,
                             definition_description: rawConcept
                         });
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.useArchetype(newArchetypeModel);
                     }
                 });
@@ -446,7 +446,7 @@ var ArchetypeEditor = (function () {
                         if (text.length == 0) {
                             return; // do nothing
                         }
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         var newTerminologyCode = archetypeModel.addNewTermDefinition("at", text, description);
                         if (callback) {
                             callback(newTerminologyCode);

@@ -607,7 +607,7 @@
                     }
                 }
                 else {
-                    if (cons.rm_attribute_name && templateModel.canAddArchetype(cons))
+                    if (templateModel.canAddArchetype(cons))
                         treeNodeJson.icon = "openehr-rm-icon archetype_slot";
                 }
                 treeNodeJson.a_attr = treeNodeJson.a_attr || {};
@@ -630,7 +630,8 @@
                 if (cons) {
                     treeNodeJson.text = self.extractConstraintName(cons, currentLanguage);
                 }
-
+                if(typeof cons.is_multiple != 'undefined' && typeof treeNodeJson.icon != 'undefined')
+                    treeNodeJson.icon = "openehr-rm-icon.object_ref";
             }
 
 
@@ -1033,7 +1034,7 @@
                     var context = {
                         panel_id: GuiUtils.generateId(),
                         addArchetype: templateModel.canAddArchetype(cons),
-                        reset: true,
+                        reset: templateModel.canCloneConstraint(cons),
                         archetypeName: archetypeName,
                         archetypeHead: typeof cons[".templateArchetypeRoot"] != 'undefined',
                         rename: typeof renameFlag !== 'undefined',
@@ -1052,6 +1053,7 @@
                         GuiUtils.applyTemplate("template-editor|inlineToolbar", context, createCallback($('#' + treeEvent.node.id + '_anchor')));
                     }
                     context.cssClass = '';
+                    context.panel_id = GuiUtils.generateId();
                     $('#topToolbar').empty();
                     GuiUtils.applyTemplate("template-editor|topToolbar", context, createCallback($('#topToolbar')));
                 }
