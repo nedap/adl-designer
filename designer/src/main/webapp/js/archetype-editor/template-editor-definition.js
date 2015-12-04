@@ -1031,7 +1031,7 @@
                             addArchetype: templateModel.canAddArchetype(cons),
                             reset: archetypeModel.isSpecialized(cons),
                             archetypeName: "'" + archetypeName + "'",
-                            archetypeHead: typeof cons[".templateArchetypeRoot"] != 'undefined',
+                            archetypeHead: !!cons[".templateArchetypeRoot"],
                             rename: typeof renameFlag !== 'undefined',
                             clone: templateModel.canCloneConstraint(cons),
                             prohibit: !prohibitFlag && archetypeName,
