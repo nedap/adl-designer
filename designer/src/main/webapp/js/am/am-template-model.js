@@ -475,6 +475,7 @@ AOM = (function (AOM) {
              */
             self.cloneConstraint = function (consToClone) {
                 if (!self.canCloneConstraint(consToClone)) {
+                    toastr.error("Cannot clone this constraint");
                     return false;
                 }
 
@@ -544,6 +545,7 @@ AOM = (function (AOM) {
                     newCons = getArchetypeModel(newCons.archetype_ref).data.definition;
                 }
                 newCons[".clone"]=true;
+
                 return newCons;
             };
 

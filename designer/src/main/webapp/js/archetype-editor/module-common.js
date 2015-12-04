@@ -276,6 +276,7 @@
                                                 newValue = newValue.substr(0,newValue.indexOf(']'));
                                             }
                                         var parse = newValue.indexOf('..');
+
                                         if(parse==-1){
                                             toastr.error("Please insert a valid format: ex. x..y");
                                             return {newValue: oldValue};
@@ -283,6 +284,10 @@
                                         }
                                         var minR = newValue.substring(0, parse);
                                         var maxR = newValue.substring(parse+2);
+                                        if(isNaN(Number(minR)) || isNaN(Number(maxR))){
+                                            toastr.error("Please insert a valid format: ex. [x..y]");
+                                            return {newValue: oldValue};
+                                        }
 
                                         formatted = minR + '..' + maxR;
 
@@ -495,7 +500,13 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+                var topHandler = stage.archetypeEditor.getRmTypeHandler("top", "@common");
+                topHandler.updateContext(stage, context.top, targetElement);
+//                stage.archetypeEditor.applySubModulesUpdateContext(stage, targetElement, context);
+                if (context.constraint) {
+                    var constraintHandler = stage.archetypeEditor.getRmTypeHandler(context.cons);
+                    constraintHandler.updateContext(stage, context.constraint, targetElement);
+                }
             };
 
             handler.validate = function (stage, context, errors) {

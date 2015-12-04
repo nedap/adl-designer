@@ -33,6 +33,7 @@ var UserModule = (function () {
             .always($.unblockUI);
     }
 
+
     /**
      *
      * @param {string} currentRepository Name of the currently used repository

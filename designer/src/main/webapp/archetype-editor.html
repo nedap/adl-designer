@@ -41,6 +41,9 @@
           rel="stylesheet"/>
     <script src="lib/x-editable/bootstrap-editable.min.js"></script>
 
+    <!-- font awesome -->
+    <link href="css/font-awesome.css" rel="stylesheet" type="text/css"/>
+
     <!-- Bootstrap Table -->
     <link href="lib/bootstrap-table-1.6.0/bootstrap-table.min.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-table-1.6.0/bootstrap-table.min.js"></script>
@@ -93,14 +96,18 @@
     <script src="js/archetype-editor/module-primitive.js"></script>
     <script src="js/archetype-editor/module-openehr.js"></script>
     <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
-
-
+    <script src="js/archetype-editor/user.js"></script>
+    <!--test-->
+    <style>
+        .specialized{
+            font-weight: normal!important;
+        }
+    </style>
 
 
 
     <script>
         $().ready(function () {
-
             var mytab = $('#archetype-editor-archetype-tabs');
             var ul = mytab.find('ul');
 
@@ -112,12 +119,22 @@
             });
             
             ArchetypeEditor.initialize().done(function () {
+
                 var params = AmUtils.extractParametersFromUrl(location.search);
                 if (params.archetypeId) {
                     ArchetypeEditor.loadArchetype(params.archetypeId, ArchetypeEditor.useArchetype);
+                    $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
+                }
+                if(params.action === 'new'){
+                    ArchetypeEditor.createNewArchetypeDialog();
                 }
             });
+            $.getJSON("rest/user/profile").done(function (data) {
+                $('#profileHeader').text(data.username);
+                UserModule.updateConnectedTo(data.repository);
+            });
 
+            //UserModule.chooseLastRepository();
         });
     </script>
 </head>
@@ -165,7 +182,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li id="archetype-editor-id-panel" class="xpull-right"></li>
-          <li><a href="#" onclick="ArchetypeEditor.commitRepository()">Commit</a></li>
+          <!--<li><a href="#" onclick="ArchetypeEditor.commitRepository()">Commit</a></li>-->
         </ul>
         <!--
         <button class="btn btn-default navbar-btn" onclick="ArchetypeEditor.createNewArchetypeDialog()">New</button>
@@ -200,6 +217,7 @@
             </div>
         </div>
     </div>
+    <div id="archetype-editor-footer"></div>
 </div>
 
 </body>

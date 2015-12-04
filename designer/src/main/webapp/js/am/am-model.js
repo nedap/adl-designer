@@ -1604,8 +1604,12 @@ var AOM = (function () {
              * @return {AOM.ArchetypeModel} archetype model containing the constraint
              */
             my.ArchetypeModel.from = function (cons) {
-                while (cons[".parent"]) cons = cons[".parent"];
-                return cons[".archetypeModel"];
+                if(cons){
+                    while (cons[".parent"]) cons = cons[".parent"];
+                    if(cons['.archetypeModel']){
+                        return cons[".archetypeModel"];
+                    }
+                }
             };
 
 

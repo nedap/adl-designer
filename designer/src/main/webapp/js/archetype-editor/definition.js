@@ -707,6 +707,9 @@
                 var childJson = target[0];
                 var newTreeNodeId = self.targetElement.jstree('create_node', parentNode, childJson, pos);
                 self.styleNodes(parentNode.id);
+                self.targetElement.jstree("deselect_all");
+                self.targetElement.jstree('select_node', newTreeNodeId);
+                $('#'+newTreeNodeId).children('a').focus();
                 return newTreeNodeId;
             }
 
@@ -858,8 +861,7 @@
 
                     },
                     "plugins" : [
-                        "contextmenu", "dnd", "search",
-                        "state", "types", "wholerow"
+                         "search"
                     ],
 
                 }).on('loaded.jstree', function () {
@@ -888,6 +890,12 @@
                 };
                 constraintData.saveCallback = function() {
                     info.tree.styleNodes(treeEvent.node.id);
+                    constraintData.info.tree.styleNodes(treeEvent.node.id, 1);
+                    var isSelected = constraintData.info.tree.targetElement.jstree('is_selected', definitionTreeNode);
+                    if (isSelected) {
+                        constraintData.info.propertiesPanel.show(constraintData);
+                    }
+
                 };
                 info.propertiesPanel.show(constraintData);
             });

@@ -41,7 +41,7 @@ var ArchetypeEditor = (function () {
                     content: content,
                     callback: function (content) {
                         var archetypeId = content.find('#' + loadArchetypeContext.panel_id + '_archetype').val();
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.loadArchetype(archetypeId, my.useArchetype);
                     }
                 });
@@ -82,7 +82,7 @@ var ArchetypeEditor = (function () {
                         if (existing) {
                             return "Specialized archetype id already exists";
                         }
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.createSpecializedArchetypeModel(parentArchetypeId, specializedArchetypeId, my.useArchetype);
                     }
                 });
@@ -184,7 +184,7 @@ var ArchetypeEditor = (function () {
                             definition_text: rawConcept,
                             definition_description: rawConcept
                         });
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         my.useArchetype(newArchetypeModel);
                     }
                 });
@@ -249,11 +249,12 @@ var ArchetypeEditor = (function () {
             dataType: "text"
         }).done(function (data) {
             // reload list of archetypes
-            my.archetypeRepository.reload(function () {
-                if (successCallback) {
+            my.archetypeRepository.load().done(function () {
+                /*if (successCallback) {
                     successCallback();
-                }
-            });
+                }*/
+                toastr.success("Save successful!")
+            }).fail(GuiUtils.processAjaxError);
         }).error(function (jxhr) {
             GuiUtils.processAjaxError(jxhr, errorCallback)
         });
@@ -333,7 +334,7 @@ var ArchetypeEditor = (function () {
     my.applySubModulesUpdateContext = function (stage, generatedDom, context) {
         for (var key in context) {
             var prop = context[key];
-            if (typeof prop === "object") {
+            if (typeof prop === "object" && !prop["@type"]) {
                 if (prop.type && prop.panel_id) {
                     var handler = my.getRmTypeHandler(prop.type);
                     if (handler) {
@@ -446,7 +447,7 @@ var ArchetypeEditor = (function () {
                         if (text.length == 0) {
                             return; // do nothing
                         }
-
+                        $('.nav-tabs a[href="#' + 'archetype-editor-main-tabs-definition' + '"]').tab('show');
                         var newTerminologyCode = archetypeModel.addNewTermDefinition("at", text, description);
                         if (callback) {
                             callback(newTerminologyCode);
