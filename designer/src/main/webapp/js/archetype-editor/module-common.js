@@ -276,6 +276,7 @@
                                                 newValue = newValue.substr(0,newValue.indexOf(']'));
                                             }
                                         var parse = newValue.indexOf('..');
+
                                         if(parse==-1){
                                             toastr.error("Please insert a valid format: ex. x..y");
                                             return {newValue: oldValue};
@@ -283,7 +284,12 @@
                                         }
                                         var minR = newValue.substring(0, parse);
                                         var maxR = newValue.substring(parse+2);
+                                        if(isNaN(Number(minR)) || isNaN(Number(maxR))){
+                                            toastr.error("Please insert a valid format: ex. [x..y]");
+                                            return {newValue: oldValue};
+                                        }
 
+                                        return {newValue: oldValue};
                                         formatted = minR + '..' + maxR;
 
                                         if(minR > maxR){

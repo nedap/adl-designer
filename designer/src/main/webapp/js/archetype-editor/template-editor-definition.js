@@ -987,7 +987,7 @@
                                 })
                             if(context.createArchetype)
                                 html.find("#"+context.panel_id+"_createArchetype").click(function(){
-                                    window.open('archetype-editor.html');
+                                    window.open('archetype-editor.html?action=new');
                                 })
                         }
                     }
@@ -1002,6 +1002,7 @@
                     var data = treeData[treeEvent.node.id];
                     var cons = data.cons || data.attr;
                     var templateModel = AOM.TemplateModel.from(cons);
+                    var archetypeModel = AOM.ArchetypeModel.from(cons);
 
 
                     if ($('#' + treeEvent.node.id + '_anchor')[0].innerHTML.indexOf('openC') === -1) {
@@ -1010,10 +1011,7 @@
                     }
 
 
-                    if (state)
-                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-right"></span>';
-                    else
-                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-left"></span>';
+
 
                     var isArchetype = false;
                     if (data.cons) {
@@ -1034,17 +1032,33 @@
                     var context = {
                         panel_id: GuiUtils.generateId(),
                         addArchetype: templateModel.canAddArchetype(cons),
-                        reset: templateModel.canCloneConstraint(cons),
+                        reset: archetypeModel.isSpecialized(cons),
                         archetypeName: archetypeName,
                         archetypeHead: typeof cons[".templateArchetypeRoot"] != 'undefined',
                         rename: typeof renameFlag !== 'undefined',
                         clone: templateModel.canCloneConstraint(cons),
-                        prohibit: !prohibitFlag,
-                        unprohibit: prohibitFlag,
+                        prohibit: !prohibitFlag && archetypeName,
+                        unprohibit: prohibitFlag && archetypeName,
                         editArchetype: isArchetype,
                         createArchetype: templateModel.canAddArchetype(cons),
                         cssClass: 'btn-xs'
                     };
+                    var chevronShown = false;
+                    for(var prop in context){
+                        if(typeof(context[prop]) === 'boolean'){
+                            if(context[prop]){
+                                chevronShown = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (state)
+                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-right"></span>';
+                    else
+                        $('.openC')[0].innerHTML = ' <span class="fa fa-chevron-left"></span>';
+
+                    if(!chevronShown)
+                        $('.openC')[0].innerHTML = '';
                     if (!state) {
                         $('.movertb').remove();
                     }
@@ -1062,6 +1076,9 @@
                 self.targetElement = targetElement;
                 function customMenu(node) {
                     // The default set of all items
+                    var name = "'"+AOM.ArchetypeModel.from(self.current.data.cons).getTermDefinition(self.current.data.cons.node_id).text+"'";
+                    if(typeof self.current.data.cons['.templateArchetypeRoot'] == 'undefined')
+                        name = '';
                     var items = {
                         addArchetype: { // The "Add archetype" menu item
                             label: "Add archetype",
@@ -1070,13 +1087,13 @@
                             }
                         },
                         deleteItem: { // The "delete" menu item
-                            label: "Delete",
+                            label: "Delete "+name,
                             action: function () {
                                 info.tree.removeConstraint();
                             }
                         },
                         renameItem: { // The "Rename menu" item
-                            label: "Rename",
+                            label: "Rename "+name,
                             action: function () {
                                 specializeConstraint(self.current.constraintData, self.current.treeNode)
                                 styleNodeJson(node);
@@ -1099,7 +1116,7 @@
                                 if(temp[".clone"])
                                 self.createTree();
                             },
-                            icon: false
+
                         }
                     };
 
