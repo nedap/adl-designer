@@ -289,7 +289,6 @@
                                             return {newValue: oldValue};
                                         }
 
-                                        return {newValue: oldValue};
                                         formatted = minR + '..' + maxR;
 
                                         if(minR > maxR){

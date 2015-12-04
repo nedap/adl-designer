@@ -64,11 +64,11 @@
 
                 <div class="row" style="margin-left: -25px">
                     <div class="col-xs-12">
-                        <div class="btn-toolbar" id="topToolbar">
+                        <div class="btn-toolbar" id="topToolbar" style="display: inline-block">
 
-                            <input type="text" class="search-input form-control" placeholder="Filter by name"
-                                   style="float: right; max-width: 200px"/>
                         </div>
+                        <input type="text" class="search-input form-control" placeholder="Search by name"
+                               style="float: right; max-width: 200px"/>
                     </div>
                 </div>
             </div>
@@ -188,11 +188,11 @@
         <span class='btn {{cssClass}} btn-primary' id="{{panel_id}}_clone"><span class='fa fa-clone'></span> Clone</span>
     {{/if}}
     {{#if editArchetype}}
-        <span class='btn {{cssClass}} btn-warning' id="{{panel_id}}_editArchetype"><span class='glyphicon glyphicon-edit'></span> Edit '{{archetypeName}}'</span>
+        <span class='btn {{cssClass}} btn-warning' id="{{panel_id}}_editArchetype"><span class='glyphicon glyphicon-edit'></span> Edit </span>
     {{/if}}
     {{#if reset}}
         {{#if archetypeHead}}
-        <span class='btn {{cssClass}} btn-danger' id="{{panel_id}}_reset"><span class='fa fa-remove'></span> Delete '{{archetypeName}}'</span>
+        <span class='btn {{cssClass}} btn-danger' id="{{panel_id}}_reset"><span class='fa fa-remove'></span> Delete </span>
         {{else}}
         <span class='btn {{cssClass}} btn-success' id="{{panel_id}}_reset"><span class='fa fa-refresh'></span> Reset</span>
         {{/if}}

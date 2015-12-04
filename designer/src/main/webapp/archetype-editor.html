@@ -41,6 +41,9 @@
           rel="stylesheet"/>
     <script src="lib/x-editable/bootstrap-editable.min.js"></script>
 
+    <!-- font awesome -->
+    <link href="css/font-awesome.css" rel="stylesheet" type="text/css"/>
+
     <!-- Bootstrap Table -->
     <link href="lib/bootstrap-table-1.6.0/bootstrap-table.min.css" rel="stylesheet" type="text/css"/>
     <script src="lib/bootstrap-table-1.6.0/bootstrap-table.min.js"></script>
@@ -93,6 +96,7 @@
     <script src="js/archetype-editor/module-primitive.js"></script>
     <script src="js/archetype-editor/module-openehr.js"></script>
     <link href="archetype-editor.css" rel="stylesheet" type="text/css"/>
+    <script src="js/archetype-editor/user.js"></script>
     <!--test-->
     <style>
         .specialized{
@@ -213,7 +217,12 @@
                     ArchetypeEditor.createNewArchetypeDialog();
                 }
             });
+            $.getJSON("rest/user/profile").done(function (data) {
+                $('#profileHeader').text(data.username);
+                UserModule.updateConnectedTo(data.repository);
+            });
 
+            //UserModule.chooseLastRepository();
         });
     </script>
 </head>

@@ -861,8 +861,7 @@
 
                     },
                     "plugins" : [
-                        "contextmenu", "dnd", "search",
-                        "state", "types", "wholerow"
+                         "search"
                     ],
 
                 }).on('loaded.jstree', function () {
