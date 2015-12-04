@@ -249,11 +249,12 @@ var ArchetypeEditor = (function () {
             dataType: "text"
         }).done(function (data) {
             // reload list of archetypes
-            my.archetypeRepository.reload(function () {
-                if (successCallback) {
+            my.archetypeRepository.load().done(function () {
+                /*if (successCallback) {
                     successCallback();
-                }
-            });
+                }*/
+                toastr.success("Save successful!")
+            }).fail(GuiUtils.processAjaxError);
         }).error(function (jxhr) {
             GuiUtils.processAjaxError(jxhr, errorCallback)
         });
