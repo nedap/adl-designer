@@ -21,6 +21,7 @@
 package org.openehr.designer.diff;
 
 import org.openehr.adl.FlatArchetypeProvider;
+import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.adl.am.mixin.MultiplicityIntervalMixin;
 import org.openehr.adl.rm.*;
@@ -193,7 +194,12 @@ public class ArchetypeDifferentiator {
             TermBindingSet termBindingSet = tbsIterator.next();
             for (Iterator<TermBindingItem> tbiIterator = termBindingSet.getItems().iterator(); tbiIterator.hasNext(); ) {
                 TermBindingItem termBindingItem = tbiIterator.next();
-                if (getSpecializationDepth(termBindingItem.getCode()) == archetypeSpecializationDepth) continue;
+                try {
+                    if (getSpecializationDepth(termBindingItem.getCode()) == archetypeSpecializationDepth) continue;
+                } catch (IllegalArgumentException e) {
+                    RmPath path = RmPath.valueOf(termBindingItem.getCode());
+                    if (getSpecializationDepth(path.getNodeId()) == archetypeSpecializationDepth) continue;
+                }
                 if (Objects.equals(
                         termBindingItem.getValue(),
                         flatParentWrapper.getTerminologyBinding(termBindingSet.getTerminology(), termBindingItem.getCode()))) {
