@@ -36,13 +36,11 @@ public class FlatArchetypeProviderOverlay implements FlatArchetypeProvider {
     private final FlatArchetypeProvider delegate;
     private final Map<String, Archetype> overlayArchetypeMap;
     private final ArchetypeFlattener flattener;
-    private final RmModel rmModel;
 
 
-    public FlatArchetypeProviderOverlay(FlatArchetypeProvider delegate, RmModel rmModel, List<Archetype> archetypes) {
+    public FlatArchetypeProviderOverlay(FlatArchetypeProvider delegate, List<Archetype> archetypes) {
         this.delegate = delegate;
-        this.rmModel = rmModel;
-        flattener = new ArchetypeFlattener(rmModel);
+        flattener = new ArchetypeFlattener();
 
         overlayArchetypeMap = new LinkedHashMap<>();
         for (Archetype archetype : archetypes) {

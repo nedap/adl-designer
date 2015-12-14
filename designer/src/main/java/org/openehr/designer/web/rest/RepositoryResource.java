@@ -24,7 +24,6 @@ import com.google.common.base.Charsets;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.serializer.ArchetypeSerializer;
 import org.openehr.adl.util.ArchetypeWrapper;
-import org.openehr.designer.repository.ArchetypeInfo;
 import org.openehr.designer.FlatArchetypeProviderOverlay;
 import org.openehr.designer.ReferenceModelDataBuilder;
 import org.openehr.designer.diff.ArchetypeDifferentiator;
@@ -34,6 +33,7 @@ import org.openehr.designer.io.opt.OptBuilder;
 import org.openehr.designer.repository.*;
 import org.openehr.designer.rm.ReferenceModels;
 import org.openehr.designer.web.RepositoryProvider;
+import org.openehr.designer.web.ResourceDownloadManager;
 import org.openehr.designer.web.SessionContext;
 import org.openehr.designer.web.SessionContextHolder;
 import org.openehr.jaxb.am.Archetype;
@@ -64,6 +64,8 @@ public class RepositoryResource extends AbstractResource {
     @Resource
     private ReferenceModels referenceModels;
 
+    @Resource
+    private ResourceDownloadManager resourceDownloadManager;
 
 
     @PostConstruct
@@ -121,8 +123,8 @@ public class RepositoryResource extends AbstractResource {
 
     private FlatArchetypeRepository getFlatArchetypeRepository(SessionContext ctx) {
         return new FlatArchetypeRepository(
-                    repositoryProvider.getArchetypeRepository(ctx),
-                    referenceModels.getDefaultReferenceModel());
+                repositoryProvider.getArchetypeRepository(ctx),
+                referenceModels.getDefaultReferenceModel());
     }
 
     @RequestMapping(value = "/template", method = RequestMethod.GET)
@@ -142,8 +144,8 @@ public class RepositoryResource extends AbstractResource {
         TemplateRepository templateRepository = repositoryProvider.getTemplateRepository(ctx);
 
         List<Archetype> differentials = templateRepository.loadTemplate(templateId);
-        FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(getFlatArchetypeRepository(ctx),
-                referenceModels.getDefaultReferenceModel(), differentials);
+        FlatArchetypeProvider flatArchetypeProvider = new FlatArchetypeProviderOverlay(
+                getFlatArchetypeRepository(ctx), differentials);
 
         return differentials.stream()
                 .map(d -> flatArchetypeProvider.getFlatArchetype(d.getArchetypeId().getValue()))
@@ -173,22 +175,35 @@ public class RepositoryResource extends AbstractResource {
         return builder;
     }
 
-
-    @RequestMapping(value = "/export/opt/14", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> exportProvidedOpt14(@RequestBody List<Archetype> flatArchetypeList) {
-        SessionContext conf = SessionContextHolder.get();
-
-        TemplateDifferentiator differentiator = new TemplateDifferentiator(getFlatArchetypeRepository(conf));
-        List<Archetype> templateArchetypes = differentiator.differentiate(
-                referenceModels.getDefaultReferenceModel(), flatArchetypeList);
-
-        OptBuilder.Opt opt = createOptBuilder(conf).build(templateArchetypes);
+    @RequestMapping(value = "/export/opt14/display", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> displayProvidedOpt14(@RequestBody List<Archetype> flatArchetypeList) {
+        OptBuilder.Opt opt = createOpt(flatArchetypeList);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "text/xml; charset=utf-8");
         headers.add("Content-Disposition", "attachment; filename=\"" + opt.getTemplateId() + ".opt\"");
         headers.add("Content-Length", Integer.toString(opt.getContent().length));
         return new ResponseEntity<>(opt.getContent(), headers, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/export/opt14/handle", method = RequestMethod.POST)
+    public DownloadableResourceHandle exportProvidedOpt14(@RequestBody List<Archetype> flatArchetypeList) {
+        OptBuilder.Opt opt = createOpt(flatArchetypeList);
+
+        ResourceDownloadManager.DownloadResource res = new ResourceDownloadManager.DownloadResource(
+                "text/xml", opt.getTemplateId() + ".opt", opt.getContent());
+        String id = resourceDownloadManager.store(res);
+        return new DownloadableResourceHandle(id, res);
+    }
+
+    private OptBuilder.Opt createOpt(@RequestBody List<Archetype> flatArchetypeList) {
+        SessionContext conf = SessionContextHolder.get();
+
+        TemplateDifferentiator differentiator = new TemplateDifferentiator(getFlatArchetypeRepository(conf));
+        List<Archetype> templateArchetypes = differentiator.differentiate(
+                referenceModels.getDefaultReferenceModel(), flatArchetypeList);
+
+        return createOptBuilder(conf).build(templateArchetypes);
     }
 
     @RequestMapping(value = "/export/adlt/{templateId}", method = RequestMethod.GET)
@@ -253,7 +268,7 @@ public class RepositoryResource extends AbstractResource {
 
 
     @RequestMapping(value = "/template-editor", method = RequestMethod.GET, produces = "text/html")
-    public void GetTemplateHTML(){
+    public void GetTemplateHTML() {
         LOG.error("Something");
     }
 }

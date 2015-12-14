@@ -24,11 +24,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import org.openehr.designer.Configuration;
 import org.openehr.designer.util.WtUtils;
+import org.openehr.designer.web.ResourceDownloadManager;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +43,8 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.SortedMap;
 
 /**
  * @author markopi
@@ -47,6 +53,9 @@ import java.util.SortedMap;
 @RestController
 public class AppResource {
     private Map<String, String> appProperties;
+
+    @Resource
+    private ResourceDownloadManager resourceDownloadManager;
 
     @PostConstruct
     public void init() throws IOException {
@@ -68,5 +77,20 @@ public class AppResource {
 
         result.putAll(appProperties);
         return result;
+    }
+
+
+    @RequestMapping(value = "/download/{id}", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> download(@PathVariable("id") String id) {
+        Optional<ResourceDownloadManager.DownloadResource> result = resourceDownloadManager.load(id);
+        if (!result.isPresent()) {
+            throw RestException.of(HttpStatus.NOT_FOUND).message("N such resource to download: %s", id).build();
+        }
+        ResourceDownloadManager.DownloadResource r = result.get();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, r.getMimetype());
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + r.getFilename() + "\"");
+        headers.add("Content-Length", Integer.toString(r.getContent().length));
+        return new ResponseEntity<>(r.getContent(), headers, HttpStatus.OK);
     }
 }

@@ -1279,7 +1279,8 @@
                             addArchetype: html.find('#' + context.panel_id + '_addArchetype'),
                             removeConstraint: html.find('#' + context.panel_id + '_removeConstraint'),
                             showStructure: html.find('#' + context.panel_id + '_structure'),
-                            showProhibited: html.find('#' + context.panel_id + '_filterProhibited')
+                            showProhibited: html.find('#' + context.panel_id + '_filterProhibited'),
+                            exportToOpt14: html.find('#' + context.panel_id + '_exportToOpt14')
                         }
                     };
                     var definitionPropertiesElement = html.find('#' + context.panel_id + '_constraints_panel');
@@ -1308,6 +1309,10 @@
                     info.toolbar.renameConstraint.click(info.tree.renameConstraint);
                     info.toolbar.addArchetype.click(info.tree.addArchetype);
                     info.toolbar.removeConstraint.click(info.tree.removeConstraint);
+                    info.toolbar.exportToOpt14.click(function() {
+                        TemplateEditor.exportToOpt14(templateModel);
+                    });
+
                     info.toolbar.showStructure.on('change', function () {
                         info.tree.changeShowStructure(info.toolbar.showStructure.prop('checked'));
                     });

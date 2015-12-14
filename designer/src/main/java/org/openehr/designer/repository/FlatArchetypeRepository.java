@@ -34,7 +34,7 @@ public class FlatArchetypeRepository implements FlatArchetypeProvider {
 
     public FlatArchetypeRepository(ArchetypeRepository repository, RmModel rmModel) {
         this.repository = repository;
-        this.flattener = new ArchetypeFlattener(rmModel);
+        this.flattener = new ArchetypeFlattener();
     }
 
     @Override

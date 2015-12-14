@@ -188,14 +188,23 @@ var TemplateEditor = (function () {
     };
 
     my.exportToOpt14 = function () {
+        function download(id) {
+            document.location = "rest/app/download/" + encodeURIComponent(id);
+        }
 
-        my.saveCurrentTemplate().done(function () {
-            var templateId = my.templateModel.getRootArchetypeModel().getArchetypeId();
-            var url = "rest/repo/export/opt/14/" + encodeURIComponent(templateId);
-
-            document.location = url;
-
-        });
+        return jQuery.ajax({
+            'type': 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'url': "rest/repo/export/opt14/handle",
+            'contentType': 'application/json',
+            'data': JSON.stringify(my.templateModel.toSerializableForm())/*,
+             'dataType': 'text'*/
+        }).done(function (data) {
+            download(data.id);
+        }).fail(GuiUtils.processAjaxError);
     };
 
 
@@ -241,9 +250,9 @@ var TemplateEditor = (function () {
         // var latch = new CountdownLatch(4);
         var getUrlParameter = function getUrlParameter(sParam) {
             var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-            sURLVariables = sPageURL.split('&'),
-            sParameterName,
-            i;
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
 
             for (i = 0; i < sURLVariables.length; i++) {
                 sParameterName = sURLVariables[i].split('=');
@@ -257,7 +266,7 @@ var TemplateEditor = (function () {
         var defArchetype = ArchetypeEditor.initialize().done(function () {
             my.referenceModel = ArchetypeEditor.referenceModel;
             my.archetypeRepository = ArchetypeEditor.archetypeRepository;
-            if(getUrlParameter('action') === 'new'){
+            if (getUrlParameter('action') === 'new') {
                 ArchetypeEditor.createNewArchetypeDialog();
             }
         });
