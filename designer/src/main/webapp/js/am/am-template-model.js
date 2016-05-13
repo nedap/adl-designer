@@ -170,13 +170,12 @@ AOM = (function (AOM) {
                         return null;
                     }
 
-                    var slotIdToSlot={};
-                    children.forEach(function(cons) {
-                        if (cons["@type"]==="ARCHETYPE_SLOT") {
-                            slotIdToSlot[cons.node_id]=cons;
+                    var slotIdToSlot = {};
+                    children.forEach(function (cons) {
+                        if (cons["@type"] === "ARCHETYPE_SLOT") {
+                            slotIdToSlot[cons.node_id] = cons;
                         }
                     });
-
 
 
                     var result = [];
@@ -338,7 +337,6 @@ AOM = (function (AOM) {
                     return false;
                 }
             };
-
             self.removeConstraint = function (cons) {
                 function removeOrphanArchetypeModels() {
                     do {
@@ -365,30 +363,36 @@ AOM = (function (AOM) {
 
                 }
 
-                function removeArchetypeModel(archetypeModel) {
-
-                    for (var i in archetypeModels) {
-                        var candidate = archetypeModels[i];
-                        if (candidate.getArchetypeId() === archetypeModel.getArchetypeId()) {
-                            archetypeModels.splice(Number(i), 1);
-                        }
+                function removeAttributeConstraint(cons) {
+                    var archetypeModel = AOM.ArchetypeModel.from(cons)
+                    var parent = archetypeModel.getParentConstraint(cons);
+                    var attrExistence = referenceModel.getExistence(parent);
+                    if (attrExistence.lower) {
+                        throw "Attribute is not optional: existence.lower=" + attrExistence.lower;
                     }
-                    removeOrphanArchetypeModels();
+                    cons.existence=AmInterval.of(0, 0)
                 }
 
-                if (AOM.mixin(cons).isAttribute()) return;
-                var consArchetypeModel = AOM.ArchetypeModel.from(cons);
-                if (cons[".parent"]) {
-                    return consArchetypeModel.removeConstraint(cons, cons[".clone"]);
-                } else if (cons[".templateArchetypeRoot"]) {
-                    var parentArchetypeRoot = cons[".templateArchetypeRoot"];
-                    var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
-                    //removeArchetypeModel(consArchetypeModel);
-                    var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot, true);
-                    removeOrphanArchetypeModels();
-                    return result;
+                function removeCObjectConstraint(cons) {
+                    var consArchetypeModel = AOM.ArchetypeModel.from(cons);
+                    if (cons[".parent"]) {
+                        return consArchetypeModel.removeConstraint(cons, cons[".clone"]);
+                    } else if (cons[".templateArchetypeRoot"]) {
+                        var parentArchetypeRoot = cons[".templateArchetypeRoot"];
+                        var parentArchetypeModel = AOM.ArchetypeModel.from(parentArchetypeRoot);
+                        //removeArchetypeModel(consArchetypeModel);
+                        var result = parentArchetypeModel.removeConstraint(parentArchetypeRoot, true);
+                        removeOrphanArchetypeModels();
+                        return result;
+                    }
                 }
 
+
+                if (AOM.mixin(cons).isAttribute()) {
+                    return removeAttributeConstraint(cons)
+                } else {
+                    return removeCObjectConstraint(cons);
+                }
             };
 
             self.getConstraintLabel = function (cons, language) {
@@ -544,7 +548,7 @@ AOM = (function (AOM) {
                 if (consToClone[".templateArchetypeRoot"]) {
                     newCons = getArchetypeModel(newCons.archetype_ref).data.definition;
                 }
-                newCons[".clone"]=true;
+                newCons[".clone"] = true;
 
                 return newCons;
             };
@@ -558,7 +562,7 @@ AOM = (function (AOM) {
                 if (anchorCons && self.getConstraintParent(anchorCons) !== self.getConstraintParent(cons)) {
                     return false;
                 }
-                if(cons[".parent"]!=anchorCons[".parent"])
+                if (cons[".parent"] != anchorCons[".parent"])
                     return false;
 
                 return true;

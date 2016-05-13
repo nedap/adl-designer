@@ -615,7 +615,7 @@
                     if (isSpecialized) {
                         treeNodeJson.a_attr.class += ' specialized';
 
-                        if (cons.occurrences && cons.occurrences.upper === 0) {
+                        if (isProhibited(cons)) {
                             treeNodeJson.a_attr.class += ' specialized prohibited';
                         }
                         else {
@@ -884,65 +884,63 @@
                             }
 
 
-                        }).
-                        on('select_node.jstree', function (event, treeEvent) {
+                        }).on('select_node.jstree', function (event, treeEvent) {
 
 
-                            var data = treeData[treeEvent.node.id];
-                            self.current = {
-                                treeNode: treeEvent.node,
-                                data: data,
-                                constraintData: {
-                                    info: info,
-                                    cons: data.cons
-                                }
-                            };
-
-                            self.current.constraintData.specializeCallback = function () {
-                                specializeConstraint(self.current.constraintData, treeEvent.node);
-                            };
-                            self.current.constraintData.saveCallback = function () {
-                                info.tree.styleNodes(treeEvent.node.id);
-                                info.tree.styleNodes(treeEvent.node.id, 1);
-                                var isSelected = info.tree.targetElement.jstree('is_selected', treeEvent.node);
-                                if (isSelected) {
-                                    info.propertiesPanel.show(self.current.constraintData);
-                                }
-                            };
-
-                            if (oldnode != treeEvent.node.id)
-                                gstate = false;
-
-                            oldnode = treeEvent.node.id;
-                            if (gstate) {
-                                createToolbar(treeEvent, true, self.current.constraintData);
-                                gstate = false;
-                            } else {
-                                createToolbar(treeEvent, false, self.current.constraintData);
-                                gstate = true;
+                        var data = treeData[treeEvent.node.id];
+                        self.current = {
+                            treeNode: treeEvent.node,
+                            data: data,
+                            constraintData: {
+                                info: info,
+                                cons: data.cons
                             }
+                        };
 
-                            info.propertiesPanel.show(self.current.constraintData);
+                        self.current.constraintData.specializeCallback = function () {
+                            specializeConstraint(self.current.constraintData, treeEvent.node);
+                        };
+                        self.current.constraintData.saveCallback = function () {
+                            info.tree.styleNodes(treeEvent.node.id);
+                            info.tree.styleNodes(treeEvent.node.id, 1);
+                            var isSelected = info.tree.targetElement.jstree('is_selected', treeEvent.node);
+                            if (isSelected) {
+                                info.propertiesPanel.show(self.current.constraintData);
+                            }
+                        };
 
-                        })
+                        if (oldnode != treeEvent.node.id)
+                            gstate = false;
+
+                        oldnode = treeEvent.node.id;
+                        if (gstate) {
+                            createToolbar(treeEvent, true, self.current.constraintData);
+                            gstate = false;
+                        } else {
+                            createToolbar(treeEvent, false, self.current.constraintData);
+                            gstate = true;
+                        }
+
+                        info.propertiesPanel.show(self.current.constraintData);
+
+                    })
                         .on("deselect_all.jstree", function (e, treeEvent) {
 
                             $('.openC').remove();
                             $('.movertb').remove();
 
-                        }).
-                        on("move_node.jstree", function (node, parent) {
+                        }).on("move_node.jstree", function (node, parent) {
 
 
-                            var treeNode = self.targetElement.jstree('get_node', parent.old_parent);
-                            var cons = treeData[treeNode.children[parent["position"]]].cons;
-                            var anchorCons = treeData[treeNode.children[parent["old_position"]]].cons;
-                            if (typeof cons != 'undefined' && typeof anchorCons != 'undefined') {
+                        var treeNode = self.targetElement.jstree('get_node', parent.old_parent);
+                        var cons = treeData[treeNode.children[parent["position"]]].cons;
+                        var anchorCons = treeData[treeNode.children[parent["old_position"]]].cons;
+                        if (typeof cons != 'undefined' && typeof anchorCons != 'undefined') {
 
-                                templateModel.moveBefore(cons, anchorCons);
-                            }
+                            templateModel.moveBefore(cons, anchorCons);
+                        }
 
-                        })
+                    })
 
                     var oldnode;
                     var ctr = 0;
@@ -1044,12 +1042,12 @@
                             context.archetypeHead = true;
                             context.archetypeName = '';
                         }
-                     /*   if (!cons['is_multiple'] && cons.children) {
-                                context.addArchetype = false;
-                                context.createArchetype = false;
-                                context.archetypeHead = false;
-                        }
-*/
+                        /*   if (!cons['is_multiple'] && cons.children) {
+                         context.addArchetype = false;
+                         context.createArchetype = false;
+                         context.archetypeHead = false;
+                         }
+                         */
                         var chevronShown = false;
                         for (var prop in context) {
                             if (typeof(context[prop]) === 'boolean') {
@@ -1119,7 +1117,7 @@
 
                             },
                             prohibitItem: {
-                                label: "Zero occurance",
+                                label: "Zero occurrence",
                                 action: function () {
                                     self.SpecializeAndProhibit(self.current.constraintData, 'prohibit');
                                     styleNodeJson(node);
@@ -1153,7 +1151,7 @@
                             if (treeData[node.id].cons.occurrences)
                                 if (treeData[node.id].cons.occurrences.lower === 0 && treeData[node.id].cons.occurrences.upper === 0) {
                                     items["prohibitItem"] = { //Changing the "Add archetype" button
-                                        label: "Default occurance",
+                                        label: "Default occurrence",
                                         action: function () {
                                             self.SpecializeAndProhibit(node, 'unprohibit');
                                             styleNodeJson(node);
@@ -1169,16 +1167,16 @@
                             delete items.prohibitItem;
 
 
-                          /*  if (typeof targetCons['is_multiple'] != 'undefined') {
+                            /*  if (typeof targetCons['is_multiple'] != 'undefined') {
 
-                                items.deleteElement = {
-                                    label: "Delete",
-                                    action: function () {
-                                        info.tree.removeConstraint();
-                                    },
-                                    icon: 'glyphicon glyphicon-remove'
-                                }
-                            }*/
+                             items.deleteElement = {
+                             label: "Delete",
+                             action: function () {
+                             info.tree.removeConstraint();
+                             },
+                             icon: 'glyphicon glyphicon-remove'
+                             }
+                             }*/
                             if (templateModel.canAddArchetype(targetCons))
                                 items.CreateArchetype = {
                                     label: "Create new archetype",
@@ -1199,6 +1197,17 @@
 
                 };
 
+
+                function isProhibited(cons) {
+                    if (!cons) return false;
+                    var mixin = AOM.mixin(cons);
+                    if (mixin.isAttribute()) {
+                        return cons.existence && cons.existence.lower === 0;
+                    } else {
+                        return cons.occurrences && cons.occurrences.upper === 0
+                    }
+                }
+
                 self.filterProhibited = function (status) {
                     status = info.toolbar.showProhibited.prop('checked');
                     var ProhibitedIDs = [];
@@ -1206,12 +1215,9 @@
 
 
                     for (var node in treeData) {
-                        if (treeData[node] != undefined)
-                            if (treeData[node].cons)
-                                if (treeData[node].cons.occurrences) {
-                                    if (treeData[node].cons.occurrences.upper === 0 && treeData[node].cons.occurrences.lower === 0)
-                                        ProhibitedIDs.push(node);
-                                }
+                        if (treeData[node] && isProhibited(treeData[node].cons || treeData[node].attr)) {
+                            ProhibitedIDs.push(node);
+                        }
                     }
                     for (var i = 0; i < ProhibitedIDs.length; i++) {
                         if (status)
@@ -1309,7 +1315,7 @@
                     info.toolbar.renameConstraint.click(info.tree.renameConstraint);
                     info.toolbar.addArchetype.click(info.tree.addArchetype);
                     info.toolbar.removeConstraint.click(info.tree.removeConstraint);
-                    info.toolbar.exportToOpt14.click(function() {
+                    info.toolbar.exportToOpt14.click(function () {
                         TemplateEditor.exportToOpt14(templateModel);
                     });
 

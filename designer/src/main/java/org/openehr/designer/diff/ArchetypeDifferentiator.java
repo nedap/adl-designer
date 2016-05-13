@@ -21,19 +21,20 @@
 package org.openehr.designer.diff;
 
 import org.openehr.adl.FlatArchetypeProvider;
-import org.openehr.adl.am.AmQuery;
 import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.adl.am.mixin.MultiplicityIntervalMixin;
 import org.openehr.adl.rm.*;
 import org.openehr.adl.util.AdlUtils;
 import org.openehr.adl.util.ArchetypeWrapper;
 import org.openehr.jaxb.am.*;
+import org.openehr.jaxb.rm.MultiplicityInterval;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.openehr.adl.rm.RmObjectFactory.newMultiplicityInterval;
 import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDepth;
 
 /**
@@ -76,7 +77,7 @@ public class ArchetypeDifferentiator {
         if (flatParent == null) {
             return diffChild; // no differentiation needed
         }
-        pruneUnspecializedNodes(diffChild.getDefinition());
+        pruneUnspecializedNodes(flatParent.getDefinition(), diffChild.getDefinition());
 
         makeDifferentialPaths(diffChild.getDefinition());
 
@@ -265,15 +266,17 @@ public class ArchetypeDifferentiator {
      * @param cobj object to check
      * @return prune if the object should be removed, keep if it should be kept, undetermined if it not known yet
      */
-    private Prune pruneUnspecializedNodes(CObject cobj) {
+    private Prune pruneUnspecializedNodes(@Nullable CObject flatParent, CObject cobj) {
         Prune result = Prune.undetermined;
         if (cobj instanceof CComplexObject) {
             CComplexObject cComplexObject = (CComplexObject) cobj;
             for (Iterator<CAttribute> attrIterator = cComplexObject.getAttributes().iterator(); attrIterator.hasNext(); ) {
                 CAttribute attribute = attrIterator.next();
+                CAttribute parentAttribute = findParentAttribute(flatParent, attribute.getRmAttributeName());
+
                 for (Iterator<CObject> childIterator = attribute.getChildren().iterator(); childIterator.hasNext(); ) {
                     CObject childConstraint = childIterator.next();
-                    Prune pruneChild = pruneUnspecializedNodes(childConstraint);
+                    Prune pruneChild = pruneUnspecializedNodes(findParentConstraint(parentAttribute, childConstraint), childConstraint);
                     if (pruneChild == Prune.prune) {
                         childIterator.remove();
                     } else if (pruneChild == Prune.keep) {
@@ -282,7 +285,9 @@ public class ArchetypeDifferentiator {
                 }
 
                 if (attribute.getChildren().isEmpty()) {
-                    attrIterator.remove();
+                    if (!isAttributeSpecialized(flatParent, parentAttribute, attribute)) {
+                        attrIterator.remove();
+                    }
                 }
             }
         }
@@ -303,6 +308,62 @@ public class ArchetypeDifferentiator {
             }
         }
         return result;
+    }
+
+    @Nullable
+    private CObject findParentConstraint(CAttribute parentAttribute, CObject childConstraint) {
+        if (parentAttribute == null) return null;
+        String id = childConstraint.getNodeId();
+        if (id == null) return null;
+        int lastIndexOf = id.lastIndexOf('.');
+        if (lastIndexOf < 0) return null;
+
+        String parentNodeId = id.substring(0, lastIndexOf);
+        for (CObject cObject : parentAttribute.getChildren()) {
+            if (parentNodeId.equals(cObject.getNodeId())) {
+                return cObject;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private CAttribute findParentAttribute(CObject flatParent, String rmAttributeName) {
+        if (!(flatParent instanceof CComplexObject)) return null;
+        CComplexObject p = (CComplexObject) flatParent;
+        for (CAttribute pa : p.getAttributes()) {
+            if (pa.getRmAttributeName().equals(rmAttributeName)) {
+                return pa;
+            }
+        }
+        return null;
+    }
+
+    private boolean isAttributeSpecialized(CObject parentsParent, CAttribute parentAttribute, CAttribute attribute) {
+        if (parentsParent == null || parentAttribute == null) return true;
+
+        MultiplicityInterval parentExistence = parentAttribute.getExistence();
+        if (parentExistence == null) {
+            RmTypeAttribute rmAttr = rmModel.getRmAttribute(parentsParent.getRmTypeName(), attribute.getRmAttributeName());
+            parentExistence = toExistence(rmAttr);
+        }
+
+        if (isExistenceSpecialized(parentExistence, attribute.getExistence())) return true;
+        return false;
+    }
+
+    private MultiplicityInterval toExistence(RmTypeAttribute rmAttr) {
+        return newMultiplicityInterval(rmAttr.getExistence().getLower(), rmAttr.getExistence().getUpper());
+    }
+
+    private boolean isExistenceSpecialized(MultiplicityInterval parentExistence, MultiplicityInterval existence) {
+        if (existence==null) return false;
+        if (parentExistence == null) return true;
+        if (!Objects.equals(parentExistence.getLower(), existence.getLower()) ||
+                !Objects.equals(parentExistence.getUpper(), existence.getUpper())) {
+            return true;
+        }
+        return false;
     }
 
     private enum Prune {
