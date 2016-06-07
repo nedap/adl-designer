@@ -20,6 +20,7 @@
 
 package org.openehr.designer.diff;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.openehr.adl.FlatArchetypeProvider;
 import org.openehr.adl.am.mixin.AmMixins;
 import org.openehr.adl.am.mixin.MultiplicityIntervalMixin;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.openehr.adl.rm.RmObjectFactory.newMultiplicityInterval;
 import static org.openehr.designer.diff.NodeIdDifferentiator.getSpecializationDepth;
+
+
 
 /**
  * @author markopi
@@ -89,28 +92,14 @@ public class ArchetypeDifferentiator {
         return diffChild;
     }
 
-    private void removeUnspecializedOccurrences(@Nullable CAttribute parentCAttr, CComplexObject specialized) {
-        if (specialized.getOccurrences() != null) {
-            MultiplicityIntervalMixin specializedMixin = AmMixins.of(specialized.getOccurrences());
-            if (parentCAttr == null) {
-                specialized.setOccurrences(null);
-            } else {
-                if (parentCAttr.getCardinality() == null) {
-                    if (specializedMixin.isEqualTo(parentCAttr.getExistence())) {
-                        specialized.setOccurrences(null);
-                    }
-                } else {
-                    if (specializedMixin.isEqualTo(parentCAttr.getCardinality().getInterval())) {
-                        specialized.setOccurrences(null);
-                    }
-                }
-            }
-        }
+    private void removeUnspecializedOccurrences(@Nullable CAttribute parentCAttr, CObject specialized) {
+        removeUnspecializedCObjectOccurrences(parentCAttr, specialized);
+        if (!(specialized instanceof CComplexObject)) return;
+        CComplexObject specializedCont = (CComplexObject) specialized;
 
-        for (CAttribute cAttribute : specialized.getAttributes()) {
+        for (CAttribute cAttribute : specializedCont.getAttributes()) {
             cAttribute.getChildren().stream()
-                    .filter(cObject -> cObject instanceof CComplexObject)
-                    .forEach(cObject -> removeUnspecializedOccurrences(cAttribute, (CComplexObject) cObject));
+                    .forEach(cObject -> removeUnspecializedOccurrences(cAttribute, cObject));
 
             RmTypeAttribute rmAttribute;
             try {
@@ -136,6 +125,30 @@ public class ArchetypeDifferentiator {
         }
 
     }
+
+    private void removeUnspecializedCObjectOccurrences(@Nullable CAttribute parentCAttr, CObject specialized) {
+        if (specialized.getOccurrences() != null) {
+            MultiplicityIntervalMixin specializedMixin = AmMixins.of(specialized.getOccurrences());
+            CObject parent = findCObject(parentCAttr, specialized.getNodeId());
+
+            if (parentCAttr == null) {
+                specialized.setOccurrences(null);
+            } else if (parent!=null && parent.getOccurrences()!=null) {
+                if (specializedMixin.isEqualTo(parent.getOccurrences())) {
+                    specialized.setOccurrences(null);
+                }
+            } else if (parentCAttr.getCardinality() == null) {
+                if (specializedMixin.isEqualTo(parentCAttr.getExistence())) {
+                    specialized.setOccurrences(null);
+                }
+            } else {
+                if (specializedMixin.isEqualTo(parentCAttr.getCardinality().getInterval())) {
+                    specialized.setOccurrences(null);
+                }
+            }
+        }
+    }
+
 
     private void removeUnspecializedValueSets(Archetype diffChild) {
 
@@ -295,19 +308,33 @@ public class ArchetypeDifferentiator {
             return result;
         }
 
-        if (cobj.getNodeId() != null) {
-            if (cobj.getNodeId().startsWith("openEHR-")) {
-                result = Prune.keep;
-            } else {
-                int nodeSpecializationDepth = getSpecializationDepth(cobj.getNodeId());
-                if (nodeSpecializationDepth < archetypeSpecializationDepth) {
-                    result = Prune.prune;
-                } else {
-                    result = Prune.keep;
-                }
-            }
+        boolean isCObjectSpecialized = isCObjectSpecialized(flatParent, cobj);
+        if (isCObjectSpecialized) {
+            result = Prune.keep;
+        } else {
+            result = Prune.prune;
         }
+
         return result;
+    }
+
+    private boolean isCObjectSpecialized(CObject flatParent, CObject cobj) {
+        if (cobj.getNodeId() == null) return true;
+        if (cobj.getNodeId().startsWith("openEHR-")) return true;
+        int nodeSpecializationDepth = getSpecializationDepth(cobj.getNodeId());
+        if (nodeSpecializationDepth >= archetypeSpecializationDepth) {
+            return true;
+        }
+
+        if (cobj instanceof ArchetypeSlot) {
+            return isArchetypeSlotSpecialized((ArchetypeSlot) flatParent, (ArchetypeSlot) cobj);
+        }
+        return false;
+
+    }
+
+    private boolean isArchetypeSlotSpecialized(ArchetypeSlot flatParent, ArchetypeSlot cobj) {
+        return !Arrays.equals(SerializationUtils.serialize(flatParent), SerializationUtils.serialize(cobj));
     }
 
     @Nullable
@@ -315,12 +342,25 @@ public class ArchetypeDifferentiator {
         if (parentAttribute == null) return null;
         String id = childConstraint.getNodeId();
         if (id == null) return null;
-        int lastIndexOf = id.lastIndexOf('.');
-        if (lastIndexOf < 0) return null;
 
-        String parentNodeId = id.substring(0, lastIndexOf);
+        CObject result = null;
+
+        int lastIndexOf = id.lastIndexOf('.');
+
+        if (lastIndexOf >= 0) {
+            String parentNodeId = id.substring(0, lastIndexOf);
+            result = findCObject(parentAttribute, parentNodeId);
+        }
+        if (result == null) {
+            result = findCObject(parentAttribute, id);
+        }
+        return result;
+    }
+
+    @Nullable
+    private CObject findCObject(CAttribute parentAttribute, String nodeId) {
         for (CObject cObject : parentAttribute.getChildren()) {
-            if (parentNodeId.equals(cObject.getNodeId())) {
+            if (nodeId.equals(cObject.getNodeId())) {
                 return cObject;
             }
         }
@@ -357,7 +397,7 @@ public class ArchetypeDifferentiator {
     }
 
     private boolean isExistenceSpecialized(MultiplicityInterval parentExistence, MultiplicityInterval existence) {
-        if (existence==null) return false;
+        if (existence == null) return false;
         if (parentExistence == null) return true;
         if (!Objects.equals(parentExistence.getLower(), existence.getLower()) ||
                 !Objects.equals(parentExistence.getUpper(), existence.getUpper())) {
@@ -365,11 +405,9 @@ public class ArchetypeDifferentiator {
         }
         return false;
     }
-
     private enum Prune {
         prune,
         keep,
         undetermined
     }
-
 }
