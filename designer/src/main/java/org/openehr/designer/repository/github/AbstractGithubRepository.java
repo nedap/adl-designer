@@ -40,7 +40,6 @@ import sun.misc.BASE64Decoder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * @author markopi
@@ -136,7 +135,7 @@ public class AbstractGithubRepository extends AbstractRepository {
         return getFileContents(path).orElse(null);
     }
 
-    protected String decodeBase64(String content) {
+    protected byte[] decodeBase64(String content) {
         BASE64Decoder decoder = new BASE64Decoder();
         byte[] decodedBytes;
         try {
@@ -144,7 +143,7 @@ public class AbstractGithubRepository extends AbstractRepository {
         } catch (Exception e) {
             throw new RepositoryException(e);
         }
-        return new String(decodedBytes);
+        return decodedBytes;
     }
 
     public boolean isWritable() {

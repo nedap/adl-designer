@@ -27,6 +27,7 @@ import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.BomSupportingReader;
 import org.openehr.jaxb.am.Archetype;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -43,8 +44,16 @@ public class TemplateDeserializer {
             String adltContents = CharStreams.toString(r);
             return deserialize(adltContents);
         }
-
     }
+
+    public static List<Archetype> deserialize(byte[] adltContent) {
+        try(ByteArrayInputStream in = new ByteArrayInputStream(adltContent)) {
+            return deserialize(in);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
 
     public static List<Archetype> deserialize(String adltContent) {
         Iterable<String> adls = Splitter.on(Pattern.compile("(\r|\n)+ *\\-{2,} *(\r|\n)+")).split(adltContent);

@@ -13,13 +13,13 @@ import org.openehr.adl.am.ArchetypeIdInfo;
 import org.openehr.adl.parser.AdlDeserializer;
 import org.openehr.adl.parser.AdlParserException;
 import org.openehr.adl.serializer.ArchetypeSerializer;
-import org.openehr.designer.io.TemplateDeserializer;
 import org.openehr.designer.repository.*;
 import org.openehr.designer.repository.github.egitext.PushContentsData;
 import org.openehr.jaxb.am.Archetype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -31,15 +31,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class GithubArchetypeRepository extends AbstractGithubRepository implements ArchetypeRepository {
     public static final Logger LOG = LoggerFactory.getLogger(GithubArchetypeRepository.class);
-
-
-    private Map<String, ArchetypeInfo> archetypeMap = new HashMap<>();
-    private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    private AdlDeserializer deserializer = new AdlDeserializer();
     private final Cache<String, Archetype> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.HOURS)
             .softValues()
             .build();
+    private Map<String, ArchetypeInfo> archetypeMap = new HashMap<>();
+    private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private AdlDeserializer deserializer = new AdlDeserializer();
+
+    private static Archetype deserializeArchetype(AdlDeserializer deserializer, byte[] adlsContent) {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(adlsContent)) {
+            return deserializer.parse(in);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+
+    }
 
     public void init(String username, String accessToken, String repo, String branch) {
         super.init(username, accessToken, repo, branch);
@@ -100,9 +107,9 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
                             LOG.debug("Updating metadata for {}", tc.getPath());
                             RepositoryContents fileTc = Iterables.getOnlyElement(
                                     githubContentsService.getContents(githubRepository, tc.getPath(), branch));
-                            String adlsContent = decodeBase64(fileTc.getContent());
+                            byte[] adlsContent = decodeBase64(fileTc.getContent());
                             try {
-                                Archetype a = adlDeserializer.parse(adlsContent);
+                                Archetype a = deserializeArchetype(adlDeserializer, adlsContent);
 
                                 am.id = a.getArchetypeId().getValue();
                                 am.name = findTermText(a, a.getDefinition().getNodeId());
@@ -133,7 +140,6 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         }
     }
 
-
     private ArchetypesMetadata getMetadataFile() {
         try {
             RepositoryContents repositoryContents = getFileContentsOrNull("ArchetypesMetadata.json");
@@ -158,8 +164,8 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
                 if (rc == null) {
                     throw new ArtifactNotFoundException(archetypeId);
                 }
-                String adlsContent = decodeBase64(rc.getContent());
-                return deserializer.parse(adlsContent);
+                byte[] adlsContent = decodeBase64(rc.getContent());
+                return deserializeArchetype(deserializer, adlsContent);
             });
         } catch (ExecutionException e) {
             if (e.getCause() instanceof RuntimeException) {
@@ -169,11 +175,6 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
             }
         }
 
-    }
-
-    private String createPath(String archetypeId) {
-        String interfaceArchetypeId = ArchetypeIdInfo.parse(archetypeId).toInterfaceString();
-        return "archetypes/" + interfaceArchetypeId + ".adls";
     }
 
     @Override
@@ -218,6 +219,10 @@ public class GithubArchetypeRepository extends AbstractGithubRepository implemen
         return new ArrayList<>(archetypeMap.values());
     }
 
+    private String createPath(String archetypeId) {
+        String interfaceArchetypeId = ArchetypeIdInfo.parse(archetypeId).toInterfaceString();
+        return "archetypes/" + interfaceArchetypeId + ".adls";
+    }
 
     private static class ArchetypesMetadata {
         @JsonProperty
