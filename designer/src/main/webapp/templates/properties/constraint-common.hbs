@@ -121,6 +121,14 @@
   <div class="properties-label align-top"><label>Exclude</label></div>
   <div id="{{panel_id}}_excludes" class="properties-value data"></div>
 </div>
+{{#if hasSlotParent}}
+    <div class="row properties-line no-border">
+        <div class="properties-label"><label>Is Closed</label></div>
+        <div class="properties-value">
+            <input id="{{panel_id}}_closed" type="checkbox">
+        </div>
+    </div>
+{{/if}}
 
 
 {>ARCHETYPE_SLOT/assertionList}

@@ -43,7 +43,7 @@
                 }
             }
             if (AOM.TemplateModel && AOM.TemplateModel.from(cons)) {
-                context.isTemplate=true;
+                context.isTemplate = true;
             }
             context.isParentConstrained = context.isTemplate && !!context.parent;
             return context;
@@ -221,81 +221,78 @@
                     var multiplicitySelect = html.find('#' + context.panel_id + "_multiplicity");
                     var multiplicityBoundInput = html.find('#' + context.panel_id + "_multiplicity_bound");
 
-                    var minV =  (parentOcc&&parentOcc.lower) ? parentOcc.lower : 0;
-                    var maxV =  parentOcc&&parentOcc.upper ? parentOcc.upper : 1;
+                    var minV = (parentOcc && parentOcc.lower) ? parentOcc.lower : 0;
+                    var maxV = parentOcc && parentOcc.upper ? parentOcc.upper : 1;
 
-                    if( typeof occ.lower != 'undefined'&& typeof occ.upper != 'undefined'){
+                    if (typeof occ.lower != 'undefined' && typeof occ.upper != 'undefined') {
                         minV = occ.lower;
                         maxV = occ.upper;
                     }
 
                     html.find('#' + context.panel_id + "_minOccur").val(minV);
-                    var oldValue = minV+'..'+maxV;
+                    var oldValue = minV + '..' + maxV;
                     html.find('#' + context.panel_id + "_minMaxF").editable({
-                        value: minV+'..'+maxV,
+                        value: minV + '..' + maxV,
 
                         tpl: "<input type='text' style='width: 100px'>",
-                        success: function(response, newValue) {
+                        success: function (response, newValue) {
                             var formatted = '';
-                            if(newValue==''){
+                            if (newValue == '') {
                                 toastr.error("You cannot leave occurrences empty! Changes are reverted");
                                 return {newValue: oldValue};
                             }
                             newValue = newValue.replace(/\s+/g, '');
-                            switch(newValue)
-                            {
+                            switch (newValue) {
                                 case '1':
                                     formatted = 0 + '..' + 1;
-                                    oldValue = 0+'..'+1;
+                                    oldValue = 0 + '..' + 1;
                                     return {newValue: formatted};
                                     break;
                                 case '0':
                                     formatted = 0 + '..' + 0;
-                                    oldValue = 0+'..'+0;
+                                    oldValue = 0 + '..' + 0;
                                     return {newValue: formatted};
                                     break;
                                 case '*':
                                     formatted = 0 + '..' + '*';
-                                    oldValue = 0+'..*';
+                                    oldValue = 0 + '..*';
                                     return {newValue: formatted};
                                     break;
                                 default:
-                                    if(!isNaN(newValue) && newValue % 1 == 0){
-                                        formatted = '0..'+newValue+'';
-                                        oldValue = 0+'..'+newValue;
+                                    if (!isNaN(newValue) && newValue % 1 == 0) {
+                                        formatted = '0..' + newValue + '';
+                                        oldValue = 0 + '..' + newValue;
                                         return {newValue: formatted};
                                         break;
                                     }
                                     else {
-                                            if(newValue.indexOf('[') != -1)
-                                            {
-                                                newValue = newValue.substr(newValue.indexOf('[')+1);
-                                            }
-                                            if(newValue.indexOf(']') != -1)
-                                            {
-                                                newValue = newValue.substr(0,newValue.indexOf(']'));
-                                            }
+                                        if (newValue.indexOf('[') != -1) {
+                                            newValue = newValue.substr(newValue.indexOf('[') + 1);
+                                        }
+                                        if (newValue.indexOf(']') != -1) {
+                                            newValue = newValue.substr(0, newValue.indexOf(']'));
+                                        }
                                         var parse = newValue.indexOf('..');
 
-                                        if(parse==-1){
+                                        if (parse == -1) {
                                             toastr.error("Please insert a valid format: ex. x..y");
                                             return {newValue: oldValue};
                                             break;
                                         }
                                         var minR = newValue.substring(0, parse);
-                                        var maxR = newValue.substring(parse+2);
-                                        if(isNaN(Number(minR)) || isNaN(Number(maxR))){
+                                        var maxR = newValue.substring(parse + 2);
+                                        if (isNaN(Number(minR)) || isNaN(Number(maxR))) {
                                             toastr.error("Please insert a valid format: ex. [x..y]");
                                             return {newValue: oldValue};
                                         }
 
                                         formatted = minR + '..' + maxR;
 
-                                        if(minR > maxR){
+                                        if (minR > maxR) {
                                             toastr.error("Min value cannot be bigger than max value");
                                             return {newValue: oldValue};
                                         }
-                                        oldValue = minR+'..'+maxR;
+                                        oldValue = minR + '..' + maxR;
                                         return {newValue: formatted};
                                         break;
                                     }
@@ -306,43 +303,38 @@
                             return {newValue: oldValue};
 
 
-
                         }
                     })
                     /*.on('shown', function(e, editable) {
-                        editable.input.$input.val(editable["value"].substr(1,editable["value"].length-2));
-                    });*/
+                     editable.input.$input.val(editable["value"].substr(1,editable["value"].length-2));
+                     });*/
 
                     //html.find('#' + context.panel_id + "_minMaxF").text('[ '+minV+'..'+maxV+' ]');
 
-                   /* $("#minOccurq").attr('href', "qqw");
-                    html.find('#' + context.panel_id + "_maxOccur").val(maxV);
-                    $('#minOccurq').editable({
-                        success: function(response, newValue) {
-                            switch(newValue)
-                            {
-                                case '1':
-                                    toastr.success('[' + 0 + '..' + 1 + ']');
-                                    break;
-                                case '0':
-                                    toastr.success('[' + 0 + '..' + 0 + ']');
-                                    break;
-                                case '*':
-                                    toastr.success('[' + 0 + '..' + '*' + ']');
-                                    break;
-                                default:
-                                    var parse = newValue.indexOf('..');
-                                    var minR = newValue.substring(0, parse-1);
-                                    var maxR = newValue.substring(parse+2, newValue.length-1);
-                                    toastr.success('[' + minR + '..' + maxR + ']');
-                                    break;
-                            }
-                        }
-                    });*/
-
-
-
-
+                    /* $("#minOccurq").attr('href', "qqw");
+                     html.find('#' + context.panel_id + "_maxOccur").val(maxV);
+                     $('#minOccurq').editable({
+                     success: function(response, newValue) {
+                     switch(newValue)
+                     {
+                     case '1':
+                     toastr.success('[' + 0 + '..' + 1 + ']');
+                     break;
+                     case '0':
+                     toastr.success('[' + 0 + '..' + 0 + ']');
+                     break;
+                     case '*':
+                     toastr.success('[' + 0 + '..' + '*' + ']');
+                     break;
+                     default:
+                     var parse = newValue.indexOf('..');
+                     var minR = newValue.substring(0, parse-1);
+                     var maxR = newValue.substring(parse+2, newValue.length-1);
+                     toastr.success('[' + minR + '..' + maxR + ']');
+                     break;
+                     }
+                     }
+                     });*/
 
 
                     fillSelectOptions(existenceSelect, existenceMap);
@@ -366,83 +358,83 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
-               /* var existenceSelect = targetElement.find('#' + context.panel_id + "_existence");
-                var multiplicitySelect = targetElement.find('#' + context.panel_id + "_multiplicity");
-                var multiplicityBoundInput = targetElement.find('#' + context.panel_id + "_multiplicity_bound");
-                var minRange = targetElement.find('#' + context.panel_id + "_minOccur").val();
-                var maxRange = targetElement.find('#' + context.panel_id + "_maxOccur").val();*/
+                /* var existenceSelect = targetElement.find('#' + context.panel_id + "_existence");
+                 var multiplicitySelect = targetElement.find('#' + context.panel_id + "_multiplicity");
+                 var multiplicityBoundInput = targetElement.find('#' + context.panel_id + "_multiplicity_bound");
+                 var minRange = targetElement.find('#' + context.panel_id + "_minOccur").val();
+                 var maxRange = targetElement.find('#' + context.panel_id + "_maxOccur").val();*/
 
                 var minmaxRange = $('.minMaxF').text();
-                context.occurrences = '['+minmaxRange+']';
+                context.occurrences = '[' + minmaxRange + ']';
 
                 /*var minR, maxR;
-                switch(minmaxRange)
-                {
-                    case '1':
-                        context.occurrences = '[' + 0 + '..' + 1 + ']';
-                        break;
-                    case '0':
-                        context.occurrences = '[' + 0 + '..' + 0 + ']';
-                        break;
-                    case '*':
-                        context.occurrences = '[' + 0 + '..' + '*' + ']';
-                        break;
-                    default:
-                        var parse = minmaxRange.indexOf('..');
-                        minR = minmaxRange.substring(0, parse-1);
-                        maxR = minmaxRange.substring(parse+2, minmaxRange.length-1);
-                        context.occurrences = '[' + minR + '..' + maxR + ']';
-                        break;
-                }
-                toastr.success(context.occurrences);
-                if(minmaxRange === '1')
-                {
-                    context.occurrences = '[' + minRange + '..' + maxRange + ']';
-                }
-                if(min)
+                 switch(minmaxRange)
+                 {
+                 case '1':
+                 context.occurrences = '[' + 0 + '..' + 1 + ']';
+                 break;
+                 case '0':
+                 context.occurrences = '[' + 0 + '..' + 0 + ']';
+                 break;
+                 case '*':
+                 context.occurrences = '[' + 0 + '..' + '*' + ']';
+                 break;
+                 default:
+                 var parse = minmaxRange.indexOf('..');
+                 minR = minmaxRange.substring(0, parse-1);
+                 maxR = minmaxRange.substring(parse+2, minmaxRange.length-1);
+                 context.occurrences = '[' + minR + '..' + maxR + ']';
+                 break;
+                 }
+                 toastr.success(context.occurrences);
+                 if(minmaxRange === '1')
+                 {
+                 context.occurrences = '[' + minRange + '..' + maxRange + ']';
+                 }
+                 if(min)
 
-                if(!minRange || isNaN(minRange)) {
-                    toastr.error("Please set a valid min range");
-                    minRange = 0;
-                }
-                if(!maxRange) {
-                    if(!isNaN(maxRange) && maxRange != '*')
-                    maxRange = '*';
-                }
-                if(!isNaN(minRange) && !isNaN(maxRange))
-                {
-                    if(maxRange < minRange)
-                    //alert("The minimum occurrence range cannot be bigger than the maximum");
-                    toastr.error("The minimum occurrence range cannot be bigger than the maximum");
-                }
+                 if(!minRange || isNaN(minRange)) {
+                 toastr.error("Please set a valid min range");
+                 minRange = 0;
+                 }
+                 if(!maxRange) {
+                 if(!isNaN(maxRange) && maxRange != '*')
+                 maxRange = '*';
+                 }
+                 if(!isNaN(minRange) && !isNaN(maxRange))
+                 {
+                 if(maxRange < minRange)
+                 //alert("The minimum occurrence range cannot be bigger than the maximum");
+                 toastr.error("The minimum occurrence range cannot be bigger than the maximum");
+                 }
 
-                context.occurrences = '[' + minRange + '..' + maxRange + ']';*/
+                 context.occurrences = '[' + minRange + '..' + maxRange + ']';*/
 
-               /* var existence = existenceSelect.val();
-                if (existence === 'prohibited') {
-                    context.occurrences = '[0..0]';
-                } else {
-                    var low = existence === 'optional' ? '0' : '1';
-                    var high = '*';
-                    var multiplicity = multiplicitySelect.val();
-                    if (multiplicity === 'not repeating') {
-                        high = '1';
-                    } else if (multiplicity === 'bounded') {
-                        high = multiplicityBoundInput.val();
-                        if (isNaN(Number(high))) {
-                            high = '0';
-                        }
-                    } else {
-                        high = '*';
-                    }
-                    context.occurrences = '[' + low + '..' + high + ']';
-                }*/
+                /* var existence = existenceSelect.val();
+                 if (existence === 'prohibited') {
+                 context.occurrences = '[0..0]';
+                 } else {
+                 var low = existence === 'optional' ? '0' : '1';
+                 var high = '*';
+                 var multiplicity = multiplicitySelect.val();
+                 if (multiplicity === 'not repeating') {
+                 high = '1';
+                 } else if (multiplicity === 'bounded') {
+                 high = multiplicityBoundInput.val();
+                 if (isNaN(Number(high))) {
+                 high = '0';
+                 }
+                 } else {
+                 high = '*';
+                 }
+                 context.occurrences = '[' + low + '..' + high + ']';
+                 }*/
             };
 
             handler.validate = function (stage, context, errors) {
                 var occ = AmInterval.parseContainedString(context.occurrences, "MULTIPLICITY_INTERVAL");
 
-                if (!errors.validate(occ, "Invalid occurrences format", "occurrences")){
+                if (!errors.validate(occ, "Invalid occurrences format", "occurrences")) {
                     toastr.error("Invalid occurrances format!");
                     return;
                 }
@@ -677,6 +669,8 @@
                 context.includes = toContextAssertions(cons.includes);
                 context.excludes = toContextAssertions(cons.excludes);
                 context.candidateArchetypes = [];
+                context.isClosed = cons.is_closed;
+                context.hasSlotParent = !!parentCons;
 
                 var archetypeInfos = stage.archetypeEditor.archetypeRepository.infoList;
                 var referenceModel = stage.archetypeEditor.referenceModel;
@@ -698,6 +692,8 @@
 
                     var includesContainer = html.find('#' + context.panel_id + '_includes');
                     var excludesContainer = html.find('#' + context.panel_id + '_excludes');
+                    var closedCheck = html.find('#' + context.panel_id + '_closed');
+                    closedCheck.prop('checked', context.isClosed);
 
                     var includesComponent = new AssertionList(includesContainer, context.candidateArchetypes, context.includes);
                     var excludesComponent = new AssertionList(excludesContainer, context.candidateArchetypes, context.excludes);
@@ -706,6 +702,8 @@
             };
 
             handler.updateContext = function (stage, context, targetElement) {
+                var closedCheck = targetElement.find('#' + context.panel_id + '_closed');
+                context.isClosed = closedCheck.prop('checked');
             };
 
             handler.validate = function (stage, context, errors) {
@@ -714,6 +712,7 @@
             handler.updateConstraint = function (stage, context, cons) {
                 cons.includes = toConstraintsAssertions(context.includes);
                 cons.excludes = toConstraintsAssertions(context.excludes);
+                cons.is_closed = context.isClosed ? true : null
             };
         };
         AmUtils.extend(ArchetypeSlotHandler, CommonRmHandler);

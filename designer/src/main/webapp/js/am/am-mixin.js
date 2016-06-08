@@ -19,7 +19,7 @@
  */
 
 AOM = (function (AOM) {
-    var my=AOM;
+    var my = AOM;
 
     var AmGraph = function () {
         var self = this;
@@ -288,16 +288,16 @@ AOM = (function (AOM) {
     var AmObjectMixin = function () {
         var self = this;
 
-        self.isAttribute = function() {
+        self.isAttribute = function () {
             return false;
         };
 
-        self.isConstraint = function() {
+        self.isConstraint = function () {
             return false;
         };
 
 
-        self.isSlot = function() {
+        self.isSlot = function () {
             return false;
         };
 
@@ -305,7 +305,7 @@ AOM = (function (AOM) {
             return false;
         };
 
-        self.isArchetypeRoot = function() {
+        self.isArchetypeRoot = function () {
             return false;
         }
     };
@@ -314,7 +314,7 @@ AOM = (function (AOM) {
         var self = this;
         AmObjectMixin.call(self);
 
-        self.isConstraint = function() {
+        self.isConstraint = function () {
             return true;
         };
 
@@ -355,7 +355,7 @@ AOM = (function (AOM) {
         var self = this;
         CComplexObjectMixin.call(self);
 
-        self.isArchetypeRoot = function() {
+        self.isArchetypeRoot = function () {
             return true;
         }
     };
@@ -398,12 +398,28 @@ AOM = (function (AOM) {
         var self = this;
         CObjectMixin.call(self);
 
-        self.isSlot = function() {
+        self.isSlot = function () {
+            return true;
+        };
+
+        self.equals = function (first, second) {
+            function assertionsEquals(f, s) {
+                return JSON.stringify(f) === JSON.stringify(s)
+            }
+            
+            if (!AOM.mixin(first).isSlot() || !AOM.mixin(second).isSlot()) {
+                return false;
+            }
+            if (first.node_id !== second.node_id) return false;
+            if (first.is_closed !== second.is_closed) return false;
+            if (!assertionsEquals(first.includes, second.includes)) return false;
+            if (!assertionsEquals(first.excludes, second.excludes)) return false;
+                
             return true;
         };
 
         function buildAssertionPredicate(assertionList, defaultValue) {
-            if (!assertionList || assertionList.length==0) {
+            if (!assertionList || assertionList.length == 0) {
                 return function (archetypeId) {
                     return defaultValue;
                 }
@@ -440,11 +456,11 @@ AOM = (function (AOM) {
          * @param {object} cons constraint of the archetyoe slot
          * @return {function(archetypeId): boolean} a function that tests a given archetype id
          */
-        self.buildArchetypeMatcher = function(cons) {
+        self.buildArchetypeMatcher = function (cons) {
             var includesPredicate = buildAssertionPredicate(cons.includes, false);
             var excludesPredicate = buildAssertionPredicate(cons.excludes, true);
 
-            return function(archetypeId) {
+            return function (archetypeId) {
                 if (includesPredicate(archetypeId)) return true;
                 if (excludesPredicate(archetypeId)) return false;
                 return true;
@@ -453,8 +469,6 @@ AOM = (function (AOM) {
 
     };
     extend(ArchetypeSlotMixin, CObjectMixin);
-
-
 
 
     var mixinClasses = {

@@ -797,7 +797,20 @@ var AOM = (function () {
                  * @returns {boolean} true if the node is defined in current archetype, false if defined only in parent
                  */
                 self.isSpecialized = function (cons) {
+
+                    function isArchetypeSlotSpecialized(cons) {
+                        var parent = self.getParentConstraint(cons);
+                        if (!parent) return false;
+
+                        // currently always treat archetype slot as specialized
+                        // if (AOM.mixin(cons).equals(cons, parent)) return false;
+                        return true;
+                    }
+
                     if (typeof cons === "object") {
+                        if (AOM.mixin(cons).isSlot()) {
+                            return isArchetypeSlotSpecialized(cons)
+                        }
                         while (cons && !cons.node_id) { // find nearest parent with node_id
                             cons = cons[".parent"];
                         }
