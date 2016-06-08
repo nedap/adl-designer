@@ -293,6 +293,7 @@ public class ArchetypeDifferentiator {
                     if (pruneChild == Prune.prune) {
                         childIterator.remove();
                     } else if (pruneChild == Prune.keep) {
+                        differentiateCObject(findCObject(parentAttribute, childConstraint.getNodeId()), childConstraint);
                         result = Prune.keep;
                     }
                 }
@@ -316,6 +317,20 @@ public class ArchetypeDifferentiator {
         }
 
         return result;
+    }
+
+    private void differentiateCObject(@Nullable CObject flatParent, CObject cobj) {
+        if (flatParent==null) return;
+        if (cobj instanceof ArchetypeSlot) {
+            differentiateArchetypeSlot((ArchetypeSlot)flatParent, (ArchetypeSlot) cobj);
+        }
+    }
+
+    private void differentiateArchetypeSlot(ArchetypeSlot flatParent, ArchetypeSlot cobj) {
+        if (cobj.isIsClosed()!=null && cobj.isIsClosed()) {
+            cobj.getIncludes().clear();
+            cobj.getExcludes().clear();
+        }
     }
 
     private boolean isCObjectSpecialized(CObject flatParent, CObject cobj) {
@@ -359,6 +374,7 @@ public class ArchetypeDifferentiator {
 
     @Nullable
     private CObject findCObject(CAttribute parentAttribute, String nodeId) {
+        if (parentAttribute==null || nodeId==null) return null;
         for (CObject cObject : parentAttribute.getChildren()) {
             if (nodeId.equals(cObject.getNodeId())) {
                 return cObject;
