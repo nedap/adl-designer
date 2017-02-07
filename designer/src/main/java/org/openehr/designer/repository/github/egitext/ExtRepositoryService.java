@@ -60,8 +60,10 @@ public class ExtRepositoryService extends RepositoryService {
             throws IOException {
         final String id = getId(provider);
         GitHubRequest request = createRequest();
+        System.out.println(SEGMENT_REPOS + '/' + id);
         request.setUri(SEGMENT_REPOS + '/' + id);
         request.setType(ExtRepository.class);
+        System.out.println(request);
         return (ExtRepository) client.get(request).getBody();
     }
 

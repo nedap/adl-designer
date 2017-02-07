@@ -64,6 +64,14 @@
         <module>designer</module>
     </modules>
 
+    <repositories>
+    <repository>
+      <id>eclipse</id>
+      <name>eclipse repo</name>
+      <url>https://repo.eclipse.org/content/groups/releases/</url>
+    </repository>
+</repositories>
+
 
     <dependencyManagement>
         <dependencies>
@@ -73,11 +81,11 @@
                 <artifactId>adl-parser</artifactId>
                 <version>${adl2-core.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.mylyn.github</groupId>
-                <artifactId>org.eclipse.egit.github.core</artifactId>
-                <version>2.1.5</version>
-            </dependency>
+           <dependency>
+    <groupId>org.eclipse.mylyn.github</groupId>
+    <artifactId>org.eclipse.egit.github.core</artifactId>
+    <version>4.6.0.201612231935-r</version>
+</dependency>
             <dependency>
                 <groupId>com.marand.adltools</groupId>
                 <artifactId>opt-exporter-14</artifactId>
@@ -156,6 +164,14 @@
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.2</version>
+            <scope>compile</scope>
+        </dependency>
+
 
             <!-- apache -->
             <dependency>

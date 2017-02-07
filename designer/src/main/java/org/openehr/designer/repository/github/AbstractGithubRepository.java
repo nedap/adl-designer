@@ -113,6 +113,9 @@ public class AbstractGithubRepository extends AbstractRepository {
 
     protected void githubRepositoryFileWalker(ExtRepository repository, String path, String branch,
                                                  ExceptionalConsumer<RepositoryContents, IOException> visitor) throws IOException {
+        System.out.println("repository " + repository.getUrl());
+        System.out.println("path " + path);
+        System.out.println("branch " + branch);
         List<RepositoryContents> contents = githubContentsService.getContents(repository, path, branch);
         for (RepositoryContents tc : contents) {
             if (tc.getType().equals("dir")) {
